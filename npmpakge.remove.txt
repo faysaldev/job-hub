@@ -1,3 +1,0 @@
-pnpm remove bcryptjs crypto-js heic-convert multer nodemailer
-
-pnpm remove -D  @types/heic-convert @types/multer @types/nodemailer
