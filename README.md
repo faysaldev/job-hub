@@ -114,6 +114,14 @@ See [Backend README](./backends/README.md) for detailed backend development inst
 
 We welcome contributions to JobHub! Please read our contributing guidelines (to be added) for details on our code of conduct and development process.
 
+### Reporting Issues
+
+If you encounter any bugs or have feature requests, please use our [GitHub Issues](https://github.com/your-username/JobHub/issues) section. We have templates for:
+
+- [Bug Reports](.github/ISSUE_TEMPLATE/bug_report.md) - Report bugs and issues
+- [Feature Requests](.github/ISSUE_TEMPLATE/feature_request.md) - Suggest new features
+- [General Issues](.github/ISSUE_TEMPLATE/general_issue.md) - For other types of issues
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
