@@ -41,20 +41,15 @@ export interface CompanyProfile {
 }
 
 export interface Job {
-  id: string;
-  recruiterId: string;
-  companyName: string;
+  id: number;
   title: string;
-  description: string;
-  skills: string[];
-  experience: string;
+  company: string;
   location: string;
   type: string;
   salary: string;
-  salaryMin: number;
-  salaryMax: number;
-  deadline: string;
-  postedDate: string;
+  posted: string;
+  description: string;
+  skills: string[];
   status: "active" | "closed";
 }
 
