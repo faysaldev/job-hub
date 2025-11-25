@@ -7,7 +7,6 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1`,
     prepareHeaders: (headers, { getState }) => {
-      // Extract the token correctly by parsing the stringified token object
       const token = (getState() as RootState).auth.token?.replace(/['"]+/g, "");
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
@@ -15,27 +14,6 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  tagTypes: [
-    "recipe",
-    "user",
-    "product",
-    "rating",
-    "comment",
-    "order",
-    "Earnings",
-    "User",
-    "settings",
-    "New_Category",
-    "Ratings",
-    "General_Settings",
-    "Condition",
-    "Coupon",
-    "header_statics",
-    "my_wishList",
-    "my_cartList",
-    "vendor_update",
-    "payment_method",
-    "admin_payment_approved",
-  ],
+  tagTypes: ["user"],
   endpoints: () => ({}),
 });

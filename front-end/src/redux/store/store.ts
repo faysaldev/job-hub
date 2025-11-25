@@ -9,7 +9,7 @@ import {
   REGISTER,
   persistStore,
 } from "redux-persist";
-import authReducer from "@/redux/features/auth/authSlice";
+import authReducer from "@/src/redux/features/auth/authSlice";
 import storage from "redux-persist/lib/storage";
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 
