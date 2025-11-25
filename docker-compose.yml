@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  # Frontend Service
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://api-gateway:8080
+    depends_on:
+      - api-gateway
+    networks:
+      - jobhub-network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./backends/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - jobhub-network
+
+  # Authentication Service
+  auth-service:
+    build:
+      context: ./backends/auth-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/auth_db
+    depends_on:
+      - db
+    networks:
+      - jobhub-network
+
+  # User Service
+  user-service:
+    build:
+      context: ./backends/user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/user_db
+    depends_on:
+      - db
+    networks:
+      - jobhub-network
+
+  # Job Service
+  job-service:
+    build:
+      context: ./backends/job-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/job_db
+    depends_on:
+      - db
+    networks:
+      - jobhub-network
+
+  # Application Service
+  application-service:
+    build:
+      context: ./backends/application-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/application_db
+    depends_on:
+      - db
+    networks:
+      - jobhub-network
+
+  # Company Service
+  company-service:
+    build:
+      context: ./backends/company-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/company_db
+    depends_on:
+      - db
+    networks:
+      - jobhub-network
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./backends/notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      - SMTP_HOST=mailhog
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - jobhub-network
+
+  # Database
+  db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=jobhub
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jobhub-network
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - jobhub-network
+
+  # Message Queue (using RabbitMQ as example)
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    networks:
+      - jobhub-network
+
+networks:
+  jobhub-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
