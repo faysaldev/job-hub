@@ -23,12 +23,25 @@ import { Card } from "@/src/components/ui/card";
 
 function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
+      {/* Background pattern */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl opacity-70 animate-pulse"></div>
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-accent/10 rounded-full blur-3xl opacity-70 animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-primary/5 to-accent/5 rounded-full blur-3xl opacity-50"></div>
+      </div>
+
       <Header />
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-accent/5 to-background py-20 md:py-32">
+        <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-accent/5 to-background/30 py-20 md:py-32">
+          <div className="absolute inset-0">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-30 animate-blob"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+          </div>
+
           <div className="container relative z-10">
             <div className="max-w-4xl mx-auto text-center space-y-8">
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
@@ -45,7 +58,7 @@ function HomePage() {
                 <Button
                   asChild
                   size="lg"
-                  className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg px-8 py-6 shadow-lg"
+                  className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-lg px-8 py-6 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
                 >
                   <Link href="/jobs">
                     Browse Jobs <ArrowRight className="ml-2 h-5 w-5" />
@@ -55,7 +68,7 @@ function HomePage() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="text-lg px-8 py-6"
+                  className="text-lg px-8 py-6 border-2 hover:bg-primary/10 transition-all duration-300"
                 >
                   <Link href="/auth">Post a Job</Link>
                 </Button>
@@ -76,16 +89,16 @@ function HomePage() {
               </div>
             </div>
           </div>
-
-          {/* Decorative gradient orbs */}
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-70 animate-blob" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl opacity-70 animate-blob animation-delay-2000" />
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-50 animate-blob animation-delay-4000" />
         </section>
 
         {/* Features Section */}
-        <section className="py-20 md:py-32">
-          <div className="container">
+        <section className="py-20 md:py-32 relative">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-1/4 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+            <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-accent/5 rounded-full blur-3xl animate-blob animation-delay-6000"></div>
+          </div>
+
+          <div className="container relative z-10">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Why Choose JobHubs?
@@ -97,8 +110,8 @@ function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Card className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background to-muted/10">
-                <div className="bg-gradient-to-br from-primary to-accent rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-md">
+              <Card className="p-8 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-primary to-accent rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-lg shadow-primary/20">
                   <Search className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Smart Job Search</h3>
@@ -108,8 +121,8 @@ function HomePage() {
                 </p>
               </Card>
 
-              <Card className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background to-muted/10">
-                <div className="bg-gradient-to-br from-accent to-primary rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-md">
+              <Card className="p-8 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-accent to-primary rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-lg shadow-accent/20">
                   <Briefcase className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">
@@ -121,8 +134,8 @@ function HomePage() {
                 </p>
               </Card>
 
-              <Card className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background to-muted/10">
-                <div className="bg-gradient-to-br from-primary to-accent rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-md">
+              <Card className="p-8 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-primary to-accent rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-lg shadow-primary/20">
                   <Users className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">
@@ -134,8 +147,8 @@ function HomePage() {
                 </p>
               </Card>
 
-              <Card className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background to-muted/10">
-                <div className="bg-gradient-to-br from-accent to-primary rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-md">
+              <Card className="p-8 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-accent to-primary rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-lg shadow-accent/20">
                   <TrendingUp className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Career Growth</h3>
@@ -145,8 +158,8 @@ function HomePage() {
                 </p>
               </Card>
 
-              <Card className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background to-muted/10">
-                <div className="bg-gradient-to-br from-primary to-accent rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-md">
+              <Card className="p-8 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-primary to-accent rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-lg shadow-primary/20">
                   <Shield className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Secure Platform</h3>
@@ -156,8 +169,8 @@ function HomePage() {
                 </p>
               </Card>
 
-              <Card className="p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background to-muted/10">
-                <div className="bg-gradient-to-br from-accent to-primary rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-md">
+              <Card className="p-8 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-primary/20 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-accent to-primary rounded-lg w-14 h-14 flex items-center justify-center mb-6 shadow-lg shadow-accent/20">
                   <Zap className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Quick Apply</h3>
@@ -171,32 +184,37 @@ function HomePage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-20 bg-gradient-to-br from-primary/5 to-accent/5">
-          <div className="container">
+        <section className="py-20 bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5 relative">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-1/4 left-1/5 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-blob"></div>
+            <div className="absolute bottom-1/4 right-1/5 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-blob animation-delay-3000"></div>
+          </div>
+
+          <div className="container relative z-10">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div className="p-6">
-                <div className="bg-gradient-to-br from-primary to-accent rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary-foreground shadow-lg">
+                <div className="bg-gradient-to-br from-primary to-accent rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary-foreground shadow-lg shadow-primary/30">
                   <Users2 className="h-8 w-8" />
                 </div>
                 <p className="text-3xl md:text-4xl font-bold">10K+</p>
                 <p className="text-muted-foreground">Active Jobs</p>
               </div>
               <div className="p-6">
-                <div className="bg-gradient-to-br from-accent to-primary rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary-foreground shadow-lg">
+                <div className="bg-gradient-to-br from-accent to-primary rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary-foreground shadow-lg shadow-accent/30">
                   <Briefcase className="h-8 w-8" />
                 </div>
                 <p className="text-3xl md:text-4xl font-bold">5K+</p>
                 <p className="text-muted-foreground">Companies</p>
               </div>
               <div className="p-6">
-                <div className="bg-gradient-to-br from-primary to-accent rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary-foreground shadow-lg">
+                <div className="bg-gradient-to-br from-primary to-accent rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary-foreground shadow-lg shadow-primary/30">
                   <Globe className="h-8 w-8" />
                 </div>
                 <p className="text-3xl md:text-4xl font-bold">1M+</p>
                 <p className="text-muted-foreground">Job Seekers</p>
               </div>
               <div className="p-6">
-                <div className="bg-gradient-to-br from-accent to-primary rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary-foreground shadow-lg">
+                <div className="bg-gradient-to-br from-accent to-primary rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-primary-foreground shadow-lg shadow-accent/30">
                   <Award className="h-8 w-8" />
                 </div>
                 <p className="text-3xl md:text-4xl font-bold">95%</p>
@@ -207,8 +225,13 @@ function HomePage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-20 md:py-32">
-          <div className="container">
+        <section className="py-20 md:py-32 relative">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-1/3 w-80 h-80 bg-accent/5 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+            <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-blob animation-delay-5000"></div>
+          </div>
+
+          <div className="container relative z-10">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 How It Works
@@ -220,7 +243,7 @@ function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
               <div className="text-center space-y-4">
-                <div className="bg-gradient-to-br from-primary to-accent rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold text-primary-foreground mx-auto shadow-lg">
+                <div className="bg-gradient-to-br from-primary to-accent rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold text-primary-foreground mx-auto shadow-lg shadow-primary/30">
                   1
                 </div>
                 <h3 className="text-xl font-semibold">Create Your Profile</h3>
@@ -231,7 +254,7 @@ function HomePage() {
               </div>
 
               <div className="text-center space-y-4">
-                <div className="bg-gradient-to-br from-accent to-primary rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold text-primary-foreground mx-auto shadow-lg">
+                <div className="bg-gradient-to-br from-accent to-primary rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold text-primary-foreground mx-auto shadow-lg shadow-accent/30">
                   2
                 </div>
                 <h3 className="text-xl font-semibold">Find & Apply</h3>
@@ -242,7 +265,7 @@ function HomePage() {
               </div>
 
               <div className="text-center space-y-4">
-                <div className="bg-gradient-to-br from-primary to-accent rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold text-primary-foreground mx-auto shadow-lg">
+                <div className="bg-gradient-to-br from-primary to-accent rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold text-primary-foreground mx-auto shadow-lg shadow-primary/30">
                   3
                 </div>
                 <h3 className="text-xl font-semibold">Get Hired</h3>
@@ -256,21 +279,21 @@ function HomePage() {
         </section>
 
         {/* Resume Analyzer Section */}
-        <section className="py-20 bg-gradient-to-b from-background to-muted/30">
+        <section className="py-20 bg-gradient-to-b from-background/80 to-muted/30 backdrop-blur-sm">
           <div className="container">
             <ResumeAnalyzer />
           </div>
         </section>
 
         {/* Skill Analyzer Section */}
-        <section className="py-20">
+        <section className="py-20 bg-gradient-to-b from-muted/30 to-background/80 backdrop-blur-sm">
           <div className="container">
             <SkillAnalyzer />
           </div>
         </section>
 
         {/* Testimonials Section */}
-        <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
+        <section className="py-20 bg-gradient-to-b from-muted/20 to-background/80 backdrop-blur-sm">
           <div className="container">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -283,9 +306,9 @@ function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="p-6 border border-primary/10 bg-gradient-to-b from-background to-muted/10">
+              <Card className="p-6 border border-primary/10 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-muted overflow-hidden">
+                  <div className="w-12 h-12 rounded-full bg-muted overflow-hidden border border-border">
                     <img
                       src="https://github.com/shadcn.png"
                       alt="User"
@@ -314,9 +337,9 @@ function HomePage() {
                 </p>
               </Card>
 
-              <Card className="p-6 border border-primary/10 bg-gradient-to-b from-background to-muted/10">
+              <Card className="p-6 border border-primary/10 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-muted overflow-hidden">
+                  <div className="w-12 h-12 rounded-full bg-muted overflow-hidden border border-border">
                     <img
                       src="https://github.com/shadcn.png"
                       alt="User"
@@ -345,9 +368,9 @@ function HomePage() {
                 </p>
               </Card>
 
-              <Card className="p-6 border border-primary/10 bg-gradient-to-b from-background to-muted/10">
+              <Card className="p-6 border border-primary/10 bg-gradient-to-b from-background/80 to-muted/20 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-muted overflow-hidden">
+                  <div className="w-12 h-12 rounded-full bg-muted overflow-hidden border border-border">
                     <img
                       src="https://github.com/shadcn.png"
                       alt="User"
@@ -377,9 +400,14 @@ function HomePage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 md:py-32">
-          <div className="container">
-            <Card className="p-12 md:p-16 bg-gradient-to-br from-primary to-accent text-primary-foreground text-center shadow-xl">
+        <section className="py-20 md:py-32 relative">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-blob"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-blob animation-delay-3000"></div>
+          </div>
+
+          <div className="container relative z-10">
+            <Card className="p-12 md:p-16 bg-gradient-to-br from-primary to-accent text-primary-foreground text-center shadow-2xl shadow-primary/25 backdrop-blur-sm">
               <div className="max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">
                   Ready to Start Your Career Journey?
@@ -393,7 +421,7 @@ function HomePage() {
                     asChild
                     size="lg"
                     variant="secondary"
-                    className="text-lg px-8 py-6 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                    className="text-lg px-8 py-6 bg-primary-foreground text-primary hover:bg-primary-foreground/90 hover:shadow-lg transition-all duration-300"
                   >
                     <Link href="/auth">Create Free Account</Link>
                   </Button>
@@ -401,7 +429,7 @@ function HomePage() {
                     asChild
                     size="lg"
                     variant="outline"
-                    className="text-lg px-8 py-6 bg-transparent hover:bg-primary-foreground/10 text-primary-foreground border-primary-foreground/30"
+                    className="text-lg px-8 py-6 bg-transparent/30 hover:bg-primary-foreground/10 text-primary-foreground border-2 border-primary-foreground/30 hover:shadow-lg transition-all duration-300 backdrop-blur-sm"
                   >
                     <Link href="/jobs">Browse Jobs</Link>
                   </Button>
