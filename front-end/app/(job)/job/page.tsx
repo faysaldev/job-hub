@@ -1,7 +1,7 @@
-import React from "react";
+// Import the client component
+import JobsClient from "@/src/Page/Jobs/JobsPage";
 
-function page() {
-  return <div></div>;
+// Server component wrapper
+export default function JobsPage() {
+  return <JobsClient />;
 }
-
-export default page;

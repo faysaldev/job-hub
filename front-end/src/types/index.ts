@@ -51,6 +51,9 @@ export interface Job {
   description: string;
   skills: string[];
   status: "active" | "closed";
+  responsibilities?: string[];
+  requirements?: string[];
+  benefits?: string[];
 }
 
 export interface Application {
