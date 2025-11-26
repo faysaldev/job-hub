@@ -1,7 +1,6 @@
-import React from "react";
+import JobSeekerDashboard from "@/src/Page/JobSeeker/JobSeeker";
 
-function page() {
-  return <div>Job Seeker </div>;
+// Server component wrapper
+export default function JobsPage() {
+  return <JobSeekerDashboard />;
 }
-
-export default page;

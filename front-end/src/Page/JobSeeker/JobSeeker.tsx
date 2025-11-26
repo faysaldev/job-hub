@@ -1,3 +1,4 @@
+"use client";
 import { useEffect } from "react";
 import Header, { mockUser } from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
@@ -28,7 +29,7 @@ const JobSeekerDashboard = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 py-12 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent">
+      <main className="flex-1 py-12 container mx-auto">
         <div className="container">
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">
