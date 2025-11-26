@@ -5,23 +5,35 @@ import { Button } from "@/src/components/ui/button";
 import { Application, Job } from "@/src/types";
 import { toast } from "@/src/hooks/use-toast";
 
+// Extending the Job type to include recruiterId
+interface JobWithRecruiter extends Job {
+  recruiterId: string;
+}
+
 const ApplicantsList = ({ userId }: { userId: string }) => {
   const [applications, setApplications] = useState<Application[]>([]);
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<JobWithRecruiter[]>([]);
 
   useEffect(() => {
-    const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
-    const userJobs = allJobs.filter((job: Job) => job.recruiterId === userId);
-    setJobs(userJobs);
+    const fetchData = () => {
+      const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
+      const userJobs = allJobs.filter(
+        (job: JobWithRecruiter) => job.recruiterId === userId
+      );
+      setJobs(userJobs);
 
-    const allApplications = JSON.parse(
-      localStorage.getItem("applications") || "[]"
-    );
-    const jobIds = userJobs.map((job) => job.id);
-    const jobApplications = allApplications.filter((app: Application) =>
-      jobIds.includes(app.jobId)
-    );
-    setApplications(jobApplications);
+      const allApplications = JSON.parse(
+        localStorage.getItem("applications") || "[]"
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const jobIds = userJobs.map((job: any) => job.id.toString()); // Convert to string to match application jobId
+      const jobApplications = allApplications.filter((app: Application) =>
+        jobIds.includes(app.jobId)
+      );
+      setApplications(jobApplications);
+    };
+
+    fetchData();
   }, [userId]);
 
   const updateApplicationStatus = (
@@ -36,7 +48,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
     );
     localStorage.setItem("applications", JSON.stringify(updatedApplications));
 
-    const jobIds = jobs.map((job) => job.id);
+    const jobIds = jobs.map((job) => job.id.toString()); // Convert to string to match application jobId
     const jobApplications = updatedApplications.filter((app: Application) =>
       jobIds.includes(app.jobId)
     );
@@ -65,7 +77,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
       <Card className="p-12 text-center">
         <p className="text-muted-foreground text-lg">No applications yet.</p>
         <p className="text-muted-foreground mt-2">
-          Once candidates apply to your jobs, they'll appear here.
+          Once candidates apply to your jobs, they&apos;ll appear here.
         </p>
       </Card>
     );
