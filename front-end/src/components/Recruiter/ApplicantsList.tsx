@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Application, Job } from "@/types";
-import { User, Mail, Phone } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Card } from "@/src/components/ui/card";
+import { Badge } from "@/src/components/ui/badge";
+import { Button } from "@/src/components/ui/button";
+import { Application, Job } from "@/src/types";
+import { toast } from "@/src/hooks/use-toast";
 
 const ApplicantsList = ({ userId }: { userId: string }) => {
   const [applications, setApplications] = useState<Application[]>([]);

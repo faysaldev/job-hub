@@ -16,19 +16,149 @@ import { toast } from "@/src/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
 
+// Define a new type that matches the component's usage instead of extending
+interface JobWithRecruiter {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  salary: string;
+  posted: string;
+  description: string;
+  skills: string[];
+  status: "active" | "closed";
+  responsibilities?: string[];
+  requirements?: string[];
+  benefits?: string[];
+  recruiterId: string;
+  companyName: string;
+  experience: string;
+  salaryMin: number;
+  salaryMax: number;
+  deadline: string;
+  postedDate: string;
+}
+
 const JobManagement = ({ userId }: { userId: string }) => {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<JobWithRecruiter[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  useEffect(() => {
-    // loadJobs();
-  }, [userId]);
-
   const loadJobs = () => {
-    const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
-    const userJobs = allJobs.filter((job: Job) => job.recruiterId === userId);
-    setJobs(userJobs);
+    // Check if jobs exist in localStorage, otherwise initialize with dummy data
+    const storedJobs = localStorage.getItem("jobs");
+    if (!storedJobs || JSON.parse(storedJobs).length === 0) {
+      // Initialize with dummy data
+      const dummyJobs: JobWithRecruiter[] = [
+        {
+          id: "1",
+          recruiterId: userId,
+          companyName: "Tech Innovations Inc.",
+          title: "Senior Frontend Developer",
+          description:
+            "We are looking for an experienced frontend developer with expertise in React and TypeScript to join our dynamic team.",
+          skills: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
+          experience: "Mid Level",
+          location: "Remote",
+          type: "Full-time",
+          salary: "$100,000 - $130,000",
+          salaryMin: 100000,
+          salaryMax: 130000,
+          deadline: "2025-12-31",
+          posted: "2025-11-01",
+          postedDate: "2025-11-01",
+          status: "active",
+          company: "Tech Innovations Inc.",
+          responsibilities: [
+            "Develop responsive UI components",
+            "Collaborate with designers",
+            "Mentor junior developers",
+          ],
+          requirements: [
+            "5+ years experience",
+            "Strong React knowledge",
+            "TypeScript proficiency",
+          ],
+          benefits: ["Health insurance", "Remote work", "Flexible hours"],
+        },
+        {
+          id: "2",
+          recruiterId: userId,
+          companyName: "Tech Innovations Inc.",
+          title: "Backend Engineer",
+          description:
+            "Join our backend team to build scalable APIs and services for our enterprise applications.",
+          skills: ["Node.js", "Express", "MongoDB", "AWS"],
+          experience: "Senior Level",
+          location: "San Francisco, CA",
+          type: "Full-time",
+          salary: "$120,000 - $150,000",
+          salaryMin: 120000,
+          salaryMax: 150000,
+          deadline: "2025-12-15",
+          posted: "2025-10-15",
+          postedDate: "2025-10-15",
+          status: "active",
+          company: "Tech Innovations Inc.",
+          responsibilities: [
+            "Design and implement APIs",
+            "Database optimization",
+            "System architecture",
+          ],
+          requirements: [
+            "8+ years experience",
+            "Node.js expertise",
+            "Cloud experience",
+          ],
+          benefits: ["Stock options", "Gym membership", "Learning budget"],
+        },
+        {
+          id: "3",
+          recruiterId: userId,
+          companyName: "Tech Innovations Inc.",
+          title: "DevOps Specialist",
+          description:
+            "Help us improve our deployment processes and maintain our cloud infrastructure.",
+          skills: ["AWS", "Docker", "Kubernetes", "Terraform"],
+          experience: "Senior Level",
+          location: "Remote",
+          type: "Contract",
+          salary: "$80 - $120 per hour",
+          salaryMin: 80,
+          salaryMax: 120,
+          deadline: "2025-11-30",
+          posted: "2025-11-10",
+          postedDate: "2025-11-10",
+          status: "closed",
+          company: "Tech Innovations Inc.",
+          responsibilities: [
+            "Maintain CI/CD pipelines",
+            "Cloud infrastructure",
+            "Security compliance",
+          ],
+          requirements: [
+            "AWS certification",
+            "Docker experience",
+            "Infrastructure as code",
+          ],
+          benefits: ["Flexible schedule", "Remote work", "Equipment allowance"],
+        },
+      ];
+      localStorage.setItem("jobs", JSON.stringify(dummyJobs));
+      setJobs(dummyJobs.filter((job) => job.recruiterId === userId));
+    } else {
+      const allJobs = JSON.parse(storedJobs);
+      const userJobs = allJobs.filter(
+        (job: JobWithRecruiter) => job.recruiterId === userId
+      );
+      setJobs(userJobs);
+    }
   };
+
+  useEffect(() => {
+    // Load jobs from localStorage or set dummy data
+    // loadJobs();
+  }, [userId, loadJobs]); // Added loadJobs to the dependency array to satisfy eslint
 
   const handleCreateJob = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,24 +174,29 @@ const JobManagement = ({ userId }: { userId: string }) => {
       .split("-")
       .map((s) => parseInt(s.trim().replace(/\D/g, "")));
 
-    const newJob: Job = {
+    const newJob: JobWithRecruiter = {
       id: Math.random().toString(36).substr(2, 9),
-      recruiterId: userId,
-      companyName,
       title: formData.get("title") as string,
+      company: companyName,
+      location: formData.get("location") as string,
+      type: formData.get("type") as string,
+      salary: salaryRange,
+      posted: new Date().toISOString().split("T")[0], // Format as YYYY-MM-DD
       description: formData.get("description") as string,
       skills: (formData.get("skills") as string)
         .split(",")
         .map((s) => s.trim()),
+      status: "active",
+      recruiterId: userId,
+      companyName,
       experience: formData.get("experience") as string,
-      location: formData.get("location") as string,
-      type: formData.get("type") as string,
-      salary: salaryRange,
       salaryMin: min || 0,
       salaryMax: max || 0,
       deadline: formData.get("deadline") as string,
       postedDate: new Date().toISOString(),
-      status: "active",
+      responsibilities: [],
+      requirements: [],
+      benefits: [],
     };
 
     const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
@@ -75,7 +210,9 @@ const JobManagement = ({ userId }: { userId: string }) => {
 
   const deleteJob = (jobId: string) => {
     const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
-    const updatedJobs = allJobs.filter((job: Job) => job.id !== jobId);
+    const updatedJobs = allJobs.filter(
+      (job: JobWithRecruiter) => job.id !== jobId
+    );
     localStorage.setItem("jobs", JSON.stringify(updatedJobs));
     loadJobs();
     toast({ title: "Job deleted" });
@@ -83,7 +220,7 @@ const JobManagement = ({ userId }: { userId: string }) => {
 
   const toggleJobStatus = (jobId: string) => {
     const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
-    const updatedJobs = allJobs.map((job: Job) =>
+    const updatedJobs = allJobs.map((job: JobWithRecruiter) =>
       job.id === jobId
         ? { ...job, status: job.status === "active" ? "closed" : "active" }
         : job

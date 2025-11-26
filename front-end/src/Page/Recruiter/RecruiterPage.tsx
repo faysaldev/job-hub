@@ -1,30 +1,35 @@
 import { useState, useEffect } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { useAuth } from "@/contexts/AuthContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Header, { mockUser } from "@/src/components/common/Header";
+import Footer from "@/src/components/common/Footer";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/components/ui/tabs";
 import { Building2, Briefcase, Users, MessageSquare } from "lucide-react";
-import CompanyProfile from "@/components/recruiter/CompanyProfile";
-import JobManagement from "@/components/recruiter/JobManagement";
-import ApplicantsList from "@/components/recruiter/ApplicantsList";
-import Messages from "@/components/common/Messages";
+import CompanyProfile from "@/src/components/Recruiter/CompanyProfile";
+import JobManagement from "@/src/components/Recruiter/JobManagement";
+import ApplicantsList from "@/src/components/Recruiter/ApplicantsList";
+import Messages from "@/src/components/common/AppCommon/Message";
+import { useRouter } from "next/navigation";
 
 const RecruiterDashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const user = mockUser;
+  const router = useRouter();
 
   useEffect(() => {
     if (!user || user.role !== "recruiter") {
-      navigate("/auth");
+      router.push("/auth");
     }
-  }, [user, navigate]);
+  }, [user]);
 
   if (!user) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 py-12 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent">
+      <main className="flex-1 py-12 bg-amber-100">
         <div className="container">
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">Recruiter Dashboard</h1>

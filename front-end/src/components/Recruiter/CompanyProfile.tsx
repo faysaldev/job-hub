@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { CompanyProfile as ProfileType } from "@/types";
-import { toast } from "@/hooks/use-toast";
+import { Card } from "@/src/components/ui/card";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { Label } from "@/src/components/ui/label";
+import { Textarea } from "@/src/components/ui/textarea";
+import { CompanyProfile as ProfileType } from "@/src/types";
+import { toast } from "@/src/hooks/use-toast";
 import { Upload } from "lucide-react";
 
 const CompanyProfile = ({ userId }: { userId: string }) => {
@@ -24,7 +24,7 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
       localStorage.getItem("companyProfiles") || "{}"
     );
     if (profiles[userId]) {
-      setProfile(profiles[userId]);
+      //   setProfile(profiles[userId]);
     }
   }, [userId]);
 
