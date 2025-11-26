@@ -4,13 +4,7 @@ import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Message, Conversation } from "@/src/types";
 import { Send } from "lucide-react";
-
-const mockUser = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  role: "jobseeker",
-  avatar: "https://github.com/shadcn.png",
-};
+import { mockUser } from "../Header";
 
 const Messages = ({ userId }: { userId: string }) => {
   const user = mockUser;

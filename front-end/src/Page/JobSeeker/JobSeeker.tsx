@@ -1,25 +1,27 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { useAuth } from "@/contexts/AuthContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Briefcase, User, FileText, MessageSquare } from "lucide-react";
+import { useEffect } from "react";
+import Header, { mockUser } from "@/src/components/common/Header";
+import Footer from "@/src/components/common/Footer";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/components/ui/tabs";
+import { Briefcase, User, MessageSquare } from "lucide-react";
 import JobSeekerProfile from "@/src/components/JobSeeker/JobSeekerProfile";
 import AppliedJobs from "@/src/components/JobSeeker/AppliedJobs";
-import Messages from "@/components/common/Messages";
+import Messages from "@/src/components/common/AppCommon/Message";
+import { useRouter } from "next/navigation";
 
 const JobSeekerDashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const user = mockUser;
+  const router = useRouter();
 
   useEffect(() => {
     if (!user || user.role !== "jobseeker") {
-      navigate("/auth");
+      router.push("/auth");
     }
-  }, [user, navigate]);
+  }, [user]);
 
   if (!user) return null;
 

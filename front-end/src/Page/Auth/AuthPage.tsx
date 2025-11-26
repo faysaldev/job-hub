@@ -22,13 +22,13 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'jobseeker' | 'recruiter';
+  role: "jobseeker" | "recruiter";
 }
 
 // Dummy data for existing users
 const dummyUsers: User[] = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', role: 'jobseeker' },
-  { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'recruiter' },
+  { id: "1", name: "John Doe", email: "john@example.com", role: "jobseeker" },
+  { id: "2", name: "Jane Smith", email: "jane@example.com", role: "recruiter" },
 ];
 
 const AuthPage = () => {
@@ -39,10 +39,10 @@ const AuthPage = () => {
   // Check if user is already logged in on component mount
   useEffect(() => {
     // In a real app, you would check for a token in localStorage or cookies
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const user = JSON.parse(storedUser);
-      setCurrentUser(user);
+      //   setCurrentUser(user);
     }
   }, []);
 
@@ -275,17 +275,20 @@ const AuthPage = () => {
 };
 
 // Dummy login function
-const dummyLogin = async (email: string, password: string): Promise<boolean> => {
+const dummyLogin = async (
+  email: string,
+  password: string
+): Promise<boolean> => {
   // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Find user in dummy data
-  const user = dummyUsers.find(u => u.email === email);
+  const user = dummyUsers.find((u) => u.email === email);
 
   if (user) {
     // Simulate successful login
     const userData = { ...user, password: undefined }; // Don't store password
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
     return true;
   }
 
@@ -297,13 +300,13 @@ const dummySignup = async (
   email: string,
   password: string,
   name: string,
-  role: 'jobseeker' | 'recruiter'
+  role: "jobseeker" | "recruiter"
 ): Promise<boolean> => {
   // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Check if email already exists
-  const existingUser = dummyUsers.find(u => u.email === email);
+  const existingUser = dummyUsers.find((u) => u.email === email);
   if (existingUser) {
     return false;
   }
@@ -313,11 +316,11 @@ const dummySignup = async (
     id: (dummyUsers.length + 1).toString(),
     name,
     email,
-    role
+    role,
   };
 
   // Store in localStorage
-  localStorage.setItem('user', JSON.stringify(newUser));
+  localStorage.setItem("user", JSON.stringify(newUser));
   return true;
 };
 

@@ -14,7 +14,8 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 
 // Mock user data - replace with actual auth context
-const mockUser = {
+export const mockUser = {
+  id: "1",
   name: "John Doe",
   email: "john.doe@example.com",
   role: "jobseeker",
