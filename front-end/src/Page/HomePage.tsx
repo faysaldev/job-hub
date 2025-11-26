@@ -23,7 +23,7 @@ import { Card } from "@/src/components/ui/card";
 
 function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-primary/5 to-accent/5">
+    <div className="min-h-screen flex flex-col bg-purple-200">
       {/* Background pattern */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl opacity-70 animate-pulse"></div>
@@ -33,7 +33,7 @@ function HomePage() {
 
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 container mx-auto">
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-accent/5 to-background/30 py-20 md:py-32">
           <div className="absolute inset-0">

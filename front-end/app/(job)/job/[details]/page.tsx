@@ -71,7 +71,8 @@ async function getJobById(id: number): Promise<Job | null> {
       type: "Full-time",
       salary: "$90k - $120k",
       posted: "1 week ago",
-      description: "Join our creative team and help shape the future of our products.",
+      description:
+        "Join our creative team and help shape the future of our products.",
       skills: ["Figma", "UI/UX", "Prototyping"],
       status: "active",
       responsibilities: [
@@ -98,7 +99,7 @@ async function getJobById(id: number): Promise<Job | null> {
     },
   ];
 
-  return mockJobs.find(job => job.id === id) || null;
+  return mockJobs.find((job) => job.id === id) || null;
 }
 
 const JobDetail = async ({ params }: JobDetailsPageProps) => {
@@ -118,7 +119,7 @@ const JobDetail = async ({ params }: JobDetailsPageProps) => {
       <Header />
 
       <main className="flex-1">
-        <div className="container py-12">
+        <div className="container py-12 mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
