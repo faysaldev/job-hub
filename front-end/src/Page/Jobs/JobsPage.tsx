@@ -133,15 +133,15 @@ const Jobs = () => {
             status: job.status || ("active" as const),
           }));
 
-        setJobs(validJobs);
+        // setJobs(validJobs);
       } catch (error) {
         console.error("Error parsing jobs from localStorage:", error);
         // Fallback to mock data if parsing fails
-        setJobs(mockJobs);
+        // setJobs(mockJobs);
       }
     } else {
       // Use mock data if no stored jobs
-      setJobs(mockJobs);
+      // setJobs(mockJobs);
     }
   }, []);
 
@@ -149,9 +149,9 @@ const Jobs = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 mx-auto container">
         {/* Search Section */}
-        <section className="bg-gradient-to-br from-primary/5 via-accent/5 to-transparent border-b border-border py-12">
+        <section className=" border-b border-border py-12">
           <div className="container">
             <h1 className="text-3xl md:text-4xl font-bold mb-6">
               Find Your Dream Job

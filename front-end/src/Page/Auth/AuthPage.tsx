@@ -119,7 +119,7 @@ const AuthPage = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center py-12 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent">
+      <main className="flex-1 flex items-center justify-center py-12 bg-amber-100">
         <div className="container max-w-md">
           <div className="text-center mb-8">
             <div className="bg-gradient-to-br from-primary to-accent rounded-2xl p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">

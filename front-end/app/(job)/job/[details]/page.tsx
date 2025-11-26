@@ -16,11 +16,6 @@ import {
 import { Job } from "@/src/types";
 
 // Define the type for the page props
-interface JobDetailsPageProps {
-  params: {
-    details: string;
-  };
-}
 
 // Function to fetch job data by ID
 async function getJobById(id: number): Promise<Job | null> {
@@ -102,8 +97,9 @@ async function getJobById(id: number): Promise<Job | null> {
   return mockJobs.find((job) => job.id === id) || null;
 }
 
-const JobDetail = async ({ params }: JobDetailsPageProps) => {
-  const { details } = params;
+const JobDetail = async () => {
+  // const { details } = "";
+  const details = "2";
   const jobId = parseInt(details);
 
   // Fetch the job data based on the ID from the URL
