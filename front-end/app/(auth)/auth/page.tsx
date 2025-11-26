@@ -1,4 +1,4 @@
-import HomePage from "@/src/Page/HomePage";
+import AuthPage from "@/src/Page/Auth/AuthPage";
 export default function Home() {
-  return <HomePage />;
+  return <AuthPage />;
 }
