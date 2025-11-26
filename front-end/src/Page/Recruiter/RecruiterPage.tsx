@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useEffect } from "react";
 import Header, { mockUser } from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
 import {
@@ -29,7 +31,7 @@ const RecruiterDashboard = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 py-12 bg-amber-100">
+      <main className="flex-1 py-12 container mx-auto">
         <div className="container">
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">Recruiter Dashboard</h1>
