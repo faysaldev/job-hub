@@ -7,8 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Briefcase, User, FileText, MessageSquare } from "lucide-react";
-import JobSeekerProfile from "@/components/jobseeker/JobSeekerProfile";
-import AppliedJobs from "@/components/jobseeker/AppliedJobs";
+import JobSeekerProfile from "@/src/components/JobSeeker/JobSeekerProfile";
+import AppliedJobs from "@/src/components/JobSeeker/AppliedJobs";
 import Messages from "@/components/common/Messages";
 
 const JobSeekerDashboard = () => {
