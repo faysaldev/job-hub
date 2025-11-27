@@ -8,6 +8,7 @@ import { Job } from "@/src/types";
 import SearchSection from "@/src/components/jobs/SearchSection";
 import JobFilters from "@/src/components/jobs/JobFilters";
 import JobCard from "@/src/components/jobs/JobCard";
+import Pagination from "@/src/components/jobs/Pagination";
 
 // Define mock jobs with the required status field
 const mockJobs: Job[] = [
@@ -90,6 +91,8 @@ const mockJobs: Job[] = [
 const Jobs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [locationTerm, setLocationTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const jobsPerPage = 5; // Number of jobs to show per page
 
   // Filter states
   const [jobTypes, setJobTypes] = useState([
@@ -156,26 +159,49 @@ const Jobs = () => {
   }, []);
 
   // Filter jobs based on search terms and filters
-  const filteredJobs = mockJobs.filter(job => {
+  const filteredJobs = mockJobs.filter((job) => {
     // Apply search term filter
-    const matchesSearch = !searchTerm ||
+    const matchesSearch =
+      !searchTerm ||
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+      job.skills.some((skill) =>
+        skill.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
     // Apply location filter
-    const matchesLocation = !locationTerm ||
+    const matchesLocation =
+      !locationTerm ||
       job.location.toLowerCase().includes(locationTerm.toLowerCase()) ||
-      (locationTerm.toLowerCase().includes('remote') && job.location.toLowerCase().includes('remote'));
+      (locationTerm.toLowerCase().includes("remote") &&
+        job.location.toLowerCase().includes("remote"));
 
     // Apply job type filter
-    const selectedJobTypes = jobTypes.filter(type => type.checked).map(type => type.id);
-    const matchesJobType = selectedJobTypes.length === 0 ||
+    const selectedJobTypes = jobTypes
+      .filter((type) => type.checked)
+      .map((type) => type.id);
+    const matchesJobType =
+      selectedJobTypes.length === 0 ||
       selectedJobTypes.length === jobTypes.length ||
-      selectedJobTypes.some(type => job.type.toLowerCase().includes(type));
+      selectedJobTypes.some((type) => job.type.toLowerCase().includes(type));
 
     return matchesSearch && matchesLocation && matchesJobType;
   });
+
+  // Calculate pagination
+  const indexOfLastJob = currentPage * jobsPerPage;
+  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
+  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
+  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    // Scroll to top of job listings when changing pages
+    const jobListingsElement = document.querySelector(".job-listings");
+    if (jobListingsElement) {
+      jobListingsElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -190,30 +216,30 @@ const Jobs = () => {
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
 
   const handleJobTypeChange = (id: string) => {
-    setJobTypes(prev =>
-      prev.map(type =>
+    setJobTypes((prev) =>
+      prev.map((type) =>
         type.id === id ? { ...type, checked: !type.checked } : type
       )
     );
   };
 
   const handleExperienceChange = (id: string) => {
-    setExperienceLevels(prev =>
-      prev.map(level =>
+    setExperienceLevels((prev) =>
+      prev.map((level) =>
         level.id === id ? { ...level, checked: !level.checked } : level
       )
     );
   };
 
   const handleSalaryChange = (id: string) => {
-    setSalaryRanges(prev =>
-      prev.map(range =>
+    setSalaryRanges((prev) =>
+      prev.map((range) =>
         range.id === id ? { ...range, checked: !range.checked } : range
       )
     );
@@ -223,7 +249,7 @@ const Jobs = () => {
     <div className="min-h-screen flex flex-col bg-[#E3E3E3]">
       <Header />
 
-      <main className="flex-1 mx-auto container">
+      <main className="flex-1 mx-auto w-full container">
         <SearchSection
           searchTerm={searchTerm}
           locationTerm={locationTerm}
@@ -234,24 +260,35 @@ const Jobs = () => {
         />
 
         {/* Results Section */}
-        <section className="py-12">
-          <div className="container">
-            <div className="flex flex-col md:flex-row gap-8">
+        <section className="py-8 md:py-12">
+          <div className="container px-4">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
               {/* Filters Sidebar */}
-              <JobFilters
-                jobTypes={jobTypes}
-                experienceLevels={experienceLevels}
-                salaryRanges={salaryRanges}
-                onJobTypeChange={handleJobTypeChange}
-                onExperienceChange={handleExperienceChange}
-                onSalaryChange={handleSalaryChange}
-              />
+              <div className="md:w-64 flex-shrink-0">
+                <JobFilters
+                  jobTypes={jobTypes}
+                  experienceLevels={experienceLevels}
+                  salaryRanges={salaryRanges}
+                  onJobTypeChange={handleJobTypeChange}
+                  onExperienceChange={handleExperienceChange}
+                  onSalaryChange={handleSalaryChange}
+                />
+              </div>
 
               {/* Job Listings */}
-              <div className="flex-1">
+              <div className="flex-1 job-listings">
                 <div className="mb-6">
                   <p className="text-[#234C6A]">
                     Showing{" "}
+                    <span className="font-semibold text-[#456882]">
+                      {Math.min(
+                        (currentPage - 1) * jobsPerPage + 1,
+                        filteredJobs.length
+                      )}{" "}
+                      to{" "}
+                      {Math.min(currentPage * jobsPerPage, filteredJobs.length)}
+                    </span>{" "}
+                    of{" "}
                     <span className="font-semibold text-[#456882]">
                       {filteredJobs.length}
                     </span>{" "}
@@ -260,10 +297,21 @@ const Jobs = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {filteredJobs.map((job) => (
+                  {currentJobs.map((job) => (
                     <JobCard key={job.id} job={job} />
                   ))}
                 </div>
+
+                {totalPages > 1 && (
+                  <div className="mt-8">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalJobs={filteredJobs.length}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
