@@ -51,13 +51,13 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={`sticky top-0 z-50 w-full border-b border-[#456882]/30 bg-[#E3E3E3]/95 backdrop-blur supports-[backdrop-filter]:bg-[#E3E3E3]/60 ${scrolled ? 'shadow-md' : ''}`}>
       <div className="container flex h-16 items-center justify-between mx-auto">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-          <div className="bg-gradient-to-br from-primary to-accent rounded-lg p-1.5">
-            <Briefcase className="h-5 w-5 text-primary-foreground" />
+          <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-lg p-1.5">
+            <Briefcase className="h-5 w-5 text-white" />
           </div>
-          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#234C6A] to-[#456882] bg-clip-text text-transparent">
             JobHubs
           </span>
         </Link>
@@ -66,19 +66,19 @@ const Header = () => {
         <nav className="hidden md:flex items-center gap-6">
           <Link
             href="/jobs"
-            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            className="text-sm font-medium text-[#234C6A] hover:text-[#456882] transition-colors"
           >
             Find Jobs
           </Link>
           <Link
             href="/jobs"
-            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            className="text-sm font-medium text-[#234C6A] hover:text-[#456882] transition-colors"
           >
             For Employers
           </Link>
           <Link
             href="/jobs"
-            className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+            className="text-sm font-medium text-[#234C6A] hover:text-[#456882] transition-colors"
           >
             How It Works
           </Link>
@@ -88,7 +88,7 @@ const Header = () => {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
+                <Button variant="ghost" className="flex items-center gap-2 text-[#234C6A]">
                   <User className="h-4 w-4" />
                   {user.name}
                 </Button>
@@ -105,10 +105,10 @@ const Header = () => {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" asChild className="text-[#234C6A]">
                 <Link href="/auth">Sign In</Link>
               </Button>
-              <Button asChild className="bg-accent hover:bg-accent/90">
+              <Button asChild className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white">
                 <Link href="/auth">Get Started</Link>
               </Button>
             </>
@@ -117,7 +117,7 @@ const Header = () => {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden"
+          className="md:hidden text-[#234C6A]"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? (
@@ -130,25 +130,25 @@ const Header = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-background">
+        <div className="md:hidden border-t border-[#456882]/30 bg-[#E3E3E3]">
           <nav className="container py-4 flex flex-col gap-4">
             <Link
               href="/jobs"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-[#234C6A] hover:text-[#456882] transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               Find Jobs
             </Link>
             <Link
               href="/jobs"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-[#234C6A] hover:text-[#456882] transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               For Employers
             </Link>
             <Link
               href="/jobs"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-[#234C6A] hover:text-[#456882] transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               How It Works
@@ -158,6 +158,7 @@ const Header = () => {
                 <>
                   <Button
                     variant="outline"
+                    className="border-[#234C6A] text-[#234C6A]"
                     onClick={() => {
                       router.push(getDashboardPath());
                       setMobileMenuOpen(false);
@@ -167,6 +168,7 @@ const Header = () => {
                   </Button>
                   <Button
                     variant="outline"
+                    className="border-[#234C6A] text-[#234C6A]"
                     onClick={() => {
                       handleLogout();
                       setMobileMenuOpen(false);
@@ -178,12 +180,12 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  <Button variant="outline" asChild>
+                  <Button variant="outline" asChild className="border-[#234C6A] text-[#234C6A]">
                     <Link href="/auth" onClick={() => setMobileMenuOpen(false)}>
                       Sign In
                     </Link>
                   </Button>
-                  <Button asChild className="bg-accent hover:bg-accent/90">
+                  <Button asChild className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white">
                     <Link href="/auth" onClick={() => setMobileMenuOpen(false)}>
                       Get Started
                     </Link>
