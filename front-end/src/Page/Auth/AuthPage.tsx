@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
 import { Card } from "@/src/components/ui/card";
@@ -105,7 +106,9 @@ const AuthPage = () => {
     setLoading(false);
 
     if (success) {
-      toast({ title: "Account created!", description: "Welcome to JobHubs." });
+      toast({ title: "Account created!", description: "Please verify your email." });
+      // Redirect to email verification page with email as parameter
+      router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
     } else {
       toast({
         title: "Error",
@@ -152,6 +155,15 @@ const AuthPage = () => {
 
               <TabsContent value="signin" className="space-y-4">
                 <SignInForm loading={loading} handleSignIn={handleSignIn} />
+
+                <div className="text-center mt-4">
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-[#234C6A] hover:text-[#456882] text-sm"
+                  >
+                    Forgot your password?
+                  </Link>
+                </div>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
