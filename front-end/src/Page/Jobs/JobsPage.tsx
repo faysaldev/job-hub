@@ -4,21 +4,10 @@
 import { useState, useEffect } from "react";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Card } from "@/src/components/ui/card";
-import { Badge } from "@/src/components/ui/badge";
-import {
-  Search,
-  MapPin,
-  Briefcase,
-  Clock,
-  DollarSign,
-  Filter,
-} from "lucide-react";
-import Link from "next/link";
-
 import { Job } from "@/src/types";
+import SearchSection from "@/src/components/jobs/SearchSection";
+import JobFilters from "@/src/components/jobs/JobFilters";
+import JobCard from "@/src/components/jobs/JobCard";
 
 // Define mock jobs with the required status field
 const mockJobs: Job[] = [
@@ -100,6 +89,28 @@ const mockJobs: Job[] = [
 
 const Jobs = () => {
   const [jobs, setJobs] = useState<Job[]>(mockJobs);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [locationTerm, setLocationTerm] = useState("");
+
+  // Filter states
+  const [jobTypes, setJobTypes] = useState([
+    { id: "full-time", label: "Full-time", checked: true },
+    { id: "part-time", label: "Part-time", checked: true },
+    { id: "freelance", label: "Freelance", checked: true },
+  ]);
+
+  const [experienceLevels, setExperienceLevels] = useState([
+    { id: "entry", label: "Entry Level", checked: true },
+    { id: "mid", label: "Mid Level", checked: true },
+    { id: "senior", label: "Senior Level", checked: true },
+  ]);
+
+  const [salaryRanges, setSalaryRanges] = useState([
+    { id: "0-50", label: "$0 - $50k", checked: true },
+    { id: "50-100", label: "$50k - $100k", checked: true },
+    { id: "100-150", label: "$100k - $150k", checked: true },
+    { id: "150+", label: "$150k+", checked: true },
+  ]);
 
   useEffect(() => {
     const storedJobs = localStorage.getItem("jobs");
@@ -145,118 +156,114 @@ const Jobs = () => {
     }
   }, []);
 
+  // Filter jobs based on search terms and filters
+  useEffect(() => {
+    let filtered = [...mockJobs];
+
+    // Apply search term filter
+    if (searchTerm) {
+      filtered = filtered.filter(job =>
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Apply location filter
+    if (locationTerm) {
+      filtered = filtered.filter(job =>
+        job.location.toLowerCase().includes(locationTerm.toLowerCase()) ||
+        locationTerm.toLowerCase().includes('remote') && job.location.toLowerCase().includes('remote')
+      );
+    }
+
+    // Apply job type filter
+    const selectedJobTypes = jobTypes.filter(type => type.checked).map(type => type.id);
+    if (selectedJobTypes.length > 0 && selectedJobTypes.length < jobTypes.length) {
+      filtered = filtered.filter(job =>
+        selectedJobTypes.some(type => job.type.toLowerCase().includes(type))
+      );
+    }
+
+    setJobs(filtered);
+  }, [searchTerm, locationTerm, jobTypes]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocationTerm(e.target.value);
+  };
+
+  const handleSearch = () => {
+    // This will trigger the useEffect to filter jobs
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleJobTypeChange = (id: string) => {
+    setJobTypes(prev =>
+      prev.map(type =>
+        type.id === id ? { ...type, checked: !type.checked } : type
+      )
+    );
+  };
+
+  const handleExperienceChange = (id: string) => {
+    setExperienceLevels(prev =>
+      prev.map(level =>
+        level.id === id ? { ...level, checked: !level.checked } : level
+      )
+    );
+  };
+
+  const handleSalaryChange = (id: string) => {
+    setSalaryRanges(prev =>
+      prev.map(range =>
+        range.id === id ? { ...range, checked: !range.checked } : range
+      )
+    );
+  };
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#E3E3E3]">
       <Header />
 
       <main className="flex-1 mx-auto container">
-        {/* Search Section */}
-        <section className=" border-b border-border py-12">
-          <div className="container">
-            <h1 className="text-3xl md:text-4xl font-bold mb-6">
-              Find Your Dream Job
-            </h1>
-            <div className="flex flex-col md:flex-row gap-4 max-w-4xl">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  placeholder="Job title, keywords, or company"
-                  className="pl-10 h-12 bg-background"
-                />
-              </div>
-              <div className="flex-1 relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  placeholder="City, state, or remote"
-                  className="pl-10 h-12 bg-background"
-                />
-              </div>
-              <Button className="h-12 px-8 bg-accent hover:bg-accent/90">
-                Search Jobs
-              </Button>
-            </div>
-          </div>
-        </section>
+        <SearchSection
+          searchTerm={searchTerm}
+          locationTerm={locationTerm}
+          onSearchChange={handleSearchChange}
+          onLocationChange={handleLocationChange}
+          onSearch={handleSearch}
+          onSearchKeyDown={handleSearchKeyDown}
+        />
 
         {/* Results Section */}
         <section className="py-12">
           <div className="container">
             <div className="flex flex-col md:flex-row gap-8">
               {/* Filters Sidebar */}
-              <aside className="w-full md:w-64 space-y-6">
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Filter className="h-4 w-4" />
-                    Filters
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Job Type</h4>
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          Full-time
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          Part-time
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          Freelance
-                        </label>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">
-                        Experience Level
-                      </h4>
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          Entry Level
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          Mid Level
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          Senior Level
-                        </label>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Salary Range</h4>
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          $0 - $50k
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          $50k - $100k
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          $100k - $150k
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" className="rounded" />
-                          $150k+
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </aside>
+              <JobFilters
+                jobTypes={jobTypes}
+                experienceLevels={experienceLevels}
+                salaryRanges={salaryRanges}
+                onJobTypeChange={handleJobTypeChange}
+                onExperienceChange={handleExperienceChange}
+                onSalaryChange={handleSalaryChange}
+              />
 
               {/* Job Listings */}
               <div className="flex-1">
                 <div className="mb-6">
-                  <p className="text-muted-foreground">
+                  <p className="text-[#234C6A]">
                     Showing{" "}
-                    <span className="font-semibold text-foreground">
+                    <span className="font-semibold text-[#456882]">
                       {jobs.length}
                     </span>{" "}
                     jobs
@@ -265,57 +272,7 @@ const Jobs = () => {
 
                 <div className="space-y-4">
                   {jobs.map((job) => (
-                    <Link key={job.id} href={`/job/${job.id}`}>
-                      <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:border-primary/50">
-                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                          <div className="space-y-3 flex-1">
-                            <div>
-                              <h3 className="text-xl font-semibold mb-1 hover:text-primary transition-colors">
-                                {job.title}
-                              </h3>
-                              <p className="text-muted-foreground">
-                                {job.company}
-                              </p>
-                            </div>
-
-                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <MapPin className="h-4 w-4" />
-                                {job.location}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Briefcase className="h-4 w-4" />
-                                {job.type}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <DollarSign className="h-4 w-4" />
-                                {job.salary}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                {job.posted}
-                              </span>
-                            </div>
-
-                            <p className="text-muted-foreground line-clamp-2">
-                              {job.description}
-                            </p>
-
-                            <div className="flex flex-wrap gap-2">
-                              {job.skills.map((skill) => (
-                                <Badge key={skill} variant="secondary">
-                                  {skill}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-
-                          <Button variant="outline" className="md:ml-4">
-                            View Details
-                          </Button>
-                        </div>
-                      </Card>
-                    </Link>
+                    <JobCard key={job.id} job={job} />
                   ))}
                 </div>
               </div>
