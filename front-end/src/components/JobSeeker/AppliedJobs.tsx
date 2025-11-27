@@ -1,44 +1,76 @@
-import { useState, useEffect } from "react";
 import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
-import { Application } from "@/src/types";
 import { Building2, Calendar } from "lucide-react";
 
-const AppliedJobs = ({ userId }: { userId: string }) => {
-  const [applications, setApplications] = useState<Application[]>([]);
+// Define the type for an application
+interface Application {
+  id: string;
+  jobTitle: string;
+  companyName: string;
+  appliedDate: string;
+  coverLetter: string;
+  status: "pending" | "reviewed" | "shortlisted" | "rejected";
+}
 
-  useEffect(() => {
-    const allApplications = JSON.parse(
-      localStorage.getItem("applications") || "[]"
-    );
-    const userApplications = allApplications.filter(
-      (app: Application) => app.jobSeekerId === userId
-    );
-    // setApplications(userApplications);
-  }, [userId]);
+const AppliedJobs = ({ userId }: { userId: string }) => {
+  // Dummy data for applied jobs
+  const dummyApplications: Application[] = [
+    {
+      id: "1",
+      jobTitle: "Senior Frontend Developer",
+      companyName: "TechCorp Inc.",
+      appliedDate: "2024-11-20",
+      coverLetter: "I am excited to apply for this position as I have extensive experience with React and TypeScript, which aligns perfectly with your requirements.",
+      status: "shortlisted"
+    },
+    {
+      id: "2",
+      jobTitle: "Product Designer",
+      companyName: "DesignStudio",
+      appliedDate: "2024-11-18",
+      coverLetter: "With 5 years of product design experience and a strong portfolio, I believe I can contribute significantly to your design team.",
+      status: "reviewed"
+    },
+    {
+      id: "3",
+      jobTitle: "Backend Engineer",
+      companyName: "DataFlow",
+      appliedDate: "2024-11-15",
+      coverLetter: "My expertise in Node.js and cloud infrastructure makes me a great fit for this backend position. Excited about your innovative projects.",
+      status: "pending"
+    },
+    {
+      id: "4",
+      jobTitle: "DevOps Engineer",
+      companyName: "CloudSystems",
+      appliedDate: "2024-11-10",
+      coverLetter: "I have hands-on experience with Docker, Kubernetes, and CI/CD pipelines that align with your tech stack requirements.",
+      status: "rejected"
+    }
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-500/10 text-yellow-500";
+        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/30";
       case "reviewed":
-        return "bg-blue-500/10 text-blue-500";
+        return "bg-blue-500/10 text-blue-500 border-blue-500/30";
       case "shortlisted":
-        return "bg-green-500/10 text-green-500";
+        return "bg-green-500/10 text-green-500 border-green-500/30";
       case "rejected":
-        return "bg-red-500/10 text-red-500";
+        return "bg-red-500/10 text-red-500 border-red-500/30";
       default:
         return "bg-muted";
     }
   };
 
-  if (applications.length === 0) {
+  if (dummyApplications.length === 0) {
     return (
-      <Card className="p-12 text-center">
-        <p className="text-muted-foreground text-lg">
-          You haven{`'`}t applied to any jobs yet.
+      <Card className="p-12 text-center border-[#456882]/30">
+        <p className="text-[#234C6A]/70 text-lg">
+          You haven&apos;t applied to any jobs yet.
         </p>
-        <p className="text-muted-foreground mt-2">
+        <p className="text-[#234C6A]/50 mt-2">
           Start browsing jobs and apply to get started!
         </p>
       </Card>
@@ -47,12 +79,12 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
 
   return (
     <div className="space-y-4">
-      {applications.map((app) => (
-        <Card key={app.id} className="p-6 hover:shadow-lg transition-shadow">
+      {dummyApplications.map((app) => (
+        <Card key={app.id} className="p-6 hover:shadow-xl transition-all duration-300 border-[#456882]/30">
           <div className="flex justify-between items-start">
             <div className="flex-1">
-              <h3 className="text-xl font-semibold mb-2">{app.jobTitle}</h3>
-              <div className="flex items-center gap-4 text-muted-foreground mb-4">
+              <h3 className="text-xl font-semibold mb-2 text-[#234C6A]">{app.jobTitle}</h3>
+              <div className="flex flex-wrap items-center gap-4 text-[#234C6A]/70 mb-4">
                 <div className="flex items-center gap-1">
                   <Building2 className="h-4 w-4" />
                   <span>{app.companyName}</span>
@@ -65,12 +97,12 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
                 </div>
               </div>
               {app.coverLetter && (
-                <p className="text-sm text-muted-foreground line-clamp-2">
+                <p className="text-sm text-[#234C6A]/80 line-clamp-2">
                   {app.coverLetter}
                 </p>
               )}
             </div>
-            <Badge className={getStatusColor(app.status)}>
+            <Badge className={`${getStatusColor(app.status)} border`}>
               {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
             </Badge>
           </div>

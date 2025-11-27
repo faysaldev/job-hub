@@ -1,404 +1,209 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
-import { Textarea } from "@/src/components/ui/textarea";
-import { Plus, Trash2, Upload } from "lucide-react";
-import {
-  JobSeekerProfile as ProfileType,
-  Experience,
-  Education,
-} from "@/src/types";
-import { toast } from "@/src/hooks/use-toast";
+import { Badge } from "@/src/components/ui/badge";
+import { User, Mail, MapPin, Briefcase, GraduationCap, Calendar, ExternalLink } from "lucide-react";
 
-const JobSeekerProfile = ({ userId }: { userId: string }) => {
-  const [profile, setProfile] = useState<ProfileType>({
-    userId,
-    bio: "",
-    skills: [],
-    experience: [],
-    education: [],
-    phone: "",
-    location: "",
+interface JobSeekerProfileProps {
+  userId: string;
+}
+
+const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
+  const [editing, setEditing] = useState(false);
+  
+  // Dummy profile data
+  const [profile, setProfile] = useState({
+    name: "Alex Johnson",
+    email: "alex.johnson@example.com",
+    location: "San Francisco, CA",
+    title: "Senior Frontend Developer",
+    bio: "Passionate frontend developer with 6+ years of experience building scalable web applications. Expert in React, TypeScript, and modern CSS frameworks. Love solving complex problems with elegant solutions.",
+    skills: ["React", "TypeScript", "Next.js", "Tailwind CSS", "GraphQL", "Jest", "Node.js", "UI/UX Design"],
+    experience: [
+      {
+        id: "exp1",
+        company: "TechCorp Inc.",
+        position: "Senior Frontend Developer",
+        duration: "2021 - Present",
+        description: "Leading frontend development for enterprise applications. Mentoring junior developers and implementing design systems."
+      },
+      {
+        id: "exp2",
+        company: "StartUpXYZ",
+        position: "Frontend Developer",
+        duration: "2019 - 2021",
+        description: "Built responsive web applications using React and TypeScript. Collaborated with designers to implement pixel-perfect UIs."
+      }
+    ],
+    education: [
+      {
+        id: "edu1",
+        school: "University of California",
+        degree: "B.S. Computer Science",
+        year: "2015 - 2019"
+      }
+    ],
+    resumeUrl: "#",
+    portfolioUrl: "https://alexjohnson.dev"
   });
-  const [newSkill, setNewSkill] = useState("");
 
-  useEffect(() => {
-    const profiles = JSON.parse(
-      localStorage.getItem("jobSeekerProfiles") || "{}"
-    );
-    if (profiles[userId]) {
-      //   setProfile(profiles[userId]);
-    }
-  }, [userId]);
-
-  const saveProfile = () => {
-    const profiles = JSON.parse(
-      localStorage.getItem("jobSeekerProfiles") || "{}"
-    );
-    profiles[userId] = profile;
-    localStorage.setItem("jobSeekerProfiles", JSON.stringify(profiles));
-    toast({ title: "Profile saved successfully!" });
+  const handleInputChange = (field: string, value: string) => {
+    setProfile({ ...profile, [field]: value });
   };
 
-  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfile({ ...profile, resume: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const addSkill = () => {
-    if (newSkill.trim()) {
-      setProfile({ ...profile, skills: [...profile.skills, newSkill.trim()] });
-      setNewSkill("");
-    }
-  };
-
-  const removeSkill = (index: number) => {
-    setProfile({
-      ...profile,
-      skills: profile.skills.filter((_, i) => i !== index),
-    });
-  };
-
-  const addExperience = () => {
-    const newExp: Experience = {
-      id: Math.random().toString(36).substr(2, 9),
-      title: "",
-      company: "",
-      startDate: "",
-      endDate: "",
-      current: false,
-      description: "",
-    };
-    setProfile({ ...profile, experience: [...profile.experience, newExp] });
-  };
-
-  const updateExperience = (
-    id: string,
-    field: keyof Experience,
-    value: any
-  ) => {
-    setProfile({
-      ...profile,
-      experience: profile.experience.map((exp) =>
-        exp.id === id ? { ...exp, [field]: value } : exp
-      ),
-    });
-  };
-
-  const removeExperience = (id: string) => {
-    setProfile({
-      ...profile,
-      experience: profile.experience.filter((exp) => exp.id !== id),
-    });
-  };
-
-  const addEducation = () => {
-    const newEdu: Education = {
-      id: Math.random().toString(36).substr(2, 9),
-      degree: "",
-      institution: "",
-      startDate: "",
-      endDate: "",
-      description: "",
-    };
-    setProfile({ ...profile, education: [...profile.education, newEdu] });
-  };
-
-  const updateEducation = (id: string, field: keyof Education, value: any) => {
-    setProfile({
-      ...profile,
-      education: profile.education.map((edu) =>
-        edu.id === id ? { ...edu, [field]: value } : edu
-      ),
-    });
-  };
-
-  const removeEducation = (id: string) => {
-    setProfile({
-      ...profile,
-      education: profile.education.filter((edu) => edu.id !== id),
-    });
+  const toggleEdit = () => {
+    setEditing(!editing);
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-6">Personal Information</h2>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
-              value={profile.phone || ""}
-              onChange={(e) =>
-                setProfile({ ...profile, phone: e.target.value })
-              }
-              placeholder="+1 (555) 000-0000"
-            />
-          </div>
-          <div>
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              value={profile.location || ""}
-              onChange={(e) =>
-                setProfile({ ...profile, location: e.target.value })
-              }
-              placeholder="City, Country"
-            />
-          </div>
-          <div>
-            <Label htmlFor="bio">Bio</Label>
-            <Textarea
-              id="bio"
-              value={profile.bio}
-              onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-              placeholder="Tell us about yourself..."
-              rows={4}
-            />
-          </div>
-          <div>
-            <Label htmlFor="resume">Resume</Label>
-            <div className="flex items-center gap-4">
-              <Input
-                id="resume"
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={handleResumeUpload}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                onClick={() => document.getElementById("resume")?.click()}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Resume
-              </Button>
-              {profile.resume && (
-                <span className="text-sm text-muted-foreground">
-                  Resume uploaded ✓
-                </span>
-              )}
+    <div className="space-y-8">
+      <div className="flex justify-between items-start">
+        <h2 className="text-2xl font-bold text-[#234C6A]">Your Profile</h2>
+        <Button 
+          variant="outline" 
+          onClick={toggleEdit}
+          className="border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/10"
+        >
+          {editing ? "Cancel" : "Edit Profile"}
+        </Button>
+      </div>
+
+      {/* Profile Header */}
+      <Card className="p-6 border-[#456882]/30 bg-white">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex-shrink-0">
+            <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-2xl p-1 w-24 h-24 flex items-center justify-center">
+              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-20 h-20 flex items-center justify-center">
+                <User className="h-10 w-10 text-[#234C6A]" />
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-6">Skills</h2>
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              value={newSkill}
-              onChange={(e) => setNewSkill(e.target.value)}
-              placeholder="Add a skill"
-              onKeyPress={(e) => e.key === "Enter" && addSkill()}
-            />
-            <Button onClick={addSkill}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {profile.skills.map((skill, index) => (
-              <div
-                key={index}
-                className="bg-primary/10 px-3 py-1 rounded-full flex items-center gap-2"
-              >
-                <span>{skill}</span>
-                <button
-                  onClick={() => removeSkill(index)}
-                  className="text-destructive"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </button>
+          
+          <div className="flex-1">
+            {editing ? (
+              <Input
+                value={profile.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className="text-2xl font-bold mb-2 border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
+              />
+            ) : (
+              <h3 className="text-2xl font-bold text-[#234C6A]">{profile.name}</h3>
+            )}
+            
+            <div className="flex flex-wrap items-center gap-4 text-[#234C6A] mt-2">
+              <div className="flex items-center gap-1">
+                <Mail className="h-4 w-4" />
+                <span>{profile.email}</span>
               </div>
-            ))}
+              
+              <div className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                <span>{profile.location}</span>
+              </div>
+            </div>
+            
+            {editing ? (
+              <Input
+                value={profile.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                className="mt-4 text-lg italic border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
+              />
+            ) : (
+              <p className="mt-4 text-lg italic text-[#234C6A]/80">{profile.title}</p>
+            )}
           </div>
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Experience</h2>
-          <Button onClick={addExperience} variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Experience
-          </Button>
+      {/* Bio Section */}
+      <Card className="p-6 border-[#456882]/30 bg-white">
+        <h3 className="text-xl font-semibold mb-4 text-[#234C6A]">About Me</h3>
+        
+        {editing ? (
+          <textarea
+            value={profile.bio}
+            onChange={(e) => handleInputChange('bio', e.target.value)}
+            className="w-full min-h-[150px] p-3 border border-[#456882]/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#234C6A] focus:border-[#234C6A]"
+          />
+        ) : (
+          <p className="text-[#234C6A]/90">{profile.bio}</p>
+        )}
+      </Card>
+
+      {/* Skills Section */}
+      <Card className="p-6 border-[#456882]/30 bg-white">
+        <h3 className="text-xl font-semibold mb-4 text-[#234C6A]">Skills & Expertise</h3>
+        
+        <div className="flex flex-wrap gap-2">
+          {profile.skills.map((skill, index) => (
+            <Badge 
+              key={index} 
+              variant="secondary"
+              className="px-4 py-2 text-base bg-[#234C6A]/10 text-[#234C6A] hover:bg-[#234C6A]/20"
+            >
+              {skill}
+            </Badge>
+          ))}
         </div>
+      </Card>
+
+      {/* Experience Section */}
+      <Card className="p-6 border-[#456882]/30 bg-white">
+        <h3 className="text-xl font-semibold mb-4 text-[#234C6A] flex items-center gap-2">
+          <Briefcase className="h-5 w-5" />
+          Work Experience
+        </h3>
+        
         <div className="space-y-6">
           {profile.experience.map((exp) => (
-            <div key={exp.id} className="border rounded-lg p-4 space-y-4">
+            <div key={exp.id} className="border-l-2 border-[#456882]/30 pl-4 py-1">
               <div className="flex justify-between">
-                <h3 className="font-semibold">Experience Entry</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeExperience(exp.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <h4 className="font-semibold text-[#234C6A]">{exp.position}</h4>
+                <span className="text-[#234C6A]/70">{exp.duration}</span>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Job Title</Label>
-                  <Input
-                    value={exp.title}
-                    onChange={(e) =>
-                      updateExperience(exp.id, "title", e.target.value)
-                    }
-                    placeholder="Software Engineer"
-                  />
-                </div>
-                <div>
-                  <Label>Company</Label>
-                  <Input
-                    value={exp.company}
-                    onChange={(e) =>
-                      updateExperience(exp.id, "company", e.target.value)
-                    }
-                    placeholder="Tech Corp"
-                  />
-                </div>
-                <div>
-                  <Label>Start Date</Label>
-                  <Input
-                    type="month"
-                    value={exp.startDate}
-                    onChange={(e) =>
-                      updateExperience(exp.id, "startDate", e.target.value)
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>End Date</Label>
-                  <Input
-                    type="month"
-                    value={exp.endDate}
-                    onChange={(e) =>
-                      updateExperience(exp.id, "endDate", e.target.value)
-                    }
-                    disabled={exp.current}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={exp.current}
-                  onChange={(e) =>
-                    updateExperience(exp.id, "current", e.target.checked)
-                  }
-                  id={`current-${exp.id}`}
-                />
-                <Label htmlFor={`current-${exp.id}`}>
-                  I currently work here
-                </Label>
-              </div>
-              <div>
-                <Label>Description</Label>
-                <Textarea
-                  value={exp.description}
-                  onChange={(e) =>
-                    updateExperience(exp.id, "description", e.target.value)
-                  }
-                  placeholder="Describe your responsibilities..."
-                />
-              </div>
+              <p className="text-[#234C6A]/80">{exp.company}</p>
+              <p className="mt-2 text-[#234C6A]/90">{exp.description}</p>
             </div>
           ))}
         </div>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Education</h2>
-          <Button onClick={addEducation} variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Education
+      {/* Education Section */}
+      <Card className="p-6 border-[#456882]/30 bg-white">
+        <h3 className="text-xl font-semibold mb-4 text-[#234C6A] flex items-center gap-2">
+          <GraduationCap className="h-5 w-5" />
+          Education
+        </h3>
+        
+        <div className="space-y-4">
+          {profile.education.map((edu) => (
+            <div key={edu.id} className="border-l-2 border-[#456882]/30 pl-4">
+              <h4 className="font-semibold text-[#234C6A]">{edu.degree}</h4>
+              <p className="text-[#234C6A]/80">{edu.school}</p>
+              <p className="text-[#234C6A]/70">{edu.year}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Resume & Portfolio */}
+      <Card className="p-6 border-[#456882]/30 bg-white">
+        <h3 className="text-xl font-semibold mb-4 text-[#234C6A]">Documents & Links</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Button variant="outline" className="flex items-center justify-start gap-2 border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/10">
+            <ExternalLink className="h-4 w-4" />
+            View Resume (PDF)
+          </Button>
+          
+          <Button variant="outline" className="flex items-center justify-start gap-2 border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/10">
+            <ExternalLink className="h-4 w-4" />
+            Visit Portfolio
           </Button>
         </div>
-        <div className="space-y-6">
-          {profile.education.map((edu) => (
-            <div key={edu.id} className="border rounded-lg p-4 space-y-4">
-              <div className="flex justify-between">
-                <h3 className="font-semibold">Education Entry</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeEducation(edu.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Degree</Label>
-                  <Input
-                    value={edu.degree}
-                    onChange={(e) =>
-                      updateEducation(edu.id, "degree", e.target.value)
-                    }
-                    placeholder="Bachelor of Science"
-                  />
-                </div>
-                <div>
-                  <Label>Institution</Label>
-                  <Input
-                    value={edu.institution}
-                    onChange={(e) =>
-                      updateEducation(edu.id, "institution", e.target.value)
-                    }
-                    placeholder="University Name"
-                  />
-                </div>
-                <div>
-                  <Label>Start Date</Label>
-                  <Input
-                    type="month"
-                    value={edu.startDate}
-                    onChange={(e) =>
-                      updateEducation(edu.id, "startDate", e.target.value)
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>End Date</Label>
-                  <Input
-                    type="month"
-                    value={edu.endDate}
-                    onChange={(e) =>
-                      updateEducation(edu.id, "endDate", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Description</Label>
-                <Textarea
-                  value={edu.description}
-                  onChange={(e) =>
-                    updateEducation(edu.id, "description", e.target.value)
-                  }
-                  placeholder="Major, achievements, etc."
-                />
-              </div>
-            </div>
-          ))}
-        </div>
       </Card>
-
-      <Button onClick={saveProfile} className="w-full">
-        Save Profile
-      </Button>
     </div>
   );
 };
