@@ -1,19 +1,11 @@
 import { notFound } from "next/navigation";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
-import { Button } from "@/src/components/ui/button";
-import { Card } from "@/src/components/ui/card";
-import { Badge } from "@/src/components/ui/badge";
-import {
-  MapPin,
-  Briefcase,
-  Clock,
-  DollarSign,
-  Building2,
-  Users,
-  Star,
-} from "lucide-react";
 import { Job } from "@/src/types";
+import JobDetailsHeader from "@/src/components/jobs/JobDetailsHeader";
+import JobDetailsSection from "@/src/components/jobs/JobDetailsSection";
+import JobDetailsSidebar from "@/src/components/jobs/JobDetailsSidebar";
+import JobDetailsList from "@/src/components/jobs/JobDetailsList";
 
 // Define the type for the page props
 
@@ -111,7 +103,7 @@ const JobDetail = async () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#E3E3E3]">
       <Header />
 
       <main className="flex-1">
@@ -119,137 +111,39 @@ const JobDetail = async () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Job Header */}
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                  {job.title}
-                </h1>
-                <div className="flex flex-wrap gap-4 text-muted-foreground mb-6">
-                  <span className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
-                    {job.company}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
-                    {job.location}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Briefcase className="h-5 w-5" />
-                    {job.type}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
-                    {job.posted}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {job.skills.map((skill) => (
-                    <Badge key={skill} variant="secondary" className="text-sm">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+              <JobDetailsHeader job={job} />
 
               {/* Job Description */}
-              <Card className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">Job Description</h2>
-                <p className="text-muted-foreground leading-relaxed">
+              <JobDetailsSection title="Job Description">
+                <p className="text-[#234C6A] leading-relaxed">
                   {job.description}
                 </p>
-              </Card>
+              </JobDetailsSection>
 
               {/* Responsibilities */}
               {job.responsibilities && job.responsibilities.length > 0 && (
-                <Card className="p-6">
-                  <h2 className="text-2xl font-semibold mb-4">
-                    Responsibilities
-                  </h2>
-                  <ul className="space-y-3">
-                    {job.responsibilities.map((item, index) => (
-                      <li key={index} className="flex gap-3">
-                        <span className="text-accent font-bold">•</span>
-                        <span className="text-muted-foreground">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
+                <JobDetailsSection title="Responsibilities">
+                  <JobDetailsList items={job.responsibilities} />
+                </JobDetailsSection>
               )}
 
               {/* Requirements */}
               {job.requirements && job.requirements.length > 0 && (
-                <Card className="p-6">
-                  <h2 className="text-2xl font-semibold mb-4">Requirements</h2>
-                  <ul className="space-y-3">
-                    {job.requirements.map((item, index) => (
-                      <li key={index} className="flex gap-3">
-                        <span className="text-accent font-bold">•</span>
-                        <span className="text-muted-foreground">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
+                <JobDetailsSection title="Requirements">
+                  <JobDetailsList items={job.requirements} />
+                </JobDetailsSection>
               )}
 
               {/* Benefits */}
               {job.benefits && job.benefits.length > 0 && (
-                <Card className="p-6">
-                  <h2 className="text-2xl font-semibold mb-4">Benefits</h2>
-                  <ul className="space-y-3">
-                    {job.benefits.map((item, index) => (
-                      <li key={index} className="flex gap-3">
-                        <span className="text-accent font-bold">•</span>
-                        <span className="text-muted-foreground">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </Card>
+                <JobDetailsSection title="Benefits">
+                  <JobDetailsList items={job.benefits} />
+                </JobDetailsSection>
               )}
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Apply Card */}
-              <Card className="p-6 sticky top-20">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 text-2xl font-bold text-primary">
-                    <DollarSign className="h-6 w-6" />
-                    {job.salary}
-                  </div>
-                  <Button
-                    className="w-full bg-accent hover:bg-accent/90"
-                    size="lg"
-                  >
-                    Apply Now
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    Save Job
-                  </Button>
-                </div>
-              </Card>
-
-              {/* Company Info */}
-              <Card className="p-6">
-                <h3 className="font-semibold mb-4">About {job.company}</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>500-1000 employees</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Building2 className="h-4 w-4" />
-                    <span>Technology & Software</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Star className="h-4 w-4 fill-current" />
-                    <span>4.5/5 company rating</span>
-                  </div>
-                </div>
-                <Button variant="link" className="mt-4 px-0">
-                  View company profile
-                </Button>
-              </Card>
-            </div>
+            <JobDetailsSidebar job={job} />
           </div>
         </div>
       </main>
