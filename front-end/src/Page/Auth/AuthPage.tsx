@@ -125,7 +125,9 @@ const AuthPage = () => {
             <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-2xl p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <Briefcase className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold mb-2 text-[#234C6A]">Welcome to JobHubs</h1>
+            <h1 className="text-3xl font-bold mb-2 text-[#234C6A]">
+              Welcome to JobHubs
+            </h1>
             <p className="text-[#234C6A]">
               Sign in to your account or create a new one
             </p>
