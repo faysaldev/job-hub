@@ -88,7 +88,6 @@ const mockJobs: Job[] = [
 ];
 
 const Jobs = () => {
-  const [jobs, setJobs] = useState<Job[]>(mockJobs);
   const [searchTerm, setSearchTerm] = useState("");
   const [locationTerm, setLocationTerm] = useState("");
 
@@ -118,7 +117,7 @@ const Jobs = () => {
       try {
         const allJobs: any[] = JSON.parse(storedJobs);
         // Type check and ensure all jobs have required properties
-        const validJobs: Job[] = allJobs
+        const processedJobs: Job[] = allJobs
           .filter(
             (job) =>
               typeof job.id === "number" &&
@@ -144,7 +143,7 @@ const Jobs = () => {
             status: job.status || ("active" as const),
           }));
 
-        // setJobs(validJobs);
+        // setJobs(processedJobs);
       } catch (error) {
         console.error("Error parsing jobs from localStorage:", error);
         // Fallback to mock data if parsing fails
@@ -157,36 +156,26 @@ const Jobs = () => {
   }, []);
 
   // Filter jobs based on search terms and filters
-  useEffect(() => {
-    let filtered = [...mockJobs];
-
+  const filteredJobs = mockJobs.filter(job => {
     // Apply search term filter
-    if (searchTerm) {
-      filtered = filtered.filter(job =>
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
+    const matchesSearch = !searchTerm ||
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
 
     // Apply location filter
-    if (locationTerm) {
-      filtered = filtered.filter(job =>
-        job.location.toLowerCase().includes(locationTerm.toLowerCase()) ||
-        locationTerm.toLowerCase().includes('remote') && job.location.toLowerCase().includes('remote')
-      );
-    }
+    const matchesLocation = !locationTerm ||
+      job.location.toLowerCase().includes(locationTerm.toLowerCase()) ||
+      (locationTerm.toLowerCase().includes('remote') && job.location.toLowerCase().includes('remote'));
 
     // Apply job type filter
     const selectedJobTypes = jobTypes.filter(type => type.checked).map(type => type.id);
-    if (selectedJobTypes.length > 0 && selectedJobTypes.length < jobTypes.length) {
-      filtered = filtered.filter(job =>
-        selectedJobTypes.some(type => job.type.toLowerCase().includes(type))
-      );
-    }
+    const matchesJobType = selectedJobTypes.length === 0 ||
+      selectedJobTypes.length === jobTypes.length ||
+      selectedJobTypes.some(type => job.type.toLowerCase().includes(type));
 
-    setJobs(filtered);
-  }, [searchTerm, locationTerm, jobTypes]);
+    return matchesSearch && matchesLocation && matchesJobType;
+  });
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -264,14 +253,14 @@ const Jobs = () => {
                   <p className="text-[#234C6A]">
                     Showing{" "}
                     <span className="font-semibold text-[#456882]">
-                      {jobs.length}
+                      {filteredJobs.length}
                     </span>{" "}
                     jobs
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  {jobs.map((job) => (
+                  {filteredJobs.map((job) => (
                     <JobCard key={job.id} job={job} />
                   ))}
                 </div>
