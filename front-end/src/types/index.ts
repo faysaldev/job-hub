@@ -66,6 +66,8 @@ export interface Application {
   status: "pending" | "reviewed" | "shortlisted" | "rejected";
   appliedDate: string;
   coverLetter?: string;
+  resumeUrl?: string;
+  profileUrl?: string;
 }
 
 export interface Message {
