@@ -86,23 +86,28 @@ const Header = () => {
 
         <div className="hidden md:flex items-center gap-3">
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 text-[#234C6A]">
-                  <User className="h-4 w-4" />
-                  {user.name}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => getDashboardPath()}>
-                  Dashboard
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              <Button variant="ghost" asChild className="text-[#234C6A]">
+                <Link href="/job/saved">Saved Jobs</Link>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 text-[#234C6A]">
+                    <User className="h-4 w-4" />
+                    {user.name}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => getDashboardPath()}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Button variant="ghost" asChild className="text-[#234C6A]">
@@ -156,6 +161,16 @@ const Header = () => {
             <div className="flex flex-col gap-2 pt-2">
               {user ? (
                 <>
+                  <Button
+                    variant="outline"
+                    className="border-[#234C6A] text-[#234C6A]"
+                    onClick={() => {
+                      router.push("/job/saved");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Saved Jobs
+                  </Button>
                   <Button
                     variant="outline"
                     className="border-[#234C6A] text-[#234C6A]"
