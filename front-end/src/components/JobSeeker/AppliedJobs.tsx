@@ -1,51 +1,55 @@
 import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Building2, Calendar } from "lucide-react";
+import { Application } from "@/src/types";
 
-// Define the type for an application
-interface Application {
-  id: string;
-  jobTitle: string;
-  companyName: string;
-  appliedDate: string;
-  coverLetter: string;
-  status: "pending" | "reviewed" | "shortlisted" | "rejected";
+// Local type alias to avoid conflicts
+interface AppliedJob extends Omit<Application, 'jobSeekerId' | 'jobSeekerName' | 'jobId' | 'resumeUrl' | 'profileUrl'> {
+  jobId: string;
 }
 
 const AppliedJobs = ({ userId }: { userId: string }) => {
   // Dummy data for applied jobs
-  const dummyApplications: Application[] = [
+  const dummyApplications: AppliedJob[] = [
     {
       id: "1",
+      jobId: "1",
       jobTitle: "Senior Frontend Developer",
       companyName: "TechCorp Inc.",
       appliedDate: "2024-11-20",
       coverLetter: "I am excited to apply for this position as I have extensive experience with React and TypeScript, which aligns perfectly with your requirements.",
-      status: "shortlisted"
+      status: "shortlisted",
+      paymentAmount: 25
     },
     {
       id: "2",
+      jobId: "2",
       jobTitle: "Product Designer",
       companyName: "DesignStudio",
       appliedDate: "2024-11-18",
       coverLetter: "With 5 years of product design experience and a strong portfolio, I believe I can contribute significantly to your design team.",
-      status: "reviewed"
+      status: "reviewed",
+      paymentAmount: 10
     },
     {
       id: "3",
+      jobId: "3",
       jobTitle: "Backend Engineer",
       companyName: "DataFlow",
       appliedDate: "2024-11-15",
       coverLetter: "My expertise in Node.js and cloud infrastructure makes me a great fit for this backend position. Excited about your innovative projects.",
-      status: "pending"
+      status: "pending",
+      paymentAmount: 0
     },
     {
       id: "4",
+      jobId: "4",
       jobTitle: "DevOps Engineer",
       companyName: "CloudSystems",
       appliedDate: "2024-11-10",
       coverLetter: "I have hands-on experience with Docker, Kubernetes, and CI/CD pipelines that align with your tech stack requirements.",
-      status: "rejected"
+      status: "rejected",
+      paymentAmount: 50
     }
   ];
 
@@ -95,6 +99,11 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
                     Applied {new Date(app.appliedDate).toLocaleDateString()}
                   </span>
                 </div>
+                {app.paymentAmount !== undefined && app.paymentAmount > 0 && (
+                  <div className="flex items-center gap-1 text-[#234C6A]">
+                    <span>${app.paymentAmount.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
               {app.coverLetter && (
                 <p className="text-sm text-[#234C6A]/80 line-clamp-2">

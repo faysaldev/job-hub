@@ -11,11 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/src/components/ui/dialog";
-import { Upload, X } from "lucide-react";
+import { Upload, X, DollarSign } from "lucide-react";
 
 interface JobApplicationDialogProps {
   jobTitle: string;
-  onApply: (resume: File | null) => void;
+  onApply: (resume: File | null, paymentAmount: number) => void;
 }
 
 const JobApplicationDialog = ({
@@ -23,6 +23,7 @@ const JobApplicationDialog = ({
   onApply,
 }: JobApplicationDialogProps) => {
   const [resume, setResume] = useState<File | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,8 +48,9 @@ const JobApplicationDialog = ({
   };
 
   const handleSubmit = () => {
-    onApply(resume);
+    onApply(resume, paymentAmount);
     setResume(null);
+    setPaymentAmount(0);
     setIsDialogOpen(false);
   };
 
@@ -116,6 +118,28 @@ const JobApplicationDialog = ({
                 </div>
               </Card>
             )}
+
+            <div className="space-y-2">
+              <Label htmlFor="payment" className="text-[#234C6A]">
+                Payment Amount (Optional)
+              </Label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#234C6A]/50" />
+                <Input
+                  id="payment"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={paymentAmount || ""}
+                  onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
+                  className="pl-10 border-[#234C6A]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
+                />
+              </div>
+              <p className="text-xs text-[#234C6A]/70">
+                Pay more to have your application appear higher in the recruiter's list
+              </p>
+            </div>
           </div>
         </div>
         <div className="flex justify-end gap-3">

@@ -33,6 +33,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
         status: "shortlisted",
         resumeUrl: "#",
         profileUrl: "#",
+        paymentAmount: 25,
       },
       {
         id: "2",
@@ -47,6 +48,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
         status: "reviewed",
         resumeUrl: "#",
         profileUrl: "#",
+        paymentAmount: 50,
       },
       {
         id: "3",
@@ -61,6 +63,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
         status: "pending",
         resumeUrl: "#",
         profileUrl: "#",
+        paymentAmount: 0,
       },
       {
         id: "4",
@@ -75,6 +78,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
         status: "rejected",
         resumeUrl: "#",
         profileUrl: "#",
+        paymentAmount: 75,
       },
       {
         id: "5",
@@ -89,10 +93,14 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
         status: "shortlisted",
         resumeUrl: "#",
         profileUrl: "#",
+        paymentAmount: 10,
       },
     ];
 
-    setApplications(dummyApplications);
+    // Sort applications by payment amount (highest first)
+    const sortedApplications = [...dummyApplications].sort((a, b) => (b.paymentAmount || 0) - (a.paymentAmount || 0));
+
+    setApplications(sortedApplications);
   }, []);
 
   const updateApplicationStatus = (
@@ -172,6 +180,11 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                     {application.status.charAt(0).toUpperCase() +
                       application.status.slice(1)}
                   </Badge>
+                  {application.paymentAmount && application.paymentAmount > 0 && (
+                    <Badge className="bg-[#456882] text-white border-[#456882]">
+                      Paid: ${application.paymentAmount.toFixed(2)}
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-[#234C6A] font-medium">
                   {application.jobTitle}
@@ -229,6 +242,11 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                     Applied:{" "}
                     {new Date(application.appliedDate).toLocaleDateString()}
                   </p>
+                  {application.paymentAmount !== undefined && (
+                    <p className="text-sm text-[#234C6A]/70">
+                      Payment: ${application.paymentAmount.toFixed(2)}
+                    </p>
+                  )}
                 </div>
               </div>
 

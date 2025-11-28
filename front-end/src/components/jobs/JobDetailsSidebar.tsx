@@ -51,12 +51,14 @@ const JobDetailsSidebar = ({ job }: JobDetailsSidebarProps) => {
     }
   };
 
-  const handleApply = (resume: File | null) => {
+  const handleApply = (resume: File | null, paymentAmount: number = 0) => {
     if (resume) {
       // In a real application, you would submit the application to the backend
       toast({
         title: "Application Submitted!",
-        description: `Your application for ${job.title} has been submitted.`,
+        description: paymentAmount > 0
+          ? `Your application for ${job.title} with payment of $${paymentAmount.toFixed(2)} has been submitted.`
+          : `Your application for ${job.title} has been submitted.`,
       });
     } else {
       toast({

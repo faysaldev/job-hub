@@ -68,6 +68,7 @@ export interface Application {
   coverLetter?: string;
   resumeUrl?: string;
   profileUrl?: string;
+  paymentAmount?: number;
 }
 
 export interface Message {
