@@ -62,7 +62,7 @@ const singleFileUpload = async (req: ProtectedRequest, res: Response) => {
 const multipleFileUpload = async (req: ProtectedRequest, res: Response) => {
   try {
     //  taking the path of the file
-    console.log(req.files);
+    // console.log(req.files);
     res.status(httpStatus.CREATED).json(
       response({
         message: "User Details",
