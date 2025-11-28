@@ -58,7 +58,9 @@ const Footer = () => {
 
           {/* Job Seekers */}
           <div>
-            <h3 className="font-semibold mb-4 text-[#234C6A]">For Job Seekers</h3>
+            <h3 className="font-semibold mb-4 text-[#234C6A]">
+              For Job Seekers
+            </h3>
             <ul className="space-y-2 text-sm text-[#234C6A]">
               <li>
                 <Link
@@ -148,7 +150,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/jobs"
+                  href="/contact"
                   className="hover:text-[#456882] transition-colors"
                 >
                   Contact
@@ -156,7 +158,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/jobs"
+                  href="/privacy-policy"
                   className="hover:text-[#456882] transition-colors"
                 >
                   Privacy Policy
@@ -164,7 +166,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/jobs"
+                  href="/terms-of-service"
                   className="hover:text-[#456882] transition-colors"
                 >
                   Terms of Service
