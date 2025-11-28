@@ -9,6 +9,7 @@ import StatsSection from "@/src/components/sections/StatsSection";
 import HowItWorksSection from "@/src/components/sections/HowItWorksSection";
 import TestimonialsSection from "@/src/components/sections/TestimonialsSection";
 import CTASection from "@/src/components/sections/CTASection";
+import FaqSection from "@/src/components/sections/FaqSection";
 
 function HomePage() {
   return (
@@ -43,6 +44,7 @@ function HomePage() {
         </section>
 
         <TestimonialsSection />
+        <FaqSection />
         <CTASection />
       </main>
 
