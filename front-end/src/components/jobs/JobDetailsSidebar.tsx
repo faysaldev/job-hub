@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import {
@@ -113,12 +114,14 @@ const JobDetailsSidebar = ({ job }: JobDetailsSidebarProps) => {
             <span>4.5/5 company rating</span>
           </div>
         </div>
-        <Button
-          variant="link"
-          className="mt-4 px-0 text-[#234C6A] hover:text-[#456882]"
-        >
-          View company profile
-        </Button>
+        <Link href={`/company/${job.company.toLowerCase().replace(/[^a-zA-Z0-9]/g, '')}`}>
+          <Button
+            variant="link"
+            className="mt-4 px-0 text-[#234C6A] hover:text-[#456882]"
+          >
+            View company profile
+          </Button>
+        </Link>
       </Card>
     </div>
   );

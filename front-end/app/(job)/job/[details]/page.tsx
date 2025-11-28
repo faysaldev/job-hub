@@ -19,7 +19,7 @@ async function getJobById(id: number): Promise<Job | null> {
     {
       id: 1,
       title: "Senior Frontend Developer",
-      company: "TechCorp Inc.",
+      company: "TechCorp",
       location: "Remote",
       type: "Full-time",
       salary: "$100k - $150k",
@@ -89,9 +89,9 @@ async function getJobById(id: number): Promise<Job | null> {
   return mockJobs.find((job) => job.id === id) || null;
 }
 
-const JobDetail = async () => {
-  // const { details } = "";
-  const details = "2";
+const JobDetail = async ({ params }: { params: Promise<{ details: string }> }) => {
+  const resolvedParams = await params;
+  const { details } = resolvedParams;
   const jobId = parseInt(details);
 
   // Fetch the job data based on the ID from the URL
