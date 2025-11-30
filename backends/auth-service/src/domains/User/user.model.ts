@@ -9,7 +9,7 @@ export interface IAMUser extends Document {
   email: string;
   password: string;
   image: string;
-  role: string;
+  role: "seeker" | "recruiter" | "admin";
   phoneNumber: string;
   oneTimeCode: number | null;
   isEmailVerified: boolean;
@@ -58,7 +58,7 @@ const userSchema = new Schema<IAMUser>(
     role: {
       type: String,
       enum: roles,
-      default: "user",
+      default: "seeker",
     },
     phoneNumber: {
       type: String,
