@@ -1,9 +1,9 @@
 import { Router } from "express";
-import userRoutes from "../domains/User/user.route";
+import jobRoutes from "../domains/Jobs/job.route";
 
 // Initialize the router
 const router = Router();
 
-router.use("/users", userRoutes);
+router.use("/job", jobRoutes);
 
 export default router;
