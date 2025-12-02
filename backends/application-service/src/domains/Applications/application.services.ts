@@ -1,4 +1,4 @@
-import User from "./user.model";
+import User from "./application.model";
 
 const getAllUsers = async () => {
   return await User.find();
@@ -10,9 +10,4 @@ const userDetails = async (userId: string) => {
   );
 };
 
-const userService = {
-  getAllUsers,
-  userDetails,
-};
-
-export default userService;
+export default { getAllUsers, userDetails };

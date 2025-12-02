@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import userService from "./user.services";
+import userService from "./application.services";
 import { handleError } from "../../lib/errorsHandle";
 import httpStatus from "http-status";
 import { response } from "../../lib/response";
@@ -61,8 +61,6 @@ const singleFileUpload = async (req: ProtectedRequest, res: Response) => {
 
 const multipleFileUpload = async (req: ProtectedRequest, res: Response) => {
   try {
-    //  taking the path of the file
-    console.log(req.files);
     res.status(httpStatus.CREATED).json(
       response({
         message: "User Details",
@@ -77,11 +75,4 @@ const multipleFileUpload = async (req: ProtectedRequest, res: Response) => {
   }
 };
 
-const userController = {
-  getAllUsers,
-  userDetails,
-  singleFileUpload,
-  multipleFileUpload,
-};
-
-export default userController;
+export default { getAllUsers, userDetails };
