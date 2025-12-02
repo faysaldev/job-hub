@@ -1,14 +1,22 @@
 import express, { Request, Response } from "express";
+import cors from "cors";
 import routes from "./routes/index";
 import logRequestResponse from "./middlewares/logger.middleware";
 import compression from "compression";
-import cors from "cors";
 
 const app = express();
 
-app.use(express.json());
+// Enable CORS for all routes
+app.use(
+  cors({
+    origin: "*", // Allow all origins - adjust this for production
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    credentials: true, // Allow credentials to be sent with requests
+  })
+);
 
-app.use(cors({ origin: "*", optionsSuccessStatus: 200 }));
+app.use(express.json());
 
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
@@ -22,6 +30,6 @@ app.use(logRequestResponse);
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript with Node and Express!");
 });
-app.use("/api", routes); // This mounts all the routes under the /api prefix (e.g., /api/user)fgh
+app.use("/api", routes); // This mounts all the routes under the /api prefix (e.g., /api/user)
 
 export default app;

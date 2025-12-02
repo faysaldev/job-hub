@@ -127,7 +127,7 @@ const AuthPage = () => {
     if (success) {
       console.log("Account Create");
       // Redirect to email verification page with email as parameter
-      router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+      // router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
     } else {
       console.log("Error creating account");
     }
@@ -213,35 +213,6 @@ const dummyLogin = async (
   }
 
   return false;
-};
-
-// Dummy signup function
-const dummySignup = async (
-  email: string,
-  password: string,
-  name: string,
-  role: "jobseeker" | "recruiter"
-): Promise<boolean> => {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Check if email already exists
-  const existingUser = dummyUsers.find((u) => u.email === email);
-  if (existingUser) {
-    return false;
-  }
-
-  // Add new user to dummy data
-  const newUser: User = {
-    id: (dummyUsers.length + 1).toString(),
-    name,
-    email,
-    role,
-  };
-
-  // Store in localStorage
-  localStorage.setItem("user", JSON.stringify(newUser));
-  return true;
 };
 
 export default AuthPage;
