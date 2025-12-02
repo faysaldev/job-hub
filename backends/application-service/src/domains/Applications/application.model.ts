@@ -23,7 +23,7 @@ const applicationSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["applied", "under review", "interview", "rejected", "hired"],
+      enum: ["applied", "under_review", "interview", "rejected", "hired"],
       default: "applied",
     },
     paid_amount: {
