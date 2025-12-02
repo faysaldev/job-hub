@@ -71,8 +71,9 @@ const getJobById = async (req: Request, res: Response) => {
 const createJob = async (req: ProtectedRequest, res: Response) => {
   try {
     const jobData = req.body;
-    jobData.createdBy = req.user?._id; // Associate the job with the authenticated user
+    jobData.author = req.user?._id; // Associate the job with the authenticated user
 
+    console.log(jobData, "Jobs Data");
     const job = await jobService.createJob(jobData);
 
     res.status(httpStatus.CREATED).json(

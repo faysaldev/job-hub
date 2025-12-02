@@ -39,13 +39,13 @@ const getJobsByExperience = async (experienceLevel: string) => {
 
 // Search jobs by title, description, or requirements
 const searchJobs = async (searchTerm: string) => {
-  const searchRegex = new RegExp(searchTerm, 'i');
+  const searchRegex = new RegExp(searchTerm, "i");
   return await Job.find({
     $or: [
       { job_title: searchRegex },
       { description: searchRegex },
-      { requirements: { $in: [searchRegex] } }
-    ]
+      { requirements: { $in: [searchRegex] } },
+    ],
   });
 };
 

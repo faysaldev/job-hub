@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 // Define the interface for the Job document
 export interface IJob extends Document {
   _id: Types.ObjectId;
+  author: Types.ObjectId;
   job_title: string;
   job_type: "full-time" | "part-time" | "contract" | "internship" | "freelance";
   location: string | "remote";
@@ -18,6 +19,7 @@ export interface IJob extends Document {
 // Create the Mongoose schema for the job model
 const jobSchema = new Schema<IJob>(
   {
+    author: { type: Schema.Types.ObjectId, ref: "User", required: true },
     job_title: { type: String, required: true },
     job_type: {
       type: String,
