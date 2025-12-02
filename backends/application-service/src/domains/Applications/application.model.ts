@@ -1,12 +1,34 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { roles } from "../../config/roles";
 
 const applicationSchema = new Schema(
   {
-    name: {
+    cover_letter: {
       type: String,
       trim: true,
-      minlength: 3,
+      minlength: 30,
+    },
+    resume_url: {
+      type: String,
+      required: true,
+    },
+    applicant: {
+      type: Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    job_id: {
+      type: Types.ObjectId,
+      ref: "Job",
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["applied", "under review", "interview", "rejected", "hired"],
+      default: "applied",
+    },
+    paid_amount: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }

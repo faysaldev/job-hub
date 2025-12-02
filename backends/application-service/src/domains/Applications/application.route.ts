@@ -5,8 +5,8 @@ import userFileUploadMiddleware from "../../middlewares/fileUpload.middleware";
 
 const router = Router();
 
-const USER_PICTURES = "./public/uploads/users";
+const USER_PICTURES = "../../../public/uploads/users";
 
-router.get("/self/in", authMiddleware, userController.userDetails);
+router.get("/", authMiddleware, userController.userDetails);
 
 export default router;
