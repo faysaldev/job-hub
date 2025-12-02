@@ -1,14 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-// Define the interface for the SavedJob document
-export interface ISavedJob extends Document {
-  _id: Types.ObjectId;
-  userId: Types.ObjectId; // The user who saved the job
-  jobId: Types.ObjectId; // The ID of the job that was saved
-}
-
 // Create the Mongoose schema for the saved job model
-const savedJobSchema = new Schema<ISavedJob>(
+const savedJobSchema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -25,6 +18,6 @@ const savedJobSchema = new Schema<ISavedJob>(
 );
 
 // Create the model based on the schema
-const SavedJob = mongoose.model<ISavedJob>("SavedJob", savedJobSchema);
+const SavedJob = mongoose.model("SavedJob", savedJobSchema);
 
 export default SavedJob;

@@ -1,8 +1,6 @@
 import SavedJob from "./savedjob.model";
-import { ISavedJob } from "./savedjob.model";
 import Job from "../Jobs/job.model";
 import redis from "../../config/redis";
-import crypto from "crypto";
 
 // Save a job for a user
 const saveJob = async (userId: string, jobId: string) => {
@@ -45,8 +43,8 @@ const getUserSavedJobs = async (userId: string) => {
 
   const savedJobs = await SavedJob.find({ userId })
     .populate({
-      path: 'jobId',
-      model: 'Job'
+      path: "jobId",
+      model: "Job",
     }) // Populate the actual job data
     .sort({ createdAt: -1 }); // Sort by most recently saved
 
