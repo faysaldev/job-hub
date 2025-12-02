@@ -15,6 +15,10 @@ import {
 import { Briefcase } from "lucide-react";
 import SignInForm from "@/src/components/auth/SignInForm";
 import SignUpForm from "@/src/components/auth/SignUpForm";
+import {
+  useLoginMutation,
+  useRegisterMutation,
+} from "@/src/redux/features/auth/authApi";
 
 // Define dummy user type
 interface User {
@@ -34,6 +38,8 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
+  const [signIn, { isLoading: LoadingSignIn }] = useLoginMutation();
+  const [signUp, { isLoading: LoadingSignUp }] = useRegisterMutation();
 
   // Check if user is already logged in on component mount
   useEffect(() => {
@@ -115,7 +121,7 @@ const AuthPage = () => {
     console.log("Sign Up Data:", signUpData);
 
     // Dummy signup implementation
-    const success = await dummySignup(email, password, name, role);
+    const success = await signUp({ name, email, phone, password, role });
     setLoading(false);
 
     if (success) {
