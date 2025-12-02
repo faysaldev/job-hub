@@ -11,7 +11,9 @@ const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
   return (
     <form onSubmit={handleSignIn} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-[#234C6A]">Email</Label>
+        <Label htmlFor="email" className="text-[#234C6A]">
+          Email
+        </Label>
         <Input
           id="email"
           name="email"
@@ -22,7 +24,9 @@ const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-[#234C6A]">Password</Label>
+        <Label htmlFor="password" className="text-[#234C6A]">
+          Password
+        </Label>
         <Input
           id="password"
           name="password"

@@ -13,10 +13,8 @@ import {
   TabsTrigger,
 } from "@/src/components/ui/tabs";
 import { Briefcase } from "lucide-react";
-import { toast } from "@/src/hooks/use-toast";
 import SignInForm from "@/src/components/auth/SignInForm";
 import SignUpForm from "@/src/components/auth/SignUpForm";
-import SocialAuth from "@/src/components/auth/SocialAuth";
 
 // Define dummy user type
 interface User {
@@ -74,21 +72,22 @@ const AuthPage = () => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    // Create sign in data object and log it
+    const signInData = {
+      email,
+      password,
+    };
+
+    console.log("Sign In Data:", signInData);
+
     // Dummy login implementation
     const success = await dummyLogin(email, password);
     setLoading(false);
 
     if (success) {
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
-      });
+      console.log("Login successful");
     } else {
-      toast({
-        title: "Error",
-        description: "Invalid email or password.",
-        variant: "destructive",
-      });
+      console.log("Cant login");
     }
   };
 
@@ -98,23 +97,33 @@ const AuthPage = () => {
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name") as string;
     const email = formData.get("signup-email") as string;
+    const phone = formData.get("phone") as string;
     const password = formData.get("signup-password") as string;
     const role = formData.get("user-type") as "jobseeker" | "recruiter";
+    const terms = formData.get("terms") as string;
+
+    // Create signup data object and log it
+    const signUpData = {
+      name,
+      email,
+      phone,
+      password,
+      role,
+      terms: !!terms, // Convert to boolean
+    };
+
+    console.log("Sign Up Data:", signUpData);
 
     // Dummy signup implementation
     const success = await dummySignup(email, password, name, role);
     setLoading(false);
 
     if (success) {
-      toast({ title: "Account created!", description: "Please verify your email." });
+      console.log("Account Create");
       // Redirect to email verification page with email as parameter
       router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
     } else {
-      toast({
-        title: "Error",
-        description: "Email already exists.",
-        variant: "destructive",
-      });
+      console.log("Error creating account");
     }
   };
 
@@ -170,8 +179,6 @@ const AuthPage = () => {
                 <SignUpForm loading={loading} handleSignUp={handleSignUp} />
               </TabsContent>
             </Tabs>
-
-            <SocialAuth />
           </Card>
         </div>
       </main>

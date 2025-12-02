@@ -1,6 +1,7 @@
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
+import { Checkbox } from "@/src/components/ui/checkbox";
 
 interface SignUpFormProps {
   loading: boolean;
@@ -11,7 +12,9 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
   return (
     <form onSubmit={handleSignUp} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-[#234C6A]">Full Name</Label>
+        <Label htmlFor="name" className="text-[#234C6A]">
+          Full Name
+        </Label>
         <Input
           id="name"
           name="name"
@@ -21,7 +24,9 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signup-email" className="text-[#234C6A]">Email</Label>
+        <Label htmlFor="signup-email" className="text-[#234C6A]">
+          Email
+        </Label>
         <Input
           id="signup-email"
           name="signup-email"
@@ -32,7 +37,22 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signup-password" className="text-[#234C6A]">Password</Label>
+        <Label htmlFor="phone" className="text-[#234C6A]">
+          Phone Number
+        </Label>
+        <Input
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="+1 (555) 123-4567"
+          required
+          className="border-[#234C6A]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="signup-password" className="text-[#234C6A]">
+          Password
+        </Label>
         <Input
           id="signup-password"
           name="signup-password"
@@ -43,7 +63,9 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="user-type" className="text-[#234C6A]">I am a</Label>
+        <Label htmlFor="user-type" className="text-[#234C6A]">
+          I am a
+        </Label>
         <select
           id="user-type"
           name="user-type"
@@ -53,6 +75,12 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           <option value="recruiter">Recruiter / HR</option>
         </select>
       </div>
+      <div className="flex items-start space-x-2">
+        <Checkbox id="terms" name="terms" required className="mt-1" />
+        <Label htmlFor="terms" className="text-[#234C6A] text-sm">
+          I agree with the Terms and Conditions
+        </Label>
+      </div>
       <Button
         type="submit"
         className="w-full bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
@@ -60,10 +88,6 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
       >
         {loading ? "Creating account..." : "Create Account"}
       </Button>
-      <p className="text-xs text-center text-[#234C6A]">
-        By signing up, you agree to our Terms of Service and Privacy
-        Policy
-      </p>
     </form>
   );
 };
