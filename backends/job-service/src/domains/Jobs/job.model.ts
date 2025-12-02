@@ -13,7 +13,9 @@ export interface IJob extends Document {
   requirements: string[];
   benefits?: string[];
   isActive: boolean;
+  skills: string[];
   application_date: Date;
+  company_name: string;
 }
 
 // Create the Mongoose schema for the job model
@@ -36,12 +38,14 @@ const jobSchema = new Schema<IJob>(
       enum: ["entry", "mid", "senior", "lead"],
       required: true,
     },
+    skills: { type: [String], required: true },
     salary: { type: Number, required: true },
     description: { type: String, required: true },
     requirements: { type: [String], required: true },
     benefits: { type: [String] },
     isActive: { type: Boolean, required: true },
     application_date: { type: Date, required: true },
+    company_name: { type: String, required: true },
   },
   { timestamps: true }
 );
