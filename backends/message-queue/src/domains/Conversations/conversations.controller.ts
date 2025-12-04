@@ -1,15 +1,17 @@
 import { Request, Response } from "express";
 import conversationService from "./conversations.services";
+import { ProtectedRequest } from "../../types/protected-request";
 
-const createConversation = async (req: Request, res: Response) => {
+const createConversation = async (req: ProtectedRequest, res: Response) => {
   try {
-    const { participant1Id, participant2Id } = req.body;
+    const userId = req.user?._id as string;
+    const { participants } = req.body;
 
     // Check if conversation already exists between these participants
     let conversation =
       await conversationService.findConversationByParticipantsService(
-        participant1Id,
-        participant2Id
+        participants,
+        userId
       );
 
     if (conversation) {
@@ -22,8 +24,8 @@ const createConversation = async (req: Request, res: Response) => {
 
     // Create a new conversation
     conversation = await conversationService.createConversationService(
-      participant1Id,
-      participant2Id
+      participants,
+      userId
     );
 
     res.status(201).json({

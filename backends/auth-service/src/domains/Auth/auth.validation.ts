@@ -9,7 +9,7 @@ const registerValidation = Joi.object({
     .pattern(/\d/)
     .required(),
   phoneNumber: Joi.string().min(10).required(),
-  role: Joi.string().required().valid("user", "admin"),
+  role: Joi.string().required().valid("user", "seeker", "recruiter", "admin"),
 });
 
 const verificationValidation = Joi.object({
