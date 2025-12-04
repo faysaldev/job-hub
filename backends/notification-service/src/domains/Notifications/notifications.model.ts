@@ -1,51 +1,52 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-export interface IAMUser extends Document {
-  _id: Types.ObjectId; // Explicitly typing _id
-  name: string;
-  email: string;
-  password: string;
-  image: string;
-  role: string;
+export interface INotification extends Document {
+  _id: Types.ObjectId;
+  title: string;
+  message: string;
+  sender: Types.ObjectId; // User ID of the sender
+  receiver: Types.ObjectId; // User ID of the receiver
+  isRead: boolean; // Track if notification has been read
 }
 
-const userSchema = new Schema<IAMUser>(
+const notificationSchema = new Schema<INotification>(
   {
-    name: {
-      type: String,
-      trim: true,
-      minlength: 3,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    image: {
-      type: String,
-      default: "https://lpx-khalid.s3.ap-southeast-1.amazonaws.com/user.png",
-    },
-    password: {
+    title: {
       type: String,
       required: true,
       trim: true,
-      minlength: 8,
-      validate(value: string) {
-        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-          throw new Error(
-            "Password must contain at least one letter and one number"
-          );
-        }
-      },
     },
-    role: {
+    message: {
       type: String,
-      default: "user",
+      required: true,
+      trim: true,
+    },
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    receiver: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    isRead: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model<IAMUser>("User", userSchema);
+// Index for efficient queries
+notificationSchema.index({ receiver: 1, createdAt: -1 }); // For fetching notifications by receiver
+notificationSchema.index({ receiver: 1, isRead: 1 }); // For fetching unread notifications
 
-export default User;
+const Notification = mongoose.model<INotification>(
+  "Notification",
+  notificationSchema
+);
+
+export default Notification;

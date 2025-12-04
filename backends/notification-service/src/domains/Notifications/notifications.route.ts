@@ -1,27 +1,28 @@
 import { Router } from "express";
-import userController from "./user.controller";
+import notificationController from "./notifications.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
-import userFileUploadMiddleware from "../../middlewares/fileUpload.middleware";
 
 const router = Router();
 
-const USER_PICTURES = "./public/uploads/users";
+// Get all notifications for authenticated user
+router.get("/", authMiddleware, notificationController.getUserNotifications);
 
-router.get("/self/in", authMiddleware, userController.userDetails);
-router.post(
-  "/upload-single",
-  authMiddleware,
-  userFileUploadMiddleware(USER_PICTURES).single("image"),
-  userController.singleFileUpload
-);
+// Get unread notifications for authenticated user
+router.get("/unread", authMiddleware, notificationController.getUserUnreadNotifications);
 
-router.post(
-  "/upload-multiple",
-  authMiddleware,
-  userFileUploadMiddleware(USER_PICTURES).fields([
-    { name: "image", maxCount: 2 },
-  ]),
-  userController.multipleFileUpload
-);
+// Get count of unread notifications
+router.get("/unread/count", authMiddleware, notificationController.getUnreadNotificationCount);
+
+// Get a single notification by ID
+router.get("/:id", authMiddleware, notificationController.getNotificationById);
+
+// Mark a notification as read
+router.patch("/:id/read", authMiddleware, notificationController.markNotificationAsRead);
+
+// Mark all notifications as read
+router.patch("/read-all", authMiddleware, notificationController.markAllNotificationsAsRead);
+
+// Delete a notification (soft delete)
+router.delete("/:id", authMiddleware, notificationController.deleteNotification);
 
 export default router;
