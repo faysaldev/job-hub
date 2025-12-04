@@ -1,78 +1,56 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { roles } from "../../config/roles";
-import validator from "validator";
 
-export interface IAMUser extends Document {
-  _id: Types.ObjectId; // Explicitly typing _id
-  name: string;
-  email: string;
-  password: string;
-  image: string;
-  role: string;
-  phoneNumber: string;
-  oneTimeCode: number | null;
-  isEmailVerified: boolean;
-  isResetPassword: boolean;
-  fcmToken: string;
-  isDeleted: boolean;
-  isPasswordMatch(password: string): Promise<boolean>; // Add this method to IAMUser interface
+export interface IMessage extends Document {
+  _id: Types.ObjectId;
+  conversationId: Types.ObjectId;
+  senderId: Types.ObjectId;
+  receiverId: Types.ObjectId;
+  content: string;
+  messageType: "text" | "image" | "file" | "audio" | "video";
+  isRead: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const userSchema = new Schema<IAMUser>(
+const messageSchema = new Schema<IMessage>(
   {
-    name: {
-      type: String,
-      trim: true,
-      minlength: 3,
-    },
-    email: {
-      type: String,
+    conversationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Conversation",
       required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-      validate(value: string) {
-        if (!validator.isEmail(value)) {
-          throw new Error("Invalid email");
-        }
-      },
     },
-    image: {
-      type: String,
-      default: "https://lpx-khalid.s3.ap-southeast-1.amazonaws.com/user.png",
+    senderId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    password: {
+    receiverId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    content: {
       type: String,
       required: true,
       trim: true,
-      minlength: 8,
-      validate(value: string) {
-        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-          throw new Error(
-            "Password must contain at least one letter and one number"
-          );
-        }
-      },
     },
-    role: {
+    messageType: {
       type: String,
-      enum: roles,
-      default: "user",
+      enum: ["text", "image", "file", "audio", "video"],
+      default: "text",
     },
-    phoneNumber: {
-      type: String,
-      unique: true,
-      required: true,
+    isRead: {
+      type: Boolean,
+      default: false,
     },
-    oneTimeCode: { type: Number, default: null },
-    isEmailVerified: { type: Boolean, default: false },
-    isResetPassword: { type: Boolean, default: false },
-    fcmToken: { type: String, default: null },
-    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model<IAMUser>("User", userSchema);
+// Add indexes for better query performance
+messageSchema.index({ conversationId: 1, createdAt: -1 }); // For fetching messages in a conversation
+messageSchema.index({ senderId: 1 }); // For fetching messages by sender
 
-export default User;
+const Message = mongoose.model<IMessage>("Message", messageSchema);
+
+export default Message;

@@ -1,78 +1,65 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { roles } from "../../config/roles";
-import validator from "validator";
 
-export interface IAMUser extends Document {
-  _id: Types.ObjectId; // Explicitly typing _id
-  name: string;
-  email: string;
-  password: string;
-  image: string;
-  role: string;
-  phoneNumber: string;
-  oneTimeCode: number | null;
-  isEmailVerified: boolean;
-  isResetPassword: boolean;
-  fcmToken: string;
-  isDeleted: boolean;
-  isPasswordMatch(password: string): Promise<boolean>; // Add this method to IAMUser interface
+export interface IConversation extends Document {
+  _id: Types.ObjectId;
+  participants: [Types.ObjectId, Types.ObjectId]; // Exactly 2 participants for one-to-one chat
+  lastMessage?: Types.ObjectId;
+  lastMessageAt: Date;
+  user1UnreadCount: number;
+  user2UnreadCount: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const userSchema = new Schema<IAMUser>(
+const conversationSchema = new Schema<IConversation>(
   {
-    name: {
-      type: String,
-      trim: true,
-      minlength: 3,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-      validate(value: string) {
-        if (!validator.isEmail(value)) {
-          throw new Error("Invalid email");
-        }
+    participants: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        validate: {
+          validator: function (value: Types.ObjectId[]) {
+            return value.length === 2; // Exactly 2 participants for one-to-one conversation
+          },
+          message: "One-to-one conversation must have exactly 2 participants.",
+        },
       },
-    },
-    image: {
-      type: String,
-      default: "https://lpx-khalid.s3.ap-southeast-1.amazonaws.com/user.png",
-    },
-    password: {
-      type: String,
-      required: true,
-      trim: true,
-      minlength: 8,
-      validate(value: string) {
-        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
-          throw new Error(
-            "Password must contain at least one letter and one number"
-          );
-        }
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
       },
+    ],
+    lastMessage: {
+      type: Schema.Types.ObjectId,
+      ref: "Message",
     },
-    role: {
-      type: String,
-      enum: roles,
-      default: "user",
+    lastMessageAt: {
+      type: Date,
+      default: Date.now,
     },
-    phoneNumber: {
-      type: String,
-      unique: true,
-      required: true,
+    user1UnreadCount: {
+      type: Number,
+      default: 0,
     },
-    oneTimeCode: { type: Number, default: null },
-    isEmailVerified: { type: Boolean, default: false },
-    isResetPassword: { type: Boolean, default: false },
-    fcmToken: { type: String, default: null },
-    isDeleted: { type: Boolean, default: false },
+    user2UnreadCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model<IAMUser>("User", userSchema);
+// Add indexes for better query performance
+conversationSchema.index({ participants: 1 });
+conversationSchema.index({ "participants.0": 1, "participants.1": 1 }); // For one-to-one conversations
+conversationSchema.index({ lastMessageAt: -1 }); // For ordering conversations by recent activity
+conversationSchema.index({ updatedAt: -1 });
 
-export default User;
+const Conversation = mongoose.model<IConversation>(
+  "Conversation",
+  conversationSchema
+);
+
+export default Conversation;
