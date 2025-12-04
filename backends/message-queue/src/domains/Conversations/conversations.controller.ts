@@ -1,45 +1,92 @@
 import { Request, Response } from "express";
-import userService from "./conversations.services";
-import { handleError } from "../../lib/errorsHandle";
-import httpStatus from "http-status";
-import { response } from "../../lib/response";
-import { ProtectedRequest } from "../../types/protected-request";
-import { ProtectedUser } from "../../types/types";
+import conversationService from "./conversations.services";
 
-const getAllUsers = async (req: Request, res: Response) => {
+const createConversation = async (req: Request, res: Response) => {
   try {
-    const users = await userService.getAllUsers();
-    res.status(httpStatus.CREATED).json(
-      response({
-        message: "Create Notification",
-        status: "OK",
-        statusCode: httpStatus.OK,
-        data: users,
-      })
+    const { participant1Id, participant2Id } = req.body;
+
+    // Check if conversation already exists between these participants
+    let conversation =
+      await conversationService.findConversationByParticipantsService(
+        participant1Id,
+        participant2Id
+      );
+
+    if (conversation) {
+      return res.status(200).json({
+        success: true,
+        message: "Conversation already exists",
+        data: conversation,
+      });
+    }
+
+    // Create a new conversation
+    conversation = await conversationService.createConversationService(
+      participant1Id,
+      participant2Id
     );
-  } catch (error) {
-    const handledError = handleError(error); // Handle the error using the utility
-    res.status(500).json({ error: handledError.message });
+
+    res.status(201).json({
+      success: true,
+      message: "Conversation created successfully",
+      data: conversation,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-const userDetails = async (req: ProtectedRequest, res: Response) => {
+const deleteConversation = async (req: Request, res: Response) => {
   try {
-    const { user } = req;
-    const users = await userService.userDetails(user?._id as string);
+    const { conversationId } = req.params;
 
-    res.status(httpStatus.CREATED).json(
-      response({
-        message: "User Details",
-        status: "OK",
-        statusCode: httpStatus.OK,
-        data: users!,
-      })
-    );
-  } catch (error) {
-    const handledError = handleError(error); // Handle the error using the utility
-    res.status(500).json({ error: handledError.message });
+    await conversationService.deleteConversationService(conversationId);
+
+    res.status(200).json({
+      success: true,
+      message: "Conversation deleted successfully",
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-export default { getAllUsers, userDetails };
+const getUserConversations = async (req: Request, res: Response) => {
+  try {
+    const userId = req.query.userId as string;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    const conversations = await conversationService.getUserConversationsService(
+      userId
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Conversations retrieved successfully",
+      data: conversations,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export default {
+  createConversation,
+  deleteConversation,
+  getUserConversations,
+};
