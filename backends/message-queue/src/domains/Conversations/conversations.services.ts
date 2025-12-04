@@ -113,7 +113,7 @@ const getUserConversationsService = async (userId: string) => {
   const conversations = await Conversation.find({
     participants: userId,
   })
-    .populate("users", "name email image")
+    .populate("participants", "name email image")
     .sort({ lastMessageAt: -1 }); // Sort by most recent message
 
   return conversations;

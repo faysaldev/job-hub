@@ -7,19 +7,10 @@ interface CreateMessageData {
   senderId: string;
   receiverId: string;
   content: string;
-  messageType?: "text" | "image" | "file" | "audio" | "video";
-  attachments?: string[];
 }
 
 const createMessageService = async (data: CreateMessageData) => {
-  const {
-    conversationId,
-    senderId,
-    receiverId,
-    content,
-    messageType = "text",
-    attachments,
-  } = data;
+  const { conversationId, senderId, receiverId, content } = data;
 
   // Validate ObjectIds
   if (
@@ -56,8 +47,6 @@ const createMessageService = async (data: CreateMessageData) => {
     senderId: senderObjectId,
     receiverId: receiverObjectId,
     content,
-    messageType,
-    attachments,
   });
 
   const savedMessage = await message.save();
@@ -84,7 +73,9 @@ const createMessageService = async (data: CreateMessageData) => {
     });
   }
 
-  return savedMessage.populate(["senderId", "receiverId"]);
+  // Return the saved message without problematic populate
+  // If populate is needed, it should be handled in the controller or by a separate service
+  return savedMessage;
 };
 
 const editMessageService = async (messageId: string, newContent: string) => {
@@ -135,10 +126,9 @@ const getAllMessagesService = async (
   // Calculate skip value for pagination
   const skip = (page - 1) * limit;
 
-  // Find messages in the conversation, populate sender/receiver, and sort by creation date
+  // Find messages in the conversation without problematic populate
+  // We need to manually handle user data if populate is required
   const messages = await Message.find({ conversationId: conversationObjectId })
-    .populate("senderId", "name image")
-    .populate("receiverId", "name image")
     .sort({ createdAt: -1 }) // Most recent first
     .skip(skip)
     .limit(limit);
@@ -175,7 +165,6 @@ const markMessageAsReadService = async (messageId: string, userId: string) => {
 
   // Update the message as read
   message.isRead = true;
-  message.readAt = new Date();
 
   const updatedMessage = await message.save();
 
@@ -200,7 +189,7 @@ const markMessageAsReadService = async (messageId: string, userId: string) => {
     }
   }
 
-  return updatedMessage.populate(["senderId", "receiverId"]);
+  return updatedMessage;
 };
 
 export default {

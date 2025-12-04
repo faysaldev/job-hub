@@ -1,24 +1,17 @@
 import { Request, Response } from "express";
 import messageServices from "./message.services";
+import { ProtectedRequest } from "../../types/protected-request";
 
-const createMessage = async (req: Request, res: Response) => {
+const createMessage = async (req: ProtectedRequest, res: Response) => {
   try {
-    const {
-      conversationId,
-      senderId,
-      receiverId,
-      content,
-      messageType,
-      attachments,
-    } = req.body;
+    const { conversationId, receiverId, content } = req.body;
+    const senderId = req.user?._id as string;
 
     const message = await messageServices.createMessageService({
       conversationId,
       senderId,
       receiverId,
       content,
-      messageType,
-      attachments,
     });
 
     res.status(201).json({
