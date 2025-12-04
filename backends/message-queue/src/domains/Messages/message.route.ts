@@ -1,27 +1,21 @@
 import express from "express";
-import {
-  createMessage,
-  editMessage,
-  deleteMessage,
-  getAllMessages,
-  markMessageAsRead,
-} from "./message.controller";
+import messageRoutes from "./message.controller";
 
 const router = express.Router();
 
 // Create a new message
-router.post("/", createMessage);
+router.post("/", messageRoutes.createMessage);
 
 // Get all messages in a conversation
-router.get("/conversation/:conversationId", getAllMessages);
+router.get("/conversation/:conversationId", messageRoutes.getAllMessages);
 
 // Edit a message
-router.put("/:messageId", editMessage);
+router.put("/:messageId", messageRoutes.editMessage);
 
 // Delete a message
-router.delete("/:messageId", deleteMessage);
+router.delete("/:messageId", messageRoutes.deleteMessage);
 
 // Mark message as read
-router.patch("/:messageId/read", markMessageAsRead);
+router.patch("/:messageId/read", messageRoutes.markMessageAsRead);
 
 export default router;

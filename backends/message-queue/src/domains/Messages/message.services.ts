@@ -11,23 +11,39 @@ interface CreateMessageData {
   attachments?: string[];
 }
 
-export const createMessageService = async (data: CreateMessageData) => {
-  const { conversationId, senderId, receiverId, content, messageType = "text", attachments } = data;
+const createMessageService = async (data: CreateMessageData) => {
+  const {
+    conversationId,
+    senderId,
+    receiverId,
+    content,
+    messageType = "text",
+    attachments,
+  } = data;
 
   // Validate ObjectIds
-  if (!Types.ObjectId.isValid(conversationId) || !Types.ObjectId.isValid(senderId) || !Types.ObjectId.isValid(receiverId)) {
+  if (
+    !Types.ObjectId.isValid(conversationId) ||
+    !Types.ObjectId.isValid(senderId) ||
+    !Types.ObjectId.isValid(receiverId)
+  ) {
     throw new Error("Invalid IDs provided");
   }
 
+  // Convert string IDs to ObjectId
+  const conversationObjectId = new Types.ObjectId(conversationId);
+  const senderObjectId = new Types.ObjectId(senderId);
+  const receiverObjectId = new Types.ObjectId(receiverId);
+
   // Check if the conversation exists and if the sender is part of it
-  const conversation = await Conversation.findById(conversationId);
+  const conversation = await Conversation.findById(conversationObjectId);
   if (!conversation) {
     throw new Error("Conversation not found");
   }
 
   // Check if sender is part of the conversation
   const isSenderInConversation = conversation.participants.some(
-    (participant: Types.ObjectId) => participant.toString() === senderId
+    (participant: Types.ObjectId) => participant.equals(senderObjectId)
   );
 
   if (!isSenderInConversation) {
@@ -36,9 +52,9 @@ export const createMessageService = async (data: CreateMessageData) => {
 
   // Create the message
   const message = new Message({
-    conversationId,
-    senderId,
-    receiverId,
+    conversationId: conversationObjectId,
+    senderId: senderObjectId,
+    receiverId: receiverObjectId,
     content,
     messageType,
     attachments,
@@ -47,21 +63,23 @@ export const createMessageService = async (data: CreateMessageData) => {
   const savedMessage = await message.save();
 
   // Update the conversation with the new message information
-  await Conversation.findByIdAndUpdate(conversationId, {
+  await Conversation.findByIdAndUpdate(conversationObjectId, {
     lastMessage: savedMessage._id,
     lastMessageAt: new Date(),
   });
 
   // Update unread counts for the receiver
-  const participantIndex = conversation.participants.indexOf(senderId);
+  const participantIndex = conversation.participants.findIndex(
+    (participant: Types.ObjectId) => participant.equals(senderObjectId)
+  );
   const receiverIndex = participantIndex === 0 ? 1 : 0;
 
   if (receiverIndex === 0) {
-    await Conversation.findByIdAndUpdate(conversationId, {
+    await Conversation.findByIdAndUpdate(conversationObjectId, {
       $inc: { user1UnreadCount: 1 },
     });
   } else {
-    await Conversation.findByIdAndUpdate(conversationId, {
+    await Conversation.findByIdAndUpdate(conversationObjectId, {
       $inc: { user2UnreadCount: 1 },
     });
   }
@@ -69,12 +87,14 @@ export const createMessageService = async (data: CreateMessageData) => {
   return savedMessage.populate(["senderId", "receiverId"]);
 };
 
-export const editMessageService = async (messageId: string, newContent: string) => {
+const editMessageService = async (messageId: string, newContent: string) => {
   if (!Types.ObjectId.isValid(messageId)) {
     throw new Error("Invalid message ID");
   }
 
-  const message = await Message.findById(messageId);
+  const messageObjectId = new Types.ObjectId(messageId);
+
+  const message = await Message.findById(messageObjectId);
   if (!message) {
     throw new Error("Message not found");
   }
@@ -86,20 +106,22 @@ export const editMessageService = async (messageId: string, newContent: string) 
   return await message.save();
 };
 
-export const deleteMessageService = async (messageId: string) => {
+const deleteMessageService = async (messageId: string) => {
   if (!Types.ObjectId.isValid(messageId)) {
     throw new Error("Invalid message ID");
   }
 
-  const message = await Message.findById(messageId);
+  const messageObjectId = new Types.ObjectId(messageId);
+
+  const message = await Message.findById(messageObjectId);
   if (!message) {
     throw new Error("Message not found");
   }
 
-  return await Message.findByIdAndDelete(messageId);
+  return await Message.findByIdAndDelete(messageObjectId);
 };
 
-export const getAllMessagesService = async (
+const getAllMessagesService = async (
   conversationId: string,
   options: { page: number; limit: number }
 ) => {
@@ -107,13 +129,14 @@ export const getAllMessagesService = async (
     throw new Error("Invalid conversation ID");
   }
 
+  const conversationObjectId = new Types.ObjectId(conversationId);
   const { page, limit } = options;
 
   // Calculate skip value for pagination
   const skip = (page - 1) * limit;
 
   // Find messages in the conversation, populate sender/receiver, and sort by creation date
-  const messages = await Message.find({ conversationId })
+  const messages = await Message.find({ conversationId: conversationObjectId })
     .populate("senderId", "name image")
     .populate("receiverId", "name image")
     .sort({ createdAt: -1 }) // Most recent first
@@ -121,7 +144,9 @@ export const getAllMessagesService = async (
     .limit(limit);
 
   // Get total count for pagination info
-  const total = await Message.countDocuments({ conversationId });
+  const total = await Message.countDocuments({
+    conversationId: conversationObjectId,
+  });
 
   return {
     messages,
@@ -135,12 +160,15 @@ export const getAllMessagesService = async (
   };
 };
 
-export const markMessageAsReadService = async (messageId: string, userId: string) => {
+const markMessageAsReadService = async (messageId: string, userId: string) => {
   if (!Types.ObjectId.isValid(messageId) || !Types.ObjectId.isValid(userId)) {
     throw new Error("Invalid IDs provided");
   }
 
-  const message = await Message.findById(messageId);
+  const messageObjectId = new Types.ObjectId(messageId);
+  const userObjectId = new Types.ObjectId(userId);
+
+  const message = await Message.findById(messageObjectId);
   if (!message) {
     throw new Error("Message not found");
   }
@@ -155,8 +183,9 @@ export const markMessageAsReadService = async (messageId: string, userId: string
   const conversation = await Conversation.findById(message.conversationId);
   if (conversation) {
     // Determine which user's unread count to decrement
-    const receiverIndex = conversation.participants.indexOf(userId);
-    const senderIndex = receiverIndex === 0 ? 1 : 0;
+    const receiverIndex = conversation.participants.findIndex(
+      (participant: Types.ObjectId) => participant.equals(userObjectId)
+    );
 
     if (receiverIndex === 0) {
       // Decrement user1's unread count
@@ -172,4 +201,12 @@ export const markMessageAsReadService = async (messageId: string, userId: string
   }
 
   return updatedMessage.populate(["senderId", "receiverId"]);
+};
+
+export default {
+  createMessageService,
+  editMessageService,
+  deleteMessageService,
+  getAllMessagesService,
+  markMessageAsReadService,
 };
