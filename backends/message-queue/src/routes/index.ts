@@ -1,8 +1,10 @@
 import { Router } from "express";
-import userRoutes from "../domains/User/user.route";
+import conversationsRoutes from "../domains/Conversations/conversations.route";
+import messageRoutes from "../domains/Conversations/conversations.route";
 
 // Initialize the router
 const router = Router();
 
-router.use("/users", userRoutes);
+router.use("/conversations", conversationsRoutes);
+router.use("/messages", messageRoutes);
 export default router;

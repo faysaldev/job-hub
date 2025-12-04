@@ -1,7 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { roles } from "../../config/roles";
 import validator from "validator";
-import bcrypt from "bcryptjs";
 
 export interface IAMUser extends Document {
   _id: Types.ObjectId; // Explicitly typing _id
@@ -73,17 +72,6 @@ const userSchema = new Schema<IAMUser>(
   },
   { timestamps: true }
 );
-
-userSchema.methods.isPasswordMatch = async function (password: string) {
-  return bcrypt.compare(password, this.password);
-};
-
-userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
-    this.password = await bcrypt.hash(this.password, 8); // Hash password with a salt of 8 rounds
-  }
-  next();
-});
 
 const User = mongoose.model<IAMUser>("User", userSchema);
 

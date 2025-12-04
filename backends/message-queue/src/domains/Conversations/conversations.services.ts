@@ -1,4 +1,4 @@
-import User from "./user.model";
+import User from "./conversations.model";
 
 const getAllUsers = async () => {
   return await User.find();

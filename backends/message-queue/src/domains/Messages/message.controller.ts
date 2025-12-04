@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import userService from "./user.services";
+import userService from "./message.services";
 import { handleError } from "../../lib/errorsHandle";
 import httpStatus from "http-status";
 import { response } from "../../lib/response";
@@ -42,46 +42,4 @@ const userDetails = async (req: ProtectedRequest, res: Response) => {
   }
 };
 
-const singleFileUpload = async (req: ProtectedRequest, res: Response) => {
-  try {
-    //  taking the path of the file console.log(req.file?.path);
-    res.status(httpStatus.CREATED).json(
-      response({
-        message: "User Details",
-        status: "OK",
-        statusCode: httpStatus.OK,
-        data: {},
-      })
-    );
-  } catch (error) {
-    const handledError = handleError(error);
-    res.status(500).json({ error: handledError.message });
-  }
-};
-
-const multipleFileUpload = async (req: ProtectedRequest, res: Response) => {
-  try {
-    //  taking the path of the file
-    console.log(req.files);
-    res.status(httpStatus.CREATED).json(
-      response({
-        message: "User Details",
-        status: "OK",
-        statusCode: httpStatus.OK,
-        data: {},
-      })
-    );
-  } catch (error) {
-    const handledError = handleError(error);
-    res.status(500).json({ error: handledError.message });
-  }
-};
-
-const userController = {
-  getAllUsers,
-  userDetails,
-  singleFileUpload,
-  multipleFileUpload,
-};
-
-export default userController;
+export default { getAllUsers, userDetails };
