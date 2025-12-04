@@ -94,10 +94,10 @@ const getAllMessages = async (req: Request, res: Response) => {
   }
 };
 
-const markMessageAsRead = async (req: Request, res: Response) => {
+const markMessageAsRead = async (req: ProtectedRequest, res: Response) => {
   try {
     const { messageId } = req.params;
-    const { userId } = req.body; // The user who read the message
+    const userId = req.user?._id as string; // The user who read the message
 
     const updatedMessage = await messageServices.markMessageAsReadService(
       messageId,
