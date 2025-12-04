@@ -13,24 +13,17 @@ export interface IConversation extends Document {
 
 const conversationSchema = new Schema<IConversation>(
   {
-    participants: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        validate: {
-          validator: function (value: Types.ObjectId[]) {
-            return value.length === 2; // Exactly 2 participants for one-to-one conversation
-          },
-          message: "One-to-one conversation must have exactly 2 participants.",
+    participants: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      required: true,
+      validate: {
+        validator: function (value: Types.ObjectId[]) {
+          return value.length === 2; // Exactly 2 participants for one-to-one conversation
         },
+        message: "One-to-one conversation must have exactly 2 participants.",
       },
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-    ],
+    },
     lastMessage: {
       type: Schema.Types.ObjectId,
       ref: "Message",
