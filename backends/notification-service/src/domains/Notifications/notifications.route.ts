@@ -8,21 +8,41 @@ const router = Router();
 router.get("/", authMiddleware, notificationController.getUserNotifications);
 
 // Get unread notifications for authenticated user
-router.get("/unread", authMiddleware, notificationController.getUserUnreadNotifications);
+router.get(
+  "/unread",
+  authMiddleware,
+  notificationController.getUserUnreadNotifications
+);
 
 // Get count of unread notifications
-router.get("/unread/count", authMiddleware, notificationController.getUnreadNotificationCount);
-
-// Get a single notification by ID
-router.get("/:id", authMiddleware, notificationController.getNotificationById);
+router.get(
+  "/unread/count",
+  authMiddleware,
+  notificationController.getUnreadNotificationCount
+);
 
 // Mark a notification as read
-router.patch("/:id/read", authMiddleware, notificationController.markNotificationAsRead);
+router.patch(
+  "/:id/read",
+  authMiddleware,
+  notificationController.markNotificationAsRead
+);
 
 // Mark all notifications as read
-router.patch("/read-all", authMiddleware, notificationController.markAllNotificationsAsRead);
+router.patch(
+  "/read-all",
+  authMiddleware,
+  notificationController.markAllNotificationsAsRead
+);
 
 // Delete a notification (soft delete)
-router.delete("/:id", authMiddleware, notificationController.deleteNotification);
+router.delete(
+  "/:id",
+  authMiddleware,
+  notificationController.deleteNotification
+);
+
+// Create a new notification
+router.post("/", authMiddleware, notificationController.createNotification);
 
 export default router;

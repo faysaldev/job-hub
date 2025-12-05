@@ -85,55 +85,6 @@ const getUserUnreadNotifications = async (
 };
 
 /**
- * Get a single notification by ID
- */
-const getNotificationById = async (req: ProtectedRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user?._id;
-
-    if (!userId) {
-      return res.status(httpStatus.UNAUTHORIZED).json(
-        response({
-          message: "User not authenticated",
-          status: "ERROR",
-          statusCode: httpStatus.UNAUTHORIZED,
-          data: {},
-        })
-      );
-    }
-
-    const notification = await notificationService.getNotificationById(
-      id,
-      userId
-    );
-
-    if (!notification) {
-      return res.status(httpStatus.NOT_FOUND).json(
-        response({
-          message: "Notification not found",
-          status: "ERROR",
-          statusCode: httpStatus.NOT_FOUND,
-          data: {},
-        })
-      );
-    }
-
-    res.status(httpStatus.OK).json(
-      response({
-        message: "Notification retrieved successfully",
-        status: "OK",
-        statusCode: httpStatus.OK,
-        data: notification,
-      })
-    );
-  } catch (error) {
-    const handledError = handleError(error); // Handle the error using the utility
-    res.status(500).json({ error: handledError.message });
-  }
-};
-
-/**
  * Mark a notification as read
  */
 const markNotificationAsRead = async (req: ProtectedRequest, res: Response) => {
@@ -302,14 +253,65 @@ const getUnreadNotificationCount = async (
   }
 };
 
+/**
+ * Create a new notification
+ */
+const createNotification = async (req: ProtectedRequest, res: Response) => {
+  try {
+    const { title, link, receiver } = req.body;
+    const sender = req.user?._id;
+
+    if (!sender) {
+      return res.status(httpStatus.UNAUTHORIZED).json(
+        response({
+          message: "User not authenticated",
+          status: "ERROR",
+          statusCode: httpStatus.UNAUTHORIZED,
+          data: {},
+        })
+      );
+    }
+
+    if (!title || !link || !receiver) {
+      return res.status(httpStatus.BAD_REQUEST).json(
+        response({
+          message: "Title, message, and receiver are required",
+          status: "ERROR",
+          statusCode: httpStatus.BAD_REQUEST,
+          data: {},
+        })
+      );
+    }
+
+    const newNotification = await notificationService.createNotification({
+      title,
+      link,
+      sender,
+      receiver,
+    });
+
+    res.status(httpStatus.CREATED).json(
+      response({
+        message: "Notification created successfully",
+        status: "OK",
+        statusCode: httpStatus.CREATED,
+        data: newNotification,
+      })
+    );
+  } catch (error) {
+    const handledError = handleError(error);
+    res.status(500).json({ error: handledError.message });
+  }
+};
+
 const notificationController = {
   getUserNotifications,
   getUserUnreadNotifications,
-  getNotificationById,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteNotification,
   getUnreadNotificationCount,
+  createNotification,
 };
 
 export default notificationController;

@@ -5,22 +5,20 @@ import { INotification } from "./notifications.model";
 /**
  * Create a new notification
  */
-export const createNotification = async (
-  title: string,
-  message: string,
-  senderId: Types.ObjectId,
-  receiverId: Types.ObjectId,
-  type: string = "notification",
-  metadata?: Record<string, any>
-): Promise<INotification> => {
+export const createNotification = async (input: {
+  title: string;
+  link: string;
+  sender: string | Types.ObjectId;
+  receiver: string | Types.ObjectId;
+}): Promise<INotification> => {
   try {
+    const { title, link, sender, receiver } = input;
+
     const notification = new Notification({
       title,
-      message,
-      sender: senderId,
-      receiver: receiverId,
-      type,
-      metadata,
+      link,
+      sender,
+      receiver,
     });
 
     return await notification.save();
@@ -49,7 +47,7 @@ export const getUserNotifications = async (
 
     const query: any = { receiver: userId };
     if (!includeDeleted) {
-      query.isDeleted = false;
+      query.isDeleted = { $ne: true }; // Use $ne to check for not true or undefined
     }
 
     const notifications = await Notification.find(query)
@@ -82,7 +80,7 @@ export const getUserUnreadNotifications = async (
     return await Notification.find({
       receiver: userId,
       isRead: false,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     })
       .populate("sender", "name email image")
       .sort({ createdAt: -1 });
@@ -164,24 +162,6 @@ export const permanentDeleteNotification = async (
 };
 
 /**
- * Get notification by ID
- */
-export const getNotificationById = async (
-  notificationId: string | Types.ObjectId,
-  userId: string | Types.ObjectId
-): Promise<INotification | null> => {
-  try {
-    return await Notification.findOne({
-      _id: notificationId,
-      receiver: userId,
-      isDeleted: false,
-    }).populate("sender", "name email image");
-  } catch (error) {
-    throw error;
-  }
-};
-
-/**
  * Get count of unread notifications for a user
  */
 export const getUnreadNotificationCount = async (
@@ -191,7 +171,7 @@ export const getUnreadNotificationCount = async (
     return await Notification.countDocuments({
       receiver: userId,
       isRead: false,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
   } catch (error) {
     throw error;
