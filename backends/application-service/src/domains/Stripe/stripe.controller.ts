@@ -13,7 +13,11 @@ const createCheckoutSession = async (req: ProtectedRequest, res: Response) => {
   try {
     const { price, title, job_id } = req.body;
     const user_id = req.user?._id;
-    const metadata = { job_id, user_id };
+
+    // Sanitize metadata to ensure no undefined values (Stripe requires string | number | boolean | null)
+    const metadata: Record<string, string> = {};
+    if (job_id) metadata.job_id = String(job_id);
+    if (user_id) metadata.user_id = String(user_id);
 
     // Validate required fields
     if (!price || !title) {
