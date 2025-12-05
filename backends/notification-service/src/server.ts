@@ -2,7 +2,17 @@ import express, { Request, Response } from "express";
 import routes from "./routes/index";
 import logRequestResponse from "./middlewares/logger.middleware";
 import compression from "compression";
+import cors from "cors";
 const app = express();
+
+// Enable CORS for all routes
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+    optionsSuccessStatus: 200,
+  })
+);
 
 app.use(express.json());
 

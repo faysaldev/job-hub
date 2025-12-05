@@ -5,14 +5,12 @@ import logRequestResponse from "./middlewares/logger.middleware";
 import compression from "compression";
 
 const app = express();
-
 // Enable CORS for all routes
 app.use(
   cors({
-    origin: "*", // Allow all origins - adjust this for production
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-    credentials: true, // Allow credentials to be sent with requests
+    origin: "*",
+    credentials: true,
+    optionsSuccessStatus: 200,
   })
 );
 
