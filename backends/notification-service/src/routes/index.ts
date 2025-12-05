@@ -1,8 +1,8 @@
 import { Router } from "express";
-import userRoutes from "../domains/User/user.route";
+import notificationRoutes from "../domains/Notifications/notifications.route";
 // Initialize the router
 const router = Router();
 
-router.use("/users", userRoutes);
+router.use("/notifications", notificationRoutes);
 
 export default router;

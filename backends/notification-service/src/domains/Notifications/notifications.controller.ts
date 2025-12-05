@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import httpStatus from "http-status";
 import { response } from "../../lib/response";
 import { ProtectedRequest } from "../../types/protected-request";
@@ -19,7 +19,7 @@ const getUserNotifications = async (req: ProtectedRequest, res: Response) => {
           message: "User not authenticated",
           status: "ERROR",
           statusCode: httpStatus.UNAUTHORIZED,
-          data: null,
+          data: {},
         })
       );
     }
@@ -40,22 +40,18 @@ const getUserNotifications = async (req: ProtectedRequest, res: Response) => {
       })
     );
   } catch (error) {
-    const handledError = handleError(error);
-    res.status(handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR).json(
-      response({
-        message: handledError.message,
-        status: "ERROR",
-        statusCode: handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-        data: null,
-      })
-    );
+    const handledError = handleError(error); // Handle the error using the utility
+    res.status(500).json({ error: handledError.message });
   }
 };
 
 /**
  * Get unread notifications for authenticated user
  */
-const getUserUnreadNotifications = async (req: ProtectedRequest, res: Response) => {
+const getUserUnreadNotifications = async (
+  req: ProtectedRequest,
+  res: Response
+) => {
   try {
     const userId = req.user?._id;
 
@@ -65,12 +61,14 @@ const getUserUnreadNotifications = async (req: ProtectedRequest, res: Response) 
           message: "User not authenticated",
           status: "ERROR",
           statusCode: httpStatus.UNAUTHORIZED,
-          data: null,
+          data: {},
         })
       );
     }
 
-    const notifications = await notificationService.getUserUnreadNotifications(userId);
+    const notifications = await notificationService.getUserUnreadNotifications(
+      userId
+    );
 
     res.status(httpStatus.OK).json(
       response({
@@ -81,15 +79,8 @@ const getUserUnreadNotifications = async (req: ProtectedRequest, res: Response) 
       })
     );
   } catch (error) {
-    const handledError = handleError(error);
-    res.status(handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR).json(
-      response({
-        message: handledError.message,
-        status: "ERROR",
-        statusCode: handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-        data: null,
-      })
-    );
+    const handledError = handleError(error); // Handle the error using the utility
+    res.status(500).json({ error: handledError.message });
   }
 };
 
@@ -107,12 +98,15 @@ const getNotificationById = async (req: ProtectedRequest, res: Response) => {
           message: "User not authenticated",
           status: "ERROR",
           statusCode: httpStatus.UNAUTHORIZED,
-          data: null,
+          data: {},
         })
       );
     }
 
-    const notification = await notificationService.getNotificationById(id, userId);
+    const notification = await notificationService.getNotificationById(
+      id,
+      userId
+    );
 
     if (!notification) {
       return res.status(httpStatus.NOT_FOUND).json(
@@ -120,7 +114,7 @@ const getNotificationById = async (req: ProtectedRequest, res: Response) => {
           message: "Notification not found",
           status: "ERROR",
           statusCode: httpStatus.NOT_FOUND,
-          data: null,
+          data: {},
         })
       );
     }
@@ -134,15 +128,8 @@ const getNotificationById = async (req: ProtectedRequest, res: Response) => {
       })
     );
   } catch (error) {
-    const handledError = handleError(error);
-    res.status(handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR).json(
-      response({
-        message: handledError.message,
-        status: "ERROR",
-        statusCode: handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-        data: null,
-      })
-    );
+    const handledError = handleError(error); // Handle the error using the utility
+    res.status(500).json({ error: handledError.message });
   }
 };
 
@@ -160,7 +147,7 @@ const markNotificationAsRead = async (req: ProtectedRequest, res: Response) => {
           message: "User not authenticated",
           status: "ERROR",
           statusCode: httpStatus.UNAUTHORIZED,
-          data: null,
+          data: {},
         })
       );
     }
@@ -173,7 +160,7 @@ const markNotificationAsRead = async (req: ProtectedRequest, res: Response) => {
           message: "Notification not found",
           status: "ERROR",
           statusCode: httpStatus.NOT_FOUND,
-          data: null,
+          data: {},
         })
       );
     }
@@ -187,22 +174,18 @@ const markNotificationAsRead = async (req: ProtectedRequest, res: Response) => {
       })
     );
   } catch (error) {
-    const handledError = handleError(error);
-    res.status(handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR).json(
-      response({
-        message: handledError.message,
-        status: "ERROR",
-        statusCode: handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-        data: null,
-      })
-    );
+    const handledError = handleError(error); // Handle the error using the utility
+    res.status(500).json({ error: handledError.message });
   }
 };
 
 /**
  * Mark all notifications as read
  */
-const markAllNotificationsAsRead = async (req: ProtectedRequest, res: Response) => {
+const markAllNotificationsAsRead = async (
+  req: ProtectedRequest,
+  res: Response
+) => {
   try {
     const userId = req.user?._id;
 
@@ -212,7 +195,7 @@ const markAllNotificationsAsRead = async (req: ProtectedRequest, res: Response) 
           message: "User not authenticated",
           status: "ERROR",
           statusCode: httpStatus.UNAUTHORIZED,
-          data: null,
+          data: {},
         })
       );
     }
@@ -228,15 +211,8 @@ const markAllNotificationsAsRead = async (req: ProtectedRequest, res: Response) 
       })
     );
   } catch (error) {
-    const handledError = handleError(error);
-    res.status(handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR).json(
-      response({
-        message: handledError.message,
-        status: "ERROR",
-        statusCode: handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-        data: null,
-      })
-    );
+    const handledError = handleError(error); // Handle the error using the utility
+    res.status(500).json({ error: handledError.message });
   }
 };
 
@@ -254,12 +230,15 @@ const deleteNotification = async (req: ProtectedRequest, res: Response) => {
           message: "User not authenticated",
           status: "ERROR",
           statusCode: httpStatus.UNAUTHORIZED,
-          data: null,
+          data: {},
         })
       );
     }
 
-    const notification = await notificationService.deleteNotification(id, userId);
+    const notification = await notificationService.deleteNotification(
+      id,
+      userId
+    );
 
     if (!notification) {
       return res.status(httpStatus.NOT_FOUND).json(
@@ -267,7 +246,7 @@ const deleteNotification = async (req: ProtectedRequest, res: Response) => {
           message: "Notification not found",
           status: "ERROR",
           statusCode: httpStatus.NOT_FOUND,
-          data: null,
+          data: {},
         })
       );
     }
@@ -281,22 +260,18 @@ const deleteNotification = async (req: ProtectedRequest, res: Response) => {
       })
     );
   } catch (error) {
-    const handledError = handleError(error);
-    res.status(handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR).json(
-      response({
-        message: handledError.message,
-        status: "ERROR",
-        statusCode: handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-        data: null,
-      })
-    );
+    const handledError = handleError(error); // Handle the error using the utility
+    res.status(500).json({ error: handledError.message });
   }
 };
 
 /**
  * Get count of unread notifications
  */
-const getUnreadNotificationCount = async (req: ProtectedRequest, res: Response) => {
+const getUnreadNotificationCount = async (
+  req: ProtectedRequest,
+  res: Response
+) => {
   try {
     const userId = req.user?._id;
 
@@ -306,7 +281,7 @@ const getUnreadNotificationCount = async (req: ProtectedRequest, res: Response) 
           message: "User not authenticated",
           status: "ERROR",
           statusCode: httpStatus.UNAUTHORIZED,
-          data: null,
+          data: {},
         })
       );
     }
@@ -322,15 +297,8 @@ const getUnreadNotificationCount = async (req: ProtectedRequest, res: Response) 
       })
     );
   } catch (error) {
-    const handledError = handleError(error);
-    res.status(handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR).json(
-      response({
-        message: handledError.message,
-        status: "ERROR",
-        statusCode: handledError.statusCode || httpStatus.INTERNAL_SERVER_ERROR,
-        data: null,
-      })
-    );
+    const handledError = handleError(error); // Handle the error using the utility
+    res.status(500).json({ error: handledError.message });
   }
 };
 

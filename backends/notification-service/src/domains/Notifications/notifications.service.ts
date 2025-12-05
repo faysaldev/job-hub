@@ -33,14 +33,20 @@ export const createNotification = async (
  * Get all notifications for a specific user
  */
 export const getUserNotifications = async (
-  userId: Types.ObjectId,
+  userId: string | Types.ObjectId,
   page: number = 1,
   limit: number = 10,
   includeDeleted: boolean = false
-): Promise<{ notifications: INotification[]; total: number; page: number; limit: number; totalPages: number }> => {
+): Promise<{
+  notifications: INotification[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}> => {
   try {
     const skip = (page - 1) * limit;
-    
+
     const query: any = { receiver: userId };
     if (!includeDeleted) {
       query.isDeleted = false;
@@ -70,7 +76,7 @@ export const getUserNotifications = async (
  * Get all unread notifications for a specific user
  */
 export const getUserUnreadNotifications = async (
-  userId: Types.ObjectId
+  userId: string | Types.ObjectId
 ): Promise<INotification[]> => {
   try {
     return await Notification.find({
@@ -89,8 +95,8 @@ export const getUserUnreadNotifications = async (
  * Mark a notification as read
  */
 export const markAsRead = async (
-  notificationId: Types.ObjectId,
-  userId: Types.ObjectId
+  notificationId: string | Types.ObjectId,
+  userId: string | Types.ObjectId
 ): Promise<INotification | null> => {
   try {
     return await Notification.findOneAndUpdate(
@@ -107,14 +113,14 @@ export const markAsRead = async (
  * Mark all notifications as read for a user
  */
 export const markAllAsRead = async (
-  userId: Types.ObjectId
+  userId: string | Types.ObjectId
 ): Promise<{ modifiedCount: number }> => {
   try {
     const result = await Notification.updateMany(
       { receiver: userId, isRead: false },
       { isRead: true, readAt: new Date() }
     );
-    
+
     return { modifiedCount: result.modifiedCount };
   } catch (error) {
     throw error;
@@ -125,8 +131,8 @@ export const markAllAsRead = async (
  * Delete a notification (soft delete)
  */
 export const deleteNotification = async (
-  notificationId: Types.ObjectId,
-  userId: Types.ObjectId
+  notificationId: string | Types.ObjectId,
+  userId: string | Types.ObjectId
 ): Promise<INotification | null> => {
   try {
     return await Notification.findOneAndUpdate(
@@ -147,7 +153,10 @@ export const permanentDeleteNotification = async (
   userId: Types.ObjectId
 ): Promise<boolean> => {
   try {
-    const result = await Notification.deleteOne({ _id: notificationId, receiver: userId });
+    const result = await Notification.deleteOne({
+      _id: notificationId,
+      receiver: userId,
+    });
     return result.deletedCount === 1;
   } catch (error) {
     throw error;
@@ -158,8 +167,8 @@ export const permanentDeleteNotification = async (
  * Get notification by ID
  */
 export const getNotificationById = async (
-  notificationId: Types.ObjectId,
-  userId: Types.ObjectId
+  notificationId: string | Types.ObjectId,
+  userId: string | Types.ObjectId
 ): Promise<INotification | null> => {
   try {
     return await Notification.findOne({
@@ -176,7 +185,7 @@ export const getNotificationById = async (
  * Get count of unread notifications for a user
  */
 export const getUnreadNotificationCount = async (
-  userId: Types.ObjectId
+  userId: string | Types.ObjectId
 ): Promise<number> => {
   try {
     return await Notification.countDocuments({
