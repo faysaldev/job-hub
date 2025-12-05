@@ -30,6 +30,6 @@ app.use(logRequestResponse);
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, TypeScript with Node and Express!");
 });
-app.use("/api", routes); // This mounts all the routes under the /api prefix (e.g., /api/user)
+app.use("/api/v1", routes); // This mounts all the routes under the /api prefix (e.g., /api/user)
 
 export default app;
