@@ -4,10 +4,10 @@ export interface INotification extends Document {
   _id: Types.ObjectId;
   title: string;
   link: string;
-  sender: Types.ObjectId; // User ID of the sender
-  receiver: Types.ObjectId; // User ID of the receiver
-  isRead: boolean; // Track if notification has been read
-  isDeleted?: boolean; // Track if notification has been soft deleted
+  sender: Types.ObjectId;
+  receiver: Types.ObjectId;
+  isRead: boolean;
+  isDeleted?: boolean;
 }
 
 const notificationSchema = new Schema<INotification>(
