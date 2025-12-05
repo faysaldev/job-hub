@@ -12,6 +12,10 @@ router.post(
 );
 
 // Get payment details by session ID
-router.get("/payment-details/:sessionId", stripeController.getPaymentDetails);
+router.get(
+  "/payment-details/:sessionId",
+  authMiddleware,
+  stripeController.getPaymentDetails
+);
 
 export default router;
