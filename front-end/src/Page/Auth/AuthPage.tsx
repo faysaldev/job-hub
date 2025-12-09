@@ -19,8 +19,9 @@ import {
   useLoginMutation,
   useRegisterMutation,
 } from "@/src/redux/features/auth/authApi";
+import { toast } from "sonner";
 
-// Define dummy user type
+// Define user type
 interface User {
   id: string;
   name: string;
@@ -28,26 +29,38 @@ interface User {
   role: "jobseeker" | "recruiter";
 }
 
-// Dummy data for existing users
-const dummyUsers: User[] = [
-  { id: "1", name: "John Doe", email: "john@example.com", role: "jobseeker" },
-  { id: "2", name: "Jane Smith", email: "jane@example.com", role: "recruiter" },
-];
-
 const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
-  const [signIn, { isLoading: LoadingSignIn }] = useLoginMutation();
-  const [signUp, { isLoading: LoadingSignUp }] = useRegisterMutation();
+  const [
+    signIn,
+    {
+      isLoading: LoadingSignIn,
+      isSuccess: isSignInSuccess,
+      isError: isSignInError,
+      data: loginData,
+      error: loginError,
+    },
+  ] = useLoginMutation();
+  const [
+    signUp,
+    {
+      isLoading: LoadingSignUp,
+      isSuccess: isSignUpSuccess,
+      isError: isSignUpError,
+      data: registerData,
+      error: registerError,
+    },
+  ] = useRegisterMutation();
 
   // Check if user is already logged in on component mount
   useEffect(() => {
-    // In a real app, you would check for a token in localStorage or cookies
+    // Check for stored user in localStorage
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const user = JSON.parse(storedUser);
-      //   setCurrentUser(user);
+      setCurrentUser(user);
     }
   }, []);
 
@@ -61,6 +74,32 @@ const AuthPage = () => {
       );
     }
   }, [currentUser, router]);
+
+  // Handle successful login
+  useEffect(() => {
+    if (isSignInSuccess && loginData) {
+      console.log("Login successful", loginData);
+      // Store user data and token in localStorage
+      const userData = {
+        id: loginData.data.id,
+        name: loginData.data.name,
+        email: loginData.data.email,
+        role: loginData.data.role,
+      };
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", loginData.token);
+      setCurrentUser(userData);
+    }
+  }, [isSignInSuccess, loginData]);
+
+  // Handle successful registration
+  useEffect(() => {
+    if (isSignUpSuccess && registerData) {
+      console.log("Registration successful", registerData);
+      // Redirect to email verification page with email as parameter
+      // router.push(`/auth/verify-email?email=${encodeURIComponent(registerData.email)}`);
+    }
+  }, [isSignUpSuccess, registerData]);
 
   // If user is already logged in, show loading state while redirecting
   if (currentUser) {
@@ -83,17 +122,13 @@ const AuthPage = () => {
       email,
       password,
     };
-
-    console.log("Sign In Data:", signInData);
-
-    // Dummy login implementation
-    const success = await dummyLogin(email, password);
-    setLoading(false);
-
-    if (success) {
-      console.log("Login successful");
-    } else {
-      console.log("Cant login");
+    try {
+      const result = await signIn(signInData).unwrap();
+      console.log("Sign in successful", result);
+    } catch (error) {
+      console.error("Sign in failed:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,31 +140,28 @@ const AuthPage = () => {
     const email = formData.get("signup-email") as string;
     const phone = formData.get("phone") as string;
     const password = formData.get("signup-password") as string;
-    const role = formData.get("user-type") as "jobseeker" | "recruiter";
-    const terms = formData.get("terms") as string;
+    const role = formData.get("user-type") as string;
 
     // Create signup data object and log it
     const signUpData = {
       name,
       email,
-      phone,
+      phoneNumber: phone,
       password,
-      role,
-      terms: !!terms, // Convert to boolean
+      role: role === "jobseeker" ? "seeker" : role,
     };
 
-    console.log("Sign Up Data:", signUpData);
-
-    // Dummy signup implementation
-    const success = await signUp({ name, email, phone, password, role });
-    setLoading(false);
-
-    if (success) {
-      console.log("Account Create");
-      // Redirect to email verification page with email as parameter
-      // router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
-    } else {
-      console.log("Error creating account");
+    try {
+      const result = await signUp(signUpData).unwrap();
+      if (result?.code === 200) {
+        router.push(`/auth/verify-email?email=${email}`);
+      }
+    } catch (error) {
+      alert("Email of phone number already exist");
+      // toast.error();
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -192,27 +224,6 @@ const AuthPage = () => {
       <Footer />
     </div>
   );
-};
-
-// Dummy login function
-const dummyLogin = async (
-  email: string,
-  password: string
-): Promise<boolean> => {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Find user in dummy data
-  const user = dummyUsers.find((u) => u.email === email);
-
-  if (user) {
-    // Simulate successful login
-    const userData = { ...user, password: undefined }; // Don't store password
-    localStorage.setItem("user", JSON.stringify(userData));
-    return true;
-  }
-
-  return false;
 };
 
 export default AuthPage;

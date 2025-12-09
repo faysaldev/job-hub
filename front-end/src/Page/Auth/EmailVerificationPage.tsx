@@ -67,7 +67,8 @@ const EmailVerificationPage = () => {
               Verify Your Email
             </h1>
             <p className="text-[#234C6A]">
-              We've sent a verification link to <span className="font-semibold">{email}</span>
+              We{`'`}ve sent a verification link to{" "}
+              <span className="font-semibold">{email}</span>
             </p>
           </div>
 
@@ -90,11 +91,14 @@ const EmailVerificationPage = () => {
             ) : (
               <>
                 <p className="text-center text-[#234C6A] mb-6">
-                  Please check your inbox and click the verification link to activate your account.
+                  Please check your inbox and click the verification link to
+                  activate your account.
                 </p>
 
                 <div className="text-center mb-6">
-                  <p className="text-[#234C6A] mb-2">Didn't receive the email?</p>
+                  <p className="text-[#234C6A] mb-2">
+                    Didn{`'`}t receive the email?
+                  </p>
                   <Button
                     onClick={handleResendEmail}
                     disabled={isResending || timeLeft > 0}
@@ -124,7 +128,7 @@ const EmailVerificationPage = () => {
                     className="flex-1 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
                     onClick={handleVerify}
                   >
-                    I've Verified My Email
+                    I{`'`}ve Verified My Email
                   </Button>
                 </div>
               </>
