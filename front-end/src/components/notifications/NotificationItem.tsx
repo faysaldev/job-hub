@@ -1,6 +1,18 @@
 import Link from "next/link";
 import { Button } from "@/src/components/ui/button";
-import { ExternalLink, Mail, User } from "lucide-react";
+import { Badge } from "@/src/components/ui/badge";
+import {
+  ExternalLink,
+  Mail,
+  MailOpen,
+  User,
+  Clock,
+  Bell,
+  Briefcase,
+  MessageSquare,
+  CheckCircle,
+  ArrowRight,
+} from "lucide-react";
 
 // Define the Notification interface based on the model schema
 interface Notification {
@@ -46,76 +58,121 @@ const NotificationItem = ({
     }
   };
 
+  // Determine notification type based on title content
+  const getNotificationIcon = () => {
+    const title = notification.title.toLowerCase();
+    if (title.includes("application") || title.includes("job")) {
+      return Briefcase;
+    } else if (title.includes("message")) {
+      return MessageSquare;
+    } else if (title.includes("accepted") || title.includes("approved")) {
+      return CheckCircle;
+    }
+    return Bell;
+  };
+
+  const NotificationIcon = getNotificationIcon();
+
   return (
     <div
-      className={`p-4 rounded-lg border ${
+      className={`p-5 rounded-xl border transition-all duration-300 hover:shadow-md group ${
         notification.isRead
-          ? "border-[#E3E3E3] bg-white"
-          : "border-[#456882]/30 bg-[#E3E3E3]/50"
+          ? "border-[#E3E3E3] bg-white hover:border-[#234C6A]/20"
+          : "border-[#234C6A]/30 bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5"
       }`}
     >
-      <div className="flex justify-between">
-        <div className="flex items-start gap-3">
-          {!notification.isRead && (
-            <div className="mt-1 w-2 h-2 rounded-full bg-[#234C6A] flex-shrink-0"></div>
-          )}
-          <div>
-            <div className="flex items-center gap-2">
-              <h3
-                className={`font-medium ${
-                  notification.isRead
-                    ? "text-gray-700"
-                    : "text-[#234C6A] font-semibold"
-                }`}
-              >
-                {notification.title}
-              </h3>
-              {!notification.isRead && (
-                <span className="inline-flex items-center rounded-full bg-[#234C6A] px-2 py-0.5 text-xs font-medium text-white">
-                  Unread
+      <div className="flex items-start gap-4">
+        {/* Icon */}
+        <div
+          className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+            notification.isRead
+              ? "bg-[#E3E3E3]"
+              : "bg-gradient-to-br from-[#234C6A] to-[#456882]"
+          }`}
+        >
+          <NotificationIcon
+            className={`h-6 w-6 ${
+              notification.isRead ? "text-[#456882]" : "text-white"
+            }`}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3
+                  className={`font-semibold truncate ${
+                    notification.isRead ? "text-[#456882]" : "text-[#234C6A]"
+                  }`}
+                >
+                  {notification.title}
+                </h3>
+                {!notification.isRead && (
+                  <Badge className="bg-[#234C6A] text-white border-none text-xs px-2 py-0.5 flex-shrink-0">
+                    New
+                  </Badge>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 text-sm text-[#456882]">
+                <span className="flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5" />
+                  {notification.sender.name}
                 </span>
-              )}
+                <span className="w-1 h-1 rounded-full bg-[#456882]" />
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
+                  {formatDate(notification.createdAt)}
+                </span>
+              </div>
             </div>
-            <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-              <User className="h-3 w-3" />
-              <span>{notification.sender.name}</span>
-              <span>•</span>
-              <span>{formatDate(notification.createdAt)}</span>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  if (notification.isRead) {
+                    onMarkAsUnread(notification._id);
+                  } else {
+                    onMarkAsRead(notification._id);
+                  }
+                }}
+                className={`h-9 w-9 ${
+                  notification.isRead
+                    ? "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/10"
+                    : "text-[#234C6A] hover:bg-[#234C6A]/10"
+                }`}
+                title={notification.isRead ? "Mark as unread" : "Mark as read"}
+              >
+                {notification.isRead ? (
+                  <MailOpen className="h-4 w-4" />
+                ) : (
+                  <Mail className="h-4 w-4" />
+                )}
+              </Button>
+
+              <Link href={notification.link}>
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  View
+                  <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              if (notification.isRead) {
-                onMarkAsUnread(notification._id);
-              } else {
-                onMarkAsRead(notification._id);
-              }
-            }}
-            className={`${
-              notification.isRead ? "text-[#456882]" : "text-[#234C6A]"
-            } hover:text-[#234C6A]`}
-          >
-            {notification.isRead ? (
-              <Mail className="h-4 w-4 text-green-500" />
-            ) : (
-              <Mail className="h-4 w-4" />
-            )}
-          </Button>
-          <Link href={notification.link}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-2 border-[#234C6A] text-[#234C6A]"
-            >
-              View <ExternalLink className="ml-1 h-3 w-3" />
-            </Button>
-          </Link>
-        </div>
       </div>
+
+      {/* Unread indicator line */}
+      {!notification.isRead && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#234C6A] to-[#456882] rounded-l-xl" />
+      )}
     </div>
   );
 };
