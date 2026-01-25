@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
 import { Job } from "@/src/types";
@@ -21,9 +22,26 @@ import {
   Building2,
 } from "lucide-react";
 import gsap from "gsap";
+import {
+  jobCategories,
+  companySizes,
+  postedDateOptions,
+  applicantsOptions,
+} from "@/src/lib/jobCategories";
 
-// Define mock jobs with the required status field
-const mockJobs: Job[] = [
+// Extended Job interface for filtering
+interface ExtendedJob extends Job {
+  category?: string;
+  subcategory?: string;
+  companySize?: number;
+  applicants?: number;
+  postedDays?: number;
+  salaryMin?: number;
+  salaryMax?: number;
+}
+
+// Define mock jobs with extended fields for filtering
+const mockJobs: ExtendedJob[] = [
   {
     id: 1,
     title: "Senior Frontend Developer",
@@ -32,10 +50,16 @@ const mockJobs: Job[] = [
     type: "Full-time",
     salary: "$100k - $150k",
     posted: "2 days ago",
-    description:
-      "We're looking for an experienced Frontend Developer to join our growing team...",
+    description: "We're looking for an experienced Frontend Developer to join our growing team...",
     skills: ["React", "TypeScript", "Tailwind CSS"],
     status: "active",
+    category: "technology",
+    subcategory: "frontend",
+    companySize: 150,
+    applicants: 45,
+    postedDays: 2,
+    salaryMin: 100000,
+    salaryMax: 150000,
   },
   {
     id: 2,
@@ -45,10 +69,16 @@ const mockJobs: Job[] = [
     type: "Full-time",
     salary: "$90k - $120k",
     posted: "1 week ago",
-    description:
-      "Join our creative team and help shape the future of our products...",
+    description: "Join our creative team and help shape the future of our products...",
     skills: ["Figma", "UI/UX", "Prototyping"],
     status: "active",
+    category: "design",
+    subcategory: "product",
+    companySize: 45,
+    applicants: 78,
+    postedDays: 7,
+    salaryMin: 90000,
+    salaryMax: 120000,
   },
   {
     id: 3,
@@ -61,6 +91,13 @@ const mockJobs: Job[] = [
     description: "Build scalable backend systems for our enterprise clients...",
     skills: ["Node.js", "PostgreSQL", "AWS"],
     status: "active",
+    category: "technology",
+    subcategory: "backend",
+    companySize: 320,
+    applicants: 23,
+    postedDays: 3,
+    salaryMin: 120000,
+    salaryMax: 160000,
   },
   {
     id: 4,
@@ -73,6 +110,13 @@ const mockJobs: Job[] = [
     description: "Lead our marketing initiatives and drive user acquisition...",
     skills: ["SEO", "Content Strategy", "Analytics"],
     status: "active",
+    category: "marketing",
+    subcategory: "digital",
+    companySize: 85,
+    applicants: 56,
+    postedDays: 5,
+    salaryMin: 80000,
+    salaryMax: 110000,
   },
   {
     id: 5,
@@ -85,6 +129,13 @@ const mockJobs: Job[] = [
     description: "Manage our cloud infrastructure and deployment pipelines...",
     skills: ["Docker", "Kubernetes", "CI/CD"],
     status: "active",
+    category: "technology",
+    subcategory: "devops",
+    companySize: 500,
+    applicants: 12,
+    postedDays: 1,
+    salaryMin: 110000,
+    salaryMax: 140000,
   },
   {
     id: 6,
@@ -97,15 +148,143 @@ const mockJobs: Job[] = [
     description: "Apply machine learning to solve complex business problems...",
     skills: ["Python", "TensorFlow", "SQL"],
     status: "active",
+    category: "technology",
+    subcategory: "data-science",
+    companySize: 200,
+    applicants: 89,
+    postedDays: 4,
+    salaryMin: 130000,
+    salaryMax: 170000,
+  },
+  {
+    id: 7,
+    title: "UI/UX Designer",
+    company: "CreativeMinds",
+    location: "Remote",
+    type: "Part-time",
+    salary: "$60k - $80k",
+    posted: "Today",
+    description: "Create beautiful and intuitive user interfaces...",
+    skills: ["Figma", "Adobe XD", "User Research"],
+    status: "active",
+    category: "design",
+    subcategory: "ui-ux",
+    companySize: 25,
+    applicants: 5,
+    postedDays: 0,
+    salaryMin: 60000,
+    salaryMax: 80000,
+  },
+  {
+    id: 8,
+    title: "Sales Development Representative",
+    company: "SalesForce Pro",
+    location: "Chicago, IL",
+    type: "Full-time",
+    salary: "$50k - $70k",
+    posted: "2 weeks ago",
+    description: "Drive sales growth through outbound prospecting...",
+    skills: ["CRM", "Cold Calling", "Negotiation"],
+    status: "active",
+    category: "sales",
+    subcategory: "sdr",
+    companySize: 1200,
+    applicants: 120,
+    postedDays: 14,
+    salaryMin: 50000,
+    salaryMax: 70000,
+  },
+  {
+    id: 9,
+    title: "Financial Analyst",
+    company: "FinTech Solutions",
+    location: "New York, NY",
+    type: "Full-time",
+    salary: "$85k - $115k",
+    posted: "6 days ago",
+    description: "Analyze financial data and provide strategic insights...",
+    skills: ["Excel", "Financial Modeling", "SQL"],
+    status: "active",
+    category: "finance",
+    subcategory: "financial-analyst",
+    companySize: 350,
+    applicants: 34,
+    postedDays: 6,
+    salaryMin: 85000,
+    salaryMax: 115000,
+  },
+  {
+    id: 10,
+    title: "HR Recruiter",
+    company: "TalentHub",
+    location: "Remote",
+    type: "Full-time",
+    salary: "$55k - $75k",
+    posted: "3 days ago",
+    description: "Source and recruit top talent for our clients...",
+    skills: ["Recruiting", "LinkedIn", "Interviewing"],
+    status: "active",
+    category: "hr",
+    subcategory: "recruiting",
+    companySize: 60,
+    applicants: 28,
+    postedDays: 3,
+    salaryMin: 55000,
+    salaryMax: 75000,
+  },
+  {
+    id: 11,
+    title: "Full Stack Developer",
+    company: "WebSolutions",
+    location: "Seattle, WA",
+    type: "Freelance",
+    salary: "$75k - $95k",
+    posted: "1 week ago",
+    description: "Build end-to-end web applications...",
+    skills: ["React", "Node.js", "MongoDB"],
+    status: "active",
+    category: "technology",
+    subcategory: "fullstack",
+    companySize: 15,
+    applicants: 67,
+    postedDays: 7,
+    salaryMin: 75000,
+    salaryMax: 95000,
+  },
+  {
+    id: 12,
+    title: "Registered Nurse",
+    company: "HealthCare Plus",
+    location: "Los Angeles, CA",
+    type: "Full-time",
+    salary: "$70k - $90k",
+    posted: "Today",
+    description: "Provide compassionate patient care in our hospital...",
+    skills: ["Patient Care", "Medical Records", "CPR"],
+    status: "active",
+    category: "healthcare",
+    subcategory: "nursing",
+    companySize: 800,
+    applicants: 15,
+    postedDays: 0,
+    salaryMin: 70000,
+    salaryMax: 90000,
   },
 ];
 
 const Jobs = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [locationTerm, setLocationTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const jobsPerPage = 5;
+  const jobsPerPage = 6;
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // URL-based category/subcategory selection
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
 
   // Filter states
   const [jobTypes, setJobTypes] = useState([
@@ -121,11 +300,114 @@ const Jobs = () => {
   ]);
 
   const [salaryRanges, setSalaryRanges] = useState([
-    { id: "0-50", label: "$0 - $50k", checked: true },
-    { id: "50-100", label: "$50k - $100k", checked: true },
-    { id: "100-150", label: "$100k - $150k", checked: true },
-    { id: "150+", label: "$150k+", checked: true },
+    { id: "0-30k", label: "$0 - $30k", checked: false, min: 0, max: 30000 },
+    { id: "30k-50k", label: "$30k - $50k", checked: false, min: 30000, max: 50000 },
+    { id: "50k-75k", label: "$50k - $75k", checked: false, min: 50000, max: 75000 },
+    { id: "75k-100k", label: "$75k - $100k", checked: false, min: 75000, max: 100000 },
+    { id: "100k-150k", label: "$100k - $150k", checked: false, min: 100000, max: 150000 },
+    { id: "150k+", label: "$150k+", checked: false, min: 150000, max: Infinity },
   ]);
+
+  // Category filters
+  const [categoryFilters, setCategoryFilters] = useState(
+    jobCategories.map(cat => ({
+      id: cat.id,
+      label: cat.name,
+      checked: false,
+      count: cat.count,
+    }))
+  );
+
+  // Subcategory filters (based on selected category)
+  const [subcategoryFilters, setSubcategoryFilters] = useState<Array<{
+    id: string;
+    label: string;
+    checked: boolean;
+    count?: number;
+  }>>([]);
+
+  // Company size filters
+  const [companySizeFilters, setCompanySizeFilters] = useState(
+    companySizes.map(size => ({
+      id: size.id,
+      label: size.label,
+      checked: false,
+      min: size.min,
+      max: size.max,
+    }))
+  );
+
+  // Posted date filters
+  const [postedDateFilters, setPostedDateFilters] = useState(
+    postedDateOptions.map(date => ({
+      id: date.id,
+      label: date.label,
+      checked: false,
+      days: date.days,
+    }))
+  );
+
+  // Applicant count filters
+  const [applicantCountFilters, setApplicantCountFilters] = useState(
+    applicantsOptions.map(opt => ({
+      id: opt.id,
+      label: opt.label,
+      checked: false,
+      min: opt.min,
+      max: opt.max,
+    }))
+  );
+
+  // Read URL parameters on mount
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    const subcategoryParam = searchParams.get("subcategory");
+
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+      // Update category filter
+      setCategoryFilters(prev => prev.map(cat => ({
+        ...cat,
+        checked: cat.id === categoryParam,
+      })));
+
+      // Load subcategories for the selected category
+      const category = jobCategories.find(c => c.id === categoryParam);
+      if (category) {
+        setSubcategoryFilters(
+          category.subcategories.map(sub => ({
+            id: sub.id,
+            label: sub.name,
+            checked: sub.id === subcategoryParam,
+            count: sub.count,
+          }))
+        );
+      }
+
+      if (subcategoryParam) {
+        setSelectedSubcategory(subcategoryParam);
+      }
+    }
+  }, [searchParams]);
+
+  // Update subcategories when category changes
+  useEffect(() => {
+    if (selectedCategory) {
+      const category = jobCategories.find(c => c.id === selectedCategory);
+      if (category) {
+        setSubcategoryFilters(
+          category.subcategories.map(sub => ({
+            id: sub.id,
+            label: sub.name,
+            checked: sub.id === selectedSubcategory,
+            count: sub.count,
+          }))
+        );
+      }
+    } else {
+      setSubcategoryFilters([]);
+    }
+  }, [selectedCategory, selectedSubcategory]);
 
   // GSAP animations
   useEffect(() => {
@@ -188,8 +470,20 @@ const Jobs = () => {
     }
   }, []);
 
-  // Filter jobs based on search terms and filters
+  // Calculate active filter count
+  const activeFilterCount =
+    categoryFilters.filter(c => c.checked).length +
+    subcategoryFilters.filter(s => s.checked).length +
+    jobTypes.filter(t => !t.checked).length +
+    experienceLevels.filter(e => !e.checked).length +
+    salaryRanges.filter(s => s.checked).length +
+    companySizeFilters.filter(c => c.checked).length +
+    postedDateFilters.filter(d => d.checked).length +
+    applicantCountFilters.filter(a => a.checked).length;
+
+  // Filter jobs based on all criteria
   const filteredJobs = mockJobs.filter((job) => {
+    // Search term filter
     const matchesSearch =
       !searchTerm ||
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -198,21 +492,80 @@ const Jobs = () => {
         skill.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
+    // Location filter
     const matchesLocation =
       !locationTerm ||
       job.location.toLowerCase().includes(locationTerm.toLowerCase()) ||
       (locationTerm.toLowerCase().includes("remote") &&
         job.location.toLowerCase().includes("remote"));
 
-    const selectedJobTypes = jobTypes
-      .filter((type) => type.checked)
-      .map((type) => type.id);
+    // Job type filter
+    const selectedJobTypes = jobTypes.filter((type) => type.checked).map((type) => type.id);
     const matchesJobType =
       selectedJobTypes.length === 0 ||
       selectedJobTypes.length === jobTypes.length ||
       selectedJobTypes.some((type) => job.type.toLowerCase().includes(type));
 
-    return matchesSearch && matchesLocation && matchesJobType;
+    // Category filter
+    const selectedCategories = categoryFilters.filter(c => c.checked).map(c => c.id);
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      (job.category && selectedCategories.includes(job.category));
+
+    // Subcategory filter
+    const selectedSubcategories = subcategoryFilters.filter(s => s.checked).map(s => s.id);
+    const matchesSubcategory =
+      selectedSubcategories.length === 0 ||
+      (job.subcategory && selectedSubcategories.includes(job.subcategory));
+
+    // Salary range filter
+    const selectedSalaries = salaryRanges.filter(s => s.checked);
+    const matchesSalary =
+      selectedSalaries.length === 0 ||
+      selectedSalaries.some(range => {
+        const jobMin = job.salaryMin || 0;
+        const jobMax = job.salaryMax || Infinity;
+        return jobMin <= range.max && jobMax >= range.min;
+      });
+
+    // Company size filter
+    const selectedSizes = companySizeFilters.filter(s => s.checked);
+    const matchesCompanySize =
+      selectedSizes.length === 0 ||
+      selectedSizes.some(size => {
+        const companySize = job.companySize || 0;
+        return companySize >= size.min && companySize <= size.max;
+      });
+
+    // Posted date filter
+    const selectedDates = postedDateFilters.filter(d => d.checked);
+    const matchesPostedDate =
+      selectedDates.length === 0 ||
+      selectedDates.some(date => {
+        const postedDays = job.postedDays ?? Infinity;
+        return date.days === Infinity || postedDays <= date.days;
+      });
+
+    // Applicant count filter
+    const selectedApplicants = applicantCountFilters.filter(a => a.checked);
+    const matchesApplicants =
+      selectedApplicants.length === 0 ||
+      selectedApplicants.some(opt => {
+        const applicants = job.applicants || 0;
+        return applicants >= opt.min && applicants <= opt.max;
+      });
+
+    return (
+      matchesSearch &&
+      matchesLocation &&
+      matchesJobType &&
+      matchesCategory &&
+      matchesSubcategory &&
+      matchesSalary &&
+      matchesCompanySize &&
+      matchesPostedDate &&
+      matchesApplicants
+    );
   });
 
   // Calculate pagination
@@ -271,12 +624,128 @@ const Jobs = () => {
     );
   };
 
+  // Category filter handler
+  const handleCategoryChange = (id: string) => {
+    setCategoryFilters((prev) =>
+      prev.map((cat) =>
+        cat.id === id ? { ...cat, checked: !cat.checked } : cat
+      )
+    );
+
+    // Update selected category for display
+    const currentlyChecked = categoryFilters.find(c => c.id === id)?.checked;
+    if (!currentlyChecked) {
+      setSelectedCategory(id);
+      // Load subcategories
+      const category = jobCategories.find(c => c.id === id);
+      if (category) {
+        setSubcategoryFilters(
+          category.subcategories.map(sub => ({
+            id: sub.id,
+            label: sub.name,
+            checked: false,
+            count: sub.count,
+          }))
+        );
+      }
+    } else {
+      // If unchecking, clear category selection
+      if (selectedCategory === id) {
+        setSelectedCategory(null);
+        setSelectedSubcategory(null);
+        setSubcategoryFilters([]);
+      }
+    }
+  };
+
+  // Subcategory filter handler
+  const handleSubcategoryChange = (id: string) => {
+    setSubcategoryFilters((prev) =>
+      prev.map((sub) =>
+        sub.id === id ? { ...sub, checked: !sub.checked } : sub
+      )
+    );
+
+    const currentlyChecked = subcategoryFilters.find(s => s.id === id)?.checked;
+    if (!currentlyChecked) {
+      setSelectedSubcategory(id);
+    } else if (selectedSubcategory === id) {
+      setSelectedSubcategory(null);
+    }
+  };
+
+  // Company size filter handler
+  const handleCompanySizeChange = (id: string) => {
+    setCompanySizeFilters((prev) =>
+      prev.map((size) =>
+        size.id === id ? { ...size, checked: !size.checked } : size
+      )
+    );
+  };
+
+  // Posted date filter handler
+  const handlePostedDateChange = (id: string) => {
+    setPostedDateFilters((prev) =>
+      prev.map((date) =>
+        date.id === id ? { ...date, checked: !date.checked } : date
+      )
+    );
+  };
+
+  // Applicant count filter handler
+  const handleApplicantCountChange = (id: string) => {
+    setApplicantCountFilters((prev) =>
+      prev.map((count) =>
+        count.id === id ? { ...count, checked: !count.checked } : count
+      )
+    );
+  };
+
+  // Clear category selection
+  const handleClearCategory = () => {
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setCategoryFilters((prev) => prev.map((cat) => ({ ...cat, checked: false })));
+    setSubcategoryFilters([]);
+    // Update URL
+    router.push("/job");
+  };
+
+  // Clear subcategory selection
+  const handleClearSubcategory = () => {
+    setSelectedSubcategory(null);
+    setSubcategoryFilters((prev) => prev.map((sub) => ({ ...sub, checked: false })));
+  };
+
+  // Reset all filters
+  const handleResetAllFilters = useCallback(() => {
+    setSearchTerm("");
+    setLocationTerm("");
+    setSelectedCategory(null);
+    setSelectedSubcategory(null);
+    setCategoryFilters((prev) => prev.map((cat) => ({ ...cat, checked: false })));
+    setSubcategoryFilters([]);
+    setJobTypes((prev) => prev.map((type) => ({ ...type, checked: true })));
+    setExperienceLevels((prev) => prev.map((level) => ({ ...level, checked: true })));
+    setSalaryRanges((prev) => prev.map((range) => ({ ...range, checked: false })));
+    setCompanySizeFilters((prev) => prev.map((size) => ({ ...size, checked: false })));
+    setPostedDateFilters((prev) => prev.map((date) => ({ ...date, checked: false })));
+    setApplicantCountFilters((prev) => prev.map((count) => ({ ...count, checked: false })));
+    setCurrentPage(1);
+    router.push("/job");
+  }, [router]);
+
+  // Calculate stats based on filtered results
+  const uniqueCompanies = new Set(filteredJobs.map(job => job.company)).size;
+  const newToday = filteredJobs.filter(job => job.postedDays === 0).length;
+  const totalApplicants = filteredJobs.reduce((sum, job) => sum + (job.applicants || 0), 0);
+
   // Stats data
   const stats = [
-    { icon: Briefcase, label: "Total Jobs", value: mockJobs.length, color: "from-[#234C6A] to-[#456882]" },
-    { icon: Building2, label: "Companies", value: 45, color: "from-blue-500 to-cyan-500" },
-    { icon: TrendingUp, label: "New Today", value: 12, color: "from-green-500 to-emerald-500" },
-    { icon: Users, label: "Applicants", value: "2.4k", color: "from-purple-500 to-pink-500" },
+    { icon: Briefcase, label: "Matching Jobs", value: filteredJobs.length, color: "from-[#234C6A] to-[#456882]" },
+    { icon: Building2, label: "Companies", value: uniqueCompanies, color: "from-blue-500 to-cyan-500" },
+    { icon: TrendingUp, label: "New Today", value: newToday, color: "from-green-500 to-emerald-500" },
+    { icon: Users, label: "Applicants", value: totalApplicants > 1000 ? `${(totalApplicants/1000).toFixed(1)}k` : totalApplicants, color: "from-purple-500 to-pink-500" },
   ];
 
   return (
@@ -331,6 +800,22 @@ const Jobs = () => {
                     onJobTypeChange={handleJobTypeChange}
                     onExperienceChange={handleExperienceChange}
                     onSalaryChange={handleSalaryChange}
+                    categories={categoryFilters}
+                    subcategories={subcategoryFilters}
+                    companySizeFilters={companySizeFilters}
+                    postedDateFilters={postedDateFilters}
+                    applicantCountFilters={applicantCountFilters}
+                    onCategoryChange={handleCategoryChange}
+                    onSubcategoryChange={handleSubcategoryChange}
+                    onCompanySizeChange={handleCompanySizeChange}
+                    onPostedDateChange={handlePostedDateChange}
+                    onApplicantCountChange={handleApplicantCountChange}
+                    selectedCategory={selectedCategory || undefined}
+                    selectedSubcategory={selectedSubcategory || undefined}
+                    onClearCategory={handleClearCategory}
+                    onClearSubcategory={handleClearSubcategory}
+                    onResetAllFilters={handleResetAllFilters}
+                    activeFilterCount={activeFilterCount}
                   />
 
                   {/* Quick Tips Card */}
@@ -360,30 +845,44 @@ const Jobs = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <h2 className="text-xl font-bold text-[#234C6A] mb-1">
-                        Available Positions
+                        {selectedCategory
+                          ? `${jobCategories.find(c => c.id === selectedCategory)?.name || "Category"} Jobs`
+                          : "Available Positions"}
+                        {selectedSubcategory && selectedCategory && (
+                          <span className="text-[#456882] font-normal text-base ml-2">
+                            / {jobCategories.find(c => c.id === selectedCategory)?.subcategories.find(s => s.id === selectedSubcategory)?.name}
+                          </span>
+                        )}
                       </h2>
                       <p className="text-[#456882]">
                         Showing{" "}
                         <span className="font-semibold text-[#234C6A]">
-                          {Math.min(
-                            (currentPage - 1) * jobsPerPage + 1,
-                            filteredJobs.length
-                          )}{" "}
-                          -{" "}
-                          {Math.min(currentPage * jobsPerPage, filteredJobs.length)}
+                          {filteredJobs.length > 0
+                            ? `${Math.min((currentPage - 1) * jobsPerPage + 1, filteredJobs.length)} - ${Math.min(currentPage * jobsPerPage, filteredJobs.length)}`
+                            : "0"}
                         </span>{" "}
                         of{" "}
                         <span className="font-semibold text-[#234C6A]">
                           {filteredJobs.length}
                         </span>{" "}
                         jobs
+                        {activeFilterCount > 0 && (
+                          <span className="text-[#456882]/70 ml-1">
+                            ({activeFilterCount} {activeFilterCount === 1 ? "filter" : "filters"} applied)
+                          </span>
+                        )}
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Badge className="bg-green-100 text-green-700 border-none">
                         <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
                         {filteredJobs.length} Active
                       </Badge>
+                      {selectedCategory && (
+                        <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none">
+                          {jobCategories.find(c => c.id === selectedCategory)?.name}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </Card>

@@ -2,44 +2,41 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import {
   Briefcase,
-  Menu,
   X,
   LogOut,
-  User,
   Bell,
   ChevronDown,
   ChevronRight,
   Building2,
   Search,
   Heart,
-  Settings,
-  HelpCircle,
-  FileText,
-  Users,
-  Home,
   Info,
   Phone,
   Sparkles,
-  Target,
   TrendingUp,
   Shield,
-  Zap,
   Star,
   Clock,
   CheckCircle,
   ArrowRight,
-  UserCircle,
   LayoutDashboard,
   PlusCircle,
   Eye,
-  MessageSquare,
+  Users,
+  Code,
+  Palette,
+  Megaphone,
+  DollarSign,
+  Settings,
+  Grid3X3,
+  Zap,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { jobCategories } from "@/src/lib/jobCategories";
 
 // Mock user data - replace with actual auth context
 export const mockUser: {
@@ -56,10 +53,24 @@ export const mockUser: {
   avatar: "https://github.com/shadcn.png",
 };
 
+// Icon mapping for categories
+const categoryIcons: { [key: string]: React.ElementType } = {
+  Code,
+  Palette,
+  Megaphone,
+  TrendingUp,
+  DollarSign,
+  Users,
+  Settings,
+  Heart: Briefcase,
+};
+
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [mobileExpandedCategory, setMobileExpandedCategory] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -80,6 +91,7 @@ const Header = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setActiveDropdown(null);
+        setHoveredCategory(null);
       }
     };
 
@@ -91,6 +103,8 @@ const Header = () => {
   useEffect(() => {
     setMobileMenuOpen(false);
     setActiveDropdown(null);
+    setHoveredCategory(null);
+    setMobileExpandedCategory(null);
   }, [pathname]);
 
   const handleLogout = () => {
@@ -105,11 +119,24 @@ const Header = () => {
 
   const toggleDropdown = (name: string) => {
     setActiveDropdown(activeDropdown === name ? null : name);
+    if (name !== "categories") {
+      setHoveredCategory(null);
+    }
+  };
+
+  const navigateToCategory = (categoryId: string, subcategoryId?: string) => {
+    const params = new URLSearchParams();
+    params.set("category", categoryId);
+    if (subcategoryId) {
+      params.set("subcategory", subcategoryId);
+    }
+    router.push(`/job?${params.toString()}`);
+    setActiveDropdown(null);
+    setHoveredCategory(null);
   };
 
   // Navigation items
   const navItems = [
-    { href: "/job", label: "Find Jobs", icon: Search },
     { href: "/about", label: "About", icon: Info },
     { href: "/contact", label: "Contact", icon: Phone },
   ];
@@ -194,6 +221,11 @@ const Header = () => {
     },
   ];
 
+  // Get icon component for category
+  const getCategoryIcon = (iconName: string) => {
+    return categoryIcons[iconName] || Briefcase;
+  };
+
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all duration-500 ${
@@ -218,6 +250,155 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <nav ref={dropdownRef} className="hidden lg:flex items-center gap-1">
+          {/* Jobs Categories Mega Menu */}
+          <div className="relative">
+            <button
+              onClick={() => toggleDropdown("categories")}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+                activeDropdown === "categories" || isActive("/job")
+                  ? "text-[#234C6A] bg-[#234C6A]/5"
+                  : "text-[#456882] hover:text-[#234C6A]"
+              }`}
+            >
+              <Grid3X3 className="h-4 w-4" />
+              Browse Jobs
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${activeDropdown === "categories" ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Categories Mega Menu */}
+            <div
+              className={`absolute top-full left-0 pt-3 transition-all duration-300 ${
+                activeDropdown === "categories"
+                  ? "opacity-100 visible translate-y-0"
+                  : "opacity-0 invisible -translate-y-2"
+              }`}
+            >
+              <div className="flex bg-white rounded-2xl shadow-2xl shadow-[#234C6A]/10 border border-[#234C6A]/10 overflow-hidden">
+                {/* Categories List */}
+                <div className="w-[280px] border-r border-[#E3E3E3]">
+                  {/* Header */}
+                  <div className="p-4 bg-gradient-to-r from-[#234C6A] to-[#456882]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <Briefcase className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white">Job Categories</h3>
+                        <p className="text-sm text-white/80">Find your perfect role</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* All Jobs Link */}
+                  <Link
+                    href="/job"
+                    onClick={() => setActiveDropdown(null)}
+                    className="flex items-center gap-3 p-3 mx-2 mt-2 rounded-xl bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 hover:from-[#234C6A]/10 hover:to-[#456882]/10 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center">
+                      <Zap className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-[#234C6A]">All Jobs</p>
+                      <p className="text-xs text-[#456882]">Browse all available positions</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-[#456882] group-hover:translate-x-1 transition-transform" />
+                  </Link>
+
+                  {/* Categories */}
+                  <div className="p-2 max-h-[400px] overflow-y-auto">
+                    {jobCategories.map((category) => {
+                      const IconComponent = getCategoryIcon(category.icon);
+                      return (
+                        <button
+                          key={category.id}
+                          onMouseEnter={() => setHoveredCategory(category.id)}
+                          onClick={() => navigateToCategory(category.id)}
+                          className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all duration-200 text-left group ${
+                            hoveredCategory === category.id
+                              ? "bg-[#234C6A]/10"
+                              : "hover:bg-[#E3E3E3]/50"
+                          }`}
+                        >
+                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
+                            <IconComponent className="h-5 w-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-[#234C6A] truncate">{category.name}</p>
+                            <p className="text-xs text-[#456882]">{category.count.toLocaleString()} jobs</p>
+                          </div>
+                          <ChevronRight className={`h-4 w-4 text-[#456882] transition-all ${hoveredCategory === category.id ? "translate-x-1 text-[#234C6A]" : ""}`} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Subcategories Panel */}
+                <div className="w-[320px] bg-[#FAFAFA]">
+                  {hoveredCategory ? (
+                    <>
+                      {/* Subcategory Header */}
+                      <div className="p-4 border-b border-[#E3E3E3]">
+                        <h4 className="font-bold text-[#234C6A]">
+                          {jobCategories.find(c => c.id === hoveredCategory)?.name}
+                        </h4>
+                        <p className="text-sm text-[#456882]">
+                          {jobCategories.find(c => c.id === hoveredCategory)?.subcategories.length} specializations
+                        </p>
+                      </div>
+
+                      {/* Subcategories List */}
+                      <div className="p-2 max-h-[420px] overflow-y-auto">
+                        {jobCategories
+                          .find(c => c.id === hoveredCategory)
+                          ?.subcategories.map((sub) => (
+                            <button
+                              key={sub.id}
+                              onClick={() => navigateToCategory(hoveredCategory, sub.id)}
+                              className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-white hover:shadow-md transition-all duration-200 text-left group"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+                                <span className="text-sm font-medium text-[#234C6A] group-hover:text-[#456882] transition-colors">
+                                  {sub.name}
+                                </span>
+                              </div>
+                              <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs">
+                                {sub.count}
+                              </Badge>
+                            </button>
+                          ))}
+                      </div>
+
+                      {/* View All in Category */}
+                      <div className="p-3 border-t border-[#E3E3E3]">
+                        <button
+                          onClick={() => navigateToCategory(hoveredCategory)}
+                          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-[#234C6A] to-[#456882] text-white font-medium hover:shadow-lg transition-all"
+                        >
+                          View all {jobCategories.find(c => c.id === hoveredCategory)?.name} jobs
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                      <div className="w-16 h-16 rounded-2xl bg-[#234C6A]/10 flex items-center justify-center mb-4">
+                        <Search className="h-8 w-8 text-[#234C6A]" />
+                      </div>
+                      <h4 className="font-bold text-[#234C6A] mb-2">Explore Categories</h4>
+                      <p className="text-sm text-[#456882]">
+                        Hover over a category to see available specializations
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Other Nav Items */}
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -253,13 +434,13 @@ const Header = () => {
 
             {/* Employers Mega Menu */}
             <div
-              className={`absolute top-full left-1/2 -translate-x-1/2 pt-3 transition-all duration-300 ${
+              className={`absolute top-full right-0 pt-3 transition-all duration-300 ${
                 activeDropdown === "employers"
                   ? "opacity-100 visible translate-y-0"
                   : "opacity-0 invisible -translate-y-2"
               }`}
             >
-              <div className="w-[420px] bg-white rounded-2xl shadow-2xl shadow-[#234C6A]/10 border border-[#234C6A]/10 overflow-hidden">
+              <div className="w-[380px] bg-white rounded-2xl shadow-2xl shadow-[#234C6A]/10 border border-[#234C6A]/10 overflow-hidden">
                 {/* Header */}
                 <div className="p-4 bg-gradient-to-r from-[#234C6A] to-[#456882]">
                   <div className="flex items-center gap-3">
@@ -628,7 +809,70 @@ const Header = () => {
 
         {/* Navigation Content */}
         <div className="overflow-y-auto h-[calc(100%-140px)] p-4">
-          {/* Main Nav Items */}
+          {/* Browse Jobs */}
+          <div className="mb-4">
+            <Link
+              href="/job"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-[#234C6A] to-[#456882] text-white font-medium shadow-lg"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Zap className="h-5 w-5" />
+              Browse All Jobs
+              <ArrowRight className="h-4 w-4 ml-auto" />
+            </Link>
+          </div>
+
+          {/* Job Categories */}
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-[#456882] uppercase tracking-wider px-3 mb-2">Job Categories</p>
+            <div className="space-y-1">
+              {jobCategories.slice(0, 6).map((category) => {
+                const IconComponent = getCategoryIcon(category.icon);
+                const isExpanded = mobileExpandedCategory === category.id;
+
+                return (
+                  <div key={category.id}>
+                    <button
+                      onClick={() => setMobileExpandedCategory(isExpanded ? null : category.id)}
+                      className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-[#234C6A] hover:bg-[#234C6A]/10 transition-all"
+                    >
+                      <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center`}>
+                        <IconComponent className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-medium">{category.name}</p>
+                        <p className="text-xs text-[#456882]">{category.count} jobs</p>
+                      </div>
+                      <ChevronDown className={`h-4 w-4 text-[#456882] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {/* Subcategories */}
+                    {isExpanded && (
+                      <div className="ml-4 pl-4 border-l-2 border-[#234C6A]/20 mt-1 mb-2 space-y-1">
+                        {category.subcategories.map((sub) => (
+                          <button
+                            key={sub.id}
+                            onClick={() => {
+                              navigateToCategory(category.id, sub.id);
+                              setMobileMenuOpen(false);
+                            }}
+                            className="flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5 transition-all"
+                          >
+                            <span>{sub.name}</span>
+                            <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs">
+                              {sub.count}
+                            </Badge>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Other Nav Items */}
           <div className="space-y-1 mb-6">
             <p className="text-xs font-semibold text-[#456882] uppercase tracking-wider px-3 mb-2">Menu</p>
             {navItems.map((item) => (
