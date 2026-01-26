@@ -358,14 +358,40 @@ const Jobs = () => {
     }))
   );
 
-  // Read URL parameters on mount
-  useEffect(() => {
-    const categoryParam = searchParams.get("category");
-    const subcategoryParam = searchParams.get("subcategory");
+  // Helper function to update URL with current filters
+  const updateURLParams = useCallback((updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
 
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === "" || value === undefined) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+
+    const queryString = params.toString();
+    router.push(queryString ? `/job?${queryString}` : "/job", { scroll: false });
+  }, [searchParams, router]);
+
+  // Read URL parameters on mount and when URL changes
+  useEffect(() => {
+    // Search term
+    const searchParam = searchParams.get("s");
+    if (searchParam !== null) {
+      setSearchTerm(searchParam);
+    }
+
+    // Location
+    const locationParam = searchParams.get("location");
+    if (locationParam !== null) {
+      setLocationTerm(locationParam);
+    }
+
+    // Category
+    const categoryParam = searchParams.get("category");
     if (categoryParam) {
       setSelectedCategory(categoryParam);
-      // Update category filter
       setCategoryFilters(prev => prev.map(cat => ({
         ...cat,
         checked: cat.id === categoryParam,
@@ -374,6 +400,7 @@ const Jobs = () => {
       // Load subcategories for the selected category
       const category = jobCategories.find(c => c.id === categoryParam);
       if (category) {
+        const subcategoryParam = searchParams.get("subcategory");
         setSubcategoryFilters(
           category.subcategories.map(sub => ({
             id: sub.id,
@@ -382,11 +409,66 @@ const Jobs = () => {
             count: sub.count,
           }))
         );
+        if (subcategoryParam) {
+          setSelectedSubcategory(subcategoryParam);
+        }
       }
+    }
 
-      if (subcategoryParam) {
-        setSelectedSubcategory(subcategoryParam);
-      }
+    // Job types
+    const jobTypesParam = searchParams.get("types");
+    if (jobTypesParam) {
+      const selectedTypes = jobTypesParam.split(",");
+      setJobTypes(prev => prev.map(type => ({
+        ...type,
+        checked: selectedTypes.includes(type.id),
+      })));
+    }
+
+    // Salary ranges
+    const salaryParam = searchParams.get("salary");
+    if (salaryParam) {
+      const selectedSalaries = salaryParam.split(",");
+      setSalaryRanges(prev => prev.map(range => ({
+        ...range,
+        checked: selectedSalaries.includes(range.id),
+      })));
+    }
+
+    // Company size
+    const companySizeParam = searchParams.get("companySize");
+    if (companySizeParam) {
+      const selectedSizes = companySizeParam.split(",");
+      setCompanySizeFilters(prev => prev.map(size => ({
+        ...size,
+        checked: selectedSizes.includes(size.id),
+      })));
+    }
+
+    // Posted date
+    const postedDateParam = searchParams.get("posted");
+    if (postedDateParam) {
+      const selectedDates = postedDateParam.split(",");
+      setPostedDateFilters(prev => prev.map(date => ({
+        ...date,
+        checked: selectedDates.includes(date.id),
+      })));
+    }
+
+    // Applicant count
+    const applicantsParam = searchParams.get("applicants");
+    if (applicantsParam) {
+      const selectedApplicants = applicantsParam.split(",");
+      setApplicantCountFilters(prev => prev.map(count => ({
+        ...count,
+        checked: selectedApplicants.includes(count.id),
+      })));
+    }
+
+    // Page number
+    const pageParam = searchParams.get("page");
+    if (pageParam) {
+      setCurrentPage(parseInt(pageParam, 10) || 1);
     }
   }, [searchParams]);
 
@@ -576,6 +658,10 @@ const Jobs = () => {
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
+    // Update URL with page number
+    updateURLParams({
+      page: pageNumber > 1 ? String(pageNumber) : null,
+    });
     const jobListingsElement = document.querySelector(".job-listings");
     if (jobListingsElement) {
       jobListingsElement.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -592,6 +678,11 @@ const Jobs = () => {
 
   const handleSearch = () => {
     setCurrentPage(1);
+    updateURLParams({
+      s: searchTerm || null,
+      location: locationTerm || null,
+      page: null,
+    });
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -601,11 +692,18 @@ const Jobs = () => {
   };
 
   const handleJobTypeChange = (id: string) => {
-    setJobTypes((prev) =>
-      prev.map((type) =>
-        type.id === id ? { ...type, checked: !type.checked } : type
-      )
+    const newJobTypes = jobTypes.map((type) =>
+      type.id === id ? { ...type, checked: !type.checked } : type
     );
+    setJobTypes(newJobTypes);
+
+    // Update URL
+    const checkedTypes = newJobTypes.filter(t => t.checked).map(t => t.id);
+    const allChecked = checkedTypes.length === jobTypes.length;
+    updateURLParams({
+      types: allChecked ? null : checkedTypes.join(",") || null,
+      page: null,
+    });
   };
 
   const handleExperienceChange = (id: string) => {
@@ -617,23 +715,29 @@ const Jobs = () => {
   };
 
   const handleSalaryChange = (id: string) => {
-    setSalaryRanges((prev) =>
-      prev.map((range) =>
-        range.id === id ? { ...range, checked: !range.checked } : range
-      )
+    const newSalaryRanges = salaryRanges.map((range) =>
+      range.id === id ? { ...range, checked: !range.checked } : range
     );
+    setSalaryRanges(newSalaryRanges);
+
+    // Update URL
+    const checkedSalaries = newSalaryRanges.filter(s => s.checked).map(s => s.id);
+    updateURLParams({
+      salary: checkedSalaries.length > 0 ? checkedSalaries.join(",") : null,
+      page: null,
+    });
   };
 
   // Category filter handler
   const handleCategoryChange = (id: string) => {
+    const currentlyChecked = categoryFilters.find(c => c.id === id)?.checked;
+
     setCategoryFilters((prev) =>
       prev.map((cat) =>
         cat.id === id ? { ...cat, checked: !cat.checked } : cat
       )
     );
 
-    // Update selected category for display
-    const currentlyChecked = categoryFilters.find(c => c.id === id)?.checked;
     if (!currentlyChecked) {
       setSelectedCategory(id);
       // Load subcategories
@@ -648,57 +752,98 @@ const Jobs = () => {
           }))
         );
       }
+      // Update URL
+      updateURLParams({
+        category: id,
+        subcategory: null,
+        page: null,
+      });
     } else {
       // If unchecking, clear category selection
       if (selectedCategory === id) {
         setSelectedCategory(null);
         setSelectedSubcategory(null);
         setSubcategoryFilters([]);
+        // Update URL
+        updateURLParams({
+          category: null,
+          subcategory: null,
+          page: null,
+        });
       }
     }
   };
 
   // Subcategory filter handler
   const handleSubcategoryChange = (id: string) => {
+    const currentlyChecked = subcategoryFilters.find(s => s.id === id)?.checked;
+
     setSubcategoryFilters((prev) =>
       prev.map((sub) =>
         sub.id === id ? { ...sub, checked: !sub.checked } : sub
       )
     );
 
-    const currentlyChecked = subcategoryFilters.find(s => s.id === id)?.checked;
     if (!currentlyChecked) {
       setSelectedSubcategory(id);
+      // Update URL
+      updateURLParams({
+        subcategory: id,
+        page: null,
+      });
     } else if (selectedSubcategory === id) {
       setSelectedSubcategory(null);
+      // Update URL
+      updateURLParams({
+        subcategory: null,
+        page: null,
+      });
     }
   };
 
   // Company size filter handler
   const handleCompanySizeChange = (id: string) => {
-    setCompanySizeFilters((prev) =>
-      prev.map((size) =>
-        size.id === id ? { ...size, checked: !size.checked } : size
-      )
+    const newSizes = companySizeFilters.map((size) =>
+      size.id === id ? { ...size, checked: !size.checked } : size
     );
+    setCompanySizeFilters(newSizes);
+
+    // Update URL
+    const checkedSizes = newSizes.filter(s => s.checked).map(s => s.id);
+    updateURLParams({
+      companySize: checkedSizes.length > 0 ? checkedSizes.join(",") : null,
+      page: null,
+    });
   };
 
   // Posted date filter handler
   const handlePostedDateChange = (id: string) => {
-    setPostedDateFilters((prev) =>
-      prev.map((date) =>
-        date.id === id ? { ...date, checked: !date.checked } : date
-      )
+    const newDates = postedDateFilters.map((date) =>
+      date.id === id ? { ...date, checked: !date.checked } : date
     );
+    setPostedDateFilters(newDates);
+
+    // Update URL
+    const checkedDates = newDates.filter(d => d.checked).map(d => d.id);
+    updateURLParams({
+      posted: checkedDates.length > 0 ? checkedDates.join(",") : null,
+      page: null,
+    });
   };
 
   // Applicant count filter handler
   const handleApplicantCountChange = (id: string) => {
-    setApplicantCountFilters((prev) =>
-      prev.map((count) =>
-        count.id === id ? { ...count, checked: !count.checked } : count
-      )
+    const newCounts = applicantCountFilters.map((count) =>
+      count.id === id ? { ...count, checked: !count.checked } : count
     );
+    setApplicantCountFilters(newCounts);
+
+    // Update URL
+    const checkedCounts = newCounts.filter(c => c.checked).map(c => c.id);
+    updateURLParams({
+      applicants: checkedCounts.length > 0 ? checkedCounts.join(",") : null,
+      page: null,
+    });
   };
 
   // Clear category selection
@@ -708,13 +853,22 @@ const Jobs = () => {
     setCategoryFilters((prev) => prev.map((cat) => ({ ...cat, checked: false })));
     setSubcategoryFilters([]);
     // Update URL
-    router.push("/job");
+    updateURLParams({
+      category: null,
+      subcategory: null,
+      page: null,
+    });
   };
 
   // Clear subcategory selection
   const handleClearSubcategory = () => {
     setSelectedSubcategory(null);
     setSubcategoryFilters((prev) => prev.map((sub) => ({ ...sub, checked: false })));
+    // Update URL
+    updateURLParams({
+      subcategory: null,
+      page: null,
+    });
   };
 
   // Reset all filters
@@ -732,6 +886,7 @@ const Jobs = () => {
     setPostedDateFilters((prev) => prev.map((date) => ({ ...date, checked: false })));
     setApplicantCountFilters((prev) => prev.map((count) => ({ ...count, checked: false })));
     setCurrentPage(1);
+    // Clear all URL params
     router.push("/job");
   }, [router]);
 

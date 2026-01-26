@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
 import { Button } from "@/src/components/ui/button";
@@ -67,6 +68,22 @@ const featuredJobs = [
 
 function HomePage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/job?s=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push("/job");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -184,18 +201,19 @@ function HomePage() {
                       <input
                         type="text"
                         placeholder="Job title or keyword..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         className="flex-1 bg-transparent outline-none text-[#234C6A] placeholder:text-[#456882]/60"
                       />
                     </div>
                     <Button
-                      asChild
                       size="lg"
+                      onClick={handleSearch}
                       className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white px-8 py-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
                     >
-                      <Link href="/job">
-                        Search Jobs
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Link>
+                      Search Jobs
+                      <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </div>
 
