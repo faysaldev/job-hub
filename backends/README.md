@@ -1,129 +1,143 @@
-# JobHub Backend Services
+# JobHub - Microservices Recruitment Platform
 
-This directory contains the microservices that power the JobHub platform. The backend is designed as a collection of independent services that communicate via APIs and message queues.
+JobHub is a comprehensive job recruitment platform built using a microservices architecture. The platform connects job seekers with employers through a modern, efficient, and scalable system.
 
-## Microservices Architecture
+## Architecture Overview
 
-JobHub's backend consists of several independent services:
+JobHub is designed as a microservices-based application consisting of:
 
-### Core Services
-- **[Auth Service](./auth-service/README.md)** - User authentication, authorization, and JWT management
-- **[User Service](./user-service/README.md)** - User profile management, registration, and personalization
-- **[Job Service](./job-service/README.md)** - Job posting creation, management, and search functionality
-- **[Application Service](./application-service/README.md)** - Job application processing and tracking
-- **[Company Service](./company-service/README.md)** - Company profiles and employer management
-- **[Notification Service](./notification-service/README.md)** - Email, SMS, and in-app notifications
-- **[Analytics Service](./analytics-service/README.md)** - Usage analytics and reporting
+- **[Frontend](./front-end/README.md)** - Next.js-based user interface for job seekers and employers
+- **[Backend Services](./backends/README.md)** - Collection of microservices handling authentication, user management, job postings, applications, etc.
 
-### Infrastructure Services
-- **[API Gateway](./api-gateway/README.md)** - Request routing, load balancing, and cross-cutting concerns
-- **[Message Queue](./message-queue/README.md)** - Asynchronous processing and event handling
+## Features
+
+### For Job Seekers
+
+- Browse and search job listings
+- Create and manage profiles
+- Upload and manage resumes
+- Apply to jobs
+- Track application status
+- Receive job recommendations
+
+### For Employers
+
+- Post job listings
+- Manage company profiles
+- Review and manage applications
+- Search for candidates
+- Schedule interviews
+
+### For Administrators
+
+- User management
+- Content moderation
+- Analytics and reporting
+- System monitoring
 
 ## Technology Stack
 
-- **Languages**: [Node.js, Python, Go, Java, etc. - to be defined per service]
-- **Frameworks**: [Express.js, FastAPI, Spring Boot, etc.]
-- **Databases**: PostgreSQL, MongoDB, Redis
-- **Message Brokers**: RabbitMQ or Apache Kafka
-- **Containerization**: Docker
-- **Orchestration**: Kubernetes
-- **Monitoring**: Prometheus, Grafana, ELK Stack
+### Frontend
 
-## API Documentation
+- Next.js 14 with App Router
+- React 18
+- TypeScript
+- Tailwind CSS
+- [Additional frontend technologies as needed]
 
-- [API Documentation](./docs/api.md) - Comprehensive API documentation for all services
-- [Authentication Guide](./docs/authentication.md) - Guide to authentication and authorization
-- [Error Handling](./docs/errors.md) - Standard error response formats
+### Backend
+
+- [Backend technologies to be defined - Node.js, Python, Go, Java, etc.]
+- Microservices architecture
+- RESTful APIs and/or GraphQL
+- Message queues for asynchronous processing
+
+### Infrastructure
+
+- Containerized with Docker
+- Kubernetes for orchestration
+- CI/CD pipelines
+- Monitoring and logging solutions
+
+## Project Structure
+
+```
+JobHub/
+├── front-end/          # Next.js frontend application
+├── backends/           # Backend microservices
+│   ├── auth-service/   # Authentication service
+│   ├── user-service/   # User management service
+│   ├── job-service/    # Job posting management
+│   ├── application-service/ # Job application handling
+│   ├── company-service/ # Company profiles and employer management
+│   ├── notification-service/ # Notification system
+│   └── analytics-service/ # Analytics and reporting
+├── docker-compose.yml  # Container orchestration
+├── kubernetes/         # Kubernetes configurations
+├── LICENSE             # Project license
+└── README.md
+```
 
 ## Getting Started
 
 ### Prerequisites
+
+- Node.js (v18+)
 - Docker and Docker Compose
-- Node.js v18+ (for Node.js services)
-- Python 3.9+ (for Python services)
-- [Additional prerequisites as needed]
+- [Other prerequisites as needed]
 
-### Running Backend Services
+### Running the Application
 
-1. Navigate to the backends directory:
+1. Clone the repository:
+
 ```bash
-cd backends
+git clone <repository-url>
+cd JobHub
 ```
 
-2. Use Docker Compose to run all services:
-```bash
-docker-compose up --build
-```
+2. To run the frontend:
 
-3. Or run individual services:
 ```bash
-cd services/auth-service
+cd front-end
 npm install
 npm run dev
 ```
 
-4. The services will run on the following ports:
-   - Auth Service: `http://localhost:8081`
-   - User Service: `http://localhost:8082`
-   - Job Service: `http://localhost:8083`
-   - Application Service: `http://localhost:8084`
-   - Company Service: `http://localhost:8085`
-   - Notification Service: `http://localhost:8086`
+3. To run the backend services (detailed instructions in the [backends README](./backends/README.md)):
+
+```bash
+cd backends
+# Follow backend-specific instructions
+```
+
+4. The frontend will be available at [http://localhost:3000](http://localhost:3000)
 
 ## Development
 
-### Service Development
-Each service is developed independently. Check the README in each service directory for specific development instructions.
+### Frontend Development
 
-### Database Migrations
-Database migrations are handled per service using tools like Prisma, Alembic, or Flyway.
+See [Frontend README](./front-end/README.md) for detailed frontend development instructions.
 
-### Testing
-Each service includes unit, integration, and end-to-end tests. Run tests with:
-```bash
-npm run test  # In each service directory
-```
+### Backend Development
 
-### Environment Variables
-Each service has its own `.env` file for configuration. See individual service READMEs for required environment variables.
-
-## Configuration Management
-
-Configuration is managed through:
-- Environment variables
-- Configuration files
-- Kubernetes ConfigMaps and Secrets (in production)
-
-## Monitoring and Logging
-
-- Structured logging with consistent formats across services
-- Centralized logging with ELK stack or similar
-- Health check endpoints for each service
-- Performance monitoring and alerting
-
-## Deployment
-
-Services can be deployed individually or as part of the complete system using:
-- Docker containers
-- Kubernetes manifests
-- Infrastructure as Code templates
+See [Backend README](./backends/README.md) for detailed backend development instructions.
 
 ## Contributing
 
-Please read the contributing guidelines (to be added) for details on developing backend services.
+We welcome contributions to JobHub! Please read our contributing guidelines (to be added) for details on our code of conduct and development process.
 
-## API Specification
+### Reporting Issues
 
-All services follow the OpenAPI 3.0 specification. API contracts are maintained in the `./specs` directory.
+If you encounter any bugs or have feature requests, please use our [GitHub Issues](https://github.com/your-username/JobHub/issues) section. We have templates for:
 
-## Security
-
-- OAuth 2.0 and JWT for authentication
-- API rate limiting
-- Input validation and sanitization
-- Secure communication with HTTPS
-- Regular security auditing
+- [Bug Reports](.github/ISSUE_TEMPLATE/bug_report.md) - Report bugs and issues
+- [Feature Requests](.github/ISSUE_TEMPLATE/feature_request.md) - Suggest new features
+- [General Issues](.github/ISSUE_TEMPLATE/general_issue.md) - For other types of issues
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+For questions or support, please open an issue in this repository.
