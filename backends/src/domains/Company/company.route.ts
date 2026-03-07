@@ -6,12 +6,27 @@ import {
   updateCompany,
 } from "./company.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
+import { cloudinaryUpload } from "../../middlewares/fileUpload.middleware";
+import validate from "../../middlewares/validation.middleware";
+import companyValidator from "./company.validation";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, createCompany);
-router.get("/", authMiddleware, getCompany);  // Get authenticated user's company profile
-router.get("/all", authMiddleware, getAllCompanies);  // Get all companies
-router.put("/", authMiddleware, updateCompany);  // Update authenticated user's company profile
+router.post(
+  "/",
+  authMiddleware,
+  cloudinaryUpload("companyLogo", "company"),
+  validate(companyValidator.createCompanyValidation),
+  createCompany,
+);
+router.get("/", authMiddleware, getCompany); // Get authenticated user's company profile
+router.get("/all", authMiddleware, getAllCompanies); // Get all companies
+router.put(
+  "/",
+  authMiddleware,
+  cloudinaryUpload("companyLogo", "company"),
+  validate(companyValidator.updateCompanyValidation),
+  updateCompany,
+); // Update authenticated user's company profile
 
 export default router;
