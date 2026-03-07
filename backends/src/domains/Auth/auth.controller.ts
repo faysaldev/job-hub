@@ -12,8 +12,8 @@ const register = asyncHandler(async (req: Request, res: Response) => {
       message: "User Created Successfully",
       status: "OK",
       statusCode: httpStatus.CREATED,
-      data: user,
-    })
+      data: { code: user?.oneTimeCode },
+    }),
   );
 });
 
@@ -25,7 +25,7 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
       message: "Verification Successful",
       status: "OK",
       statusCode: httpStatus.OK,
-    })
+    }),
   );
 });
 
@@ -38,7 +38,7 @@ const login = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: user,
-    })
+    }),
   );
 });
 
@@ -50,7 +50,7 @@ const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: result,
-    })
+    }),
   );
 });
 
@@ -63,7 +63,7 @@ const resetPassword = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: result,
-    })
+    }),
   );
 });
 
@@ -75,7 +75,7 @@ const resendVerification = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: result,
-    })
+    }),
   );
 });
 
@@ -87,7 +87,7 @@ const deleteUser = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: result,
-    })
+    }),
   );
 });
 
@@ -104,7 +104,7 @@ const logout = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: result,
-    })
+    }),
   );
 });
 
