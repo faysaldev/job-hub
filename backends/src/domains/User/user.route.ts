@@ -1,27 +1,30 @@
 import { Router } from "express";
 import userController from "./user.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
-import userFileUploadMiddleware from "../../middlewares/fileUpload.middleware";
+import { cloudinaryUpload } from "../../middlewares/fileUpload.middleware";
+import validate from "../../middlewares/validation.middleware";
+import userValidator from "./user.validation";
 
 const router = Router();
 
-const USER_PICTURES = "./public/uploads/users";
-
 router.get("/self/in", authMiddleware, userController.userDetails);
-router.post(
-  "/upload-single",
+router.patch(
+  "/update",
   authMiddleware,
-  userFileUploadMiddleware(USER_PICTURES).single("image"),
-  userController.singleFileUpload
+  cloudinaryUpload("image", "users"),
+  userController.updateUser,
 );
-
-router.post(
-  "/upload-multiple",
+router.patch(
+  "/change-password",
   authMiddleware,
-  userFileUploadMiddleware(USER_PICTURES).fields([
-    { name: "image", maxCount: 2 },
-  ]),
-  userController.multipleFileUpload
+  validate(userValidator.changePasswordValidation),
+  userController.changePassword,
+);
+router.delete(
+  "/delete-profile",
+  authMiddleware,
+  validate(userValidator.deleteProfileValidation),
+  userController.deleteProfile,
 );
 
 export default router;
