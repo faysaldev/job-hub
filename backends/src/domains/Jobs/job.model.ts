@@ -4,26 +4,52 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface IJob extends Document {
   _id: Types.ObjectId;
   author: Types.ObjectId;
-  job_title: string;
-  job_type: "full-time" | "part-time" | "contract" | "internship" | "freelance";
-  location: string | "remote";
-  experience: "entry" | "mid" | "senior" | "lead";
-  salary: number;
+  title: string;
+  category: string;
+  subcategory: string;
+  type: "full-time" | "part-time" | "contract" | "internship" | "freelance";
+  location: string;
+  locationType: "remote" | "onsite" | "hybrid";
+  salaryMin: number;
+  salaryMax: number;
+  salaryPeriod: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
+  experienceLevel: "junior" | "mid" | "senior" | "lead";
   description: string;
   requirements: string[];
-  benefits?: string[];
-  isActive: boolean;
+  responsibilities: string[];
+  benefits: string[];
   skills: string[];
-  application_date: Date;
-  company_name: string;
+  applicationDeadline: Date;
+  positions: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Create the Mongoose schema for the job model
 const jobSchema = new Schema<IJob>(
   {
-    author: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    job_title: { type: String, required: true },
-    job_type: {
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    category: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    subcategory: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    type: {
       type: String,
       enum: ["full-time", "part-time", "contract", "internship", "freelance"],
       required: true,
@@ -31,21 +57,68 @@ const jobSchema = new Schema<IJob>(
     location: {
       type: String,
       required: true,
-      enum: ["remote", "onsite", "hybrid"],
+      trim: true,
     },
-    experience: {
+    locationType: {
       type: String,
-      enum: ["entry", "mid", "senior", "lead"],
+      enum: ["remote", "onsite", "hybrid"],
       required: true,
     },
-    skills: { type: [String], required: true },
-    salary: { type: Number, required: true },
-    description: { type: String, required: true },
-    requirements: { type: [String], required: true },
-    benefits: { type: [String] },
-    isActive: { type: Boolean, required: true },
-    application_date: { type: Date, required: true },
-    company_name: { type: String, required: true },
+    salaryMin: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    salaryMax: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    salaryPeriod: {
+      type: String,
+      enum: ["hourly", "daily", "weekly", "monthly", "yearly"],
+      required: true,
+      default: "yearly",
+    },
+    experienceLevel: {
+      type: String,
+      enum: ["junior", "mid", "senior", "lead"],
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    requirements: {
+      type: [String],
+      required: true,
+    },
+    responsibilities: {
+      type: [String],
+      required: true,
+      default: [],
+    },
+    benefits: {
+      type: [String],
+      default: [],
+    },
+    skills: {
+      type: [String],
+      required: true,
+    },
+    applicationDeadline: {
+      type: Date,
+      required: true,
+    },
+    positions: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

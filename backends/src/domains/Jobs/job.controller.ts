@@ -9,77 +9,34 @@ import jobService from "./job.services";
 // Get all jobs with optional filters and pagination
 const getAllJobs = asyncHandler(async (req: Request, res: Response) => {
   const {
-    job_type,
-    experience,
-    location,
     q,
-    min_salary,
-    max_salary,
-    page = 1,
-    limit = 10,
+    category,
+    subcategory,
+    type,
+    location,
+    locationType,
+    experienceLevel,
+    minSalary,
+    maxSalary,
+    page,
+    limit,
   } = req.query;
 
   const pageNum = parseInt(page as string) || 1;
   const limitNum = parseInt(limit as string) || 10;
 
-  const validJobTypes = ["full-time", "part-time", "contract", "internship", "freelance"];
-  const validLocations = ["remote", "onsite", "hybrid"];
-  const validExperiences = ["entry", "mid", "senior", "lead"];
-
-  if (job_type && !validJobTypes.includes(job_type as string)) {
-    throw new AppError(
-      `Invalid job type. Valid values are: ${validJobTypes.join(", ")}`,
-      httpStatus.BAD_REQUEST
-    );
-  }
-
-  if (location && !validLocations.includes(location as string)) {
-    throw new AppError(
-      `Invalid location. Valid values are: ${validLocations.join(", ")}`,
-      httpStatus.BAD_REQUEST
-    );
-  }
-
-  if (experience && !validExperiences.includes(experience as string)) {
-    throw new AppError(
-      `Invalid experience level. Valid values are: ${validExperiences.join(", ")}`,
-      httpStatus.BAD_REQUEST
-    );
-  }
-
-  let minSalary: number | undefined;
-  let maxSalary: number | undefined;
-
-  if (min_salary !== undefined) {
-    minSalary = parseFloat(min_salary as string);
-    if (isNaN(minSalary)) {
-      throw new AppError("Invalid minimum salary value", httpStatus.BAD_REQUEST);
-    }
-  }
-
-  if (max_salary !== undefined) {
-    maxSalary = parseFloat(max_salary as string);
-    if (isNaN(maxSalary)) {
-      throw new AppError("Invalid maximum salary value", httpStatus.BAD_REQUEST);
-    }
-  }
-
-  if (minSalary !== undefined && maxSalary !== undefined && minSalary > maxSalary) {
-    throw new AppError(
-      "Minimum salary cannot be greater than maximum salary",
-      httpStatus.BAD_REQUEST
-    );
-  }
-
   const result = await jobService.searchJobs(
     q as string,
-    job_type as string,
-    experience as string,
+    category as string,
+    subcategory as string,
+    type as string,
+    experienceLevel as string,
     location as string,
-    minSalary,
-    maxSalary,
+    locationType as string,
+    minSalary ? parseInt(minSalary as string) : undefined,
+    maxSalary ? parseInt(maxSalary as string) : undefined,
     pageNum,
-    limitNum
+    limitNum,
   );
 
   res.status(httpStatus.OK).json(
@@ -88,7 +45,7 @@ const getAllJobs = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: result,
-    })
+    }),
   );
 });
 
@@ -107,7 +64,7 @@ const getJobById = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: job,
-    })
+    }),
   );
 });
 
@@ -124,7 +81,7 @@ const createJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
       status: "OK",
       statusCode: httpStatus.CREATED,
       data: job,
-    })
+    }),
   );
 });
 
@@ -146,7 +103,7 @@ const updateJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: {},
-    })
+    }),
   );
 });
 
@@ -167,7 +124,7 @@ const deleteJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: {},
-    })
+    }),
   );
 });
 
@@ -175,76 +132,33 @@ const deleteJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
 const searchJobs = asyncHandler(async (req: Request, res: Response) => {
   const {
     q,
-    job_type,
-    experience,
+    category,
+    subcategory,
+    type,
     location,
-    min_salary,
-    max_salary,
-    page = 1,
-    limit = 10,
+    locationType,
+    experienceLevel,
+    minSalary,
+    maxSalary,
+    page,
+    limit,
   } = req.query;
 
   const pageNum = parseInt(page as string) || 1;
   const limitNum = parseInt(limit as string) || 10;
 
-  const validJobTypes = ["full-time", "part-time", "contract", "internship", "freelance"];
-  const validLocations = ["remote", "onsite", "hybrid"];
-  const validExperiences = ["entry", "mid", "senior", "lead"];
-
-  if (job_type && !validJobTypes.includes(job_type as string)) {
-    throw new AppError(
-      `Invalid job type. Valid values are: ${validJobTypes.join(", ")}`,
-      httpStatus.BAD_REQUEST
-    );
-  }
-
-  if (location && !validLocations.includes(location as string)) {
-    throw new AppError(
-      `Invalid location. Valid values are: ${validLocations.join(", ")}`,
-      httpStatus.BAD_REQUEST
-    );
-  }
-
-  if (experience && !validExperiences.includes(experience as string)) {
-    throw new AppError(
-      `Invalid experience level. Valid values are: ${validExperiences.join(", ")}`,
-      httpStatus.BAD_REQUEST
-    );
-  }
-
-  let minSalary: number | undefined;
-  let maxSalary: number | undefined;
-
-  if (min_salary !== undefined) {
-    minSalary = parseFloat(min_salary as string);
-    if (isNaN(minSalary)) {
-      throw new AppError("Invalid minimum salary value", httpStatus.BAD_REQUEST);
-    }
-  }
-
-  if (max_salary !== undefined) {
-    maxSalary = parseFloat(max_salary as string);
-    if (isNaN(maxSalary)) {
-      throw new AppError("Invalid maximum salary value", httpStatus.BAD_REQUEST);
-    }
-  }
-
-  if (minSalary !== undefined && maxSalary !== undefined && minSalary > maxSalary) {
-    throw new AppError(
-      "Minimum salary cannot be greater than maximum salary",
-      httpStatus.BAD_REQUEST
-    );
-  }
-
   const result = await jobService.searchJobs(
     q as string,
-    job_type as string,
-    experience as string,
+    category as string,
+    subcategory as string,
+    type as string,
+    experienceLevel as string,
     location as string,
-    minSalary,
-    maxSalary,
+    locationType as string,
+    minSalary ? parseInt(minSalary as string) : undefined,
+    maxSalary ? parseInt(maxSalary as string) : undefined,
     pageNum,
-    limitNum
+    limitNum,
   );
 
   res.status(httpStatus.OK).json(
@@ -253,7 +167,7 @@ const searchJobs = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: result,
-    })
+    }),
   );
 });
 

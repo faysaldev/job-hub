@@ -117,20 +117,26 @@ const deleteJob = async (jobId: string) => {
 // Search jobs with advanced filters and pagination with Redis caching
 const searchJobs = async (
   searchTerm?: string,
-  jobType?: string,
-  experience?: string,
+  category?: string,
+  subcategory?: string,
+  type?: string,
+  experienceLevel?: string,
   location?: string,
+  locationType?: string,
   minSalary?: number,
   maxSalary?: number,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ) => {
   // Create a cache key based on all parameters
   const params = {
     searchTerm,
-    jobType,
-    experience,
+    category,
+    subcategory,
+    type,
+    experienceLevel,
     location,
+    locationType,
     minSalary,
     maxSalary,
     page,
@@ -159,13 +165,28 @@ const searchJobs = async (
   const filter: any = {};
 
   // Filter by job type
-  if (jobType) {
-    filter.job_type = jobType;
+  if (type) {
+    filter.type = type;
   }
 
-  // Filter by experience
-  if (experience) {
-    filter.experience = experience;
+  // Filter by experience level
+  if (experienceLevel) {
+    filter.experienceLevel = experienceLevel;
+  }
+
+  // Filter by location type
+  if (locationType) {
+    filter.locationType = locationType;
+  }
+
+  // Filter by category
+  if (category) {
+    filter.category = category;
+  }
+
+  // Filter by subcategory
+  if (subcategory) {
+    filter.subcategory = subcategory;
   }
 
   // Filter by location
@@ -175,24 +196,28 @@ const searchJobs = async (
 
   // Filter by salary range
   if (minSalary !== undefined || maxSalary !== undefined) {
-    filter.salary = {};
+    filter.salaryMin = filter.salaryMin || {};
+    filter.salaryMax = filter.salaryMax || {};
     if (minSalary !== undefined) {
-      filter.salary.$gte = minSalary;
+      filter.salaryMin.$gte = minSalary;
+      filter.salaryMax.$gte = minSalary;
     }
     if (maxSalary !== undefined) {
-      filter.salary.$lte = maxSalary;
+      filter.salaryMin.$lte = maxSalary;
+      filter.salaryMax.$lte = maxSalary;
     }
   }
 
-  // Search in job title, company name, and skills/requirements
+  // Search in job title, category, subcategory, description, skills, and requirements
   if (searchTerm) {
     const searchRegex = new RegExp(searchTerm, "i");
     filter.$or = [
-      { job_title: searchRegex },
-      { company_name: searchRegex },
+      { title: searchRegex },
+      { category: searchRegex },
+      { subcategory: searchRegex },
       { description: searchRegex },
       { requirements: { $in: [searchRegex] } },
-      { skills: { $in: [searchRegex] } }, // Assuming skills is an array field
+      { skills: { $in: [searchRegex] } },
     ];
   }
 
