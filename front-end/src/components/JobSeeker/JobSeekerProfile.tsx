@@ -20,15 +20,19 @@ import {
   Sparkles,
   Clock,
 } from "lucide-react";
+import { cn } from "@/src/lib/utils";
 import {
   useGetSeekerProfileQuery,
   useCreateSeekerProfileMutation,
   useUpdateSeekerProfileMutation,
 } from "@/src/redux/features/seeker/seekerApi";
-import { useAppSelector } from "@/src/redux/hooks";
-import { selectCurrentUser } from "@/src/redux/features/auth/authSlice";
+import { useUpdateProfileMutation } from "@/src/redux/features/user/userApi";
+import { useAppSelector, useAppDispatch } from "@/src/redux/hooks";
+import { selectCurrentUser, selectToken, setUser } from "@/src/redux/features/auth/authSlice";
 import { toast } from "sonner";
 import { Experience, Education, JobSeekerProfile as TJobSeekerProfile } from "@/src/types";
+import { useRef } from "react";
+import { Camera } from "lucide-react";
 
 interface JobSeekerProfileProps {
   userId: string;
@@ -38,10 +42,19 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
   const [editing, setEditing] = useState(false);
   const [newSkill, setNewSkill] = useState("");
   const currentUser = useAppSelector(selectCurrentUser);
+  const token = useAppSelector(selectToken);
+  const dispatch = useAppDispatch();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: profileResponse, isLoading: isFetching } = useGetSeekerProfileQuery();
   const [createProfile, { isLoading: isCreating }] = useCreateSeekerProfileMutation();
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateSeekerProfileMutation();
+  const [updateSeekerProfile, { isLoading: isUpdatingSeeker }] = useUpdateSeekerProfileMutation();
+  const [updateUserBasicInfo, { isLoading: isUpdatingUser }] = useUpdateProfileMutation();
+
+  // Basic User Info State
+  const [userName, setUserName] = useState("");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Local state for editing
   const [profile, setProfile] = useState<Partial<TJobSeekerProfile>>({
@@ -55,12 +68,27 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
     resume: "",
   });
 
-  // Update local state when query data changes
   useEffect(() => {
     if (profileResponse) {
       setProfile(profileResponse);
     }
-  }, [profileResponse]);
+    if (currentUser) {
+      setUserName(currentUser.name);
+      setImagePreview(currentUser.image || null);
+    }
+  }, [profileResponse, currentUser]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const addSkill = () => {
     if (newSkill.trim() && !profile.skills?.includes(newSkill.trim())) {
@@ -189,9 +217,32 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
 
   const saveProfile = async () => {
     try {
+      // 1. Handle User Basic Info Update (Name & Image)
+      if (userName !== currentUser?.name || selectedImage) {
+        const formData = new FormData();
+        if (userName !== currentUser?.name) formData.append("name", userName);
+        if (selectedImage) formData.append("image", selectedImage);
+
+        const userUpdateResponse = await updateUserBasicInfo(formData).unwrap();
+        
+        // Update local auth state if backend returns the user
+        // Ensure we map _id to id if necessary for frontend consistency
+        if (userUpdateResponse?.data && token) {
+          const userData = userUpdateResponse.data;
+          dispatch(setUser({ 
+            user: {
+              ...userData,
+              id: userData.id || userData._id
+            }, 
+            token 
+          }));
+        }
+      }
+
+      // 2. Handle Seeker Profile Update
       if (profileResponse) {
         // Update existing profile
-        await updateProfile(profile).unwrap();
+        await updateSeekerProfile(profile).unwrap();
         toast.success("Profile updated successfully!");
       } else {
         // Create new profile
@@ -199,6 +250,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         toast.success("Profile created successfully!");
       }
       setEditing(false);
+      setSelectedImage(null);
     } catch (error: any) {
       console.error("Error saving profile:", error);
       toast.error(error?.data?.message || "Failed to save profile");
@@ -224,7 +276,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               variant="outline"
               onClick={toggleEdit}
               className="border-[#456882] text-[#234C6A] hover:bg-[#456882]/10"
-              disabled={isUpdating || isCreating}
+              disabled={isUpdatingSeeker || isCreating || isUpdatingUser}
             >
               <X className="h-4 w-4 mr-2" />
               Cancel
@@ -232,9 +284,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
             <Button
               onClick={saveProfile}
               className="bg-[#234C6A] hover:bg-[#456882]"
-              disabled={isUpdating || isCreating}
+              disabled={isUpdatingSeeker || isCreating || isUpdatingUser}
             >
-              {isUpdating || isCreating ? (
+              {isUpdatingSeeker || isCreating || isUpdatingUser ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Save className="h-4 w-4 mr-2" />
@@ -257,27 +309,57 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#234C6A] via-[#456882] to-[#234C6A]"></div>
         <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
           <div className="flex-shrink-0 relative group">
-            <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-3xl p-1 w-32 h-32 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
-              <div className="bg-gray-50 border-4 border-white rounded-2xl w-28 h-28 flex items-center justify-center overflow-hidden">
-                {currentUser?.image ? (
-                  <img src={currentUser.image} alt="Profile" className="w-full h-full object-cover" />
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+            />
+            <div 
+              className={cn(
+                "bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-3xl p-1 w-32 h-32 flex items-center justify-center shadow-lg transition-all duration-300",
+                editing ? "cursor-pointer hover:scale-105" : "group-hover:scale-105"
+              )}
+              onClick={() => editing && fileInputRef.current?.click()}
+            >
+              <div className="bg-gray-50 border-4 border-white rounded-2xl w-28 h-28 flex items-center justify-center overflow-hidden relative">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <User className="h-14 w-14 text-[#234C6A]" />
+                )}
+                {editing && (
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <Camera className="text-white h-8 w-8" />
+                  </div>
                 )}
               </div>
             </div>
             {editing && (
-              <Badge className="absolute -bottom-2 -right-2 bg-white text-[#234C6A] border-[#234C6A]/20 shadow-md">
-                Change Photo
+              <Badge 
+                className="absolute -bottom-2 -right-2 bg-white text-[#234C6A] border-[#234C6A]/20 shadow-md cursor-pointer hover:bg-gray-50"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Camera className="h-3 w-3 mr-1" /> Change
               </Badge>
             )}
           </div>
 
           <div className="flex-1 text-center md:text-left">
             <div className="space-y-1">
-              <h3 className="text-3xl font-extrabold text-[#234C6A]">
-                {currentUser?.name}
-              </h3>
+              {editing ? (
+                <Input
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Your Full Name"
+                  className="text-2xl font-bold border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A] bg-gray-50 max-w-md h-12"
+                />
+              ) : (
+                <h3 className="text-3xl font-extrabold text-[#234C6A]">
+                  {currentUser?.name}
+                </h3>
+              )}
               {editing ? (
                 <Input
                   value={profile.headline}

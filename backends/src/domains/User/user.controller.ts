@@ -44,7 +44,7 @@ const updateUser = asyncHandler(
         message: "User Updated Successfully",
         status: "OK",
         statusCode: httpStatus.OK,
-        data: {},
+        data: user,
       }),
     );
   },
