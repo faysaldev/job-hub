@@ -275,7 +275,6 @@ const Jobs = () => {
   const [locationTerm, setLocationTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-
   const jobsPerPage = 6;
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -293,9 +292,6 @@ const Jobs = () => {
     page: currentPage,
     limit: 10,
   });
-
-  console.log("Search Jobs API Result:", searchJobsData);
-
   // Filter states
   const [jobTypes, setJobTypes] = useState([
     { id: "full-time", label: "Full-time", checked: true },

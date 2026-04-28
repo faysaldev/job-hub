@@ -26,13 +26,7 @@ const jobsApi = baseApi.injectEndpoints({
         method: "GET",
         params: filters,
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.data.map(({ id }) => ({ type: "jobs" as const, id })),
-              { type: "jobs", id: "SEARCH" },
-            ]
-          : [{ type: "jobs", id: "SEARCH" }],
+      providesTags: ["jobs"],
     }),
 
     // GET /job/:jobId - Get single job by ID
