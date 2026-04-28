@@ -1,5 +1,5 @@
 import { baseApi } from "@/src/redux/baseApi/baseApi";
-import { Job, PaginatedResponse, JobFilters } from "@/src/types";
+import { Job, PaginatedResponse, JobFilters, ApiResponse } from "@/src/types";
 
 const jobsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -36,7 +36,7 @@ const jobsApi = baseApi.injectEndpoints({
     }),
 
     // GET /job/:jobId - Get single job by ID
-    getJobById: builder.query<Job, string>({
+    getJobById: builder.query<ApiResponse<Job>, string>({
       query: (jobId) => ({
         url: `/job/${jobId}`,
         method: "GET",
@@ -45,7 +45,7 @@ const jobsApi = baseApi.injectEndpoints({
     }),
 
     // GET /job/author/:authorId - Get jobs by author ID
-    getJobsByAuthor: builder.query<Job[], string>({
+    getJobsByAuthor: builder.query<ApiResponse<Job[]>, string>({
       query: (authorId) => ({
         url: `/job/author/${authorId}`,
         method: "GET",

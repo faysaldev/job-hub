@@ -129,7 +129,7 @@ export interface Job {
   salaryMin?: number;
   salaryMax?: number;
   salaryCurrency?: string;
-  salaryPeriod?: "year" | "month" | "hour";
+  salaryPeriod?: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
   salary?: string; // formatted string e.g. "$80k - $120k"
   description: string;
   responsibilities?: string[];
@@ -151,6 +151,7 @@ export interface Job {
   isSaved?: boolean;
   isApplied?: boolean;
   positions?: number;
+  isActive?: boolean;
 }
 
 // ---------- Applications ----------

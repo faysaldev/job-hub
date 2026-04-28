@@ -71,7 +71,7 @@ const getJobById = async (jobId: string) => {
 const getJobsByAuthorId = async (authorId: string) => {
   return await Job.find({ author: authorId })
     .select(
-      "author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt",
+      "author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive responsibilities requirements benefits positions",
     )
     .sort({ createdAt: -1 });
 };

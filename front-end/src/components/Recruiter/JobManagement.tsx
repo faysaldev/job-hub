@@ -22,7 +22,13 @@ import {
   DollarSign,
 } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
-import { useGetJobsByAuthorQuery } from "@/src/redux/features/jobs/jobsApi";
+import { Job } from "@/src/types";
+import {
+  useGetJobsByAuthorQuery,
+  useDeleteJobMutation,
+  useUpdateJobMutation,
+  useCreateJobMutation,
+} from "@/src/redux/features/jobs/jobsApi";
 
 // Define a new type that matches the component's usage instead of extending
 interface JobWithRecruiter {
@@ -49,7 +55,6 @@ interface JobWithRecruiter {
 }
 
 const JobManagement = ({ userId }: { userId: string }) => {
-  const [jobs, setJobs] = useState<JobWithRecruiter[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const {
@@ -59,266 +64,82 @@ const JobManagement = ({ userId }: { userId: string }) => {
     error: jobsError,
   } = useGetJobsByAuthorQuery(userId);
 
-  console.log(jobsData);
+  const [deleteJobMutation] = useDeleteJobMutation();
+  const [updateJobMutation] = useUpdateJobMutation();
+  const [createJobMutation] = useCreateJobMutation();
 
-  // Dummy data initialization
-  useEffect(() => {
-    // Check if jobs exist in localStorage, otherwise initialize with dummy data
-    const storedJobs = localStorage.getItem("jobs");
-    if (!storedJobs || JSON.parse(storedJobs).length === 0) {
-      // Initialize with dummy data
-      const dummyJobs: JobWithRecruiter[] = [
-        {
-          id: "1",
-          recruiterId: userId,
-          companyName: "Tech Innovations Inc.",
-          title: "Senior Frontend Developer",
-          description:
-            "We are looking for an experienced frontend developer with expertise in React and TypeScript to join our dynamic team.",
-          skills: ["React", "TypeScript", "Next.js", "Tailwind CSS"],
-          experience: "Mid Level",
-          location: "Remote",
-          type: "Full-time",
-          salary: "$100,000 - $130,000",
-          salaryMin: 100000,
-          salaryMax: 130000,
-          deadline: "2025-12-31",
-          posted: "2025-11-01",
-          postedDate: "2025-11-01",
-          status: "active",
-          company: "Tech Innovations Inc.",
-          responsibilities: [
-            "Develop responsive UI components",
-            "Collaborate with designers",
-            "Mentor junior developers",
-          ],
-          requirements: [
-            "5+ years experience",
-            "Strong React knowledge",
-            "TypeScript proficiency",
-          ],
-          benefits: ["Health insurance", "Remote work", "Flexible hours"],
-        },
-        {
-          id: "2",
-          recruiterId: userId,
-          companyName: "Tech Innovations Inc.",
-          title: "Backend Engineer",
-          description:
-            "Join our backend team to build scalable APIs and services for our enterprise applications.",
-          skills: ["Node.js", "Express", "MongoDB", "AWS"],
-          experience: "Senior Level",
-          location: "San Francisco, CA",
-          type: "Full-time",
-          salary: "$120,000 - $150,000",
-          salaryMin: 120000,
-          salaryMax: 150000,
-          deadline: "2025-12-15",
-          posted: "2025-10-15",
-          postedDate: "2025-10-15",
-          status: "active",
-          company: "Tech Innovations Inc.",
-          responsibilities: [
-            "Design and implement APIs",
-            "Database optimization",
-            "System architecture",
-          ],
-          requirements: [
-            "8+ years experience",
-            "Node.js expertise",
-            "Cloud experience",
-          ],
-          benefits: ["Stock options", "Gym membership", "Learning budget"],
-        },
-        {
-          id: "3",
-          recruiterId: userId,
-          companyName: "Tech Innovations Inc.",
-          title: "DevOps Specialist",
-          description:
-            "Help us improve our deployment processes and maintain our cloud infrastructure.",
-          skills: ["AWS", "Docker", "Kubernetes", "Terraform"],
-          experience: "Senior Level",
-          location: "Remote",
-          type: "Contract",
-          salary: "$80 - $120 per hour",
-          salaryMin: 80,
-          salaryMax: 120,
-          deadline: "2025-11-30",
-          posted: "2025-11-10",
-          postedDate: "2025-11-10",
-          status: "closed",
-          company: "Tech Innovations Inc.",
-          responsibilities: [
-            "Maintain CI/CD pipelines",
-            "Cloud infrastructure",
-            "Security compliance",
-          ],
-          requirements: [
-            "AWS certification",
-            "Docker experience",
-            "Infrastructure as code",
-          ],
-          benefits: ["Flexible schedule", "Remote work", "Equipment allowance"],
-        },
-        {
-          id: "4",
-          recruiterId: userId,
-          companyName: "Tech Innovations Inc.",
-          title: "UX/UI Designer",
-          description:
-            "Create beautiful user interfaces and experiences for our web and mobile applications.",
-          skills: ["Figma", "Sketch", "Prototyping", "User Research"],
-          experience: "Mid Level",
-          location: "Remote",
-          type: "Full-time",
-          salary: "$90,000 - $110,000",
-          salaryMin: 90000,
-          salaryMax: 110000,
-          deadline: "2025-12-01",
-          posted: "2025-11-05",
-          postedDate: "2025-11-05",
-          status: "active",
-          company: "Tech Innovations Inc.",
-          responsibilities: [
-            "Design user interfaces",
-            "Conduct user research",
-            "Create prototypes",
-            "Collaborate with developers",
-          ],
-          requirements: [
-            "Portfolio required",
-            "3+ years design experience",
-            "Figma expertise",
-          ],
-          benefits: ["Creative environment", "Remote work", "Flexible hours"],
-        },
-      ];
-      localStorage.setItem("jobs", JSON.stringify(dummyJobs));
-      setJobs(dummyJobs.filter((job) => job.recruiterId === userId));
-    } else {
-      const allJobs = JSON.parse(storedJobs);
-      const userJobs = allJobs.filter(
-        (job: JobWithRecruiter) => job.recruiterId === userId,
-      );
-      setJobs(userJobs);
-    }
-  }, [userId]);
-
-  // Sync with backend data when available
-  useEffect(() => {
-    if (jobsData) {
-      // Map backend Job type to JobWithRecruiter if needed, or just use backend data
-      // For now, let's just set the jobs if we have data from backend
-      // Note: backend Job fields might differ slightly from JobWithRecruiter
-      const mappedJobs: JobWithRecruiter[] = jobsData.map((job: any) => ({
-        id: job._id,
-        title: job.title,
-        company: job.companyName || "Your Company",
-        location: job.location,
-        type: job.type,
-        salary: `${job.salaryMin} - ${job.salaryMax}`,
-        posted: job.createdAt,
-        description: job.description,
-        skills: job.skills,
-        status: job.isActive ? "active" : "closed",
-        recruiterId: job.author,
-        companyName: job.companyName || "Your Company",
-        experience: job.experienceLevel,
-        salaryMin: job.salaryMin,
-        salaryMax: job.salaryMax,
-        deadline: job.applicationDeadline,
-        postedDate: job.createdAt,
-      }));
-      setJobs(mappedJobs);
-    }
-  }, [jobsData]);
-
-  const handleCreateJob = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateJob = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-
-    const companyProfile = JSON.parse(
-      localStorage.getItem("companyProfiles") || "{}",
-    )[userId];
-    const companyName = companyProfile?.companyName || "Your Company";
 
     const salaryRange = formData.get("salary") as string;
     const [min, max] = salaryRange
       .split("-")
       .map((s) => parseInt(s.trim().replace(/\D/g, "")));
 
-    const newJob: JobWithRecruiter = {
-      id: Math.random().toString(36).substr(2, 9),
+    const jobData: Partial<Job> = {
       title: formData.get("title") as string,
-      company: companyName,
-      location: formData.get("location") as string,
       type: formData.get("type") as string,
-      salary: salaryRange,
-      posted: new Date().toISOString().split("T")[0], // Format as YYYY-MM-DD
+      location: formData.get("location") as string,
+      experienceLevel: formData.get("experience") as string,
+      salaryMin: min || 0,
+      salaryMax: max || 0,
       description: formData.get("description") as string,
       skills: (formData.get("skills") as string)
         .split(",")
         .map((s) => s.trim()),
-      status: "active",
-      recruiterId: userId,
-      companyName,
-      experience: formData.get("experience") as string,
-      salaryMin: min || 0,
-      salaryMax: max || 0,
-      deadline: formData.get("deadline") as string,
-      postedDate: new Date().toISOString(),
-      responsibilities: [],
+      applicationDeadline: formData.get("deadline") as string,
+      // Default fields for now
+      category: "engineering",
+      subcategory: "software",
+      locationType: "onsite",
+      salaryPeriod: "yearly",
+      positions: 1,
       requirements: [],
+      responsibilities: [],
       benefits: [],
     };
 
-    const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
-    allJobs.push(newJob);
-    localStorage.setItem("jobs", JSON.stringify(allJobs));
-
-    // Reload jobs after creation
-    const updatedJobs = allJobs.filter(
-      (job: JobWithRecruiter) => job.recruiterId === userId,
-    );
-    setJobs(updatedJobs);
-
-    setIsCreateDialogOpen(false);
-    toast({ title: "Job posted successfully!" });
+    try {
+      await createJobMutation(jobData).unwrap();
+      setIsCreateDialogOpen(false);
+      toast({ title: "Job posted successfully!" });
+    } catch (error) {
+      toast({
+        title: "Failed to post job",
+        variant: "destructive",
+      });
+    }
   };
 
-  const deleteJob = (jobId: string) => {
-    const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
-    const updatedJobs = allJobs.filter(
-      (job: JobWithRecruiter) => job.id !== jobId,
-    );
-    localStorage.setItem("jobs", JSON.stringify(updatedJobs));
-
-    // Update local state
-    const userJobs = updatedJobs.filter(
-      (job: JobWithRecruiter) => job.recruiterId === userId,
-    );
-    setJobs(userJobs);
-
-    toast({ title: "Job deleted" });
+  const deleteJob = async (jobId: string) => {
+    try {
+      await deleteJobMutation(jobId).unwrap();
+      toast({ title: "Job deleted successfully" });
+    } catch (error) {
+      toast({
+        title: "Failed to delete job",
+        variant: "destructive",
+      });
+    }
   };
 
-  const toggleJobStatus = (jobId: string) => {
-    const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
-    const updatedJobs = allJobs.map((job: JobWithRecruiter) =>
-      job.id === jobId
-        ? { ...job, status: job.status === "active" ? "closed" : "active" }
-        : job,
-    );
-    localStorage.setItem("jobs", JSON.stringify(updatedJobs));
-
-    // Update local state
-    const userJobs = updatedJobs.filter(
-      (job: JobWithRecruiter) => job.recruiterId === userId,
-    );
-    setJobs(userJobs);
-
-    toast({ title: "Job status updated" });
+  const toggleJobStatus = async (jobId: string, currentStatus: string) => {
+    try {
+      const newActive = currentStatus !== "active";
+      await updateJobMutation({
+        jobId,
+        body: { isActive: newActive },
+      }).unwrap();
+      toast({
+        title: `Job ${newActive ? "activated" : "closed"} successfully`,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to update job status",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -334,7 +155,7 @@ const JobManagement = ({ userId }: { userId: string }) => {
         </div>
       </div>
 
-      {jobs.length === 0 ? (
+      {!jobsData?.data || jobsData.data.length === 0 ? (
         <Card className="p-12 text-center border-[#456882]/30 bg-white">
           <div className="mx-auto bg-[#234C6A]/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
             <Briefcase className="h-8 w-8 text-[#234C6A]" />
@@ -476,93 +297,98 @@ const JobManagement = ({ userId }: { userId: string }) => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {jobs.map((job) => (
-            <Card
-              key={job.id}
-              className="p-6 border-[#456882]/30 bg-white hover:shadow-lg transition-shadow"
-            >
-              <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-semibold text-[#234C6A] hover:text-[#456882] transition-colors">
-                      {job.title}
-                    </h3>
-                    <Badge
-                      variant={
-                        job.status === "active" ? "default" : "secondary"
-                      }
-                      className={`${
-                        job.status === "active"
-                          ? "bg-[#234C6A]/10 text-[#234C6A] border-[#234C6A]/30"
-                          : "bg-[#456882]/10 text-[#456882] border-[#456882]/30"
-                      }`}
-                    >
-                      {job.status}
-                    </Badge>
-                  </div>
-                  <p className="text-[#234C6A] mb-3">{job.companyName}</p>
-
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-[#234C6A]/70 mb-4">
-                    <div className="flex items-center gap-1">
-                      <Briefcase className="h-4 w-4" />
-                      <span>{job.type}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      <span>{job.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      <span>{job.salary}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        Deadline: {new Date(job.deadline).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-[#234C6A]/90 mb-4 line-clamp-2">
-                    {job.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {job.skills.map((skill, index) => (
+          {jobsData?.data?.map((job: any) => {
+            const status = job.isActive !== false ? "active" : "closed";
+            return (
+              <Card
+                key={job._id}
+                className="p-6 border-[#456882]/30 bg-white hover:shadow-lg transition-shadow"
+              >
+                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-xl font-semibold text-[#234C6A] hover:text-[#456882] transition-colors">
+                        {job.title}
+                      </h3>
                       <Badge
-                        key={index}
-                        variant="secondary"
-                        className="bg-[#234C6A]/10 text-[#234C6A] hover:bg-[#234C6A]/20"
+                        variant={status === "active" ? "default" : "secondary"}
+                        className={`${
+                          status === "active"
+                            ? "bg-[#234C6A]/10 text-[#234C6A] border-[#234C6A]/30"
+                            : "bg-[#456882]/10 text-[#456882] border-[#456882]/30"
+                        }`}
                       >
-                        {skill}
+                        {status}
                       </Badge>
-                    ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-[#234C6A]/70 mb-4">
+                      <div className="flex items-center gap-1">
+                        <Briefcase className="h-4 w-4" />
+                        <span>{job.type}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        <span>{job.location}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-4 w-4" />
+                        <span>
+                          {job.salaryMin} - {job.salaryMax} {job.salaryPeriod}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          Deadline:{" "}
+                          {new Date(
+                            job.applicationDeadline,
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-[#234C6A]/90 mb-4 line-clamp-2">
+                      {job.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {job.skills?.map((skill: string, index: number) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="bg-[#234C6A]/10 text-[#234C6A] hover:bg-[#234C6A]/20"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/10 flex items-center gap-2"
+                      onClick={() => toggleJobStatus(job._id, status)}
+                    >
+                      <Edit3 className="h-4 w-4" />
+                      {status === "active" ? "Close" : "Reopen"}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex items-center gap-2"
+                      onClick={() => deleteJob(job._id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </Button>
                   </div>
                 </div>
-
-                <div className="flex flex-col gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/10 flex items-center gap-2"
-                    onClick={() => toggleJobStatus(job.id)}
-                  >
-                    <Edit3 className="h-4 w-4" />
-                    {job.status === "active" ? "Close" : "Reopen"}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="flex items-center gap-2"
-                    onClick={() => deleteJob(job.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
