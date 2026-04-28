@@ -68,6 +68,21 @@ const getJobById = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
+// Get jobs by author ID
+const getJobsByAuthorId = asyncHandler(async (req: Request, res: Response) => {
+  const { authorId } = req.params;
+  const jobs = await jobService.getJobsByAuthorId(authorId);
+
+  res.status(httpStatus.OK).json(
+    response({
+      message: "Jobs retrieved successfully",
+      status: "OK",
+      statusCode: httpStatus.OK,
+      data: jobs,
+    }),
+  );
+});
+
 // Create a new job (requires authentication)
 const createJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const jobData = req.body;
@@ -178,6 +193,7 @@ const jobController = {
   updateJob,
   deleteJob,
   searchJobs,
+  getJobsByAuthorId,
 };
 
 export default jobController;

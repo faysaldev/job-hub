@@ -22,7 +22,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
-import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
+import { useGetJobsByAuthorQuery } from "@/src/redux/features/jobs/jobsApi";
 
 // Define a new type that matches the component's usage instead of extending
 interface JobWithRecruiter {
@@ -57,7 +57,9 @@ const JobManagement = ({ userId }: { userId: string }) => {
     isLoading: jobsLoading,
     isError: jobsIsError,
     error: jobsError,
-  } = useGetJobByIdQuery(userId);
+  } = useGetJobsByAuthorQuery(userId);
+
+  console.log(jobsData);
 
   // Dummy data initialization
   useEffect(() => {
@@ -202,6 +204,35 @@ const JobManagement = ({ userId }: { userId: string }) => {
       setJobs(userJobs);
     }
   }, [userId]);
+
+  // Sync with backend data when available
+  useEffect(() => {
+    if (jobsData) {
+      // Map backend Job type to JobWithRecruiter if needed, or just use backend data
+      // For now, let's just set the jobs if we have data from backend
+      // Note: backend Job fields might differ slightly from JobWithRecruiter
+      const mappedJobs: JobWithRecruiter[] = jobsData.map((job: any) => ({
+        id: job._id,
+        title: job.title,
+        company: job.companyName || "Your Company",
+        location: job.location,
+        type: job.type,
+        salary: `${job.salaryMin} - ${job.salaryMax}`,
+        posted: job.createdAt,
+        description: job.description,
+        skills: job.skills,
+        status: job.isActive ? "active" : "closed",
+        recruiterId: job.author,
+        companyName: job.companyName || "Your Company",
+        experience: job.experienceLevel,
+        salaryMin: job.salaryMin,
+        salaryMax: job.salaryMax,
+        deadline: job.applicationDeadline,
+        postedDate: job.createdAt,
+      }));
+      setJobs(mappedJobs);
+    }
+  }, [jobsData]);
 
   const handleCreateJob = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -44,6 +44,15 @@ const jobsApi = baseApi.injectEndpoints({
       providesTags: (result, error, id) => [{ type: "jobs", id }],
     }),
 
+    // GET /job/author/:authorId - Get jobs by author ID
+    getJobsByAuthor: builder.query<Job[], string>({
+      query: (authorId) => ({
+        url: `/job/author/${authorId}`,
+        method: "GET",
+      }),
+      providesTags: [{ type: "jobs", id: "AUTHOR_LIST" }],
+    }),
+
     // POST /job - Create new job (Recruiter)
     createJob: builder.mutation<Job, Partial<Job>>({
       query: (body) => ({
@@ -85,6 +94,7 @@ export const {
   useGetJobsQuery,
   useSearchJobsQuery,
   useGetJobByIdQuery,
+  useGetJobsByAuthorQuery,
   useCreateJobMutation,
   useUpdateJobMutation,
   useDeleteJobMutation,

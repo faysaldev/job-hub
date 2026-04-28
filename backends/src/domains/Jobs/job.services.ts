@@ -67,6 +67,15 @@ const getJobById = async (jobId: string) => {
   return job;
 };
 
+// Get jobs by author ID
+const getJobsByAuthorId = async (authorId: string) => {
+  return await Job.find({ author: authorId })
+    .select(
+      "author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt",
+    )
+    .sort({ createdAt: -1 });
+};
+
 // Function to clear job search cache
 const clearJobCache = async () => {
   try {
@@ -278,6 +287,7 @@ const jobService = {
   searchJobs,
   seedJobs,
   clearJobCache,
+  getJobsByAuthorId,
 };
 
 export default jobService;

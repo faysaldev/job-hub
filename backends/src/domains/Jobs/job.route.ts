@@ -17,6 +17,7 @@ router.get(
   validate(jobValidator.searchJobsValidation),
   jobController.searchJobs,
 ); // Search jobs
+router.get("/author/:authorId", jobController.getJobsByAuthorId); // Get jobs by author ID
 router.get("/:jobId", jobController.getJobById); // Get job by ID
 
 // Protected routes (authentication required)
