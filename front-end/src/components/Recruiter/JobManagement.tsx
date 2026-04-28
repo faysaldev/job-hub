@@ -189,7 +189,7 @@ const JobManagement = ({ userId }: { userId: string }) => {
     } else {
       const allJobs = JSON.parse(storedJobs);
       const userJobs = allJobs.filter(
-        (job: JobWithRecruiter) => job.recruiterId === userId
+        (job: JobWithRecruiter) => job.recruiterId === userId,
       );
       setJobs(userJobs);
     }
@@ -200,7 +200,7 @@ const JobManagement = ({ userId }: { userId: string }) => {
     const formData = new FormData(e.currentTarget);
 
     const companyProfile = JSON.parse(
-      localStorage.getItem("companyProfiles") || "{}"
+      localStorage.getItem("companyProfiles") || "{}",
     )[userId];
     const companyName = companyProfile?.companyName || "Your Company";
 
@@ -240,7 +240,7 @@ const JobManagement = ({ userId }: { userId: string }) => {
 
     // Reload jobs after creation
     const updatedJobs = allJobs.filter(
-      (job: JobWithRecruiter) => job.recruiterId === userId
+      (job: JobWithRecruiter) => job.recruiterId === userId,
     );
     setJobs(updatedJobs);
 
@@ -251,13 +251,13 @@ const JobManagement = ({ userId }: { userId: string }) => {
   const deleteJob = (jobId: string) => {
     const allJobs = JSON.parse(localStorage.getItem("jobs") || "[]");
     const updatedJobs = allJobs.filter(
-      (job: JobWithRecruiter) => job.id !== jobId
+      (job: JobWithRecruiter) => job.id !== jobId,
     );
     localStorage.setItem("jobs", JSON.stringify(updatedJobs));
 
     // Update local state
     const userJobs = updatedJobs.filter(
-      (job: JobWithRecruiter) => job.recruiterId === userId
+      (job: JobWithRecruiter) => job.recruiterId === userId,
     );
     setJobs(userJobs);
 
@@ -269,13 +269,13 @@ const JobManagement = ({ userId }: { userId: string }) => {
     const updatedJobs = allJobs.map((job: JobWithRecruiter) =>
       job.id === jobId
         ? { ...job, status: job.status === "active" ? "closed" : "active" }
-        : job
+        : job,
     );
     localStorage.setItem("jobs", JSON.stringify(updatedJobs));
 
     // Update local state
     const userJobs = updatedJobs.filter(
-      (job: JobWithRecruiter) => job.recruiterId === userId
+      (job: JobWithRecruiter) => job.recruiterId === userId,
     );
     setJobs(userJobs);
 
@@ -293,135 +293,6 @@ const JobManagement = ({ userId }: { userId: string }) => {
             Manage all your active and closed job listings
           </p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Job
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-[#456882]/30 rounded-xl">
-            <DialogHeader>
-              <DialogTitle className="text-[#234C6A]">
-                Create New Job Posting
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreateJob} className="space-y-4">
-              <div>
-                <Label htmlFor="title" className="text-[#234C6A]">
-                  Job Title
-                </Label>
-                <Input
-                  id="title"
-                  name="title"
-                  required
-                  placeholder="Senior Software Engineer"
-                  className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                />
-              </div>
-              <div>
-                <Label htmlFor="type" className="text-[#234C6A]">
-                  Job Type
-                </Label>
-                <select
-                  id="type"
-                  name="type"
-                  required
-                  className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A] focus:border-[#234C6A]"
-                >
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Contract">Contract</option>
-                  <option value="Internship">Internship</option>
-                  <option value="Freelance">Freelance</option>
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="location" className="text-[#234C6A]">
-                  Location
-                </Label>
-                <Input
-                  id="location"
-                  name="location"
-                  required
-                  placeholder="Remote / San Francisco, CA"
-                  className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                />
-              </div>
-              <div>
-                <Label htmlFor="experience" className="text-[#234C6A]">
-                  Experience Level
-                </Label>
-                <select
-                  id="experience"
-                  name="experience"
-                  required
-                  className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A] focus:border-[#234C6A]"
-                >
-                  <option value="Entry Level">Entry Level</option>
-                  <option value="Mid Level">Mid Level</option>
-                  <option value="Senior Level">Senior Level</option>
-                  <option value="Lead/Principal">Lead/Principal</option>
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="salary" className="text-[#234C6A]">
-                  Salary Range
-                </Label>
-                <Input
-                  id="salary"
-                  name="salary"
-                  required
-                  placeholder="$80,000 - $120,000"
-                  className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                />
-              </div>
-              <div>
-                <Label htmlFor="skills" className="text-[#234C6A]">
-                  Required Skills (comma-separated)
-                </Label>
-                <Input
-                  id="skills"
-                  name="skills"
-                  required
-                  placeholder="React, TypeScript, Node.js"
-                  className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                />
-              </div>
-              <div>
-                <Label htmlFor="deadline" className="text-[#234C6A]">
-                  Application Deadline
-                </Label>
-                <Input
-                  id="deadline"
-                  name="deadline"
-                  type="date"
-                  required
-                  className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                />
-              </div>
-              <div>
-                <Label htmlFor="description" className="text-[#234C6A]">
-                  Job Description
-                </Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  required
-                  rows={6}
-                  placeholder="Describe the role, responsibilities, requirements..."
-                  className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
-              >
-                Post Job
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
 
       {jobs.length === 0 ? (
