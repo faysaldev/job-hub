@@ -20,11 +20,15 @@ const ApplicantsPage = () => {
               <Users className="h-7 w-7" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-[#234C6A] mb-1">Applicant Pipeline</h2>
-              <p className="text-[#456882]">Review and manage candidates for your open positions</p>
+              <h2 className="text-2xl font-bold text-[#234C6A] mb-1">
+                Applicant Pipeline
+              </h2>
+              <p className="text-[#456882]">
+                Review and manage candidates for your open positions
+              </p>
             </div>
           </div>
-          <ApplicantsList userId={user.id} />
+          <ApplicantsList userId={user?._id} />
         </Card>
       </div>
     </RecruiterLayout>

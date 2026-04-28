@@ -13,7 +13,7 @@ export interface IJob extends Document {
   salaryMin: number;
   salaryMax: number;
   salaryPeriod: "hourly" | "daily" | "weekly" | "monthly" | "yearly";
-  experienceLevel: "junior" | "mid" | "senior" | "lead";
+  experienceLevel: "entry" | "junior" | "mid" | "senior" | "lead";
   description: string;
   requirements: string[];
   responsibilities: string[];
@@ -82,7 +82,7 @@ const jobSchema = new Schema<IJob>(
     },
     experienceLevel: {
       type: String,
-      enum: ["junior", "mid", "senior", "lead"],
+      enum: ["entry", "junior", "mid", "senior", "lead"],
       required: true,
     },
     description: {

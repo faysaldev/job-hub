@@ -37,24 +37,24 @@ async function getCompanyById(id: string): Promise<CompanyProfile | null> {
     techcorp: {
       userId: "techcorp",
       companyName: "TechCorp",
-      industry: "Information Technology",
+      industries: "Information Technology",
       companySize: "51-200",
       website: "https://techcorp.example.com",
       description:
         "We are an innovative technology company focused on creating cutting-edge solutions for businesses worldwide. Our team of experts delivers exceptional services and products that help organizations thrive in the digital era. We prioritize innovation, collaboration, and employee growth.",
-      location: "San Francisco, CA",
-      logo: "https://placehold.co/150x150/234C6A/FFFFFF?text=TC",
+      companyLocation: "San Francisco, CA",
+      companyLogo: "https://placehold.co/150x150/234C6A/FFFFFF?text=TC",
     },
     designstudio: {
       userId: "designstudio",
       companyName: "DesignStudio",
-      industry: "Design & Creative",
+      industries: "Design & Creative",
       companySize: "11-50",
       website: "https://designstudio.example.com",
       description:
         "We are a creative team of designers focused on delivering beautiful and functional user experiences. Our team creates products that are not only visually appealing but also intuitive and user-friendly. We believe in the power of design to solve problems and create meaningful connections.",
-      location: "New York, NY",
-      logo: "https://placehold.co/150x150/456882/FFFFFF?text=DS",
+      companyLocation: "New York, NY",
+      companyLogo: "https://placehold.co/150x150/456882/FFFFFF?text=DS",
     },
   };
 
@@ -171,9 +171,9 @@ const CompanyDetailPage = async ({
               <div className="flex items-start gap-6">
                 {/* Company Logo */}
                 <div className="w-24 h-24 rounded-2xl bg-white shadow-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {company.logo ? (
+                  {company.companyLogo ? (
                     <img
-                      src={company.logo}
+                      src={company.companyLogo}
                       alt={`${company.companyName} logo`}
                       className="w-full h-full object-contain"
                     />
@@ -189,7 +189,7 @@ const CompanyDetailPage = async ({
                       Actively Hiring
                     </Badge>
                     <Badge className="bg-white/10 text-white border-white/20">
-                      {company.industry}
+                      {company.industries}
                     </Badge>
                   </div>
 
@@ -200,7 +200,7 @@ const CompanyDetailPage = async ({
                   <div className="flex flex-wrap items-center gap-4 text-white/80">
                     <span className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
-                      {company.location}
+                      {company.companyLocation}
                     </span>
                     <span className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
@@ -456,7 +456,7 @@ const CompanyDetailPage = async ({
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-sm">
                       <Building2 className="h-4 w-4 text-[#456882]" />
-                      <span className="text-[#456882]">{company.industry}</span>
+                      <span className="text-[#456882]">{company.industries}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
                       <Users className="h-4 w-4 text-[#456882]" />
@@ -466,7 +466,7 @@ const CompanyDetailPage = async ({
                     </div>
                     <div className="flex items-center gap-3 text-sm">
                       <MapPin className="h-4 w-4 text-[#456882]" />
-                      <span className="text-[#456882]">{company.location}</span>
+                      <span className="text-[#456882]">{company.companyLocation}</span>
                     </div>
                     {company.website && (
                       <div className="flex items-center gap-3 text-sm">
@@ -490,7 +490,7 @@ const CompanyDetailPage = async ({
               <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-2xl">
                 <h3 className="text-lg font-bold mb-2">Similar Companies</h3>
                 <p className="text-white/80 text-sm mb-4">
-                  Explore other companies in {company.industry}
+                  Explore other companies in {company.industries}
                 </p>
                 <Link href="/job">
                   <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90">

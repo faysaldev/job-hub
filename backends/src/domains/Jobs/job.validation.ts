@@ -3,7 +3,7 @@ import { z } from "zod";
 const jobTypeSchema = z.enum(["full-time", "part-time", "contract", "internship", "freelance"]);
 const locationTypeSchema = z.enum(["remote", "onsite", "hybrid"]);
 const salaryPeriodSchema = z.enum(["hourly", "daily", "weekly", "monthly", "yearly"]);
-const experienceLevelSchema = z.enum(["junior", "mid", "senior", "lead"]);
+const experienceLevelSchema = z.enum(["entry", "junior", "mid", "senior", "lead"]);
 
 export const createJobValidation = z.object({
   title: z.string().min(1, "Job title is required"),

@@ -88,22 +88,13 @@ export type CompanySize =
 
 export interface CompanyProfile {
   userId: string;
+  companyLogo?: string;
   companyName: string;
-  industry: string;
-  companySize: CompanySize;
+  industries: string;
+  companySize: string;
   website?: string;
   description: string;
-  logo?: string;
-  coverImage?: string;
-  location: string;
-  city?: string;
-  country?: string;
-  foundedYear?: number;
-  linkedIn?: string;
-  twitter?: string;
-  benefits?: string[];
-  culture?: string;
-  verifiedAt?: string;
+  companyLocation: string;
   updatedAt?: string;
 }
 
@@ -151,12 +142,15 @@ export interface Job {
   applicationCount?: number;
   viewCount?: number;
   deadline?: string;
+  applicationDeadline?: string;
+  locationType?: "remote" | "onsite" | "hybrid" | string;
   posted?: string; // legacy alias
   postedAt?: string;
   updatedAt?: string;
   expiresAt?: string;
   isSaved?: boolean;
   isApplied?: boolean;
+  positions?: number;
 }
 
 // ---------- Applications ----------

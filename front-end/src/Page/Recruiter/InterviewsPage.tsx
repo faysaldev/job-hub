@@ -136,7 +136,9 @@ const InterviewsPage = () => {
     },
   ]);
 
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
+    null,
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [showScheduler, setShowScheduler] = useState(false);
@@ -161,9 +163,10 @@ const InterviewsPage = () => {
         },
         {
           id: "m2",
-          senderId: user?.id || "",
+          senderId: user?._id || "",
           senderName: user?.name || "Recruiter",
-          content: "Hi! Thanks for your application. We'd love to schedule an interview with you. When would be a good time?",
+          content:
+            "Hi! Thanks for your application. We'd love to schedule an interview with you. When would be a good time?",
           timestamp: "Yesterday 10:15 AM",
           type: "text",
         },
@@ -171,7 +174,8 @@ const InterviewsPage = () => {
           id: "m3",
           senderId: selectedCandidate.id,
           senderName: selectedCandidate.name,
-          content: "I'm flexible this week. Would Thursday or Friday afternoon work?",
+          content:
+            "I'm flexible this week. Would Thursday or Friday afternoon work?",
           timestamp: "Yesterday 2:30 PM",
           type: "text",
         },
@@ -190,10 +194,13 @@ const InterviewsPage = () => {
 
     const newMsg: ChatMessage = {
       id: `new-${Date.now()}`,
-      senderId: user.id,
+      senderId: user?._id,
       senderName: user.name || "Recruiter",
       content: newMessage,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       type: "text",
     };
 
@@ -202,14 +209,18 @@ const InterviewsPage = () => {
   };
 
   const sendScheduleRequest = () => {
-    if (!selectedCandidate || !schedulingData.date || !schedulingData.time) return;
+    if (!selectedCandidate || !schedulingData.date || !schedulingData.time)
+      return;
 
     const scheduleMsg: ChatMessage = {
       id: `schedule-${Date.now()}`,
-      senderId: user.id,
+      senderId: user?._id,
       senderName: user.name || "Recruiter",
       content: "",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       type: "scheduling",
       schedulingData: {
         date: schedulingData.date,
@@ -244,8 +255,12 @@ const InterviewsPage = () => {
             <Calendar className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#234C6A]">Schedule Interviews</h1>
-            <p className="text-[#456882]">Coordinate and schedule interviews with candidates via chat</p>
+            <h1 className="text-2xl font-bold text-[#234C6A]">
+              Schedule Interviews
+            </h1>
+            <p className="text-[#456882]">
+              Coordinate and schedule interviews with candidates via chat
+            </p>
           </div>
         </div>
 
@@ -268,14 +283,22 @@ const InterviewsPage = () => {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      selectedCandidate?.id === candidate.id ? "bg-white/20" : "bg-[#234C6A]/10"
-                    }`}>
-                      <User className={`h-5 w-5 ${selectedCandidate?.id === candidate.id ? "text-white" : "text-[#234C6A]"}`} />
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        selectedCandidate?.id === candidate.id
+                          ? "bg-white/20"
+                          : "bg-[#234C6A]/10"
+                      }`}
+                    >
+                      <User
+                        className={`h-5 w-5 ${selectedCandidate?.id === candidate.id ? "text-white" : "text-[#234C6A]"}`}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`font-semibold truncate ${selectedCandidate?.id === candidate.id ? "text-white" : "text-[#234C6A]"}`}>
+                        <p
+                          className={`font-semibold truncate ${selectedCandidate?.id === candidate.id ? "text-white" : "text-[#234C6A]"}`}
+                        >
                           {candidate.name}
                         </p>
                         {candidate.unreadCount > 0 && (
@@ -284,22 +307,32 @@ const InterviewsPage = () => {
                           </span>
                         )}
                       </div>
-                      <p className={`text-xs truncate ${selectedCandidate?.id === candidate.id ? "text-white/80" : "text-[#456882]"}`}>
+                      <p
+                        className={`text-xs truncate ${selectedCandidate?.id === candidate.id ? "text-white/80" : "text-[#456882]"}`}
+                      >
                         {candidate.jobTitle}
                       </p>
-                      <p className={`text-xs truncate mt-1 ${selectedCandidate?.id === candidate.id ? "text-white/70" : "text-[#456882]/70"}`}>
+                      <p
+                        className={`text-xs truncate mt-1 ${selectedCandidate?.id === candidate.id ? "text-white/70" : "text-[#456882]/70"}`}
+                      >
                         {candidate.lastMessage}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className={`text-xs ${selectedCandidate?.id === candidate.id ? "text-white/70" : "text-[#456882]/70"}`}>
+                      <span
+                        className={`text-xs ${selectedCandidate?.id === candidate.id ? "text-white/70" : "text-[#456882]/70"}`}
+                      >
                         {candidate.lastMessageTime}
                       </span>
                       {candidate.interviewStatus === "scheduled" && (
-                        <Badge className="bg-green-500 text-white text-xs">Scheduled</Badge>
+                        <Badge className="bg-green-500 text-white text-xs">
+                          Scheduled
+                        </Badge>
                       )}
                       {candidate.interviewStatus === "pending" && (
-                        <Badge className="bg-amber-500 text-white text-xs">Pending</Badge>
+                        <Badge className="bg-amber-500 text-white text-xs">
+                          Pending
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -319,8 +352,12 @@ const InterviewsPage = () => {
                       <User className="h-5 w-5 text-[#234C6A]" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#234C6A]">{selectedCandidate.name}</p>
-                      <p className="text-xs text-[#456882]">{selectedCandidate.jobTitle}</p>
+                      <p className="font-semibold text-[#234C6A]">
+                        {selectedCandidate.name}
+                      </p>
+                      <p className="text-xs text-[#456882]">
+                        {selectedCandidate.jobTitle}
+                      </p>
                     </div>
                   </div>
                   <Button
@@ -335,33 +372,53 @@ const InterviewsPage = () => {
                 {/* Schedule Picker */}
                 {showScheduler && (
                   <div className="p-4 bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 rounded-xl my-4">
-                    <h4 className="font-semibold text-[#234C6A] mb-4">Schedule an Interview</h4>
+                    <h4 className="font-semibold text-[#234C6A] mb-4">
+                      Schedule an Interview
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm text-[#456882] mb-1">Date</label>
+                        <label className="block text-sm text-[#456882] mb-1">
+                          Date
+                        </label>
                         <Input
                           type="date"
                           value={schedulingData.date}
-                          onChange={(e) => setSchedulingData({ ...schedulingData, date: e.target.value })}
+                          onChange={(e) =>
+                            setSchedulingData({
+                              ...schedulingData,
+                              date: e.target.value,
+                            })
+                          }
                           className="border-[#E3E3E3]"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-[#456882] mb-1">Time</label>
+                        <label className="block text-sm text-[#456882] mb-1">
+                          Time
+                        </label>
                         <Input
                           type="time"
                           value={schedulingData.time}
-                          onChange={(e) => setSchedulingData({ ...schedulingData, time: e.target.value })}
+                          onChange={(e) =>
+                            setSchedulingData({
+                              ...schedulingData,
+                              time: e.target.value,
+                            })
+                          }
                           className="border-[#E3E3E3]"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-[#456882] mb-1">Type</label>
+                        <label className="block text-sm text-[#456882] mb-1">
+                          Type
+                        </label>
                         <div className="flex gap-2">
                           {["video", "phone", "in-person"].map((type) => (
                             <button
                               key={type}
-                              onClick={() => setSchedulingData({ ...schedulingData, type })}
+                              onClick={() =>
+                                setSchedulingData({ ...schedulingData, type })
+                              }
                               className={`flex-1 p-2 rounded-lg flex items-center justify-center gap-1 text-sm capitalize ${
                                 schedulingData.type === type
                                   ? "bg-[#234C6A] text-white"
@@ -398,29 +455,41 @@ const InterviewsPage = () => {
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`flex ${msg.senderId === user.id ? "justify-end" : "justify-start"}`}
+                      className={`flex ${msg.senderId === user?._id ? "justify-end" : "justify-start"}`}
                     >
                       {msg.type === "text" ? (
                         <div
                           className={`max-w-[80%] p-4 rounded-2xl ${
-                            msg.senderId === user.id
+                            msg.senderId === user?._id
                               ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white rounded-br-none"
                               : "bg-[#E3E3E3] text-[#234C6A] rounded-bl-none"
                           }`}
                         >
                           <p className="text-sm">{msg.content}</p>
-                          <p className="text-xs opacity-70 mt-1 text-right">{msg.timestamp}</p>
+                          <p className="text-xs opacity-70 mt-1 text-right">
+                            {msg.timestamp}
+                          </p>
                         </div>
                       ) : msg.type === "scheduling" && msg.schedulingData ? (
                         <div className="max-w-[80%] bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4">
                           <div className="flex items-center gap-2 mb-3">
                             <Calendar className="h-5 w-5 text-amber-600" />
-                            <span className="font-semibold text-[#234C6A]">Interview Request</span>
+                            <span className="font-semibold text-[#234C6A]">
+                              Interview Request
+                            </span>
                           </div>
                           <div className="space-y-2 text-sm">
                             <div className="flex items-center gap-2 text-[#456882]">
                               <Calendar className="h-4 w-4" />
-                              <span>{new Date(msg.schedulingData.date!).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</span>
+                              <span>
+                                {new Date(
+                                  msg.schedulingData.date!,
+                                ).toLocaleDateString("en-US", {
+                                  weekday: "long",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 text-[#456882]">
                               <Clock className="h-4 w-4" />
@@ -428,22 +497,33 @@ const InterviewsPage = () => {
                             </div>
                             <div className="flex items-center gap-2 text-[#456882]">
                               {interviewTypeIcon(msg.schedulingData.type!)}
-                              <span className="capitalize">{msg.schedulingData.type} Interview</span>
+                              <span className="capitalize">
+                                {msg.schedulingData.type} Interview
+                              </span>
                             </div>
                           </div>
                           {!msg.schedulingData.confirmed && (
                             <div className="flex gap-2 mt-4">
-                              <Button size="sm" className="flex-1 bg-green-500 hover:bg-green-600">
+                              <Button
+                                size="sm"
+                                className="flex-1 bg-green-500 hover:bg-green-600"
+                              >
                                 <CheckCircle className="h-4 w-4 mr-1" />
                                 Confirm
                               </Button>
-                              <Button size="sm" variant="outline" className="flex-1 border-red-200 text-red-500 hover:bg-red-50">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 border-red-200 text-red-500 hover:bg-red-50"
+                              >
                                 <XCircle className="h-4 w-4 mr-1" />
                                 Decline
                               </Button>
                             </div>
                           )}
-                          <p className="text-xs text-[#456882]/70 mt-2 text-right">{msg.timestamp}</p>
+                          <p className="text-xs text-[#456882]/70 mt-2 text-right">
+                            {msg.timestamp}
+                          </p>
                         </div>
                       ) : null}
                     </div>
@@ -476,9 +556,12 @@ const InterviewsPage = () => {
                   <div className="w-20 h-20 rounded-full bg-[#234C6A]/10 flex items-center justify-center mx-auto mb-4">
                     <MessageSquare className="h-10 w-10 text-[#234C6A]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-[#234C6A] mb-2">Select a Candidate</h3>
+                  <h3 className="text-xl font-semibold text-[#234C6A] mb-2">
+                    Select a Candidate
+                  </h3>
                   <p className="text-[#456882] max-w-md">
-                    Choose a candidate from the list to start scheduling an interview through chat
+                    Choose a candidate from the list to start scheduling an
+                    interview through chat
                   </p>
                 </div>
               </div>
@@ -504,11 +587,17 @@ const InterviewsPage = () => {
                       <User className="h-5 w-5 text-[#234C6A]" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#234C6A]">{interview.candidateName}</p>
-                      <p className="text-xs text-[#456882]">{interview.jobTitle}</p>
+                      <p className="font-semibold text-[#234C6A]">
+                        {interview.candidateName}
+                      </p>
+                      <p className="text-xs text-[#456882]">
+                        {interview.jobTitle}
+                      </p>
                     </div>
                   </div>
-                  <Badge className={`${interview.type === "video" ? "bg-blue-500" : interview.type === "phone" ? "bg-green-500" : "bg-purple-500"} text-white`}>
+                  <Badge
+                    className={`${interview.type === "video" ? "bg-blue-500" : interview.type === "phone" ? "bg-green-500" : "bg-purple-500"} text-white`}
+                  >
                     {interviewTypeIcon(interview.type)}
                     <span className="ml-1 capitalize">{interview.type}</span>
                   </Badge>
@@ -516,15 +605,26 @@ const InterviewsPage = () => {
                 <div className="space-y-2 text-sm text-[#456882]">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    <span>{new Date(interview.scheduledDate).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</span>
+                    <span>
+                      {new Date(interview.scheduledDate).toLocaleDateString(
+                        "en-US",
+                        { weekday: "short", month: "short", day: "numeric" },
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    <span>{interview.scheduledTime} ({interview.duration})</span>
+                    <span>
+                      {interview.scheduledTime} ({interview.duration})
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <Button size="sm" variant="outline" className="flex-1 border-[#234C6A]/20 text-[#234C6A]">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 border-[#234C6A]/20 text-[#234C6A]"
+                  >
                     Reschedule
                   </Button>
                   <Button size="sm" className="flex-1 bg-[#234C6A]">

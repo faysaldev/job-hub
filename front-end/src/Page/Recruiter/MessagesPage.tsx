@@ -20,11 +20,15 @@ const MessagesPage = () => {
               <MessageSquare className="h-7 w-7" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-[#234C6A] mb-1">Messages</h2>
-              <p className="text-[#456882]">Communicate with candidates and team members</p>
+              <h2 className="text-2xl font-bold text-[#234C6A] mb-1">
+                Messages
+              </h2>
+              <p className="text-[#456882]">
+                Communicate with candidates and team members
+              </p>
             </div>
           </div>
-          <Messages userId={user.id} />
+          <Messages userId={user?._id} />
         </Card>
       </div>
     </RecruiterLayout>

@@ -267,7 +267,7 @@ const JobSeekerDashboard = () => {
                         Browse More Jobs
                       </Button>
                     </div>
-                    <AppliedJobs userId={user.id} />
+                    <AppliedJobs userId={user?._id} />
                   </Card>
                 </TabsContent>
 
@@ -281,7 +281,7 @@ const JobSeekerDashboard = () => {
                         Keep your profile updated to attract recruiters
                       </p>
                     </div>
-                    <JobSeekerProfile userId={user.id} />
+                    <JobSeekerProfile userId={user?._id} />
                   </Card>
                 </TabsContent>
 
@@ -295,7 +295,7 @@ const JobSeekerDashboard = () => {
                         Communicate with recruiters and employers
                       </p>
                     </div>
-                    <Messages userId={user.id} />
+                    <Messages userId={user?._id} />
                   </Card>
                 </TabsContent>
               </Tabs>

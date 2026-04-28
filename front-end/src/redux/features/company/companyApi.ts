@@ -1,10 +1,10 @@
 import { baseApi } from "@/src/redux/baseApi/baseApi";
-import { CompanyProfile } from "@/src/types";
+import { CompanyProfile, ApiResponse } from "@/src/types";
 
 const companyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // POST /recruiter-company - Create company profile (JSON)
-    createCompany: builder.mutation<any, any>({
+    createCompany: builder.mutation<ApiResponse<CompanyProfile>, any>({
       query: (body) => ({
         url: "/recruiter-company",
         method: "POST",
@@ -14,7 +14,7 @@ const companyApi = baseApi.injectEndpoints({
     }),
 
     // GET /recruiter-company - Get authenticated user's company profile
-    getCompany: builder.query<CompanyProfile, void>({
+    getCompany: builder.query<ApiResponse<CompanyProfile>, void>({
       query: () => ({
         url: "/recruiter-company",
         method: "GET",
@@ -23,7 +23,7 @@ const companyApi = baseApi.injectEndpoints({
     }),
 
     // GET /recruiter-company/all - Get all companies
-    getAllCompanies: builder.query<CompanyProfile[], void>({
+    getAllCompanies: builder.query<ApiResponse<CompanyProfile[]>, void>({
       query: () => ({
         url: "/recruiter-company/all",
         method: "GET",
@@ -32,7 +32,7 @@ const companyApi = baseApi.injectEndpoints({
     }),
 
     // PUT /recruiter-company - Update company profile (JSON)
-    updateCompany: builder.mutation<any, any>({
+    updateCompany: builder.mutation<ApiResponse<CompanyProfile>, any>({
       query: (body) => ({
         url: "/recruiter-company",
         method: "PUT",

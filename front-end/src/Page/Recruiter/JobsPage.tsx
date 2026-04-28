@@ -24,8 +24,12 @@ const JobsPage = () => {
                 <Briefcase className="h-7 w-7" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#234C6A] mb-1">Manage Job Listings</h2>
-                <p className="text-[#456882]">Create, edit, and manage your job postings</p>
+                <h2 className="text-2xl font-bold text-[#234C6A] mb-1">
+                  Manage Job Listings
+                </h2>
+                <p className="text-[#456882]">
+                  Create, edit, and manage your job postings
+                </p>
               </div>
             </div>
             <Button
@@ -37,7 +41,7 @@ const JobsPage = () => {
               <ArrowUpRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Button>
           </div>
-          <JobManagement userId={user.id} />
+          <JobManagement userId={user?._id} />
         </Card>
       </div>
     </RecruiterLayout>

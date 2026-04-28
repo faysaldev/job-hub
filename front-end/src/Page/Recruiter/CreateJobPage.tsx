@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, memo } from "react";
+import { useForm, FormProvider, useWatch, useFormContext } from "react-hook-form";
 import { useAuth } from "@/src/hooks/useAuth";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { Card } from "@/src/components/ui/card";
@@ -14,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
-import { Checkbox } from "@/src/components/ui/checkbox";
 import {
   Plus,
   Briefcase,
@@ -23,18 +23,22 @@ import {
   Clock,
   Users,
   GraduationCap,
-  Building2,
   FileText,
   CheckCircle,
   ArrowLeft,
   ArrowRight,
   Sparkles,
   X,
+  Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { jobCategories } from "@/src/lib/jobCategories";
+import { useCreateJobMutation } from "@/src/redux/features/jobs/jobsApi";
+import { toast } from "sonner";
+import { Job } from "@/src/types";
 
-interface JobFormData {
+// Types matching the user's specific requirement
+type CreateJobFormValues = {
   title: string;
   category: string;
   subcategory: string;
@@ -52,88 +56,138 @@ interface JobFormData {
   skills: string[];
   applicationDeadline: string;
   positions: string;
-}
+};
+
+// --- Sub-components for better performance and clean code ---
+
+const ListManager = memo(({ 
+  name, 
+  label, 
+  placeholder, 
+  icon: Icon,
+  variant = "default" 
+}: { 
+  name: "requirements" | "responsibilities" | "benefits" | "skills", 
+  label: string, 
+  placeholder: string,
+  icon?: any,
+  variant?: "default" | "badge"
+}) => {
+  const { setValue, getValues } = useFormContext<CreateJobFormValues>();
+  const items = useWatch({ name });
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleAdd = useCallback(() => {
+    const val = inputRef.current?.value.trim();
+    if (val) {
+      const current = getValues(name) || [];
+      if (!current.includes(val)) {
+        setValue(name, [...current, val], { shouldDirty: true });
+        if (inputRef.current) inputRef.current.value = "";
+      }
+    }
+  }, [getValues, name, setValue]);
+
+  const handleRemove = useCallback((index: number) => {
+    const current = getValues(name) || [];
+    setValue(name, current.filter((_, i) => i !== index), { shouldDirty: true });
+  }, [getValues, name, setValue]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAdd();
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-sm font-bold text-[#234C6A]">{label}</label>
+      <div className="flex gap-2">
+        <Input
+          ref={inputRef}
+          placeholder={placeholder}
+          onKeyDown={handleKeyDown}
+          className="border-[#E3E3E3] focus:border-[#234C6A] h-11"
+        />
+        <Button
+          type="button"
+          onClick={handleAdd}
+          className="bg-[#234C6A] hover:bg-[#456882] h-11 w-11 p-0 rounded-xl"
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
+      </div>
+      
+      {variant === "badge" ? (
+        <div className="flex flex-wrap gap-2">
+          {items?.map((item: string, index: number) => (
+            <span key={index} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#234C6A]/10 text-[#234C6A] rounded-xl text-sm font-semibold border border-[#234C6A]/5">
+              {item}
+              <button type="button" onClick={() => handleRemove(index)} className="hover:text-red-200 transition-colors">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {items?.map((item: string, index: number) => (
+            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 group animate-in fade-in slide-in-from-left-2">
+              {Icon && <Icon className="h-4 w-4 text-[#456882]" />}
+              <span className="flex-1 text-sm font-medium text-[#234C6A]">{item}</span>
+              <button 
+                type="button" 
+                onClick={() => handleRemove(index)} 
+                className="text-[#456882] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+
+ListManager.displayName = "ListManager";
+
+// --- Main Page Component ---
 
 const CreateJobPage = () => {
   const { user } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [newRequirement, setNewRequirement] = useState("");
-  const [newResponsibility, setNewResponsibility] = useState("");
-  const [newBenefit, setNewBenefit] = useState("");
-  const [newSkill, setNewSkill] = useState("");
+  const [createJob, { isLoading }] = useCreateJobMutation();
 
-  const [formData, setFormData] = useState<JobFormData>({
-    title: "",
-    category: "",
-    subcategory: "",
-    type: "",
-    location: "",
-    locationType: "",
-    salaryMin: "",
-    salaryMax: "",
-    salaryPeriod: "yearly",
-    experienceLevel: "",
-    description: "",
-    requirements: [],
-    responsibilities: [],
-    benefits: [],
-    skills: [],
-    applicationDeadline: "",
-    positions: "1",
+  const methods = useForm<CreateJobFormValues>({
+    defaultValues: {
+      title: "",
+      category: "",
+      subcategory: "",
+      type: "full-time",
+      location: "",
+      locationType: "onsite",
+      salaryMin: "",
+      salaryMax: "",
+      salaryPeriod: "yearly",
+      experienceLevel: "entry",
+      description: "",
+      requirements: [],
+      responsibilities: [],
+      benefits: [],
+      skills: [],
+      applicationDeadline: "",
+      positions: "1",
+    },
   });
 
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = methods;
+  const watchedCategory = watch("category");
+  const watchedValues = watch();
+
   if (!user) return null;
-
-  const jobTypes = [
-    { id: "full-time", label: "Full Time" },
-    { id: "part-time", label: "Part Time" },
-    { id: "contract", label: "Contract" },
-    { id: "freelance", label: "Freelance" },
-    { id: "internship", label: "Internship" },
-  ];
-
-  const locationTypes = [
-    { id: "onsite", label: "On-site" },
-    { id: "remote", label: "Remote" },
-    { id: "hybrid", label: "Hybrid" },
-  ];
-
-  const experienceLevels = [
-    { id: "entry", label: "Entry Level (0-2 years)" },
-    { id: "junior", label: "Junior (2-4 years)" },
-    { id: "mid", label: "Mid Level (4-6 years)" },
-    { id: "senior", label: "Senior (6-10 years)" },
-    { id: "lead", label: "Lead/Principal (10+ years)" },
-  ];
-
-  const selectedCategory = jobCategories.find(c => c.id === formData.category);
-
-  const handleInputChange = (field: keyof JobFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const addItem = (field: "requirements" | "responsibilities" | "benefits" | "skills", value: string) => {
-    if (value.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        [field]: [...prev[field], value.trim()],
-      }));
-    }
-  };
-
-  const removeItem = (field: "requirements" | "responsibilities" | "benefits" | "skills", index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleSubmit = () => {
-    // In a real app, this would submit to an API
-    console.log("Job data:", formData);
-    router.push("/recruiter/jobs");
-  };
 
   const steps = [
     { number: 1, title: "Basic Info", icon: Briefcase },
@@ -142,528 +196,443 @@ const CreateJobPage = () => {
     { number: 4, title: "Review", icon: CheckCircle },
   ];
 
+  const onSubmit = async (data: CreateJobFormValues) => {
+    try {
+      // Transform data to match Job type (convert strings to numbers)
+      const transformedData = {
+        ...data,
+        salaryMin: Number(data.salaryMin),
+        salaryMax: Number(data.salaryMax),
+        positions: Number(data.positions),
+        locationType: data.locationType, // Ensure this is passed
+      };
+
+      await createJob(transformedData as Job).unwrap();
+      toast.success("Job posted successfully!");
+      router.push("/recruiter/jobs");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to create job");
+    }
+  };
+
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
   return (
     <RecruiterLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto pb-20">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-            className="text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/10"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white shadow-lg">
-              <Plus className="h-7 w-7" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white shadow-2xl rotate-3">
+              <Plus className="h-8 w-8 -rotate-3" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-[#234C6A]">Create New Job Posting</h1>
-              <p className="text-[#456882]">Fill in the details to post a new job opening</p>
+              <h1 className="text-3xl font-black text-[#234C6A] tracking-tight">Create Opportunity</h1>
+              <p className="text-[#456882] font-medium">Find your next great team member</p>
             </div>
           </div>
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="rounded-2xl border-[#234C6A]/10 text-[#456882] hover:bg-white hover:shadow-md transition-all self-start md:self-center"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" /> Back
+          </Button>
         </div>
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex items-center flex-1">
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      currentStep >= step.number
-                        ? "bg-gradient-to-br from-[#234C6A] to-[#456882] text-white shadow-lg"
-                        : "bg-[#E3E3E3] text-[#456882]"
-                    }`}
-                  >
-                    <step.icon className="h-5 w-5" />
-                  </div>
-                  <span className={`mt-2 text-xs font-medium ${currentStep >= step.number ? "text-[#234C6A]" : "text-[#456882]"}`}>
-                    {step.title}
-                  </span>
+        {/* Progress Bar */}
+        <div className="relative mb-12 px-4">
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 rounded-full" />
+          <div 
+            className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882] -translate-y-1/2 rounded-full transition-all duration-500" 
+            style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+          />
+          <div className="relative flex justify-between">
+            {steps.map((step) => (
+              <div key={step.number} className="flex flex-col items-center">
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 z-10 ${
+                    currentStep >= step.number
+                      ? "bg-white shadow-xl text-[#234C6A] border-2 border-[#234C6A]"
+                      : "bg-white border-2 border-gray-100 text-gray-300"
+                  }`}
+                >
+                  <step.icon className={`h-5 w-5 ${currentStep >= step.number ? "animate-pulse" : ""}`} />
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={`flex-1 h-1 mx-4 rounded ${currentStep > step.number ? "bg-[#234C6A]" : "bg-[#E3E3E3]"}`} />
-                )}
+                <span className={`mt-3 text-xs font-bold uppercase tracking-widest ${currentStep >= step.number ? "text-[#234C6A]" : "text-gray-300"}`}>
+                  {step.title}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
-        <Card className="p-6 md:p-8 border-none bg-white shadow-lg rounded-2xl">
-          {/* Step 1: Basic Info */}
-          {currentStep === 1 && (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Job Title *</label>
-                <Input
-                  placeholder="e.g., Senior Frontend Developer"
-                  value={formData.title}
-                  onChange={(e) => handleInputChange("title", e.target.value)}
-                  className="border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-[#234C6A] mb-2">Category *</label>
-                  <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                    <SelectTrigger className="border-[#E3E3E3] focus:border-[#234C6A]">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {jobCategories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#234C6A] mb-2">Subcategory</label>
-                  <Select
-                    value={formData.subcategory}
-                    onValueChange={(value) => handleInputChange("subcategory", value)}
-                    disabled={!selectedCategory}
-                  >
-                    <SelectTrigger className="border-[#E3E3E3] focus:border-[#234C6A]">
-                      <SelectValue placeholder="Select subcategory" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {selectedCategory?.subcategories.map((sub) => (
-                        <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-[#234C6A] mb-2">Job Type *</label>
-                  <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
-                    <SelectTrigger className="border-[#E3E3E3] focus:border-[#234C6A]">
-                      <SelectValue placeholder="Select job type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {jobTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>{type.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#234C6A] mb-2">Work Location Type *</label>
-                  <Select value={formData.locationType} onValueChange={(value) => handleInputChange("locationType", value)}>
-                    <SelectTrigger className="border-[#E3E3E3] focus:border-[#234C6A]">
-                      <SelectValue placeholder="Select location type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {locationTypes.map((type) => (
-                        <SelectItem key={type.id} value={type.id}>{type.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Location *</label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
-                  <Input
-                    placeholder="e.g., New York, NY or Remote"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange("location", e.target.value)}
-                    className="pl-10 border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Details */}
-          {currentStep === 2 && (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Experience Level *</label>
-                <Select value={formData.experienceLevel} onValueChange={(value) => handleInputChange("experienceLevel", value)}>
-                  <SelectTrigger className="border-[#E3E3E3] focus:border-[#234C6A]">
-                    <SelectValue placeholder="Select experience level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {experienceLevels.map((level) => (
-                      <SelectItem key={level.id} value={level.id}>{level.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Salary Range</label>
-                <div className="flex items-center gap-4">
-                  <div className="relative flex-1">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={formData.salaryMin}
-                      onChange={(e) => handleInputChange("salaryMin", e.target.value)}
-                      className="pl-10 border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]"
-                    />
-                  </div>
-                  <span className="text-[#456882]">to</span>
-                  <div className="relative flex-1">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={formData.salaryMax}
-                      onChange={(e) => handleInputChange("salaryMax", e.target.value)}
-                      className="pl-10 border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]"
-                    />
-                  </div>
-                  <Select value={formData.salaryPeriod} onValueChange={(value) => handleInputChange("salaryPeriod", value)}>
-                    <SelectTrigger className="w-32 border-[#E3E3E3] focus:border-[#234C6A]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hourly">Hourly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-[#234C6A] mb-2">Number of Positions</label>
-                  <div className="relative">
-                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
-                    <Input
-                      type="number"
-                      min="1"
-                      value={formData.positions}
-                      onChange={(e) => handleInputChange("positions", e.target.value)}
-                      className="pl-10 border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-[#234C6A] mb-2">Application Deadline</label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
-                    <Input
-                      type="date"
-                      value={formData.applicationDeadline}
-                      onChange={(e) => handleInputChange("applicationDeadline", e.target.value)}
-                      className="pl-10 border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Job Description *</label>
-                <Textarea
-                  placeholder="Describe the role, team, and what makes this opportunity exciting..."
-                  value={formData.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
-                  className="min-h-[200px] border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Requirements & Benefits */}
-          {currentStep === 3 && (
-            <div className="space-y-8">
-              {/* Requirements */}
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Requirements</label>
-                <div className="flex gap-2 mb-3">
-                  <Input
-                    placeholder="Add a requirement..."
-                    value={newRequirement}
-                    onChange={(e) => setNewRequirement(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        addItem("requirements", newRequirement);
-                        setNewRequirement("");
-                      }
-                    }}
-                    className="border-[#E3E3E3] focus:border-[#234C6A]"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      addItem("requirements", newRequirement);
-                      setNewRequirement("");
-                    }}
-                    className="bg-[#234C6A] hover:bg-[#234C6A]/90"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  {formData.requirements.map((req, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 bg-[#E3E3E3]/50 rounded-lg">
-                      <span className="flex-1 text-sm text-[#234C6A]">{req}</span>
-                      <button onClick={() => removeItem("requirements", index)} className="text-[#456882] hover:text-red-500">
-                        <X className="h-4 w-4" />
-                      </button>
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Card className="p-8 md:p-12 border-none bg-white shadow-2xl rounded-[2.5rem] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#234C6A]/5 to-transparent rounded-full -mr-32 -mt-32" />
+              
+              {/* Step 1: Basic Info */}
+              {currentStep === 1 && (
+                <div className="space-y-8 animate-in fade-in duration-500">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-[#234C6A] flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-[#456882]" /> Job Title *
+                        </label>
+                        <Input
+                          {...register("title", { required: "Title is required" })}
+                          placeholder="e.g. Senior Frontend Architect"
+                          className="h-14 rounded-2xl border-[#E3E3E3] focus:border-[#234C6A] focus:ring-4 focus:ring-[#234C6A]/5 font-medium px-6 text-lg"
+                        />
+                        {errors.title && <p className="text-xs text-red-500 font-bold ml-2">{errors.title.message}</p>}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Responsibilities */}
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Responsibilities</label>
-                <div className="flex gap-2 mb-3">
-                  <Input
-                    placeholder="Add a responsibility..."
-                    value={newResponsibility}
-                    onChange={(e) => setNewResponsibility(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        addItem("responsibilities", newResponsibility);
-                        setNewResponsibility("");
-                      }
-                    }}
-                    className="border-[#E3E3E3] focus:border-[#234C6A]"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      addItem("responsibilities", newResponsibility);
-                      setNewResponsibility("");
-                    }}
-                    className="bg-[#234C6A] hover:bg-[#234C6A]/90"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  {formData.responsibilities.map((resp, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 bg-[#E3E3E3]/50 rounded-lg">
-                      <span className="flex-1 text-sm text-[#234C6A]">{resp}</span>
-                      <button onClick={() => removeItem("responsibilities", index)} className="text-[#456882] hover:text-red-500">
-                        <X className="h-4 w-4" />
-                      </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-[#234C6A]">Category *</label>
+                        <Select onValueChange={(val) => setValue("category", val, { shouldValidate: true })}>
+                          <SelectTrigger className="h-14 rounded-2xl border-[#E3E3E3] font-medium px-6">
+                            <SelectValue placeholder="Select Industry" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl shadow-2xl border-none p-2">
+                            {jobCategories.map((cat) => (
+                              <SelectItem key={cat.id} value={cat.id} className="rounded-xl focus:bg-[#234C6A]/5">{cat.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-[#234C6A]">Subcategory *</label>
+                        <Select 
+                          disabled={!watchedCategory}
+                          onValueChange={(val) => setValue("subcategory", val, { shouldValidate: true })}
+                        >
+                          <SelectTrigger className="h-14 rounded-2xl border-[#E3E3E3] font-medium px-6">
+                            <SelectValue placeholder="Specialization" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl shadow-2xl border-none p-2">
+                            {jobCategories.find(c => c.id === watchedCategory)?.subcategories.map((sub) => (
+                              <SelectItem key={sub.id} value={sub.id} className="rounded-xl focus:bg-[#234C6A]/5">{sub.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Skills */}
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Required Skills</label>
-                <div className="flex gap-2 mb-3">
-                  <Input
-                    placeholder="Add a skill..."
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        addItem("skills", newSkill);
-                        setNewSkill("");
-                      }
-                    }}
-                    className="border-[#E3E3E3] focus:border-[#234C6A]"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      addItem("skills", newSkill);
-                      setNewSkill("");
-                    }}
-                    className="bg-[#234C6A] hover:bg-[#234C6A]/90"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.skills.map((skill, index) => (
-                    <span key={index} className="inline-flex items-center gap-1 px-3 py-1 bg-[#234C6A]/10 text-[#234C6A] rounded-full text-sm">
-                      {skill}
-                      <button onClick={() => removeItem("skills", index)} className="hover:text-red-500">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-[#234C6A]">Work Arrangement *</label>
+                        <Select 
+                          defaultValue="onsite"
+                          onValueChange={(val) => setValue("locationType", val)}
+                        >
+                          <SelectTrigger className="h-14 rounded-2xl border-[#E3E3E3] font-medium px-6">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl shadow-2xl border-none p-2">
+                            <SelectItem value="onsite" className="rounded-xl">On-site</SelectItem>
+                            <SelectItem value="remote" className="rounded-xl">Remote</SelectItem>
+                            <SelectItem value="hybrid" className="rounded-xl">Hybrid</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-              {/* Benefits */}
-              <div>
-                <label className="block text-sm font-semibold text-[#234C6A] mb-2">Benefits & Perks</label>
-                <div className="flex gap-2 mb-3">
-                  <Input
-                    placeholder="Add a benefit..."
-                    value={newBenefit}
-                    onChange={(e) => setNewBenefit(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        addItem("benefits", newBenefit);
-                        setNewBenefit("");
-                      }
-                    }}
-                    className="border-[#E3E3E3] focus:border-[#234C6A]"
-                  />
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      addItem("benefits", newBenefit);
-                      setNewBenefit("");
-                    }}
-                    className="bg-[#234C6A] hover:bg-[#234C6A]/90"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  {formData.benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                      <Sparkles className="h-4 w-4 text-green-600 flex-shrink-0" />
-                      <span className="flex-1 text-sm text-[#234C6A]">{benefit}</span>
-                      <button onClick={() => removeItem("benefits", index)} className="text-[#456882] hover:text-red-500">
-                        <X className="h-4 w-4" />
-                      </button>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-[#234C6A]">Job Type *</label>
+                        <Select 
+                          defaultValue="full-time"
+                          onValueChange={(val) => setValue("type", val)}
+                        >
+                          <SelectTrigger className="h-14 rounded-2xl border-[#E3E3E3] font-medium px-6">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-2xl shadow-2xl border-none p-2">
+                            <SelectItem value="full-time" className="rounded-xl">Full-Time</SelectItem>
+                            <SelectItem value="part-time" className="rounded-xl">Part-Time</SelectItem>
+                            <SelectItem value="contract" className="rounded-xl">Contract</SelectItem>
+                            <SelectItem value="freelance" className="rounded-xl">Freelance</SelectItem>
+                            <SelectItem value="internship" className="rounded-xl">Internship</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* Step 4: Review */}
-          {currentStep === 4 && (
-            <div className="space-y-6">
-              <div className="bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 p-6 rounded-xl">
-                <h3 className="text-xl font-bold text-[#234C6A] mb-4">{formData.title || "Untitled Position"}</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-[#456882]">Category</span>
-                    <p className="font-semibold text-[#234C6A]">{jobCategories.find(c => c.id === formData.category)?.name || "-"}</p>
-                  </div>
-                  <div>
-                    <span className="text-[#456882]">Type</span>
-                    <p className="font-semibold text-[#234C6A]">{jobTypes.find(t => t.id === formData.type)?.label || "-"}</p>
-                  </div>
-                  <div>
-                    <span className="text-[#456882]">Location</span>
-                    <p className="font-semibold text-[#234C6A]">{formData.location || "-"}</p>
-                  </div>
-                  <div>
-                    <span className="text-[#456882]">Experience</span>
-                    <p className="font-semibold text-[#234C6A]">{experienceLevels.find(l => l.id === formData.experienceLevel)?.label || "-"}</p>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-[#234C6A]">Primary Location *</label>
+                      <div className="relative group">
+                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882] group-focus-within:text-[#234C6A] transition-colors" />
+                        <Input
+                          {...register("location", { required: "Location is required" })}
+                          placeholder="e.g. San Francisco, CA or Remote"
+                          className="h-14 rounded-2xl border-[#E3E3E3] pl-14 font-medium"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-                {formData.salaryMin && formData.salaryMax && (
-                  <div className="mt-4 pt-4 border-t border-[#E3E3E3]">
-                    <span className="text-[#456882]">Salary Range</span>
-                    <p className="font-semibold text-[#234C6A]">
-                      ${parseInt(formData.salaryMin).toLocaleString()} - ${parseInt(formData.salaryMax).toLocaleString()} / {formData.salaryPeriod}
-                    </p>
+              )}
+
+              {/* Step 2: Details */}
+              {currentStep === 2 && (
+                <div className="space-y-8 animate-in fade-in duration-500">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-[#234C6A]">Experience Level *</label>
+                      <Select 
+                        defaultValue="entry"
+                        onValueChange={(val) => setValue("experienceLevel", val)}
+                      >
+                        <SelectTrigger className="h-14 rounded-2xl border-[#E3E3E3] font-medium px-6">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl shadow-2xl border-none p-2">
+                          <SelectItem value="entry" className="rounded-xl">Entry Level (0-2y)</SelectItem>
+                          <SelectItem value="junior" className="rounded-xl">Junior (2-4y)</SelectItem>
+                          <SelectItem value="mid" className="rounded-xl">Mid Level (4-6y)</SelectItem>
+                          <SelectItem value="senior" className="rounded-xl">Senior (6-10y)</SelectItem>
+                          <SelectItem value="lead" className="rounded-xl">Lead/Principal (10y+)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-[#234C6A]">Open Positions *</label>
+                      <div className="relative">
+                        <Users className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+                        <Input
+                          type="number"
+                          {...register("positions", { required: true, min: 1 })}
+                          className="h-14 rounded-2xl border-[#E3E3E3] pl-14 font-medium"
+                        />
+                      </div>
+                    </div>
                   </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-[#234C6A]">Compensation Package (USD)</label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="relative">
+                        <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+                        <Input
+                          type="number"
+                          {...register("salaryMin", { required: true })}
+                          placeholder="Min"
+                          className="h-14 rounded-2xl border-[#E3E3E3] pl-14 font-medium"
+                        />
+                      </div>
+                      <div className="relative">
+                        <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+                        <Input
+                          type="number"
+                          {...register("salaryMax", { required: true })}
+                          placeholder="Max"
+                          className="h-14 rounded-2xl border-[#E3E3E3] pl-14 font-medium"
+                        />
+                      </div>
+                      <Select 
+                        defaultValue="yearly"
+                        onValueChange={(val) => setValue("salaryPeriod", val)}
+                      >
+                        <SelectTrigger className="h-14 rounded-2xl border-[#E3E3E3] font-medium px-6">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+                          <SelectItem value="hourly" className="rounded-xl">per hour</SelectItem>
+                          <SelectItem value="monthly" className="rounded-xl">per month</SelectItem>
+                          <SelectItem value="yearly" className="rounded-xl">per year</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-[#234C6A]">Application Deadline *</label>
+                    <div className="relative">
+                      <Clock className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+                      <Input
+                        type="date"
+                        {...register("applicationDeadline", { required: true })}
+                        className="h-14 rounded-2xl border-[#E3E3E3] pl-14 font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-[#234C6A]">Role Description *</label>
+                    <Textarea
+                      {...register("description", { required: true })}
+                      placeholder="Paint a picture of the ideal candidate and the impact they'll make..."
+                      className="min-h-[250px] rounded-[2rem] border-[#E3E3E3] p-8 font-medium leading-relaxed resize-none focus:ring-[#234C6A]/5"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Requirements & Lists */}
+              {currentStep === 3 && (
+                <div className="space-y-10 animate-in fade-in duration-500">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <ListManager 
+                      name="requirements" 
+                      label="Key Requirements" 
+                      placeholder="e.g. 5+ years React experience"
+                      icon={CheckCircle}
+                    />
+                    <ListManager 
+                      name="responsibilities" 
+                      label="Main Responsibilities" 
+                      placeholder="e.g. Lead frontend architecture"
+                      icon={FileText}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <ListManager 
+                      name="skills" 
+                      label="Technical Skills" 
+                      placeholder="e.g. TypeScript, GraphQL"
+                      variant="badge"
+                    />
+                    <ListManager 
+                      name="benefits" 
+                      label="Benefits & Perks" 
+                      placeholder="e.g. Remote-first culture"
+                      icon={Sparkles}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Review */}
+              {currentStep === 4 && (
+                <div className="space-y-10 animate-in fade-in duration-500">
+                  <div className="p-10 bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl" />
+                    <div className="relative space-y-6">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                          <h3 className="text-4xl font-black">{watchedValues.title || "Untitled Position"}</h3>
+                          <div className="flex flex-wrap gap-3">
+                            <Badge className="bg-white/20 text-white border-none backdrop-blur-md rounded-lg">
+                              {watchedValues.type}
+                            </Badge>
+                            <Badge className="bg-white/20 text-white border-none backdrop-blur-md rounded-lg">
+                              {watchedValues.experienceLevel}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold opacity-70 uppercase tracking-widest">Compensation</p>
+                          <p className="text-3xl font-black">
+                            ${parseInt(watchedValues.salaryMin || "0").toLocaleString()} - ${parseInt(watchedValues.salaryMax || "0").toLocaleString()}
+                          </p>
+                          <p className="text-sm font-bold opacity-70">per {watchedValues.salaryPeriod.replace('ly', '')}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-8 pt-6 border-t border-white/10">
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 opacity-70" />
+                          <span className="font-bold">{watchedValues.location} ({watchedValues.locationType})</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Users className="h-5 w-5 opacity-70" />
+                          <span className="font-bold">{watchedValues.positions} Openings</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Clock className="h-5 w-5 opacity-70" />
+                          <span className="font-bold">Deadline: {watchedValues.applicationDeadline}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12 px-4">
+                    <div className="space-y-4">
+                      <h4 className="text-lg font-black text-[#234C6A] flex items-center gap-2">
+                        <div className="w-1.5 h-6 bg-[#234C6A] rounded-full" /> Description
+                      </h4>
+                      <p className="text-[#456882] font-medium leading-relaxed whitespace-pre-wrap">
+                        {watchedValues.description}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-10">
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-black text-[#234C6A]">Requirements</h4>
+                        <div className="space-y-2">
+                          {watchedValues.requirements?.map((req, i) => (
+                            <div key={i} className="flex items-start gap-3">
+                              <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                              <span className="text-[#456882] font-medium">{req}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-black text-[#234C6A]">Core Skills</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {watchedValues.skills?.map((skill, i) => (
+                            <Badge key={i} className="bg-[#234C6A]/5 text-[#234C6A] border-none font-bold rounded-lg px-4 py-1.5">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation */}
+              <div className="flex justify-between items-center mt-16 pt-10 border-t border-gray-50">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
+                  className="h-14 px-8 rounded-2xl font-bold text-[#456882] disabled:opacity-0"
+                >
+                  <ArrowLeft className="h-5 w-5 mr-3" /> Previous Step
+                </Button>
+
+                {currentStep < 4 ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    className="h-14 px-10 rounded-2xl bg-[#234C6A] hover:bg-[#456882] text-white font-black shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-1"
+                  >
+                    Next Component <ArrowRight className="h-5 w-5 ml-3" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="h-14 px-12 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-black shadow-xl shadow-green-500/20 transition-all hover:scale-105"
+                  >
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin mr-3" /> : <CheckCircle className="h-5 w-5 mr-3" />}
+                    Publish Opportunity
+                  </Button>
                 )}
               </div>
-
-              {formData.description && (
-                <div>
-                  <h4 className="font-semibold text-[#234C6A] mb-2">Description</h4>
-                  <p className="text-[#456882] whitespace-pre-wrap">{formData.description}</p>
-                </div>
-              )}
-
-              {formData.requirements.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-[#234C6A] mb-2">Requirements</h4>
-                  <ul className="list-disc list-inside space-y-1 text-[#456882]">
-                    {formData.requirements.map((req, i) => <li key={i}>{req}</li>)}
-                  </ul>
-                </div>
-              )}
-
-              {formData.responsibilities.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-[#234C6A] mb-2">Responsibilities</h4>
-                  <ul className="list-disc list-inside space-y-1 text-[#456882]">
-                    {formData.responsibilities.map((resp, i) => <li key={i}>{resp}</li>)}
-                  </ul>
-                </div>
-              )}
-
-              {formData.skills.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-[#234C6A] mb-2">Required Skills</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.skills.map((skill, i) => (
-                      <span key={i} className="px-3 py-1 bg-[#234C6A]/10 text-[#234C6A] rounded-full text-sm">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {formData.benefits.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-[#234C6A] mb-2">Benefits & Perks</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {formData.benefits.map((benefit, i) => (
-                      <div key={i} className="flex items-center gap-2 text-[#456882]">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        {benefit}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-[#E3E3E3]">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep(prev => prev - 1)}
-              disabled={currentStep === 1}
-              className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Previous
-            </Button>
-
-            {currentStep < 4 ? (
-              <Button
-                onClick={() => setCurrentStep(prev => prev + 1)}
-                className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
-              >
-                Next
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Publish Job
-              </Button>
-            )}
-          </div>
-        </Card>
+            </Card>
+          </form>
+        </FormProvider>
       </div>
     </RecruiterLayout>
   );
 };
+
+// Helper components
+const Badge = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  <div className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border ${className}`}>
+    {children}
+  </div>
+);
 
 export default CreateJobPage;
