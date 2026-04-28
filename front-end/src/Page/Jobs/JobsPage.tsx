@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 import { useSearchJobsQuery } from "@/src/redux/features/jobs/jobsApi";
+import { truncate, shouldTruncate } from "@/src/lib/truncate";
 import {
   jobCategories,
   companySizes,
@@ -102,6 +103,7 @@ const LOCATION_COLORS: Record<string, string> = {
 // ─── Job Card ─────────────────────────────────────────────────────────────────
 
 const JobCard = memo(({ job }: { job: ApiJob }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
 
   const handleClick = useCallback(() => {
@@ -191,10 +193,21 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
               </span>
             </div>
 
-            <div>
-              <span className="text-xs text-[#456882] px-2 py-1 rounded-lg bg-gray-50">
-                {job.description.slice(0, 300) + "..."}
-              </span>
+            <div className="mt-3">
+              <p className="text-sm text-[#456882] leading-relaxed inline">
+                {isExpanded ? job.description : truncate(job.description, 150)}
+              </p>
+              {shouldTruncate(job.description, 150) && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpanded(!isExpanded);
+                  }}
+                  className="ml-2 text-[#234C6A] font-semibold hover:text-[#456882] transition-colors text-xs underline-offset-4 hover:underline"
+                >
+                  {isExpanded ? "Show Less" : "See More"}
+                </button>
+              )}
             </div>
 
             {/* Location text */}
