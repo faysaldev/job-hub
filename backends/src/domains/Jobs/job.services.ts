@@ -52,7 +52,9 @@ const getJobById = async (jobId: string) => {
     // Continue with database query if cache fails
   }
 
-  const job = await Job.findById(jobId);
+  const job = await Job.findById(jobId)
+    .populate("author", "name image")
+    .populate("company", "companyName companyLogo");
 
   if (job) {
     try {

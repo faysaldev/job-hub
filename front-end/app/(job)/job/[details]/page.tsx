@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { notFound, useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
-import { Job } from "@/src/types";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
@@ -22,98 +23,30 @@ import {
   Sparkles,
   Award,
   Send,
+  Loader2,
 } from "lucide-react";
+import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 
-// Function to fetch job data by ID
-async function getJobById(id: number): Promise<Job | null> {
-  const mockJobs: Job[] = [
-    {
-      id: 1,
-      title: "Senior Frontend Developer",
-      company: "TechCorp",
-      location: "Remote",
-      type: "Full-time",
-      salary: "$100k - $150k",
-      posted: "2 days ago",
-      description:
-        "We're looking for an experienced Frontend Developer to join our growing team and help build the next generation of web applications. You'll work on challenging projects, collaborate with talented engineers, and have the opportunity to make a significant impact on our products used by millions of users worldwide.",
-      skills: ["React", "TypeScript", "Tailwind CSS", "Next.js", "GraphQL"],
-      status: "active",
-      responsibilities: [
-        "Develop and maintain high-quality web applications using modern frameworks",
-        "Collaborate closely with designers and backend developers to implement new features",
-        "Write clean, maintainable, and well-documented code following best practices",
-        "Participate in code reviews and technical discussions to improve team standards",
-        "Mentor junior developers and contribute to team growth and knowledge sharing",
-        "Optimize application performance and ensure excellent user experience",
-      ],
-      requirements: [
-        "5+ years of professional experience in frontend development",
-        "Strong proficiency in React, TypeScript, and modern JavaScript",
-        "Experience with modern CSS frameworks like Tailwind CSS or styled-components",
-        "Deep understanding of web performance optimization techniques",
-        "Excellent communication and collaboration skills",
-        "Experience with testing frameworks and CI/CD pipelines",
-      ],
-      benefits: [
-        "Competitive salary and equity package",
-        "Comprehensive health, dental, and vision insurance",
-        "Flexible work schedule and remote work options",
-        "Professional development budget of $3,000/year",
-        "401(k) matching program up to 4%",
-        "Unlimited PTO policy with minimum 3 weeks encouraged",
-      ],
-    },
-    {
-      id: 2,
-      title: "Product Designer",
-      company: "DesignStudio",
-      location: "New York, NY",
-      type: "Full-time",
-      salary: "$90k - $120k",
-      posted: "1 week ago",
-      description:
-        "Join our creative team and help shape the future of our products. As a Product Designer, you'll be responsible for crafting beautiful, intuitive user experiences that delight our customers and drive business results.",
-      skills: ["Figma", "UI/UX", "Prototyping", "User Research", "Design Systems"],
-      status: "active",
-      responsibilities: [
-        "Create user-centered designs that solve real problems",
-        "Collaborate with product and engineering teams throughout the design process",
-        "Conduct user research and usability testing to validate designs",
-        "Develop and maintain design systems and component libraries",
-        "Present design concepts and rationale to stakeholders",
-        "Stay up-to-date with latest design trends and best practices",
-      ],
-      requirements: [
-        "3+ years of product design experience at a tech company",
-        "Proficiency in design tools like Figma, Sketch, or Adobe XD",
-        "Strong portfolio demonstrating end-to-end design process",
-        "Experience with user research methods and usability testing",
-        "Understanding of front-end development basics (HTML, CSS, React)",
-        "Excellent presentation and communication skills",
-      ],
-      benefits: [
-        "Competitive salary with annual bonus",
-        "Premium health insurance coverage",
-        "Flexible PTO policy with company-wide refresh days",
-        "Learning and development stipend",
-        "Modern office space in Manhattan with hybrid options",
-        "Annual company retreat and team events",
-      ],
-    },
-  ];
+const JobDetail = () => {
+  const params = useParams();
+  const details = params?.details as string;
 
-  return mockJobs.find((job) => job.id === id) || null;
-}
+  const { data: apiResponse, isLoading, error } = useGetJobByIdQuery(details);
 
-const JobDetail = async ({ params }: { params: Promise<{ details: string }> }) => {
-  const resolvedParams = await params;
-  const { details } = resolvedParams;
-  const jobId = parseInt(details);
+  // Console log as requested
+  console.log("Job detail response:", apiResponse);
 
-  const job = await getJobById(jobId);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#E3E3E3]">
+        <Loader2 className="h-10 w-10 animate-spin text-[#234C6A]" />
+      </div>
+    );
+  }
 
-  if (!job) {
+  const job = apiResponse?.data;
+
+  if (error || !job) {
     notFound();
   }
 
