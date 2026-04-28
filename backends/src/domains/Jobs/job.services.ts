@@ -155,12 +155,12 @@ const searchJobs = async (
   const cacheKey = `jobs:search:${crypto.createHash("md5").update(JSON.stringify(params)).digest("hex")}`;
 
   // TODO: implement Redis caching later one
-  // try {
-  //   const cached = await redis.get(cacheKey);
-  //   if (cached) return JSON.parse(cached);
-  // } catch (error) {
-  //   console.error("Redis Read Error:", error);
-  // }
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+  } catch (error) {
+    console.error("Redis Read Error:", error);
+  }
 
   // Build Query
   const filter: any = { isActive: true };
