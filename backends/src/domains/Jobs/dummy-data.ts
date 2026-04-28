@@ -2,11 +2,11 @@ import { IJob } from "./job.model";
 
 export const dummyJobs: Partial<IJob>[] = [
   {
-    job_title: "Software Engineer",
-    job_type: "full-time",
+    title: "Software Engineer",
+    type: "full-time",
     location: "remote",
-    experience: "mid",
-    salary: 90000,
+    experienceLevel: "mid",
+    salaryMin: 90000,
     description: "We are looking for a skilled Software Engineer with experience in TypeScript and Node.js.",
     requirements: [
       "3+ years of experience in software development",
@@ -21,14 +21,14 @@ export const dummyJobs: Partial<IJob>[] = [
       "Unlimited PTO"
     ],
     isActive: true,
-    application_date: new Date(),
+    applicationDeadline: new Date(),
   },
   {
-    job_title: "Frontend Developer",
-    job_type: "full-time",
+    title: "Frontend Developer",
+    type: "full-time",
     location: "hybrid",
-    experience: "entry",
-    salary: 70000,
+    experienceLevel: "junior",
+    salaryMin: 70000,
     description: "Join our team as a Frontend Developer to build beautiful and responsive user interfaces.",
     requirements: [
       "Experience with React or Vue.js",
@@ -37,14 +37,14 @@ export const dummyJobs: Partial<IJob>[] = [
       "Experience with version control systems like Git"
     ],
     isActive: true,
-    application_date: new Date(),
+    applicationDeadline: new Date(),
   },
   {
-    job_title: "Product Manager",
-    job_type: "full-time",
+    title: "Product Manager",
+    type: "full-time",
     location: "onsite",
-    experience: "senior",
-    salary: 120000,
+    experienceLevel: "senior",
+    salaryMin: 120000,
     description: "Lead product development initiatives and work with cross-functional teams.",
     requirements: [
       "5+ years of product management experience",
@@ -59,14 +59,14 @@ export const dummyJobs: Partial<IJob>[] = [
       "Professional development budget"
     ],
     isActive: true,
-    application_date: new Date(),
+    applicationDeadline: new Date(),
   },
   {
-    job_title: "UX Designer",
-    job_type: "contract",
+    title: "UX Designer",
+    type: "contract",
     location: "remote",
-    experience: "mid",
-    salary: 80000,
+    experienceLevel: "mid",
+    salaryMin: 80000,
     description: "Design user-centered digital experiences for our products.",
     requirements: [
       "Proficiency in Figma, Sketch, or Adobe XD",
@@ -75,14 +75,14 @@ export const dummyJobs: Partial<IJob>[] = [
       "Understanding of front-end development constraints"
     ],
     isActive: true,
-    application_date: new Date(),
+    applicationDeadline: new Date(),
   },
   {
-    job_title: "DevOps Engineer",
-    job_type: "full-time",
+    title: "DevOps Engineer",
+    type: "full-time",
     location: "hybrid",
-    experience: "senior",
-    salary: 110000,
+    experienceLevel: "senior",
+    salaryMin: 110000,
     description: "Build and maintain our cloud infrastructure and CI/CD pipelines.",
     requirements: [
       "Experience with AWS, Azure, or Google Cloud",
@@ -97,6 +97,6 @@ export const dummyJobs: Partial<IJob>[] = [
       "Health and wellness program"
     ],
     isActive: true,
-    application_date: new Date(),
+    applicationDeadline: new Date(),
   }
 ];

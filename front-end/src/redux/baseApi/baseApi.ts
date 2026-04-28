@@ -6,7 +6,10 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token?.replace(/['\"]+/g, "");
+      const token = (getState() as RootState).auth.token?.replace(
+        /['\"]+/g,
+        "",
+      );
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
       }
@@ -24,6 +27,7 @@ export const baseApi = createApi({
     "conversations",
     "notifications",
     "savedJobs",
+    "Asset",
     "analytics",
   ],
   endpoints: () => ({}),
