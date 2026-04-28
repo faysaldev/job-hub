@@ -22,6 +22,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
+import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 
 // Define a new type that matches the component's usage instead of extending
 interface JobWithRecruiter {
@@ -50,6 +51,13 @@ interface JobWithRecruiter {
 const JobManagement = ({ userId }: { userId: string }) => {
   const [jobs, setJobs] = useState<JobWithRecruiter[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const {
+    data: jobsData,
+    isLoading: jobsLoading,
+    isError: jobsIsError,
+    error: jobsError,
+  } = useGetJobByIdQuery(userId);
 
   // Dummy data initialization
   useEffect(() => {
