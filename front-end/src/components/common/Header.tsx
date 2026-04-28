@@ -230,7 +230,7 @@ const Header = () => {
 
   return (
     <header className={cn("sticky top-0 z-50 w-full transition-all duration-300", scrolled ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-[#234C6A]/10" : "bg-[#E3E3E3]/95 backdrop-blur-lg border-b border-[#456882]/10")}>
-      <div className="container flex h-16 items-center justify-between mx-auto px-4 lg:px-6">
+      <div ref={dropdownRef} className="container flex h-16 items-center justify-between mx-auto px-4 lg:px-6">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 font-bold text-xl group z-10">
@@ -244,7 +244,7 @@ const Header = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav ref={dropdownRef} className="hidden lg:flex items-center gap-1">
+        <nav className="hidden lg:flex items-center gap-1">
           {/* Browse Jobs Dropdown */}
           <div className="relative">
             <button onClick={() => toggleDropdown("categories")} className={cn("flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all", activeDropdown === "categories" || isActive("/job") ? "text-[#234C6A] bg-[#234C6A]/5" : "text-[#456882] hover:text-[#234C6A]")}>
@@ -364,11 +364,11 @@ const Header = () => {
         <div className="hidden lg:flex items-center gap-2">
           {user ? (
             <>
-              <Link href="/job/saved">
-                <Button variant="ghost" size="icon" className={cn("h-10 w-10 rounded-xl", isActive("/job/saved") ? "text-[#234C6A] bg-[#234C6A]/10" : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5")}>
+              <Button variant="ghost" size="icon" asChild className={cn("h-10 w-10 rounded-xl", isActive("/job/saved") ? "text-[#234C6A] bg-[#234C6A]/10" : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5")}>
+                <Link href="/job/saved">
                   <Heart className={cn("h-5 w-5", isActive("/job/saved") && "fill-[#234C6A]")} />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
 
               {/* Notifications */}
               <div className="relative">
