@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import jobController from "./job.controller";
-import validate from "../../middlewares/validation.middleware";
+import validate, { validateQuery } from "../../middlewares/validation.middleware";
 import jobValidator from "./job.validation";
 
 const router = Router();
@@ -9,12 +9,12 @@ const router = Router();
 // Public routes (no authentication required)
 router.get(
   "/",
-  validate(jobValidator.searchJobsValidation),
+  validateQuery(jobValidator.searchJobsValidation),
   jobController.getAllJobs,
 ); // Get all jobs with optional filters
 router.get(
   "/search",
-  validate(jobValidator.searchJobsValidation),
+  validateQuery(jobValidator.searchJobsValidation),
   jobController.searchJobs,
 ); // Search jobs
 router.get("/author/:authorId", jobController.getJobsByAuthorId); // Get jobs by author ID

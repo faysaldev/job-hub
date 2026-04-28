@@ -58,7 +58,7 @@ export const updateJobValidation = z.object({
 });
 
 export const searchJobsValidation = z.object({
-  q: z.string().optional(),
+  search: z.string().optional(),
   category: z.string().optional(),
   subcategory: z.string().optional(),
   type: jobTypeSchema.optional(),

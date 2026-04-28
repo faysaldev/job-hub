@@ -146,7 +146,7 @@ const deleteJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
 // Search jobs with advanced filters and pagination
 const searchJobs = asyncHandler(async (req: Request, res: Response) => {
   const {
-    q,
+    search,
     category,
     subcategory,
     type,
@@ -163,7 +163,7 @@ const searchJobs = asyncHandler(async (req: Request, res: Response) => {
   const limitNum = parseInt(limit as string) || 10;
 
   const result = await jobService.searchJobs(
-    q as string,
+    search as string,
     category as string,
     subcategory as string,
     type as string,

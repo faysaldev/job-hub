@@ -161,10 +161,11 @@ const searchJobs = async (
   try {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
-    if (cachedResult) {
-      console.log("Cache hit for searchJobs");
-      return JSON.parse(cachedResult);
-    }
+    // remove that
+    // if (cachedResult) {
+    //   console.log("Cache hit for searchJobs");
+    //   return JSON.parse(cachedResult);
+    // }
   } catch (error) {
     console.log("Error fetching from Redis cache:", error);
     // Continue with database query if cache fails
@@ -235,6 +236,12 @@ const searchJobs = async (
 
   // Execute the query with pagination
   const jobs = await Job.find(filter)
+    .select(
+      "author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive responsibilities requirements benefits positions",
+    )
+    .populate("author", "name")
+    .populate("category", "name")
+    .populate("subcategory", "name")
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: -1 }); // Sort by creation date, newest first

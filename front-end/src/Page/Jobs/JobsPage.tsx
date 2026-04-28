@@ -14,6 +14,7 @@ import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Briefcase, Sparkles, Target, Clock } from "lucide-react";
 import gsap from "gsap";
+import { useSearchJobsQuery } from "@/src/redux/features/jobs/jobsApi";
 import {
   jobCategories,
   companySizes,
@@ -273,6 +274,8 @@ const Jobs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [locationTerm, setLocationTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+
   const jobsPerPage = 6;
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -281,6 +284,17 @@ const Jobs = () => {
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
     null,
   );
+
+  // API Query
+  const { data: searchJobsData } = useSearchJobsQuery({
+    search: searchTerm,
+    category: selectedCategory || undefined,
+    subcategory: selectedSubcategory || undefined,
+    page: currentPage,
+    limit: 10,
+  });
+
+  console.log("Search Jobs API Result:", searchJobsData);
 
   // Filter states
   const [jobTypes, setJobTypes] = useState([
