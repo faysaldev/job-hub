@@ -36,13 +36,13 @@ const ForgotPasswordPage = () => {
       gsap.fromTo(
         ".forgot-card",
         { opacity: 0, y: 40, scale: 0.98 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out" }
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out" },
       );
 
       gsap.fromTo(
         ".step-indicator",
         { opacity: 0, y: -20 },
-        { opacity: 1, y: 0, duration: 0.5, delay: 0.3, ease: "power2.out" }
+        { opacity: 1, y: 0, duration: 0.5, delay: 0.3, ease: "power2.out" },
       );
     }, containerRef);
 
@@ -187,7 +187,8 @@ const ForgotPasswordPage = () => {
             </h1>
 
             <p className="text-lg text-white/70 leading-relaxed max-w-md">
-              We take security seriously. Our password recovery process is designed to keep your account safe.
+              We take security seriously. Our password recovery process is
+              designed to keep your account safe.
             </p>
           </div>
 
@@ -261,7 +262,9 @@ const ForgotPasswordPage = () => {
                     ) : (
                       s.icon
                     )}
-                    <span className="text-sm font-medium hidden sm:inline">{s.title}</span>
+                    <span className="text-sm font-medium hidden sm:inline">
+                      {s.title}
+                    </span>
                   </div>
                   {i < steps.length - 1 && (
                     <div
@@ -290,7 +293,10 @@ const ForgotPasswordPage = () => {
               {step === 1 && (
                 <form onSubmit={handleSendOtp} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="forgot-email" className="text-[#234C6A] font-semibold">
+                    <Label
+                      htmlFor="forgot-email"
+                      className="text-[#234C6A] font-semibold"
+                    >
                       Email Address
                     </Label>
                     <div className="relative">
@@ -314,9 +320,24 @@ const ForgotPasswordPage = () => {
                   >
                     {loading ? (
                       <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <svg
+                          className="animate-spin h-5 w-5"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
                         </svg>
                         Sending Code...
                       </span>
@@ -332,7 +353,8 @@ const ForgotPasswordPage = () => {
                   <div className="flex items-start gap-3 p-4 bg-[#E3E3E3]/50 rounded-xl">
                     <ShieldCheck className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-[#456882]">
-                      For your security, we will send a 6-digit verification code to your email.
+                      For your security, we will send a 6-digit verification
+                      code to your email.
                     </p>
                   </div>
                 </form>
@@ -349,7 +371,10 @@ const ForgotPasswordPage = () => {
               )}
 
               {step === 3 && (
-                <ResetPassword onSubmit={handleResetPassword} loading={loading} />
+                <ResetPassword
+                  onSubmit={handleResetPassword}
+                  loading={loading}
+                />
               )}
 
               {/* Back button */}
@@ -374,7 +399,10 @@ const ForgotPasswordPage = () => {
             {/* Help text */}
             <p className="text-center text-sm text-[#456882] mt-6">
               Remember your password?{" "}
-              <Link href="/auth" className="text-[#234C6A] font-semibold hover:underline">
+              <Link
+                href="/auth"
+                className="text-[#234C6A] font-semibold hover:underline"
+              >
                 Sign in here
               </Link>
             </p>

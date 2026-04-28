@@ -109,8 +109,19 @@ export interface CompanyProfile {
 
 // ---------- Jobs ----------
 
-export type JobType = "Full-time" | "Part-time" | "Contract" | "Internship" | "Freelance" | "Remote";
-export type ExperienceLevel = "Entry Level" | "Mid Level" | "Senior Level" | "Lead/Principal" | "Executive";
+export type JobType =
+  | "Full-time"
+  | "Part-time"
+  | "Contract"
+  | "Internship"
+  | "Freelance"
+  | "Remote";
+export type ExperienceLevel =
+  | "Entry Level"
+  | "Mid Level"
+  | "Senior Level"
+  | "Lead/Principal"
+  | "Executive";
 export type JobStatus = "draft" | "active" | "closed" | "expired";
 
 export interface Job {
@@ -140,7 +151,7 @@ export interface Job {
   applicationCount?: number;
   viewCount?: number;
   deadline?: string;
-  posted?: string;    // legacy alias
+  posted?: string; // legacy alias
   postedAt?: string;
   updatedAt?: string;
   expiresAt?: string;
@@ -370,3 +381,32 @@ export interface StaticStats {
   value: string;
   icon?: string;
 }
+
+// -----------Profile ----------------
+export type ProfileFormValues = {
+  name: string;
+  phoneNumber: string;
+  headline: string;
+  bio: string;
+  location: string;
+  website: string;
+  resume: string;
+  skills: string[];
+  experience: {
+    id: string;
+    title: string;
+    company: string;
+    startDate: string;
+    endDate: string;
+    current: boolean;
+    description: string;
+  }[];
+  education: {
+    id: string;
+    institution: string;
+    degree: string;
+    startDate: string;
+    endDate: string;
+    current: boolean;
+  }[];
+};
