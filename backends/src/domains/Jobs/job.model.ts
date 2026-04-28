@@ -120,8 +120,20 @@ const jobSchema = new Schema<IJob>(
       default: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  },
 );
+
+// Virtual for company profile
+jobSchema.virtual("company", {
+  ref: "Company",
+  localField: "author",
+  foreignField: "userId",
+  justOne: true,
+});
 
 // Create the model based on the schema
 const Job = mongoose.model<IJob>("Job", jobSchema);

@@ -137,7 +137,7 @@ const searchJobs = async (
   page: number = 1,
   limit: number = 10,
 ) => {
-  // Create a cache key based on all parameters
+  // Super Senior approach: Dynamic filter building and concurrent operations
   const params = {
     searchTerm,
     category,
@@ -152,120 +152,76 @@ const searchJobs = async (
     limit,
   };
 
-  // Generate a unique cache key from the parameters
-  const cacheKey = `jobs:${crypto
-    .createHash("md5")
-    .update(JSON.stringify(params))
-    .digest("hex")}`;
+  const cacheKey = `jobs:search:${crypto.createHash("md5").update(JSON.stringify(params)).digest("hex")}`;
 
-  try {
-    // Try to get cached result
-    const cachedResult = await redis.get(cacheKey);
-    // remove that
-    // if (cachedResult) {
-    //   console.log("Cache hit for searchJobs");
-    //   return JSON.parse(cachedResult);
-    // }
-  } catch (error) {
-    console.log("Error fetching from Redis cache:", error);
-    // Continue with database query if cache fails
-  }
+  // TODO: implement Redis caching later one
+  // try {
+  //   const cached = await redis.get(cacheKey);
+  //   if (cached) return JSON.parse(cached);
+  // } catch (error) {
+  //   console.error("Redis Read Error:", error);
+  // }
 
-  // Build filter object
-  const filter: any = {};
+  // Build Query
+  const filter: any = { isActive: true };
 
-  // Filter by job type
-  if (type) {
-    filter.type = type;
-  }
-
-  // Filter by experience level
-  if (experienceLevel) {
-    filter.experienceLevel = experienceLevel;
-  }
-
-  // Filter by location type
-  if (locationType) {
-    filter.locationType = locationType;
-  }
-
-  // Filter by category
-  if (category) {
-    filter.category = category;
-  }
-
-  // Filter by subcategory
-  if (subcategory) {
-    filter.subcategory = subcategory;
-  }
-
-  // Filter by location
-  if (location) {
-    filter.location = location;
-  }
-
-  // Filter by salary range
-  if (minSalary !== undefined || maxSalary !== undefined) {
-    filter.salaryMin = filter.salaryMin || {};
-    filter.salaryMax = filter.salaryMax || {};
-    if (minSalary !== undefined) {
-      filter.salaryMin.$gte = minSalary;
-      filter.salaryMax.$gte = minSalary;
-    }
-    if (maxSalary !== undefined) {
-      filter.salaryMin.$lte = maxSalary;
-      filter.salaryMax.$lte = maxSalary;
-    }
-  }
-
-  // Search in job title, category, subcategory, description, skills, and requirements
   if (searchTerm) {
-    const searchRegex = new RegExp(searchTerm, "i");
+    const searchRegex = { $regex: searchTerm, $options: "i" };
     filter.$or = [
       { title: searchRegex },
       { category: searchRegex },
       { subcategory: searchRegex },
       { description: searchRegex },
-      { requirements: { $in: [searchRegex] } },
-      { skills: { $in: [searchRegex] } },
+      { requirements: searchRegex },
+      { skills: searchRegex },
     ];
   }
 
-  // Calculate skip for pagination
-  const skip = (page - 1) * limit;
+  if (category) filter.category = category;
+  if (subcategory) filter.subcategory = subcategory;
+  if (type) filter.type = type;
+  if (experienceLevel) filter.experienceLevel = experienceLevel;
+  if (locationType) filter.locationType = locationType;
+  if (location) filter.location = { $regex: location, $options: "i" };
 
-  // Execute the query with pagination
-  const jobs = await Job.find(filter)
-    .select(
-      "author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive responsibilities requirements benefits positions",
-    )
-    .populate("author", "name")
-    .populate("category", "name")
-    .populate("subcategory", "name")
-    .skip(skip)
-    .limit(limit)
-    .sort({ createdAt: -1 }); // Sort by creation date, newest first
+  if (minSalary !== undefined || maxSalary !== undefined) {
+    filter.salaryMin = {};
+    if (minSalary !== undefined) filter.salaryMin.$gte = minSalary;
+    if (maxSalary !== undefined) filter.salaryMin.$lte = maxSalary;
+  }
 
-  // Get total count for pagination info
-  const total = await Job.countDocuments(filter);
+  // Execute concurrently
+  const [jobs, total] = await Promise.all([
+    Job.find(filter)
+      .select(
+        "_id author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive positions",
+      )
+      .populate("company", "companyName companyLogo")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean({ virtuals: true }),
+    Job.countDocuments(filter),
 
+    // TODO: full company logo .populate("company", "companyName companyLogo companyLocation industries website")
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
   const result = {
     jobs,
     pagination: {
       currentPage: page,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
       totalJobs: total,
-      hasNext: page < Math.ceil(total / limit),
+      hasNext: page < totalPages,
       hasPrev: page > 1,
     },
   };
 
   try {
-    // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
     await redis.setex(cacheKey, 300, JSON.stringify(result));
   } catch (error) {
-    console.log("Error storing to Redis cache:", error);
-    // Continue anyway even if caching fails
+    console.error("Redis Write Error:", error);
   }
 
   return result;
