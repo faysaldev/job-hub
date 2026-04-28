@@ -11,6 +11,8 @@ const CompanyPage = () => {
 
   if (!user) return null;
 
+  console.log(user);
+
   return (
     <RecruiterLayout>
       <div className="max-w-7xl mx-auto">
@@ -20,11 +22,15 @@ const CompanyPage = () => {
               <Building2 className="h-7 w-7" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-[#234C6A] mb-1">Company Profile</h2>
-              <p className="text-[#456882]">Manage your company information and branding</p>
+              <h2 className="text-2xl font-bold text-[#234C6A] mb-1">
+                Company Profile
+              </h2>
+              <p className="text-[#456882]">
+                Manage your company information and branding
+              </p>
             </div>
           </div>
-          <CompanyProfile userId={user.id} />
+          <CompanyProfile userId={user._id} />
         </Card>
       </div>
     </RecruiterLayout>
