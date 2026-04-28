@@ -19,6 +19,7 @@ import {
   Loader2,
   Sparkles,
   Clock,
+  CloudCog,
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import {
@@ -28,9 +29,17 @@ import {
 } from "@/src/redux/features/seeker/seekerApi";
 import { useUpdateProfileMutation } from "@/src/redux/features/user/userApi";
 import { useAppSelector, useAppDispatch } from "@/src/redux/hooks";
-import { selectCurrentUser, selectToken, setUser } from "@/src/redux/features/auth/authSlice";
+import {
+  selectCurrentUser,
+  selectToken,
+  setUser,
+} from "@/src/redux/features/auth/authSlice";
 import { toast } from "sonner";
-import { Experience, Education, JobSeekerProfile as TJobSeekerProfile } from "@/src/types";
+import {
+  Experience,
+  Education,
+  JobSeekerProfile as TJobSeekerProfile,
+} from "@/src/types";
 import { useRef } from "react";
 import { Camera } from "lucide-react";
 
@@ -46,10 +55,15 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
   const dispatch = useAppDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: profileResponse, isLoading: isFetching } = useGetSeekerProfileQuery();
-  const [createProfile, { isLoading: isCreating }] = useCreateSeekerProfileMutation();
-  const [updateSeekerProfile, { isLoading: isUpdatingSeeker }] = useUpdateSeekerProfileMutation();
-  const [updateUserBasicInfo, { isLoading: isUpdatingUser }] = useUpdateProfileMutation();
+  const { data: profileResponse, isLoading: isFetching } =
+    useGetSeekerProfileQuery();
+  console.log(profileResponse);
+  const [createProfile, { isLoading: isCreating }] =
+    useCreateSeekerProfileMutation();
+  const [updateSeekerProfile, { isLoading: isUpdatingSeeker }] =
+    useUpdateSeekerProfileMutation();
+  const [updateUserBasicInfo, { isLoading: isUpdatingUser }] =
+    useUpdateProfileMutation();
 
   // Basic User Info State
   const [userName, setUserName] = useState("");
@@ -134,7 +148,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         ...newExperience,
         id: Math.random().toString(36).substr(2, 9),
       } as Experience;
-      
+
       setProfile({
         ...profile,
         experience: [...(profile.experience || []), newExp],
@@ -159,11 +173,15 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
     });
   };
 
-  const updateExperience = (id: string, field: keyof Experience, value: any) => {
+  const updateExperience = (
+    id: string,
+    field: keyof Experience,
+    value: any,
+  ) => {
     setProfile({
       ...profile,
       experience: profile.experience?.map((exp) =>
-        exp.id === id ? { ...exp, [field]: value } : exp
+        exp.id === id ? { ...exp, [field]: value } : exp,
       ),
     });
   };
@@ -182,7 +200,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         ...newEducationItem,
         id: Math.random().toString(36).substr(2, 9),
       } as Education;
-      
+
       setProfile({
         ...profile,
         education: [...(profile.education || []), newEdu],
@@ -210,7 +228,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
     setProfile({
       ...profile,
       education: profile.education?.map((edu) =>
-        edu.id === id ? { ...edu, [field]: value } : edu
+        edu.id === id ? { ...edu, [field]: value } : edu,
       ),
     });
   };
@@ -224,29 +242,55 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         if (selectedImage) formData.append("image", selectedImage);
 
         const userUpdateResponse = await updateUserBasicInfo(formData).unwrap();
-        
+
         // Update local auth state if backend returns the user
         // Ensure we map _id to id if necessary for frontend consistency
         if (userUpdateResponse?.data && token) {
           const userData = userUpdateResponse.data;
-          dispatch(setUser({ 
-            user: {
-              ...userData,
-              id: userData.id || userData._id
-            }, 
-            token 
-          }));
+          dispatch(
+            setUser({
+              user: {
+                ...userData,
+                id: userData.id || userData._id,
+              },
+              token,
+            }),
+          );
         }
       }
 
       // 2. Handle Seeker Profile Update
+      const seekerProfileData = {
+        userLocation: profile.location,
+        designation: profile.headline,
+        aboutMe: profile.bio,
+        skills: profile.skills,
+        workExperiences: profile.experience?.map((exp) => ({
+          position: exp.title,
+          durationFrom: exp.startDate,
+          durationTo: exp.current ? "Present" : exp.endDate,
+          companyName: exp.company,
+          responsibilities: [exp.description],
+        })),
+        educations: profile.education?.map((edu) => ({
+          school: edu.institution,
+          degree: edu.degree,
+          year: `${edu.startDate} - ${edu.endDate || "Present"}`,
+        })),
+        resume: {
+          resumeName: "Resume",
+          resumeLink: profile.resume || "",
+        },
+        portfolio: profile.website,
+      };
+
       if (profileResponse) {
         // Update existing profile
-        await updateSeekerProfile(profile).unwrap();
+        await updateSeekerProfile(seekerProfileData as any).unwrap();
         toast.success("Profile updated successfully!");
       } else {
         // Create new profile
-        await createProfile(profile).unwrap();
+        await createProfile(seekerProfileData as any).unwrap();
         toast.success("Profile created successfully!");
       }
       setEditing(false);
@@ -269,7 +313,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-start">
-        <h2 className="text-2xl font-bold text-[#234C6A]">Your Professional Profile</h2>
+        <h2 className="text-2xl font-bold text-[#234C6A]">
+          Your Professional Profile
+        </h2>
         {editing ? (
           <div className="flex gap-2">
             <Button
@@ -316,16 +362,22 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               accept="image/*"
               className="hidden"
             />
-            <div 
+            <div
               className={cn(
                 "bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-3xl p-1 w-32 h-32 flex items-center justify-center shadow-lg transition-all duration-300",
-                editing ? "cursor-pointer hover:scale-105" : "group-hover:scale-105"
+                editing
+                  ? "cursor-pointer hover:scale-105"
+                  : "group-hover:scale-105",
               )}
               onClick={() => editing && fileInputRef.current?.click()}
             >
               <div className="bg-gray-50 border-4 border-white rounded-2xl w-28 h-28 flex items-center justify-center overflow-hidden relative">
                 {imagePreview ? (
-                  <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
+                  <img
+                    src={imagePreview}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <User className="h-14 w-14 text-[#234C6A]" />
                 )}
@@ -337,7 +389,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               </div>
             </div>
             {editing && (
-              <Badge 
+              <Badge
                 className="absolute -bottom-2 -right-2 bg-white text-[#234C6A] border-[#234C6A]/20 shadow-md cursor-pointer hover:bg-gray-50"
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -363,7 +415,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               {editing ? (
                 <Input
                   value={profile.headline}
-                  onChange={(e) => handleInputChange("headline", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("headline", e.target.value)
+                  }
                   placeholder="Professional Headline (e.g. Senior Frontend Developer)"
                   className="mt-2 text-lg border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A] bg-gray-50"
                 />
@@ -376,16 +430,22 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
 
             <div className="flex flex-wrap justify-center md:justify-start items-center gap-6 text-[#456882] mt-4 font-medium">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-[#234C6A]/10 rounded-lg"><Mail className="h-4 w-4 text-[#234C6A]" /></div>
+                <div className="p-1.5 bg-[#234C6A]/10 rounded-lg">
+                  <Mail className="h-4 w-4 text-[#234C6A]" />
+                </div>
                 <span>{currentUser?.email}</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-[#234C6A]/10 rounded-lg"><MapPin className="h-4 w-4 text-[#234C6A]" /></div>
+                <div className="p-1.5 bg-[#234C6A]/10 rounded-lg">
+                  <MapPin className="h-4 w-4 text-[#234C6A]" />
+                </div>
                 {editing ? (
                   <Input
                     value={profile.location}
-                    onChange={(e) => handleInputChange("location", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("location", e.target.value)
+                    }
                     placeholder="Location"
                     className="h-8 py-0 text-sm border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
                   />
@@ -401,7 +461,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
       {/* Bio Section */}
       <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-[#234C6A]/10 rounded-xl"><User className="h-5 w-5 text-[#234C6A]" /></div>
+          <div className="p-2 bg-[#234C6A]/10 rounded-xl">
+            <User className="h-5 w-5 text-[#234C6A]" />
+          </div>
           <h3 className="text-xl font-bold text-[#234C6A]">About Me</h3>
         </div>
 
@@ -422,8 +484,12 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
       {/* Skills Section */}
       <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-[#234C6A]/10 rounded-xl"><Sparkles className="h-5 w-5 text-[#234C6A]" /></div>
-          <h3 className="text-xl font-bold text-[#234C6A]">Skills & Expertise</h3>
+          <div className="p-2 bg-[#234C6A]/10 rounded-xl">
+            <Sparkles className="h-5 w-5 text-[#234C6A]" />
+          </div>
+          <h3 className="text-xl font-bold text-[#234C6A]">
+            Skills & Expertise
+          </h3>
         </div>
 
         {editing ? (
@@ -451,7 +517,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                 onChange={(e) => setNewSkill(e.target.value)}
                 placeholder="Add a skill (e.g. React, UI Design)"
                 className="flex-1 border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A] h-12 rounded-xl"
-                onKeyDown={(e) => e.key === 'Enter' && addSkill()}
+                onKeyDown={(e) => e.key === "Enter" && addSkill()}
               />
               <Button
                 type="button"
@@ -485,7 +551,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
       {/* Experience Section */}
       <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 bg-[#234C6A]/10 rounded-xl"><Briefcase className="h-5 w-5 text-[#234C6A]" /></div>
+          <div className="p-2 bg-[#234C6A]/10 rounded-xl">
+            <Briefcase className="h-5 w-5 text-[#234C6A]" />
+          </div>
           <h3 className="text-xl font-bold text-[#234C6A]">Work Experience</h3>
         </div>
 
@@ -504,20 +572,24 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                   <Trash2 className="h-5 w-5" />
                 </button>
               )}
-              
+
               <div className="space-y-3">
                 {editing ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-4">
                       <Input
                         value={exp.title}
-                        onChange={(e) => updateExperience(exp.id, "title", e.target.value)}
+                        onChange={(e) =>
+                          updateExperience(exp.id, "title", e.target.value)
+                        }
                         placeholder="Job Title"
                         className="font-bold text-[#234C6A] border-[#456882]/30 focus:border-[#234C6A]"
                       />
                       <Input
                         value={exp.company}
-                        onChange={(e) => updateExperience(exp.id, "company", e.target.value)}
+                        onChange={(e) =>
+                          updateExperience(exp.id, "company", e.target.value)
+                        }
                         placeholder="Company"
                         className="text-[#234C6A]/80 border-[#456882]/30 focus:border-[#234C6A]"
                       />
@@ -526,14 +598,22 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                       <div className="flex items-center gap-2">
                         <Input
                           value={exp.startDate}
-                          onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)}
+                          onChange={(e) =>
+                            updateExperience(
+                              exp.id,
+                              "startDate",
+                              e.target.value,
+                            )
+                          }
                           placeholder="Start Date"
                           className="border-[#456882]/30 focus:border-[#234C6A]"
                         />
                         <span className="text-[#456882]">-</span>
                         <Input
                           value={exp.endDate}
-                          onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)}
+                          onChange={(e) =>
+                            updateExperience(exp.id, "endDate", e.target.value)
+                          }
                           placeholder="End Date"
                           disabled={exp.current}
                           className="border-[#456882]/30 focus:border-[#234C6A]"
@@ -543,17 +623,34 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                         <input
                           type="checkbox"
                           checked={exp.current}
-                          onChange={(e) => updateExperience(exp.id, "current", e.target.checked)}
+                          onChange={(e) =>
+                            updateExperience(
+                              exp.id,
+                              "current",
+                              e.target.checked,
+                            )
+                          }
                           id={`current-${exp.id}`}
                           className="rounded border-[#234C6A] text-[#234C6A] focus:ring-[#234C6A]"
                         />
-                        <label htmlFor={`current-${exp.id}`} className="text-sm font-medium text-[#456882]">I am currently working here</label>
+                        <label
+                          htmlFor={`current-${exp.id}`}
+                          className="text-sm font-medium text-[#456882]"
+                        >
+                          I am currently working here
+                        </label>
                       </div>
                     </div>
                     <div className="md:col-span-2">
                       <textarea
                         value={exp.description}
-                        onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
+                        onChange={(e) =>
+                          updateExperience(
+                            exp.id,
+                            "description",
+                            e.target.value,
+                          )
+                        }
                         placeholder="Describe your achievements and responsibilities..."
                         className="w-full p-4 border border-[#456882]/30 rounded-xl focus:ring-[#234C6A] bg-gray-50 min-h-[100px]"
                       />
@@ -562,10 +659,13 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                 ) : (
                   <>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                      <h4 className="text-xl font-bold text-[#234C6A]">{exp.title}</h4>
+                      <h4 className="text-xl font-bold text-[#234C6A]">
+                        {exp.title}
+                      </h4>
                       <div className="flex items-center gap-2 px-3 py-1 bg-[#234C6A]/5 rounded-full text-sm font-semibold text-[#456882]">
                         <Clock className="h-3.5 w-3.5" />
-                        {exp.startDate} - {exp.current ? "Present" : exp.endDate}
+                        {exp.startDate} -{" "}
+                        {exp.current ? "Present" : exp.endDate}
                       </div>
                     </div>
                     <p className="text-lg font-semibold text-[#456882] flex items-center gap-2">
@@ -591,28 +691,48 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                 <div className="space-y-4">
                   <Input
                     value={newExperience.title}
-                    onChange={(e) => setNewExperience({ ...newExperience, title: e.target.value })}
+                    onChange={(e) =>
+                      setNewExperience({
+                        ...newExperience,
+                        title: e.target.value,
+                      })
+                    }
                     placeholder="Job Title (e.g. Software Engineer)"
                     className="border-[#456882]/30"
                   />
                   <Input
                     value={newExperience.company}
-                    onChange={(e) => setNewExperience({ ...newExperience, company: e.target.value })}
+                    onChange={(e) =>
+                      setNewExperience({
+                        ...newExperience,
+                        company: e.target.value,
+                      })
+                    }
                     placeholder="Company Name"
                     className="border-[#456882]/30"
                   />
                 </div>
                 <div className="space-y-4">
-                   <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <Input
                       value={newExperience.startDate}
-                      onChange={(e) => setNewExperience({ ...newExperience, startDate: e.target.value })}
+                      onChange={(e) =>
+                        setNewExperience({
+                          ...newExperience,
+                          startDate: e.target.value,
+                        })
+                      }
                       placeholder="Start Date"
                       className="border-[#456882]/30"
                     />
                     <Input
                       value={newExperience.endDate}
-                      onChange={(e) => setNewExperience({ ...newExperience, endDate: e.target.value })}
+                      onChange={(e) =>
+                        setNewExperience({
+                          ...newExperience,
+                          endDate: e.target.value,
+                        })
+                      }
                       placeholder="End Date"
                       disabled={newExperience.current}
                       className="border-[#456882]/30"
@@ -622,17 +742,32 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                     <input
                       type="checkbox"
                       checked={newExperience.current}
-                      onChange={(e) => setNewExperience({ ...newExperience, current: e.target.checked })}
+                      onChange={(e) =>
+                        setNewExperience({
+                          ...newExperience,
+                          current: e.target.checked,
+                        })
+                      }
                       id="new-exp-current"
                       className="rounded border-[#234C6A] text-[#234C6A] focus:ring-[#234C6A]"
                     />
-                    <label htmlFor="new-exp-current" className="text-sm font-medium text-[#456882]">Currently working here</label>
+                    <label
+                      htmlFor="new-exp-current"
+                      className="text-sm font-medium text-[#456882]"
+                    >
+                      Currently working here
+                    </label>
                   </div>
                 </div>
                 <div className="md:col-span-2">
                   <textarea
                     value={newExperience.description}
-                    onChange={(e) => setNewExperience({ ...newExperience, description: e.target.value })}
+                    onChange={(e) =>
+                      setNewExperience({
+                        ...newExperience,
+                        description: e.target.value,
+                      })
+                    }
                     placeholder="Describe your role and impact..."
                     className="w-full p-4 border border-[#456882]/30 rounded-xl bg-white min-h-[100px]"
                   />
@@ -649,16 +784,21 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
             </div>
           )}
 
-          {!editing && (!profile.experience || profile.experience.length === 0) && (
-            <p className="text-[#456882] italic text-center py-6 bg-gray-50 rounded-xl">No work experience added yet.</p>
-          )}
+          {!editing &&
+            (!profile.experience || profile.experience.length === 0) && (
+              <p className="text-[#456882] italic text-center py-6 bg-gray-50 rounded-xl">
+                No work experience added yet.
+              </p>
+            )}
         </div>
       </Card>
 
       {/* Education Section */}
       <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 bg-[#234C6A]/10 rounded-xl"><GraduationCap className="h-5 w-5 text-[#234C6A]" /></div>
+          <div className="p-2 bg-[#234C6A]/10 rounded-xl">
+            <GraduationCap className="h-5 w-5 text-[#234C6A]" />
+          </div>
           <h3 className="text-xl font-bold text-[#234C6A]">Education</h3>
         </div>
 
@@ -677,32 +817,40 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                   <Trash2 className="h-5 w-5" />
                 </button>
               )}
-              
+
               <div className="space-y-2">
                 {editing ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                       value={edu.degree}
-                      onChange={(e) => updateEducation(edu.id, "degree", e.target.value)}
+                      onChange={(e) =>
+                        updateEducation(edu.id, "degree", e.target.value)
+                      }
                       placeholder="Degree/Certificate"
                       className="font-bold border-[#456882]/30"
                     />
                     <Input
                       value={edu.institution}
-                      onChange={(e) => updateEducation(edu.id, "institution", e.target.value)}
+                      onChange={(e) =>
+                        updateEducation(edu.id, "institution", e.target.value)
+                      }
                       placeholder="School/University"
                       className="border-[#456882]/30"
                     />
                     <div className="flex items-center gap-2">
                       <Input
                         value={edu.startDate}
-                        onChange={(e) => updateEducation(edu.id, "startDate", e.target.value)}
+                        onChange={(e) =>
+                          updateEducation(edu.id, "startDate", e.target.value)
+                        }
                         placeholder="Start Date"
                         className="border-[#456882]/30"
                       />
                       <Input
                         value={edu.endDate}
-                        onChange={(e) => updateEducation(edu.id, "endDate", e.target.value)}
+                        onChange={(e) =>
+                          updateEducation(edu.id, "endDate", e.target.value)
+                        }
                         placeholder="End Date"
                         className="border-[#456882]/30"
                       />
@@ -711,12 +859,16 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
                 ) : (
                   <>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-                      <h4 className="text-xl font-bold text-[#234C6A]">{edu.degree}</h4>
+                      <h4 className="text-xl font-bold text-[#234C6A]">
+                        {edu.degree}
+                      </h4>
                       <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm font-bold">
                         {edu.startDate} - {edu.endDate || "Present"}
                       </span>
                     </div>
-                    <p className="text-lg font-medium text-[#456882] italic">{edu.institution}</p>
+                    <p className="text-lg font-medium text-[#456882] italic">
+                      {edu.institution}
+                    </p>
                   </>
                 )}
               </div>
@@ -732,26 +884,46 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
                   value={newEducationItem.degree}
-                  onChange={(e) => setNewEducationItem({ ...newEducationItem, degree: e.target.value })}
+                  onChange={(e) =>
+                    setNewEducationItem({
+                      ...newEducationItem,
+                      degree: e.target.value,
+                    })
+                  }
                   placeholder="Degree (e.g. B.S. Computer Science)"
                   className="border-[#456882]/30"
                 />
                 <Input
                   value={newEducationItem.institution}
-                  onChange={(e) => setNewEducationItem({ ...newEducationItem, institution: e.target.value })}
+                  onChange={(e) =>
+                    setNewEducationItem({
+                      ...newEducationItem,
+                      institution: e.target.value,
+                    })
+                  }
                   placeholder="School/University"
                   className="border-[#456882]/30"
                 />
                 <div className="flex items-center gap-2">
                   <Input
                     value={newEducationItem.startDate}
-                    onChange={(e) => setNewEducationItem({ ...newEducationItem, startDate: e.target.value })}
+                    onChange={(e) =>
+                      setNewEducationItem({
+                        ...newEducationItem,
+                        startDate: e.target.value,
+                      })
+                    }
                     placeholder="Start Date"
                     className="border-[#456882]/30"
                   />
                   <Input
                     value={newEducationItem.endDate}
-                    onChange={(e) => setNewEducationItem({ ...newEducationItem, endDate: e.target.value })}
+                    onChange={(e) =>
+                      setNewEducationItem({
+                        ...newEducationItem,
+                        endDate: e.target.value,
+                      })
+                    }
                     placeholder="End Date"
                     className="border-[#456882]/30"
                   />
@@ -769,24 +941,33 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               </div>
             </div>
           )}
-          
-          {!editing && (!profile.education || profile.education.length === 0) && (
-            <p className="text-[#456882] italic text-center py-6 bg-gray-50 rounded-xl">No education added yet.</p>
-          )}
+
+          {!editing &&
+            (!profile.education || profile.education.length === 0) && (
+              <p className="text-[#456882] italic text-center py-6 bg-gray-50 rounded-xl">
+                No education added yet.
+              </p>
+            )}
         </div>
       </Card>
 
       {/* Resume & Portfolio */}
       <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 bg-[#234C6A]/10 rounded-xl"><ExternalLink className="h-5 w-5 text-[#234C6A]" /></div>
-          <h3 className="text-xl font-bold text-[#234C6A]">Documents & Professional Links</h3>
+          <div className="p-2 bg-[#234C6A]/10 rounded-xl">
+            <ExternalLink className="h-5 w-5 text-[#234C6A]" />
+          </div>
+          <h3 className="text-xl font-bold text-[#234C6A]">
+            Documents & Professional Links
+          </h3>
         </div>
 
         {editing ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-[#234C6A]">Resume URL (Google Drive/Dropbox)</label>
+              <label className="text-sm font-bold text-[#234C6A]">
+                Resume URL (Google Drive/Dropbox)
+              </label>
               <Input
                 value={profile.resume}
                 onChange={(e) => handleInputChange("resume", e.target.value)}
@@ -795,7 +976,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-[#234C6A]">Personal Website/Portfolio</label>
+              <label className="text-sm font-bold text-[#234C6A]">
+                Personal Website/Portfolio
+              </label>
               <Input
                 value={profile.website}
                 onChange={(e) => handleInputChange("website", e.target.value)}
@@ -808,7 +991,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Button
               variant="outline"
-              onClick={() => profile.resume && window.open(profile.resume, '_blank')}
+              onClick={() =>
+                profile.resume && window.open(profile.resume, "_blank")
+              }
               className="h-16 flex items-center justify-start gap-4 border-2 border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/5 rounded-2xl group transition-all"
               disabled={!profile.resume}
             >
@@ -817,14 +1002,18 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               </div>
               <div className="text-left">
                 <p className="font-bold">View Resume</p>
-                <p className="text-xs text-[#456882]">{profile.resume ? "External Link" : "No resume uploaded"}</p>
+                <p className="text-xs text-[#456882]">
+                  {profile.resume ? "External Link" : "No resume uploaded"}
+                </p>
               </div>
               <ExternalLink className="h-4 w-4 ml-auto opacity-50" />
             </Button>
 
             <Button
               variant="outline"
-              onClick={() => profile.website && window.open(profile.website, '_blank')}
+              onClick={() =>
+                profile.website && window.open(profile.website, "_blank")
+              }
               className="h-16 flex items-center justify-start gap-4 border-2 border-[#456882] text-[#234C6A] hover:bg-[#456882]/5 rounded-2xl group transition-all"
               disabled={!profile.website}
             >
@@ -833,7 +1022,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               </div>
               <div className="text-left">
                 <p className="font-bold">Portfolio Website</p>
-                <p className="text-xs text-[#456882]">{profile.website ? "Visit site" : "No link added"}</p>
+                <p className="text-xs text-[#456882]">
+                  {profile.website ? "Visit site" : "No link added"}
+                </p>
               </div>
               <ExternalLink className="h-4 w-4 ml-auto opacity-50" />
             </Button>
