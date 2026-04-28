@@ -3,7 +3,6 @@ import { Card } from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Send, User } from "lucide-react";
-import { mockUser } from "@/src/components/common/Header";
 
 // Define types for messages and conversations
 interface Message {
@@ -24,7 +23,6 @@ interface Conversation {
 }
 
 const Messages = ({ userId }: { userId: string }) => {
-  const user = mockUser;
 
   // Dummy conversations data
   const dummyConversations: Conversation[] = [

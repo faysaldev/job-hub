@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Header, { mockUser } from "@/src/components/common/Header";
+import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
+import { useAuth } from "@/src/hooks/useAuth";
 import {
   Tabs,
   TabsContent,
@@ -35,15 +36,15 @@ import Link from "next/link";
 import gsap from "gsap";
 
 const JobSeekerDashboard = () => {
-  const user = mockUser;
+  const { user, isAuthenticated, isJobSeeker } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!user || user.role !== "jobseeker") {
+    if (!isAuthenticated) {
       router.push("/auth");
     }
-  }, [user, router]);
+  }, [isAuthenticated, router]);
 
   // GSAP animations
   useEffect(() => {

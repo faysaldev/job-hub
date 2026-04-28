@@ -67,7 +67,7 @@ const SavedJobsPage = () => {
     return () => ctx.revert();
   }, [savedJobs]);
 
-  const handleRemoveJob = (jobId: number) => {
+  const handleRemoveJob = (jobId: string | number) => {
     const updatedSavedJobs = savedJobs.filter((job) => job.id !== jobId);
     setSavedJobs(updatedSavedJobs);
     localStorage.setItem("savedJobs", JSON.stringify(updatedSavedJobs));
@@ -226,7 +226,7 @@ const SavedJobsPage = () => {
                           </span>
                           <span className="flex items-center gap-1.5">
                             <Clock className="h-4 w-4" />
-                            {job.posted}
+                            {job.posted || job.postedAt || ""}
                           </span>
                         </div>
 

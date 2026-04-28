@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Header, { mockUser } from "@/src/components/common/Header";
+import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
+import { useAuth } from "@/src/hooks/useAuth";
 import RecruiterSidebar from "./RecruiterSidebar";
 import gsap from "gsap";
 import { Menu, X } from "lucide-react";
@@ -13,7 +14,7 @@ interface RecruiterLayoutProps {
 }
 
 const RecruiterLayout = ({ children }: RecruiterLayoutProps) => {
-  const user = mockUser;
+  const { user, isAuthenticated } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 

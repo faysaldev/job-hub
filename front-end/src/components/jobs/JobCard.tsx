@@ -19,7 +19,8 @@ interface JobCardProps {
 }
 
 const JobCard = ({ job }: JobCardProps) => {
-  const isNew = job.posted.includes("day") && parseInt(job.posted) <= 3;
+  const postedText = job.posted || job.postedAt || "";
+  const isNew = postedText.includes("day") && parseInt(postedText) <= 3;
   const isRemote = job.location.toLowerCase().includes("remote");
 
   return (
@@ -84,7 +85,7 @@ const JobCard = ({ job }: JobCardProps) => {
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock className="h-4 w-4" />
-                {job.posted}
+                {postedText}
               </span>
             </div>
 

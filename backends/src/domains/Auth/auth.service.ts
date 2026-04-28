@@ -31,8 +31,9 @@ const register = async (userData: {
   await newUser.save();
 
   // Send Email Verification
-  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?code=${newUser.oneTimeCode}`;
+  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?code=${newUser.oneTimeCode}&email=${newUser.email}`;
   const emailText = `Please click the following link to verify your email address: ${verificationLink}`;
+
   await sendEmail(newUser.email, "Verify Your Email Address", emailText);
 
   return newUser;
@@ -40,19 +41,43 @@ const register = async (userData: {
 
 const verifyEmail = async (email: string, code: number) => {
   // Find the user by email
-  const user = await User.findOne({ email }).select("name email oneTimeCode");
+  const user = await User.findOne({ email }).select(
+    "name email image password phoneNumber role isEmailVerified oneTimeCode",
+  );
   if (!user) throw new Error("User not found");
+  console.log(user.oneTimeCode, code, "oneTimeCode");
   if (user.oneTimeCode !== code) throw new Error("Invalid verification code");
+
   user.isEmailVerified = true;
   user.oneTimeCode = null;
   await user.save();
-  return "Email Verification SuccessFul";
+
+  // Generate JWT tokens for auto-login
+  const userDetails = {
+    userId: user._id.toString(),
+    role: user.role,
+    name: user.name,
+    email: user.email,
+    image: user.image,
+    password: user.password,
+    phoneNumber: user.phoneNumber,
+  };
+
+  const accessToken = createToken(
+    userDetails,
+    process.env.JWT_SECRET!,
+    process.env.JWT_EXPIRE_TIME!,
+  );
+
+  const refreshToken = createRefreshToken(userDetails);
+
+  return { user, accessToken, refreshToken };
 };
 
 // Login User
 const loginUser = async (email: string, password: string) => {
   const user = await User.findOne({ email }).select(
-    "name email image password phoneNumber role isEmailVerified"
+    "name email image password phoneNumber role isEmailVerified",
   );
 
   if (!user) throw new Error("User not found");
@@ -60,7 +85,7 @@ const loginUser = async (email: string, password: string) => {
   // Check if the user's email is verified
   if (!user.isEmailVerified)
     throw new Error(
-      "Email is not verified. Please check your email to verify."
+      "Email is not verified. Please check your email to verify.",
     );
 
   const isMatch = await user.isPasswordMatch(password);
@@ -80,7 +105,7 @@ const loginUser = async (email: string, password: string) => {
   const accessToken = createToken(
     userDetails,
     process.env.JWT_SECRET!,
-    process.env.JWT_EXPIRE_TIME!
+    process.env.JWT_EXPIRE_TIME!,
   );
 
   const refreshToken = createRefreshToken(userDetails);
@@ -100,7 +125,7 @@ const forgotPassword = async (email: string) => {
 
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?code=${resetCode}`;
   const emailText = `Please click the following link to reset your password: ${resetLink}`;
-  sendEmail(user.email, "Reset Your Password", emailText);
+  await sendEmail(user.email, "Reset Your Password", emailText);
 
   return { message: "Password reset email sent" };
 };
@@ -109,7 +134,7 @@ const forgotPassword = async (email: string) => {
 const resetPassword = async (
   email: string,
   code: string,
-  newPassword: string
+  newPassword: string,
 ) => {
   const user = (await User.findOne({
     email,
@@ -136,9 +161,9 @@ const resendVerificationEmail = async (email: string) => {
   user.oneTimeCode = oneTimeCode;
   user.save();
 
-  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?code=${oneTimeCode}`;
+  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?code=${oneTimeCode}&email=${user.email}`;
   const emailText = `Please click the following link to verify your email address: ${verificationLink}`;
-  sendEmail(user.email, "Verify Your Email Address", emailText);
+  await sendEmail(user.email, "Verify Your Email Address", emailText);
 
   return { message: "Verification email resent" };
 };

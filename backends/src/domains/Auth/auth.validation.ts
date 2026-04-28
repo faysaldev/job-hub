@@ -11,7 +11,9 @@ export const registerValidation = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   email: z.string().email("Invalid email format"),
   password: passwordSchema,
-  phoneNumber: z.string().min(10, "Phone number must be at least 10 characters"),
+  phoneNumber: z
+    .string()
+    .min(10, "Phone number must be at least 10 characters"),
   role: z.enum(["user", "seeker", "recruiter", "admin"], {
     message: "Role must be user, seeker, recruiter, or admin",
   }),
@@ -48,7 +50,9 @@ export type VerificationInput = z.infer<typeof verificationValidation>;
 export type LoginInput = z.infer<typeof loginValidation>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordValidation>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordValidation>;
-export type ResendVerificationInput = z.infer<typeof resendVerificationValidation>;
+export type ResendVerificationInput = z.infer<
+  typeof resendVerificationValidation
+>;
 
 const authValidator = {
   registerValidation,

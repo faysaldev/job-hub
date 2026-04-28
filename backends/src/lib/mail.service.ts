@@ -1,23 +1,29 @@
 import nodemailer from "nodemailer";
+import { EMAIL_PASSWORD, EMAIL_USERNAME } from "../config/ENV";
 // Send Email (Using Nodemailer for verification)
-export const sendEmail = async (to: string, subject: string, text: string) => {
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  text: string,
+  html?: string,
+) => {
   const transporter = nodemailer.createTransport({
     service: "Gmail",
+    from: EMAIL_USERNAME,
     auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
+      user: EMAIL_USERNAME,
+      pass: EMAIL_PASSWORD,
     },
   });
 
-  const mailOptions = {
-    from: process.env.EMAIL_USERNAME,
-    to,
-    subject,
-    text,
-  };
-
   try {
-    await transporter.sendMail(mailOptions);
+    await transporter.sendMail({
+      from: `"JobHub" <${EMAIL_USERNAME}>`,
+      to,
+      subject,
+      html,
+      text,
+    });
   } catch (error) {
     console.error("Error sending email", error);
     throw new Error("Error sending email");

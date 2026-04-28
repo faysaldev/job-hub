@@ -1,15 +1,15 @@
 "use client";
 
-import { mockUser } from "@/src/components/common/Header";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import JobManagement from "@/src/components/Recruiter/JobManagement";
+import { useAuth } from "@/src/hooks/useAuth";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Plus, ArrowUpRight, Briefcase } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const JobsPage = () => {
-  const user = mockUser;
+  const { user } = useAuth();
   const router = useRouter();
 
   if (!user) return null;

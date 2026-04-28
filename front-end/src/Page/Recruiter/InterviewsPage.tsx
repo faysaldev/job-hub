@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { mockUser } from "@/src/components/common/Header";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
+import { useAuth } from "@/src/hooks/useAuth";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -63,7 +63,7 @@ interface Candidate {
 }
 
 const InterviewsPage = () => {
-  const user = mockUser;
+  const { user } = useAuth();
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Sample candidates for scheduling

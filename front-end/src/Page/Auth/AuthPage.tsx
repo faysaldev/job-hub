@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card } from "@/src/components/ui/card";
+import { toast } from "sonner";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/src/components/ui/tabs";
+  useLoginMutation,
+  useRegisterMutation,
+} from "@/src/redux/features/auth/authApi";
+import { setUser } from "@/src/redux/features/auth/authSlice";
+import { useAppDispatch } from "@/src/redux/hooks";
+import { useAuth } from "@/src/hooks/useAuth";
+import SignInForm from "@/src/components/auth/SignInForm";
+import SignUpForm from "@/src/components/auth/SignUpForm";
 import {
   Briefcase,
   Users,
@@ -18,133 +21,33 @@ import {
   Zap,
   Globe,
   CheckCircle,
-  ArrowRight,
   ArrowLeft,
 } from "lucide-react";
-import SignInForm from "@/src/components/auth/SignInForm";
-import SignUpForm from "@/src/components/auth/SignUpForm";
+import { Card } from "@/src/components/ui/card";
 import {
-  useLoginMutation,
-  useRegisterMutation,
-} from "@/src/redux/features/auth/authApi";
-import gsap from "gsap";
-
-// Define user type
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: "jobseeker" | "recruiter";
-}
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/components/ui/tabs";
 
 const AuthPage = () => {
   const [loading, setLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, user } = useAuth();
 
-  const [
-    signIn,
-    {
-      isLoading: LoadingSignIn,
-      isSuccess: isSignInSuccess,
-      isError: isSignInError,
-      data: loginData,
-      error: loginError,
-    },
-  ] = useLoginMutation();
-  const [
-    signUp,
-    {
-      isLoading: LoadingSignUp,
-      isSuccess: isSignUpSuccess,
-      isError: isSignUpError,
-      data: registerData,
-      error: registerError,
-    },
-  ] = useRegisterMutation();
+  const [signIn] = useLoginMutation();
+  const [signUp] = useRegisterMutation();
 
-  // GSAP animations
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        ".auth-hero",
-        { opacity: 0, x: -30 },
-        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out" }
-      );
-
-      gsap.fromTo(
-        ".auth-card",
-        { opacity: 0, x: 30, scale: 0.98 },
-        { opacity: 1, x: 0, scale: 1, duration: 0.8, delay: 0.2, ease: "power3.out" }
-      );
-
-      gsap.fromTo(
-        ".feature-item",
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.4, ease: "power2.out" }
-      );
-
-      gsap.fromTo(
-        ".trust-badge",
-        { opacity: 0, scale: 0.9 },
-        { opacity: 1, scale: 1, duration: 0.4, stagger: 0.1, delay: 0.6, ease: "back.out(1.7)" }
-      );
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  // Check if user is already logged in on component mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setCurrentUser(user);
-    }
-  }, []);
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (currentUser) {
-      router.push(
-        currentUser.role === "recruiter"
-          ? "/recruiter"
-          : "/job-seeker"
-      );
-    }
-  }, [currentUser, router]);
-
-  // Handle successful login
-  useEffect(() => {
-    if (isSignInSuccess && loginData) {
-      console.log("Login successful", loginData);
-      const userData = {
-        id: loginData.data.id,
-        name: loginData.data.name,
-        email: loginData.data.email,
-        role: loginData.data.role,
-      };
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("token", loginData.token);
-      setCurrentUser(userData);
-    }
-  }, [isSignInSuccess, loginData]);
-
-  // Handle successful registration
-  useEffect(() => {
-    if (isSignUpSuccess && registerData) {
-      console.log("Registration successful", registerData);
-    }
-  }, [isSignUpSuccess, registerData]);
-
-  // If user is already logged in, show loading state while redirecting
-  if (currentUser) {
+  // Already logged in → redirect
+  if (isAuthenticated && user) {
+    router.replace(user.role === "recruiter" ? "/recruiter" : "/job-seeker");
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882]">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#234C6A] to-[#456882]">
         <div className="text-center text-white">
-          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-xl font-semibold">Redirecting to your dashboard...</p>
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="font-semibold">Redirecting...</p>
         </div>
       </div>
     );
@@ -153,16 +56,21 @@ const AuthPage = () => {
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-
-    const signInData = { email, password };
+    const fd = new FormData(e.currentTarget);
     try {
-      const result = await signIn(signInData).unwrap();
-      console.log("Sign in successful", result);
-    } catch (error) {
-      console.error("Sign in failed:", error);
+      const result = await signIn({
+        email: fd.get("email") as string,
+        password: fd.get("password") as string,
+      }).unwrap();
+
+      dispatch(setUser({ user: result.data.user, token: result.data.token }));
+      toast.success("Welcome back!");
+      router.push(
+        result.data.user.role === "recruiter" ? "/recruiter" : "/job-seeker",
+      );
+    } catch (err: unknown) {
+      const msg = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(msg || "Sign in failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -171,127 +79,112 @@ const AuthPage = () => {
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
-    const email = formData.get("signup-email") as string;
-    const phone = formData.get("phone") as string;
-    const password = formData.get("signup-password") as string;
-    const role = formData.get("user-type") as string;
-
-    const signUpData = {
-      name,
-      email,
-      phoneNumber: phone,
-      password,
-      role: role === "jobseeker" ? "seeker" : role,
-    };
-
+    const fd = new FormData(e.currentTarget);
+    const role = fd.get("user-type") as string;
     try {
-      const result = await signUp(signUpData).unwrap();
-      if (result?.code === 200) {
-        router.push(`/auth/verify-email?email=${email}`);
+      const result = await signUp({
+        name: fd.get("name") as string,
+        email: fd.get("signup-email") as string,
+        phoneNumber: fd.get("phone") as string,
+        password: fd.get("signup-password") as string,
+        role: role === "seeker" ? "seeker" : "recruiter",
+      }).unwrap();
+
+      if (result?.code === 201 || result?.code === 200) {
+        toast.success("Account created! Please verify your email.");
+        router.push(`/verify-email?email=${fd.get("signup-email")}`);
       }
-    } catch (error) {
-      alert("Email of phone number already exist");
-      console.log(error);
+    } catch (err: unknown) {
+      const msg = (err as { data?: { message?: string } })?.data?.message;
+      toast.error(msg || "Registration failed. Email may already be in use.");
     } finally {
       setLoading(false);
     }
   };
 
   const features = [
-    { icon: <Users className="h-5 w-5" />, text: "500K+ Active Users" },
-    { icon: <Building2 className="h-5 w-5" />, text: "25K+ Companies" },
-    { icon: <Briefcase className="h-5 w-5" />, text: "1M+ Jobs Posted" },
+    { icon: Users, text: "500K+ Active Users" },
+    { icon: Building2, text: "25K+ Companies" },
+    { icon: Briefcase, text: "1M+ Jobs Posted" },
   ];
 
   const trustBadges = [
-    { icon: <Shield className="h-4 w-4" />, text: "Secure" },
-    { icon: <Zap className="h-4 w-4" />, text: "Fast" },
-    { icon: <Globe className="h-4 w-4" />, text: "Global" },
+    { icon: Shield, text: "Secure" },
+    { icon: Zap, text: "Fast" },
+    { icon: Globe, text: "Global" },
   ];
 
   return (
-    <div ref={containerRef} className="min-h-screen flex bg-[#E3E3E3]">
-      {/* Left Side - Hero Content (Hidden on mobile) */}
-      <div className="auth-hero hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="min-h-screen flex bg-[#E3E3E3]">
+      {/* Left Hero Panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
           <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/3 rounded-full blur-3xl" />
         </div>
-
         <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-3 mb-12">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2.5 border border-white/20">
               <Briefcase className="h-7 w-7 text-white" />
             </div>
             <span className="text-2xl font-bold text-white">JobHub</span>
           </Link>
-
-          <div className="mb-12">
-            <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
+          <div className="mb-10">
+            <h1 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
               Your Dream Career
               <span className="block text-white/80">Starts Here</span>
             </h1>
-
             <p className="text-lg text-white/70 leading-relaxed max-w-md">
-              Join millions of professionals who trust JobHub to find their next opportunity.
-              Whether you are looking for a job or hiring talent, we have got you covered.
+              Join millions of professionals who trust JobHub to find their next
+              opportunity.
             </p>
           </div>
-
-          {/* Features */}
-          <div className="space-y-4 mb-10">
-            {features.map((feature, i) => (
+          <div className="space-y-3 mb-8">
+            {features.map((f, i) => (
               <div
                 key={i}
-                className="feature-item flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10"
+                className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10"
               >
-                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-white">
-                  {feature.icon}
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                  <f.icon className="h-5 w-5" />
                 </div>
-                <span className="text-white font-semibold">{feature.text}</span>
+                <span className="text-white font-medium">{f.text}</span>
               </div>
             ))}
           </div>
-
-          {/* Trust Badges */}
-          <div className="flex gap-4">
-            {trustBadges.map((badge, i) => (
+          <div className="flex gap-3">
+            {trustBadges.map((b, i) => (
               <div
                 key={i}
-                className="trust-badge flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20"
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full border border-white/20"
               >
-                <span className="text-white">{badge.icon}</span>
-                <span className="text-sm text-white font-medium">{badge.text}</span>
+                <b.icon className="h-4 w-4 text-white" />
+                <span className="text-sm text-white font-medium">{b.text}</span>
               </div>
             ))}
           </div>
-
-          {/* Testimonial Preview */}
-          <div className="mt-12 p-6 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold">
+          <div className="mt-10 p-5 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/10">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                 JD
               </div>
               <div>
-                <p className="text-white/90 italic mb-3">
-                  &ldquo;Found my dream job within 2 weeks of joining JobHub. The platform is intuitive and the job recommendations are spot-on!&rdquo;
+                <p className="text-white/90 italic text-sm mb-2">
+                  &ldquo;Found my dream job within 2 weeks. The recommendations
+                  were spot-on!&rdquo;
                 </p>
-                <p className="text-white font-semibold">Jane Doe</p>
-                <p className="text-sm text-white/60">Software Engineer at Google</p>
+                <p className="text-white font-semibold text-sm">Jane Doe</p>
+                <p className="text-xs text-white/60">
+                  Software Engineer at Google
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right Side - Auth Card */}
-      <div className="auth-card w-full lg:w-1/2 flex flex-col">
-        {/* Mobile Header */}
+      {/* Right Auth Panel */}
+      <div className="w-full lg:w-1/2 flex flex-col">
         <div className="lg:hidden p-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-xl p-2">
@@ -301,54 +194,54 @@ const AuthPage = () => {
           </Link>
           <Link
             href="/"
-            className="flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors"
+            className="flex items-center gap-1 text-sm text-[#456882] hover:text-[#234C6A] transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
         </div>
 
-        {/* Auth Form */}
         <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
           <div className="w-full max-w-md">
-            {/* Desktop Back Link */}
             <div className="hidden lg:block mb-8">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors"
+                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors text-sm"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to Home
               </Link>
             </div>
-
-            {/* Mobile Hero */}
-            <div className="text-center mb-8 lg:hidden">
-              <h1 className="text-2xl font-bold text-[#234C6A] mb-2">
+            <div className="text-center mb-6 lg:hidden">
+              <h1 className="text-2xl font-bold text-[#234C6A] mb-1">
                 Welcome to JobHub
               </h1>
-              <p className="text-[#456882]">
-                Sign in to your account or create a new one
+              <p className="text-[#456882] text-sm">
+                Sign in or create your account
               </p>
             </div>
 
             <Card className="p-8 bg-white border-none shadow-2xl rounded-2xl">
               <div className="text-center mb-6 hidden lg:block">
-                <h2 className="text-2xl font-bold text-[#234C6A] mb-1">Welcome Back</h2>
-                <p className="text-[#456882] text-sm">Sign in to continue to JobHub</p>
+                <h2 className="text-2xl font-bold text-[#234C6A] mb-1">
+                  Welcome Back
+                </h2>
+                <p className="text-[#456882] text-sm">
+                  Sign in to continue to JobHub
+                </p>
               </div>
 
               <Tabs defaultValue="signin" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-6 bg-[#E3E3E3] p-1 rounded-xl">
                   <TabsTrigger
                     value="signin"
-                    className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
+                    className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white transition-all duration-300"
                   >
                     Sign In
                   </TabsTrigger>
                   <TabsTrigger
                     value="signup"
-                    className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300"
+                    className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white transition-all duration-300"
                   >
                     Sign Up
                   </TabsTrigger>
@@ -356,10 +249,9 @@ const AuthPage = () => {
 
                 <TabsContent value="signin" className="space-y-4">
                   <SignInForm loading={loading} handleSignIn={handleSignIn} />
-
-                  <div className="text-center mt-4">
+                  <div className="text-center">
                     <Link
-                      href="/auth/forgot-password"
+                      href="/reset-password"
                       className="text-[#234C6A] hover:text-[#456882] text-sm font-medium transition-colors"
                     >
                       Forgot your password?
@@ -372,27 +264,27 @@ const AuthPage = () => {
                 </TabsContent>
               </Tabs>
 
-              {/* Social proof */}
-              <div className="mt-6 pt-6 border-t border-[#E3E3E3]">
-                <div className="flex items-center justify-center gap-2 text-sm text-[#456882]">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Trusted by 500,000+ professionals</span>
-                </div>
+              <div className="mt-6 pt-5 border-t border-[#E3E3E3] flex items-center justify-center gap-2 text-sm text-[#456882]">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>Trusted by 500,000+ professionals</span>
               </div>
             </Card>
 
-            {/* Additional links */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-[#456882]">
-                By signing up, you agree to our{" "}
-                <Link href="/terms-of-service" className="text-[#234C6A] hover:underline font-medium">
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy-policy" className="text-[#234C6A] hover:underline font-medium">
-                  Privacy Policy
-                </Link>
-              </p>
+            <div className="mt-5 text-center text-xs text-[#456882]">
+              By signing up, you agree to our{" "}
+              <Link
+                href="/terms-of-service"
+                className="text-[#234C6A] hover:underline font-medium"
+              >
+                Terms
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy-policy"
+                className="text-[#234C6A] hover:underline font-medium"
+              >
+                Privacy Policy
+              </Link>
             </div>
           </div>
         </div>

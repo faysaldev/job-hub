@@ -1,31 +1,102 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ============================================================================
+   DESIGN SYSTEM TOKENS — JobHub
+   Primary:   #234C6A (deep navy)
+   Secondary: #456882 (muted teal-blue)
+   Surface:   #E3E3E3 (light gray)
+   ============================================================================ */
 :root {
-  --primary: #234C6A;
+  --color-primary: #234c6a;
+  --color-primary-dark: #1a3a52;
+  --color-primary-light: #2d5a7a;
+  --color-secondary: #456882;
+  --color-secondary-light: #5a7e9a;
+  --color-surface: #e3e3e3;
+  --color-surface-light: #f5f5f5;
+  --color-bg: #ffffff;
+
+  /* Semantic aliases */
+  --primary: #234c6a;
   --secondary: #456882;
-  --third: #E3E3E3;
+  --third: #e3e3e3;
+
+  /* Typography */
+  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Radius scale */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* Shadows */
+  --shadow-card: 0 4px 24px -4px rgba(35, 76, 106, 0.08),
+    0 2px 8px -2px rgba(35, 76, 106, 0.04);
+  --shadow-elevated: 0 8px 32px -8px rgba(35, 76, 106, 0.12),
+    0 4px 16px -4px rgba(35, 76, 106, 0.06);
 }
 
-/* Custom animations */
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.animate-blob {
-  animation: blob 8s infinite;
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.animation-delay-2000 {
-  animation-delay: 2s;
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-primary);
 }
 
-.animation-delay-4000 {
-  animation-delay: 4s;
+/* ============================================================================
+   SCROLLBAR STYLING
+   ============================================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-secondary);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* ============================================================================
+   FOCUS STYLES (Accessibility)
+   ============================================================================ */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -46,4 +117,110 @@
   100% {
     transform: translate(0px, 0px) scale(1);
   }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-blob {
+  animation: blob 8s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface) 25%,
+    #f0f0f0 50%,
+    var(--color-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Card elevation levels */
+.card-base {
+  background: white;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-card);
+}
+
+.card-elevated {
+  background: white;
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* Truncate with tooltip */
+.truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Safe area for mobile bottom nav */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }

@@ -1,12 +1,12 @@
 import connectionToDb from "./config/db";
-import { BACKEND_IP, PORT, SOCKET_PORT } from "./config/ENV";
+import { PORT, SOCKET_PORT } from "./config/ENV";
 import setUpSocketIO from "./config/socketio";
 import app from "./server";
 import dotenv from "dotenv";
 import http from "http";
 
 // Loading the local Environment Variables from .env file
-dotenv.config({ quiet: true });
+dotenv.config();
 
 // connection to the database
 connectionToDb();
@@ -15,7 +15,7 @@ connectionToDb();
 const server = http.createServer(app);
 
 // using the port and ip over here
-const backendIp = BACKEND_IP || "localhost";
+const backendIp = "localhost";
 const port = PORT || 3000;
 const socketPort = SOCKET_PORT || 6100;
 

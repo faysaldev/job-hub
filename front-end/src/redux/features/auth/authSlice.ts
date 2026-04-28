@@ -1,24 +1,20 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "@/src/redux/store/store"; // Make sure this is correct
+import { RootState } from "@/src/redux/store/store";
 
-interface User {
+export interface AuthUser {
+  id: string;
   name: string;
   email: string;
-  image: string | null; // image might be null
-  password: string;
-  role: "user" | "admin";
-  type: "customer" | "seller" | "admin"; // Modify as per your requirements
-  address: string | null;
-  phoneNumber: string;
+  image: string | null;
+  role: "jobseeker" | "recruiter" | "admin";
+  phoneNumber?: string;
   isProfileCompleted: boolean;
-  totalEarnings: number;
-  totalWithDrawal: number;
+  isVerified: boolean;
   createdAt: string;
-  id: string;
 }
 
 type TAuthState = {
-  user: User | null;
+  user: AuthUser | null;
   token: string | null;
 };
 
@@ -31,7 +27,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    setUser: (state, action: PayloadAction<{ user: AuthUser; token: string }>) => {
       const { user, token } = action.payload;
       state.user = user;
       state.token = token;
@@ -47,7 +43,7 @@ export const { setUser, logout } = authSlice.actions;
 
 export default authSlice.reducer;
 
-export const selectCurrentUser = (state: RootState): User | null =>
+export const selectCurrentUser = (state: RootState): AuthUser | null =>
   state.auth.user;
 export const selectToken = (state: RootState): string | null =>
   state.auth.token;

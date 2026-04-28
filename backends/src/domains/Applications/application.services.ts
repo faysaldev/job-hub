@@ -9,7 +9,11 @@ const createApplication = async (applicationData: {
   paid_amount?: number;
 }) => {
   const application = new Application(applicationData);
-  return await application.save();
+  const savedApplication = await application.save();
+  
+  // Logic to notify recruiter should be here or in controller
+  // For now, just fix the return
+  return savedApplication;
 };
 
 // Get all applications (optionally filtered by user or job)
@@ -51,10 +55,9 @@ const deleteApplication = async (id: string) => {
 
 // Get applications by applicant (user)
 const getApplicationsByApplicant = async (applicantId: string) => {
-  const application = await Application.find({
+  return await Application.find({
     applicant: applicantId,
-  }).populate("job_id", "job_title company_name");
-  return {};
+  }).populate("job_id", "title company");
 };
 
 // Get applications for a specific job

@@ -1,13 +1,13 @@
 "use client";
 
-import { mockUser } from "@/src/components/common/Header";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import CompanyProfile from "@/src/components/Recruiter/CompanyProfile";
+import { useAuth } from "@/src/hooks/useAuth";
 import { Card } from "@/src/components/ui/card";
 import { Building2 } from "lucide-react";
 
 const CompanyPage = () => {
-  const user = mockUser;
+  const { user } = useAuth();
 
   if (!user) return null;
 

@@ -50,7 +50,7 @@ const userSchema = new Schema<IAMUser>(
       validate(value: string) {
         if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
           throw new Error(
-            "Password must contain at least one letter and one number"
+            "Password must contain at least one letter and one number",
           );
         }
       },
@@ -71,7 +71,7 @@ const userSchema = new Schema<IAMUser>(
     fcmToken: { type: String, default: null },
     isDeleted: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 userSchema.methods.isPasswordMatch = async function (password: string) {

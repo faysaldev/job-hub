@@ -19,12 +19,14 @@ const register = asyncHandler(async (req: Request, res: Response) => {
 
 const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
   const { email, code } = req.body;
-  await authService.verifyEmail(email, Number(code));
+  console.log(email, code, "code");
+  const data = await authService.verifyEmail(email, code);
   res.status(httpStatus.OK).json(
     response({
       message: "Verification Successful",
       status: "OK",
       statusCode: httpStatus.OK,
+      data: data,
     }),
   );
 });

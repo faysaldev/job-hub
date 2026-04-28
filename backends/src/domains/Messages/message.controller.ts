@@ -5,6 +5,8 @@ import httpStatus from "http-status";
 import { response } from "../../lib/response";
 import { ProtectedRequest } from "../../types/protected-request";
 
+import { createNotification } from "../Notifications/notifications.service";
+
 const createMessage = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const { conversationId, receiverId, content } = req.body;
   const senderId = req.user?._id as string;
@@ -15,6 +17,18 @@ const createMessage = asyncHandler(async (req: ProtectedRequest, res: Response) 
     receiverId,
     content,
   });
+
+  // OPTIMIZATION: Send notification to the receiver
+  try {
+    await createNotification({
+      title: `New message from ${req.user?.name || 'User'}`,
+      link: `/messages/${conversationId}`,
+      sender: senderId,
+      receiver: receiverId,
+    });
+  } catch (err) {
+    console.error("Failed to send message notification:", err);
+  }
 
   res.status(httpStatus.CREATED).json(
     response({

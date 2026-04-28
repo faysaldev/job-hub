@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { mockUser } from "@/src/components/common/Header";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
+import { useAuth } from "@/src/hooks/useAuth";
 import {
   Briefcase,
   Users,
@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 
 const RecruiterDashboard = () => {
-  const user = mockUser;
+  const { user, isAuthenticated, isRecruiter } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 

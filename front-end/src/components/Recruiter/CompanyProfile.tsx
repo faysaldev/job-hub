@@ -154,7 +154,7 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                 id="companySize"
                 value={profile.companySize}
                 onChange={(e) =>
-                  setProfile({ ...profile, companySize: e.target.value })
+                  setProfile({ ...profile, companySize: e.target.value as ProfileType["companySize"] })
                 }
                 className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-white px-3 py-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-[#234C6A] focus:border-[#234C6A]"
               >

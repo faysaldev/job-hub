@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { jobCategories } from "@/src/lib/jobCategories";
+import { useAuth } from "@/src/hooks/useAuth";
 
 // ============================================================================
 // TYPES
@@ -51,12 +52,13 @@ interface Notification {
 // ============================================================================
 // CONSTANTS
 // ============================================================================
-export const mockUser: User = {
+/** @deprecated Use useAuth() hook instead */
+export const mockUser = {
   id: "1",
   name: "John Doe",
   email: "john.doe@example.com",
-  role: "jobseeker",
-  avatar: "https://github.com/shadcn.png",
+  role: "jobseeker" as const,
+  avatar: "",
 };
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -161,7 +163,7 @@ const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  const user = mockUser; // Replace with actual auth
+  const { user, isAuthenticated, logout: handleLogoutFn } = useAuth();
 
   // Memoized values
   const userMenuItems = useMemo(() => user?.role === "recruiter" ? RECRUITER_MENU : JOB_SEEKER_MENU, [user?.role]);
@@ -190,11 +192,9 @@ const Header = () => {
   }, [router, closeAll]);
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    router.push("/auth");
+    handleLogoutFn();
     closeAll();
-  }, [router, closeAll]);
+  }, [handleLogoutFn, closeAll]);
 
   // Effects
   useEffect(() => {

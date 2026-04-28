@@ -27,7 +27,7 @@ const JobDetailsHeader = ({ job }: JobDetailsHeaderProps) => {
         </span>
         <span className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
-          {job.posted}
+          {job.posted || job.postedAt || ""}
         </span>
       </div>
       <div className="flex flex-wrap gap-2 mb-6">

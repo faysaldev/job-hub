@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { mockUser } from "@/src/components/common/Header";
+import { useAuth } from "@/src/hooks/useAuth";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
@@ -55,7 +55,7 @@ interface JobFormData {
 }
 
 const CreateJobPage = () => {
-  const user = mockUser;
+  const { user } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [newRequirement, setNewRequirement] = useState("");

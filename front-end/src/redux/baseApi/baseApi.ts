@@ -1,4 +1,3 @@
-"use client";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { RootState } from "@/src/redux/store/store";
 
@@ -7,13 +6,25 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/v1`,
     prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token?.replace(/['"]+/g, "");
+      const token = (getState() as RootState).auth.token?.replace(/['\"]+/g, "");
       if (token) {
         headers.set("authorization", `Bearer ${token}`);
       }
       return headers;
     },
   }),
-  tagTypes: ["user"],
+  tagTypes: [
+    "user",
+    "jobs",
+    "applications",
+    "jobSeekerProfile",
+    "recruiterProfile",
+    "company",
+    "messages",
+    "conversations",
+    "notifications",
+    "savedJobs",
+    "analytics",
+  ],
   endpoints: () => ({}),
 });
