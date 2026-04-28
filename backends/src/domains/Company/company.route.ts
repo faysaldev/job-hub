@@ -18,8 +18,8 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  cloudinaryFileUploadMiddleware().single("companyLogo"),
-  processCloudinarySingleUpload("company", "companyLogo"),
+  // cloudinaryFileUploadMiddleware().single("companyLogo"),
+  // processCloudinarySingleUpload("company", "companyLogo"),
   validate(companyValidator.createCompanyValidation),
   createCompany,
 );
@@ -28,8 +28,8 @@ router.get("/all", authMiddleware, getAllCompanies); // Get all companies
 router.put(
   "/",
   authMiddleware,
-  cloudinaryFileUploadMiddleware().single("companyLogo"),
-  processCloudinarySingleUpload("company", "companyLogo"),
+  // cloudinaryFileUploadMiddleware().single("companyLogo"),
+  // processCloudinarySingleUpload("company", "companyLogo"),
   validate(companyValidator.updateCompanyValidation),
   updateCompany,
 ); // Update authenticated user's company profile

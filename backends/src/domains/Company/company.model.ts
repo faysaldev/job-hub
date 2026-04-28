@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 export interface ICompany extends Document {
   userId: mongoose.Types.ObjectId;
   companyLogo?: string;
-  companyName: string;
-  industries: string;
-  companySize: string;
-  companyLocation: string;
+  companyName?: string;
+  industries?: string;
+  companySize?: string;
+  companyLocation?: string;
   website?: string;
   description?: string;
   createdAt: Date;
@@ -24,7 +24,6 @@ const companySchema = new mongoose.Schema(
     companyLogo: { type: String },
     companyName: {
       type: String,
-      required: true,
     },
     industries: { type: String },
     companySize: { type: String },

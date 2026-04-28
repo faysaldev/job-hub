@@ -3,8 +3,8 @@ import { CompanyProfile } from "@/src/types";
 
 const companyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // POST /recruiter-company - Create company profile (Multipart for logo)
-    createCompany: builder.mutation<CompanyProfile, FormData>({
+    // POST /recruiter-company - Create company profile (JSON)
+    createCompany: builder.mutation<any, any>({
       query: (body) => ({
         url: "/recruiter-company",
         method: "POST",
@@ -31,8 +31,8 @@ const companyApi = baseApi.injectEndpoints({
       providesTags: ["company"],
     }),
 
-    // PUT /recruiter-company - Update company profile (Multipart for logo)
-    updateCompany: builder.mutation<CompanyProfile, FormData>({
+    // PUT /recruiter-company - Update company profile (JSON)
+    updateCompany: builder.mutation<any, any>({
       query: (body) => ({
         url: "/recruiter-company",
         method: "PUT",
