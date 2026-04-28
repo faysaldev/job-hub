@@ -63,11 +63,24 @@ const AuthPage = () => {
         password: fd.get("password") as string,
       }).unwrap();
 
-      dispatch(setUser({ user: result.data.user, token: result.data.token }));
-      toast.success("Welcome back!");
-      router.push(
-        result.data.user.role === "recruiter" ? "/recruiter" : "/job-seeker",
-      );
+      if (result?.data?.accessToken && result?.data?.user) {
+        dispatch(
+          setUser({
+            user: result.data.user,
+            token: result.data.accessToken,
+          }),
+        );
+
+        toast.success("Login successfully!");
+
+        // Auto-redirect based on role after a delay
+        setTimeout(() => {
+          const role = result.data.user.role;
+          router.push(role === "recruiter" ? "/recruiter" : "/job-seeker");
+        }, 3000);
+      } else {
+        toast.error("Invalid response from server");
+      }
     } catch (err: unknown) {
       const msg = (err as { data?: { message?: string } })?.data?.message;
       toast.error(msg || "Sign in failed. Please check your credentials.");
