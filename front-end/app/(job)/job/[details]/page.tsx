@@ -17,7 +17,6 @@ import {
   Share2,
   Heart,
   ArrowLeft,
-  Calendar,
   Users,
   Globe,
   Sparkles,
@@ -26,6 +25,30 @@ import {
   Loader2,
 } from "lucide-react";
 import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
+
+interface PopulatedJob {
+  _id: string;
+  title: string;
+  company: {
+    _id?: string;
+    userId?: string;
+    companyName: string;
+    companyLogo?: string;
+  };
+  location: string;
+  type: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryPeriod?: string;
+  salary?: string;
+  posted?: string;
+  createdAt?: string;
+  description: string;
+  skills: string[];
+  responsibilities?: string[];
+  requirements?: string[];
+  benefits?: string[];
+}
 
 const JobDetail = () => {
   const params = useParams();
@@ -44,11 +67,28 @@ const JobDetail = () => {
     );
   }
 
-  const job = apiResponse?.data;
+  const job = apiResponse?.data as PopulatedJob | undefined;
 
   if (error || !job) {
     notFound();
   }
+
+  const companyObj = typeof job.company === "object" ? job.company : null;
+  const companyName =
+    companyObj?.companyName ||
+    (typeof job.company === "string" ? job.company : "Unknown Company");
+  const companyLogo = companyObj?.companyLogo;
+  const salaryRange =
+    job.salaryMin && job.salaryMax
+      ? `$${job.salaryMin} - $${job.salaryMax} / ${job.salaryPeriod || "monthly"}`
+      : job.salary || "Not specified";
+  const postedDate = job.createdAt
+    ? new Date(job.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : job.posted || "Recently";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#E3E3E3]">
@@ -76,9 +116,17 @@ const JobDetail = () => {
             {/* Job Header */}
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div className="flex items-start gap-6">
-                {/* Company Logo Placeholder */}
-                <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 flex-shrink-0">
-                  <Building2 className="h-10 w-10 text-white" />
+                {/* Company Logo */}
+                <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 flex-shrink-0 overflow-hidden">
+                  {companyLogo ? (
+                    <img
+                      src={companyLogo}
+                      alt={companyName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Building2 className="h-10 w-10 text-white" />
+                  )}
                 </div>
 
                 <div>
@@ -99,7 +147,7 @@ const JobDetail = () => {
                   <div className="flex flex-wrap items-center gap-4 text-white/80">
                     <span className="flex items-center gap-2">
                       <Building2 className="h-4 w-4" />
-                      {job.company}
+                      {companyName}
                     </span>
                     <span className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
@@ -107,11 +155,11 @@ const JobDetail = () => {
                     </span>
                     <span className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4" />
-                      {job.salary}
+                      {salaryRange}
                     </span>
                     <span className="flex items-center gap-2">
                       <Clock className="h-4 w-4" />
-                      Posted {job.posted}
+                      Posted {postedDate}
                     </span>
                   </div>
                 </div>
@@ -242,7 +290,8 @@ const JobDetail = () => {
                   Apply for this position
                 </h3>
                 <p className="text-[#456882] mb-6">
-                  Join {job.company} and be part of an amazing team building the future.
+                  Join {companyName} and be part of an amazing team building the
+                  future.
                 </p>
 
                 <Button className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold mb-4 group">
@@ -252,7 +301,10 @@ const JobDetail = () => {
 
                 <p className="text-center text-sm text-[#456882]">
                   or{" "}
-                  <Link href="#" className="text-[#234C6A] font-semibold hover:underline">
+                  <Link
+                    href="#"
+                    className="text-[#234C6A] font-semibold hover:underline"
+                  >
                     Apply with LinkedIn
                   </Link>
                 </p>
@@ -260,11 +312,15 @@ const JobDetail = () => {
                 <div className="mt-6 pt-6 border-t border-[#E3E3E3]">
                   <div className="flex items-center justify-between text-sm mb-3">
                     <span className="text-[#456882]">Applications</span>
-                    <span className="font-semibold text-[#234C6A]">128 applicants</span>
+                    <span className="font-semibold text-[#234C6A]">
+                      128 applicants
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-[#456882]">Posted</span>
-                    <span className="font-semibold text-[#234C6A]">{job.posted}</span>
+                    <span className="font-semibold text-[#234C6A]">
+                      {postedDate}
+                    </span>
                   </div>
                 </div>
               </Card>
@@ -272,15 +328,25 @@ const JobDetail = () => {
               {/* Company Info */}
               <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
                 <h3 className="text-lg font-bold text-[#234C6A] mb-4">
-                  About {job.company}
+                  About {companyName}
                 </h3>
 
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center">
-                    <Building2 className="h-7 w-7 text-white" />
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center overflow-hidden">
+                    {companyLogo ? (
+                      <img
+                        src={companyLogo}
+                        alt={companyName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Building2 className="h-7 w-7 text-white" />
+                    )}
                   </div>
                   <div>
-                    <p className="font-semibold text-[#234C6A]">{job.company}</p>
+                    <p className="font-semibold text-[#234C6A]">
+                      {companyName}
+                    </p>
                     <p className="text-sm text-[#456882]">Technology Company</p>
                   </div>
                 </div>
@@ -292,7 +358,11 @@ const JobDetail = () => {
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <Globe className="h-4 w-4 text-[#456882]" />
-                    <span className="text-[#456882]">www.{job.company.toLowerCase()}.com</span>
+                    <span className="text-[#456882]">
+                      www.
+                      {companyName.toLowerCase().replace(/[^a-zA-Z0-9]/g, "")}
+                      .com
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
                     <MapPin className="h-4 w-4 text-[#456882]" />
