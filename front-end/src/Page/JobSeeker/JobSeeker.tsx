@@ -52,25 +52,39 @@ const JobSeekerDashboard = () => {
       gsap.fromTo(
         ".dashboard-header",
         { opacity: 0, y: -30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" },
       );
 
       gsap.fromTo(
         ".stats-card",
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.2, ease: "power2.out" }
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          stagger: 0.1,
+          delay: 0.2,
+          ease: "power2.out",
+        },
       );
 
       gsap.fromTo(
         ".quick-action",
         { opacity: 0, scale: 0.95 },
-        { opacity: 1, scale: 1, duration: 0.4, stagger: 0.08, delay: 0.4, ease: "power2.out" }
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 0.4,
+          stagger: 0.08,
+          delay: 0.4,
+          ease: "power2.out",
+        },
       );
 
       gsap.fromTo(
         ".main-content",
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.6, delay: 0.5, ease: "power2.out" }
+        { opacity: 1, y: 0, duration: 0.6, delay: 0.5, ease: "power2.out" },
       );
     }, containerRef);
 
@@ -115,19 +129,26 @@ const JobSeekerDashboard = () => {
     },
   ];
 
-  // Quick actions
-  const quickActions = [
-    { icon: FileText, label: "Update Resume", href: "#", color: "bg-blue-500" },
-    { icon: Target, label: "Job Alerts", href: "#", color: "bg-green-500" },
-    { icon: Bell, label: "Notifications", href: "/notifications", color: "bg-orange-500" },
-    { icon: Sparkles, label: "AI Insights", href: "#", color: "bg-purple-500" },
-  ];
-
   // Recent activity
   const recentActivity = [
-    { icon: CheckCircle, text: "Application viewed by TechCorp", time: "2 hours ago", color: "text-green-500" },
-    { icon: Calendar, text: "Interview scheduled with DesignStudio", time: "Yesterday", color: "text-blue-500" },
-    { icon: Briefcase, text: "Applied to Senior Developer at DataFlow", time: "2 days ago", color: "text-[#234C6A]" },
+    {
+      icon: CheckCircle,
+      text: "Application viewed by TechCorp",
+      time: "2 hours ago",
+      color: "text-green-500",
+    },
+    {
+      icon: Calendar,
+      text: "Interview scheduled with DesignStudio",
+      time: "Yesterday",
+      color: "text-blue-500",
+    },
+    {
+      icon: Briefcase,
+      text: "Applied to Senior Developer at DataFlow",
+      time: "2 days ago",
+      color: "text-[#234C6A]",
+    },
   ];
 
   return (
@@ -179,7 +200,9 @@ const JobSeekerDashboard = () => {
                 className="stats-card p-5 border-none bg-white shadow-md rounded-xl hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                  <div
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}
+                  >
                     <stat.icon className="h-6 w-6 text-white" />
                   </div>
                   {stat.trendUp && (
@@ -189,26 +212,12 @@ const JobSeekerDashboard = () => {
                     </Badge>
                   )}
                 </div>
-                <p className="text-3xl font-bold text-[#234C6A] mb-1">{stat.value}</p>
+                <p className="text-3xl font-bold text-[#234C6A] mb-1">
+                  {stat.value}
+                </p>
                 <p className="text-sm text-[#456882]">{stat.title}</p>
                 <p className="text-xs text-[#456882]/70 mt-1">{stat.trend}</p>
               </Card>
-            ))}
-          </div>
-
-          {/* Quick Actions */}
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            {quickActions.map((action, index) => (
-              <Link key={index} href={action.href}>
-                <Card className="quick-action p-4 border-none bg-white shadow-md rounded-xl hover:shadow-lg transition-all cursor-pointer group">
-                  <div className="flex flex-col items-center text-center gap-3">
-                    <div className={`w-12 h-12 rounded-xl ${action.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <action.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <span className="text-sm font-medium text-[#234C6A]">{action.label}</span>
-                  </div>
-                </Card>
-              </Link>
             ))}
           </div>
 
@@ -244,8 +253,12 @@ const JobSeekerDashboard = () => {
                   <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
                     <div className="flex justify-between items-center mb-6">
                       <div>
-                        <h2 className="text-xl font-bold text-[#234C6A]">Your Applications</h2>
-                        <p className="text-sm text-[#456882]">Track the status of your job applications</p>
+                        <h2 className="text-xl font-bold text-[#234C6A]">
+                          Your Applications
+                        </h2>
+                        <p className="text-sm text-[#456882]">
+                          Track the status of your job applications
+                        </p>
                       </div>
                       <Button
                         className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
@@ -261,8 +274,12 @@ const JobSeekerDashboard = () => {
                 <TabsContent value="profile">
                   <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
                     <div className="mb-6">
-                      <h2 className="text-xl font-bold text-[#234C6A]">Your Profile</h2>
-                      <p className="text-sm text-[#456882]">Keep your profile updated to attract recruiters</p>
+                      <h2 className="text-xl font-bold text-[#234C6A]">
+                        Your Profile
+                      </h2>
+                      <p className="text-sm text-[#456882]">
+                        Keep your profile updated to attract recruiters
+                      </p>
                     </div>
                     <JobSeekerProfile userId={user.id} />
                   </Card>
@@ -271,8 +288,12 @@ const JobSeekerDashboard = () => {
                 <TabsContent value="messages">
                   <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
                     <div className="mb-6">
-                      <h2 className="text-xl font-bold text-[#234C6A]">Messages</h2>
-                      <p className="text-sm text-[#456882]">Communicate with recruiters and employers</p>
+                      <h2 className="text-xl font-bold text-[#234C6A]">
+                        Messages
+                      </h2>
+                      <p className="text-sm text-[#456882]">
+                        Communicate with recruiters and employers
+                      </p>
                     </div>
                     <Messages userId={user.id} />
                   </Card>
@@ -291,12 +312,20 @@ const JobSeekerDashboard = () => {
                 <div className="space-y-4">
                   {recentActivity.map((activity, index) => (
                     <div key={index} className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-lg bg-[#E3E3E3] flex items-center justify-center flex-shrink-0`}>
-                        <activity.icon className={`h-4 w-4 ${activity.color}`} />
+                      <div
+                        className={`w-8 h-8 rounded-lg bg-[#E3E3E3] flex items-center justify-center flex-shrink-0`}
+                      >
+                        <activity.icon
+                          className={`h-4 w-4 ${activity.color}`}
+                        />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-[#234C6A]">{activity.text}</p>
-                        <p className="text-xs text-[#456882]">{activity.time}</p>
+                        <p className="text-sm text-[#234C6A]">
+                          {activity.text}
+                        </p>
+                        <p className="text-xs text-[#456882]">
+                          {activity.time}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -305,14 +334,21 @@ const JobSeekerDashboard = () => {
 
               {/* Profile Completion */}
               <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                <h3 className="text-lg font-bold text-[#234C6A] mb-4">Profile Strength</h3>
+                <h3 className="text-lg font-bold text-[#234C6A] mb-4">
+                  Profile Strength
+                </h3>
                 <div className="mb-4">
                   <div className="flex justify-between mb-2">
                     <span className="text-sm text-[#456882]">Completion</span>
-                    <span className="text-sm font-semibold text-[#234C6A]">75%</span>
+                    <span className="text-sm font-semibold text-[#234C6A]">
+                      75%
+                    </span>
                   </div>
                   <div className="w-full bg-[#E3E3E3] rounded-full h-2">
-                    <div className="bg-gradient-to-r from-[#234C6A] to-[#456882] h-2 rounded-full" style={{ width: "75%" }} />
+                    <div
+                      className="bg-gradient-to-r from-[#234C6A] to-[#456882] h-2 rounded-full"
+                      style={{ width: "75%" }}
+                    />
                   </div>
                 </div>
                 <ul className="space-y-2 text-sm">

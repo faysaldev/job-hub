@@ -8,8 +8,9 @@ const register = async (userData: {
   email: string;
   password: string;
   phoneNumber: string;
+  role: string;
 }) => {
-  const { email, password, phoneNumber, name } = userData;
+  const { email, password, phoneNumber, name, role } = userData;
 
   // Check if email or phone number already exists
   const existingUser = await User.findOne({
@@ -25,6 +26,7 @@ const register = async (userData: {
     password,
     phoneNumber,
     oneTimeCode: oneTimeCode, // Generate a one-time code for email verification
+    role,
   });
 
   // Save User to DB
