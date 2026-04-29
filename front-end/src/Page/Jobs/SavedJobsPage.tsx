@@ -24,10 +24,14 @@ import Link from "next/link";
 import { Job } from "@/src/types";
 import { toast } from "@/src/hooks/use-toast";
 import gsap from "gsap";
+import { useGetUserSavedJobsQuery } from "@/src/redux/features/savedJobs/savedJobsApi";
 
 const SavedJobsPage = () => {
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { data: apiResponse } = useGetUserSavedJobsQuery();
+
+  console.log(apiResponse);
 
   useEffect(() => {
     // Initialize state from localStorage
@@ -48,19 +52,33 @@ const SavedJobsPage = () => {
       gsap.fromTo(
         ".page-header",
         { opacity: 0, y: -30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" },
       );
 
       gsap.fromTo(
         ".stats-card",
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.2, ease: "power2.out" }
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          stagger: 0.1,
+          delay: 0.2,
+          ease: "power2.out",
+        },
       );
 
       gsap.fromTo(
         ".saved-job-card",
         { opacity: 0, x: -20 },
-        { opacity: 1, x: 0, duration: 0.4, stagger: 0.1, delay: 0.4, ease: "power2.out" }
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.4,
+          stagger: 0.1,
+          delay: 0.4,
+          ease: "power2.out",
+        },
       );
     }, containerRef);
 
@@ -87,13 +105,6 @@ const SavedJobsPage = () => {
     });
   };
 
-  // Stats data
-  const stats = [
-    { icon: Bookmark, label: "Saved Jobs", value: savedJobs.length, color: "from-[#234C6A] to-[#456882]" },
-    { icon: Send, label: "Applied", value: 0, color: "from-green-500 to-emerald-500" },
-    { icon: Clock, label: "Expiring Soon", value: 0, color: "from-orange-500 to-amber-500" },
-  ];
-
   return (
     <div ref={containerRef} className="min-h-screen flex flex-col bg-[#E3E3E3]">
       <Header />
@@ -110,7 +121,9 @@ const SavedJobsPage = () => {
                       <Heart className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h1 className="text-3xl font-bold text-[#234C6A]">Saved Jobs</h1>
+                      <h1 className="text-3xl font-bold text-[#234C6A]">
+                        Saved Jobs
+                      </h1>
                       <p className="text-[#456882]">
                         Jobs you are interested in
                       </p>
@@ -131,26 +144,6 @@ const SavedJobsPage = () => {
               </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              {stats.map((stat, index) => (
-                <Card
-                  key={index}
-                  className="stats-card p-4 border-none bg-white shadow-md rounded-xl"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
-                      <stat.icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold text-[#234C6A]">{stat.value}</p>
-                      <p className="text-sm text-[#456882]">{stat.label}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-
             {/* Content */}
             {savedJobs.length === 0 ? (
               <Card className="p-12 text-center border-none bg-white shadow-lg rounded-2xl">
@@ -162,7 +155,8 @@ const SavedJobsPage = () => {
                     No Saved Jobs Yet
                   </h3>
                   <p className="text-[#456882] mb-8">
-                    Start exploring jobs and save the ones you are interested in. They will appear here for easy access.
+                    Start exploring jobs and save the ones you are interested
+                    in. They will appear here for easy access.
                   </p>
                   <Button
                     asChild
@@ -197,7 +191,9 @@ const SavedJobsPage = () => {
                                 {job.title}
                               </h3>
                             </Link>
-                            <p className="text-[#456882] font-medium">{job.company}</p>
+                            <p className="text-[#456882] font-medium">
+                              {job.company}
+                            </p>
                           </div>
 
                           <Button
@@ -274,9 +270,12 @@ const SavedJobsPage = () => {
                       <Sparkles className="h-6 w-6" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold">Find More Jobs Like These</h3>
+                      <h3 className="text-lg font-bold">
+                        Find More Jobs Like These
+                      </h3>
                       <p className="text-white/80 text-sm">
-                        Based on your saved jobs, we have found 24 similar positions
+                        Based on your saved jobs, we have found 24 similar
+                        positions
                       </p>
                     </div>
                   </div>
