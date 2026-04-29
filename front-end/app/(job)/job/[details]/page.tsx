@@ -55,10 +55,6 @@ const JobDetail = () => {
   const details = params?.details as string;
 
   const { data: apiResponse, isLoading, error } = useGetJobByIdQuery(details);
-
-  // Console log as requested
-  console.log("Job detail response:", apiResponse);
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#E3E3E3]">
