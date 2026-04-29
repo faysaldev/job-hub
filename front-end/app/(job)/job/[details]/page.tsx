@@ -25,6 +25,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
+import { useSaveJobMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
+import { toast } from "sonner";
 
 interface PopulatedJob {
   _id: string;
@@ -55,6 +57,18 @@ const JobDetail = () => {
   const details = params?.details as string;
 
   const { data: apiResponse, isLoading, error } = useGetJobByIdQuery(details);
+  const [saveJob, { isLoading: isSaving }] = useSaveJobMutation();
+
+  const handleSaveJob = async () => {
+    if (!details) return;
+    try {
+      await saveJob({ jobId: details }).unwrap();
+      toast.success("Job saved successfully!");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to save job. Please try again.");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#E3E3E3]">
@@ -166,9 +180,15 @@ const JobDetail = () => {
                 <Button
                   variant="outline"
                   className="border-white/30 text-white hover:bg-white/10"
+                  onClick={handleSaveJob}
+                  disabled={isSaving}
                 >
-                  <Heart className="h-4 w-4 mr-2" />
-                  Save
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Heart className="h-4 w-4 mr-2" />
+                  )}
+                  {isSaving ? "Saving..." : "Save"}
                 </Button>
                 <Button
                   variant="outline"
