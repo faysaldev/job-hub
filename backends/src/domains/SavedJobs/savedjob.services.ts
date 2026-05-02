@@ -45,7 +45,7 @@ const getUserSavedJobs = async (userId: string) => {
 
   const savedJobs = await SavedJob.find({ userId })
     .select(
-      "author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive  positions",
+      "_id author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive positions",
     )
     .populate({
       path: "jobId",

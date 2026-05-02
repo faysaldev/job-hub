@@ -65,7 +65,9 @@ const JobDetail = () => {
       await saveJob({ jobId: details }).unwrap();
       toast.success("Job saved successfully!");
     } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to save job. Please try again.");
+      toast.error(
+        err?.data?.message || "Failed to save job. Please try again.",
+      );
     }
   };
 
@@ -386,12 +388,12 @@ const JobDetail = () => {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  className="w-full border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10"
+                <Link
+                  href={`/company/${job.company._id}`}
+                  className="w-full text-center underline"
                 >
                   View Company Profile
-                </Button>
+                </Link>
               </Card>
 
               {/* Similar Jobs Teaser */}
