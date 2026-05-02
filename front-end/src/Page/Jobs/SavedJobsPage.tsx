@@ -24,31 +24,31 @@ import Link from "next/link";
 import { Job } from "@/src/types";
 import { toast } from "@/src/hooks/use-toast";
 import gsap from "gsap";
-import { useGetUserSavedJobsQuery } from "@/src/redux/features/savedJobs/savedJobsApi";
+import {
+  useGetUserSavedJobsQuery,
+  useDeleteSavedJobMutation,
+} from "@/src/redux/features/savedJobs/savedJobsApi";
+import { Loader2 } from "lucide-react";
 
 const SavedJobsPage = () => {
-  const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { data: apiResponse } = useGetUserSavedJobsQuery();
 
-  console.log(apiResponse);
+  // API Queries and Mutations
+  const {
+    data: apiResponse,
+    isLoading: isFetching,
+    error,
+  } = useGetUserSavedJobsQuery();
+  const [deleteSavedJob, { isLoading: isDeleting }] =
+    useDeleteSavedJobMutation();
 
-  useEffect(() => {
-    // Initialize state from localStorage
-    const savedJobsString = localStorage.getItem("savedJobs");
-    if (savedJobsString) {
-      try {
-        setSavedJobs(JSON.parse(savedJobsString));
-      } catch (error) {
-        console.error("Error parsing saved jobs:", error);
-        setSavedJobs([]);
-      }
-    }
-  }, []);
+  // Extract saved jobs from response
+  const savedJobs = (apiResponse as any)?.data || [];
 
   // GSAP animations
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    if (!isFetching && savedJobs.length > 0) {
+      const ctx = gsap.context(() => {
       gsap.fromTo(
         ".page-header",
         { opacity: 0, y: -30 },
@@ -82,26 +82,31 @@ const SavedJobsPage = () => {
       );
     }, containerRef);
 
-    return () => ctx.revert();
+      return () => ctx.revert();
+    }
   }, [savedJobs]);
 
-  const handleRemoveJob = (jobId: string | number) => {
-    const updatedSavedJobs = savedJobs.filter((job) => job.id !== jobId);
-    setSavedJobs(updatedSavedJobs);
-    localStorage.setItem("savedJobs", JSON.stringify(updatedSavedJobs));
-
-    toast({
-      title: "Job Removed",
-      description: "The job has been removed from your saved jobs.",
-    });
+  const handleRemoveJob = async (jobId: string) => {
+    try {
+      await deleteSavedJob(jobId).unwrap();
+      toast({
+        title: "Success",
+        description: "Job removed from saved list",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.data?.message || "Failed to remove job",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClearAll = () => {
-    setSavedJobs([]);
-    localStorage.removeItem("savedJobs");
+    // This could be implemented with a bulk delete mutation if needed
     toast({
-      title: "All Jobs Cleared",
-      description: "All saved jobs have been removed.",
+      title: "Coming Soon",
+      description: "Clear all functionality will be available soon.",
     });
   };
 
@@ -144,8 +149,13 @@ const SavedJobsPage = () => {
               </div>
             </div>
 
-            {/* Content */}
-            {savedJobs.length === 0 ? (
+            {/* Content Section */}
+            {isFetching ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm">
+                <Loader2 className="h-10 w-10 animate-spin text-[#234C6A] mb-4" />
+                <p className="text-[#456882] font-medium">Loading your saved jobs...</p>
+              </div>
+            ) : savedJobs.length === 0 ? (
               <Card className="p-12 text-center border-none bg-white shadow-lg rounded-2xl">
                 <div className="max-w-md mx-auto">
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#234C6A]/10 to-[#456882]/10 flex items-center justify-center mx-auto mb-6">
@@ -171,97 +181,119 @@ const SavedJobsPage = () => {
               </Card>
             ) : (
               <div className="space-y-4">
-                {savedJobs.map((job) => (
-                  <Card
-                    key={job.id}
-                    className="saved-job-card p-6 border-none bg-white shadow-md rounded-xl hover:shadow-lg transition-all group"
-                  >
-                    <div className="flex flex-col lg:flex-row lg:items-start gap-6">
-                      {/* Company Logo */}
-                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#234C6A]/10 to-[#456882]/10 flex items-center justify-center flex-shrink-0">
-                        <Building2 className="h-8 w-8 text-[#234C6A]" />
-                      </div>
+                {savedJobs.map((saved: any) => {
+                  const job = saved.jobId;
+                  if (!job) return null;
 
-                      {/* Job Details */}
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <Link href={`/job/${job.id}`}>
-                              <h3 className="text-xl font-semibold text-[#234C6A] hover:text-[#456882] transition-colors">
-                                {job.title}
-                              </h3>
-                            </Link>
-                            <p className="text-[#456882] font-medium">
-                              {job.company}
-                            </p>
+                  return (
+                    <Card
+                      key={saved._id}
+                      className="saved-job-card group relative p-6 border-none bg-white/80 backdrop-blur-sm shadow-[0_4px_20px_-4px_rgba(35,76,106,0.1)] rounded-2xl hover:shadow-[0_8px_30px_-4px_rgba(35,76,106,0.2)] transition-all duration-300 overflow-hidden"
+                    >
+                      {/* Decorative Accent */}
+                      <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#234C6A] to-[#456882] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+                        {/* Company Logo */}
+                        <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-[#E3E3E3]/50 flex items-center justify-center flex-shrink-0 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                          {job.company?.companyLogo ? (
+                            <img
+                              src={job.company.companyLogo}
+                              alt={job.company.companyName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Building2 className="h-8 w-8 text-[#234C6A]" />
+                          )}
+                        </div>
+
+                        {/* Job Details */}
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <Link href={`/job/${job._id}`}>
+                                <h3 className="text-xl font-semibold text-[#234C6A] hover:text-[#456882] transition-colors">
+                                  {job.title}
+                                </h3>
+                              </Link>
+                              <p className="text-[#456882] font-medium">
+                                {job.company?.companyName || "Unknown Company"}
+                              </p>
+                            </div>
+
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isDeleting}
+                              className="text-[#456882] hover:text-red-500 hover:bg-red-50"
+                              onClick={() => handleRemoveJob(job._id)}
+                            >
+                              <X className="h-5 w-5" />
+                            </Button>
                           </div>
 
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-[#456882] hover:text-red-500 hover:bg-red-50"
-                            onClick={() => handleRemoveJob(job.id)}
-                          >
-                            <X className="h-5 w-5" />
-                          </Button>
-                        </div>
+                          {/* Job Meta */}
+                          <div className="flex flex-wrap gap-4 text-sm text-[#456882]">
+                            <span className="flex items-center gap-1.5 bg-[#E3E3E3]/50 px-2 py-1 rounded-md">
+                              <MapPin className="h-3.5 w-3.5 text-[#234C6A]" />
+                              {job.location}
+                            </span>
+                            <span className="flex items-center gap-1.5 bg-[#E3E3E3]/50 px-2 py-1 rounded-md">
+                              <Briefcase className="h-3.5 w-3.5 text-[#234C6A]" />
+                              {job.type}
+                            </span>
+                            <span className="flex items-center gap-1.5 bg-[#E3E3E3]/50 px-2 py-1 rounded-md">
+                              <DollarSign className="h-3.5 w-3.5 text-[#234C6A]" />
+                              ${job.salaryMin} - ${job.salaryMax}
+                            </span>
+                            <span className="flex items-center gap-1.5 ml-auto text-xs font-medium">
+                              <Clock className="h-3 w-3" />
+                              Saved {new Date(saved.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
 
-                        {/* Job Meta */}
-                        <div className="flex flex-wrap gap-4 text-sm text-[#456882]">
-                          <span className="flex items-center gap-1.5">
-                            <MapPin className="h-4 w-4" />
-                            {job.location}
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <Briefcase className="h-4 w-4" />
-                            {job.type}
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <DollarSign className="h-4 w-4" />
-                            {job.salary}
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <Clock className="h-4 w-4" />
-                            {job.posted || job.postedAt || ""}
-                          </span>
-                        </div>
+                          {/* Description */}
+                          {job.description && (
+                            <p className="text-sm text-[#456882]/80 line-clamp-2 leading-relaxed">
+                              {job.description}
+                            </p>
+                          )}
 
-                        {/* Skills */}
-                        <div className="flex flex-wrap gap-2">
-                          {job.skills.map((skill, index) => (
-                            <Badge
-                              key={index}
-                              className="bg-[#234C6A]/10 text-[#234C6A] border-none"
-                            >
-                              {skill}
-                            </Badge>
-                          ))}
-                        </div>
+                          {/* Skills */}
+                          <div className="flex flex-wrap gap-2">
+                            {job.skills?.slice(0, 5).map((skill: string, index: number) => (
+                              <Badge
+                                key={index}
+                                className="bg-[#234C6A]/10 text-[#234C6A] border-none"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-3 pt-2">
-                          <Link href={`/job/${job.id}`}>
-                            <Button
-                              variant="outline"
-                              className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10"
-                            >
-                              View Details
-                              <ArrowRight className="h-4 w-4 ml-2" />
+                          {/* Actions */}
+                          <div className="flex gap-3 pt-2">
+                            <Link href={`/job/${job._id}`}>
+                              <Button
+                                variant="outline"
+                                className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10"
+                              >
+                                View Details
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </Button>
+                            </Link>
+                            <Button className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white">
+                              <Send className="h-4 w-4 mr-2" />
+                              Apply Now
                             </Button>
-                          </Link>
-                          <Button className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white">
-                            <Send className="h-4 w-4 mr-2" />
-                            Apply Now
-                          </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </div>
-            )}
-
-            {/* Recommendation Card */}
+            )}      {/* Recommendation Card */}
             {savedJobs.length > 0 && (
               <Card className="mt-8 p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-2xl">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

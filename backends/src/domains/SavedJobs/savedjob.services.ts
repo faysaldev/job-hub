@@ -29,8 +29,6 @@ const saveJob = async (userId: string, jobId: string) => {
 const getUserSavedJobs = async (userId: string) => {
   const cacheKey = `userSavedJobs:${userId}`;
 
-  console.log("im loggin");
-
   try {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
