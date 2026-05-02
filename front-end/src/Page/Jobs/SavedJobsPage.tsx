@@ -210,9 +210,9 @@ const SavedJobsPage = () => {
                         {/* Job Details */}
                         <div className="flex-1 space-y-3">
                           <div className="flex items-start justify-between">
-                            <div>
+                            <div className="flex-1">
                               <Link href={`/job/${job._id}`}>
-                                <h3 className="text-xl font-semibold text-[#234C6A] hover:text-[#456882] transition-colors">
+                                <h3 className="text-xl font-semibold text-[#234C6A] hover:text-[#456882] transition-colors pr-8">
                                   {job.title}
                                 </h3>
                               </Link>
@@ -225,10 +225,13 @@ const SavedJobsPage = () => {
                               variant="ghost"
                               size="icon"
                               disabled={isDeleting}
-                              className="text-[#456882] hover:text-red-500 hover:bg-red-50"
-                              onClick={() => handleRemoveJob(job._id)}
+                              className="absolute top-4 right-4 text-[#456882]/40 hover:text-red-500 hover:bg-red-50 transition-all duration-300 rounded-full h-8 w-8 opacity-0 group-hover:opacity-100"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleRemoveJob(job._id);
+                              }}
                             >
-                              <X className="h-5 w-5" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
 
