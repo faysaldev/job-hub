@@ -27,43 +27,38 @@ const saveJob = async (userId: string, jobId: string) => {
 
 // Get all saved jobs for a user
 const getUserSavedJobs = async (userId: string) => {
-  // const cacheKey = `userSavedJobs:${userId}`;
+  const cacheKey = `userSavedJobs:${userId}`;
 
   console.log("im loggin");
 
-  // try {
-  //   // Try to get cached result
-  //   const cachedResult = await redis.get(cacheKey);
-  //   if (cachedResult) {
-  //     console.log("Cache hit for getUserSavedJobs");
-  //     return JSON.parse(cachedResult);
-  //   }
-  // } catch (error) {
-  //   console.log("Error fetching from Redis cache:", error);
-  //   // Continue with database query if cache fails
-  // }
+  try {
+    // Try to get cached result
+    const cachedResult = await redis.get(cacheKey);
+    if (cachedResult) {
+      console.log("Cache hit for getUserSavedJobs");
+      return JSON.parse(cachedResult);
+    }
+  } catch (error) {
+    console.log("Error fetching from Redis cache:", error);
+    // Continue with database query if cache fails
+  }
 
   const savedJobs = await SavedJob.find({ userId })
-    .select(
-      "_id author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive positions",
-    )
     .populate({
       path: "jobId",
       model: "Job",
-      populate: [
-        { path: "author", select: "name image _id" },
-        { path: "company", select: "companyName companyLogo" },
-      ],
-    }) // Populate the actual job data and nested author/company
+      select: "-responsibilities -benefits -requirements",
+      populate: [{ path: "company", select: "companyName companyLogo" }],
+    }) // Populate the actual job data and nested company, excluding unwanted fields
     .sort({ createdAt: -1 }); // Sort by most recently saved
 
-  // try {
-  //   // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
-  //   await redis.setex(cacheKey, 300, JSON.stringify(savedJobs));
-  // } catch (error) {
-  //   console.log("Error storing to Redis cache:", error);
-  //   // Continue anyway even if caching fails
-  // }
+  try {
+    // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
+    await redis.setex(cacheKey, 300, JSON.stringify(savedJobs));
+  } catch (error) {
+    console.log("Error storing to Redis cache:", error);
+    // Continue anyway even if caching fails
+  }
 
   return savedJobs;
 };
