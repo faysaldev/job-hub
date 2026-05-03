@@ -1,37 +1,19 @@
 "use client";
 
-import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
-import Messages from "@/src/components/common/AppCommon/Message";
-import { useAuth } from "@/src/hooks/useAuth";
-import { Card } from "@/src/components/ui/card";
-import { MessageSquare } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const MessagesPage = () => {
-  const { user } = useAuth();
+  const router = useRouter();
 
-  if (!user) return null;
+  useEffect(() => {
+    router.replace("/recruiter/interviews");
+  }, [router]);
 
   return (
-    <RecruiterLayout>
-      <div className="max-w-7xl mx-auto">
-        <Card className="p-6 md:p-8 border-none bg-white shadow-lg rounded-2xl">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white shadow-lg">
-              <MessageSquare className="h-7 w-7" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-[#234C6A] mb-1">
-                Messages
-              </h2>
-              <p className="text-[#456882]">
-                Communicate with candidates and team members
-              </p>
-            </div>
-          </div>
-          <Messages userId={user?._id} />
-        </Card>
-      </div>
-    </RecruiterLayout>
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#234C6A]" />
+    </div>
   );
 };
 

@@ -57,12 +57,6 @@ const navItems: NavItem[] = [
     icon: Building2,
     label: "Company Profile",
   },
-  {
-    href: "/recruiter/messages",
-    icon: MessageSquare,
-    label: "Messages",
-    badge: 3,
-  },
 ];
 
 const RecruiterSidebar = () => {

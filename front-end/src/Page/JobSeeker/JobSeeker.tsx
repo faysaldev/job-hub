@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import JobSeekerProfile from "@/src/components/JobSeeker/JobSeekerProfile";
 import AppliedJobs from "@/src/components/JobSeeker/AppliedJobs";
-import Messages from "@/src/components/common/AppCommon/Message";
+import JobSeekerMessages from "@/src/components/JobSeeker/JobSeekerMessages";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
@@ -295,7 +295,7 @@ const JobSeekerDashboard = () => {
                         Communicate with recruiters and employers
                       </p>
                     </div>
-                    <Messages userId={user?._id} />
+                    <JobSeekerMessages userId={user?._id} />
                   </Card>
                 </TabsContent>
               </Tabs>

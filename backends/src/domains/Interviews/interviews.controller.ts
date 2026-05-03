@@ -78,8 +78,31 @@ const updateStatus = asyncHandler(
   },
 );
 
+const hireCandidate = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const { jobId, applicantId } = req.body;
+    const interviewerId = req.user?._id;
+
+    const result = await interviewService.hireCandidate(
+      jobId,
+      applicantId,
+      interviewerId as string,
+    );
+
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Candidate hired successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: result,
+      }),
+    );
+  },
+);
+
 export default {
   scheduleInterview,
   getMyInterviews,
   updateStatus,
+  hireCandidate,
 };

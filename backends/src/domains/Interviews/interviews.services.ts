@@ -60,9 +60,33 @@ const deleteInterview = async (interviewId: string) => {
   return await Interview.findByIdAndDelete(interviewId);
 };
 
+const hireCandidate = async (
+  jobId: string,
+  applicantId: string,
+  interviewerId: string,
+) => {
+  // 1. Update application status to "hired"
+  await Application.findOneAndUpdate(
+    { job_id: jobId, applicant: applicantId },
+    { status: "hired" },
+  );
+
+  // 2. Update conversation status to "hired"
+  await Conversation.findOneAndUpdate(
+    {
+      job_id: jobId,
+      participants: { $all: [applicantId, interviewerId] },
+    },
+    { status: "hired" },
+  );
+
+  return { success: true };
+};
+
 export default {
   scheduleInterview,
   getInterviewsForUser,
   updateInterviewStatus,
   deleteInterview,
+  hireCandidate,
 };

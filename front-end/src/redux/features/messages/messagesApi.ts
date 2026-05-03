@@ -44,7 +44,10 @@ const messagesApi = baseApi.injectEndpoints({
     }),
 
     // PUT /messages/:messageId - Edit a message
-    editMessage: builder.mutation<Message, { messageId: string; content: string }>({
+    editMessage: builder.mutation<
+      Message,
+      { messageId: string; content: string }
+    >({
       query: ({ messageId, content }) => ({
         url: `/messages/${messageId}`,
         method: "PUT",

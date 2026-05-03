@@ -21,6 +21,7 @@ import {
   X,
   ChevronDown,
   Info,
+  CheckCircle,
 } from "lucide-react";
 import {
   useGetUserConversationsQuery,
@@ -31,7 +32,12 @@ import {
   useSendMessageMutation,
   useDeleteMessageMutation,
 } from "@/src/redux/features/messages/messagesApi";
-import { useScheduleInterviewMutation } from "@/src/redux/features/interviews/interviewsApi";
+import {
+  useScheduleInterviewMutation,
+  useGetMyInterviewsQuery,
+  useUpdateInterviewStatusMutation,
+  useHireCandidateMutation,
+} from "@/src/redux/features/interviews/interviewsApi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -75,6 +81,7 @@ const InterviewsPage = () => {
   const [deleteMessage] = useDeleteMessageMutation();
   const [scheduleInterview, { isLoading: isScheduling }] =
     useScheduleInterviewMutation();
+  const [hireCandidate, { isLoading: isHiring }] = useHireCandidateMutation();
 
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
     null,
@@ -236,6 +243,22 @@ const InterviewsPage = () => {
       setShowScheduler(false);
     } catch (error) {
       toast.error("Failed to schedule interview");
+    }
+  };
+
+  const handleHireCandidate = async () => {
+    if (!selectedCandidate) return;
+    if (!confirm(`Are you sure you want to hire ${selectedCandidate.name}?`))
+      return;
+
+    try {
+      await hireCandidate({
+        jobId: selectedCandidate.rawConversation.job_id,
+        applicantId: selectedCandidate.id,
+      }).unwrap();
+      toast.success(`${selectedCandidate.name} has been hired!`);
+    } catch (error) {
+      toast.error("Failed to hire candidate");
     }
   };
 
@@ -434,6 +457,17 @@ const InterviewsPage = () => {
                             Schedule
                           </>
                         )}
+                      </Button>
+                    )}
+
+                    {selectedCandidate.interviewStatus === "scheduled" && (
+                      <Button
+                        onClick={handleHireCandidate}
+                        disabled={isHiring}
+                        className="bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg shadow-green-100/50"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {isHiring ? "Hiring..." : "Hire Candidate"}
                       </Button>
                     )}
 

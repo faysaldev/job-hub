@@ -40,7 +40,8 @@ const userSchema = new Schema<IAMUser>(
     },
     image: {
       type: String,
-      default: "https://lpx-khalid.s3.ap-southeast-1.amazonaws.com/user.png",
+      default:
+        "https://res.cloudinary.com/diypckqa0/image/upload/v1777412082/assets/1777412079878-file.png",
     },
     password: {
       type: String,

@@ -39,6 +39,18 @@ export const interviewsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["applications"],
     }),
+    // POST /interviews/hire - Hire a candidate
+    hireCandidate: builder.mutation<
+      { success: boolean },
+      { jobId: string; applicantId: string }
+    >({
+      query: (data) => ({
+        url: "/interviews/hire",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["applications", "conversations"],
+    }),
   }),
 });
 
@@ -46,4 +58,5 @@ export const {
   useScheduleInterviewMutation,
   useGetMyInterviewsQuery,
   useUpdateInterviewStatusMutation,
+  useHireCandidateMutation,
 } = interviewsApi;
