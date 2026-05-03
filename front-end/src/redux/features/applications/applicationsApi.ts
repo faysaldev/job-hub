@@ -27,6 +27,7 @@ const applicationsApi = baseApi.injectEndpoints({
         url: "/applications",
         method: "GET",
       }),
+      transformResponse: (response: { data: Application[] }) => response.data,
       providesTags: ["applications"],
     }),
 
