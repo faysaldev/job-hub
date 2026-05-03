@@ -40,12 +40,22 @@ const getInterviewsForUser = async (
 ) => {
   const query =
     role === "interviewer" ? { interviewer: userId } : { interviewee: userId };
-  return await Interview.find(query)
+  const interviews = await Interview.find(query)
     .populate("application_id")
     .populate("job_id", "title")
-    .populate("interviewer", "name email image")
-    .populate("interviewee", "name email image")
     .sort({ date: 1, start_time: 1 });
+
+  if (role === "interviewer") {
+    return await Interview.populate(interviews, {
+      path: "interviewee",
+      select: "name email image",
+    });
+  } else {
+    return await Interview.populate(interviews, {
+      path: "interviewer",
+      select: "name email image",
+    });
+  }
 };
 
 const updateInterviewStatus = async (interviewId: string, status: string) => {
@@ -89,10 +99,26 @@ const hireCandidate = async (
   return { success: true };
 };
 
+const rescheduleInterview = async (
+  interviewId: string,
+  rescheduleData: { date: string; start_time: string; end_time: string },
+) => {
+  return await Interview.findByIdAndUpdate(
+    interviewId,
+    {
+      date: rescheduleData.date,
+      start_time: rescheduleData.start_time,
+      end_time: rescheduleData.end_time,
+    },
+    { new: true },
+  );
+};
+
 export default {
   scheduleInterview,
   getInterviewsForUser,
   updateInterviewStatus,
   deleteInterview,
   hireCandidate,
+  rescheduleInterview,
 };

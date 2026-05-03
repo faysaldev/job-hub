@@ -31,18 +31,10 @@ const getMyInterviews = asyncHandler(
     const userId = req.user?._id;
     const { role } = req.query; // "interviewer" or "interviewee"
 
-    if (!userId) {
-      return res.status(httpStatus.UNAUTHORIZED).json(
-        response({
-          message: "Unauthorized",
-          status: "ERROR",
-          statusCode: httpStatus.UNAUTHORIZED,
-        }),
-      );
-    }
+    console.log(userId, role);
 
     const interviews = await interviewService.getInterviewsForUser(
-      userId.toString(),
+      userId as string,
       (role as "interviewer" | "interviewee") || "interviewer",
     );
 
@@ -100,9 +92,32 @@ const hireCandidate = asyncHandler(
   },
 );
 
+const rescheduleInterview = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const { interviewId } = req.params;
+    const { date, start_time, end_time } = req.body;
+
+    const interview = await interviewService.rescheduleInterview(interviewId, {
+      date,
+      start_time,
+      end_time,
+    });
+
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Interview rescheduled successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: {},
+      }),
+    );
+  },
+);
+
 export default {
   scheduleInterview,
   getMyInterviews,
   updateStatus,
   hireCandidate,
+  rescheduleInterview,
 };

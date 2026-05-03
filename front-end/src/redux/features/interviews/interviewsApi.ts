@@ -51,6 +51,18 @@ export const interviewsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["applications", "conversations"],
     }),
+    // PATCH /interviews/:interviewId/reschedule - Reschedule an interview
+    rescheduleInterview: builder.mutation<
+      Interview,
+      { interviewId: string; date: string; start_time: string; end_time: string }
+    >({
+      query: ({ interviewId, ...data }) => ({
+        url: `/interviews/${interviewId}/reschedule`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["applications"],
+    }),
   }),
 });
 
@@ -59,4 +71,5 @@ export const {
   useGetMyInterviewsQuery,
   useUpdateInterviewStatusMutation,
   useHireCandidateMutation,
+  useRescheduleInterviewMutation,
 } = interviewsApi;
