@@ -46,21 +46,13 @@ import Image from "next/image";
 // ============================================================================
 // TYPES
 // ============================================================================
-type UserRole = "jobseeker" | "recruiter";
+type UserRole = "seeker" | "recruiter";
 type DropdownType =
   | "categories"
   | "employers"
   | "notifications"
   | "user"
   | null;
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  avatar: string;
-}
 
 interface NavItem {
   href: string;
@@ -168,7 +160,7 @@ const EMPLOYER_MENU: NavItem[] = [
     color: "from-blue-500 to-cyan-500",
   },
   {
-    href: "/recruiter",
+    href: "/candidates",
     label: "Search Candidates",
     icon: Search,
     description: "Find perfect matches",
@@ -499,160 +491,166 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-1">
           {/* Browse Jobs Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => toggleDropdown("categories")}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
-                activeDropdown === "categories" || isActive("/job")
-                  ? "text-[#234C6A] bg-[#234C6A]/5"
-                  : "text-[#456882] hover:text-[#234C6A]",
-              )}
-            >
-              <Grid3X3 className="h-4 w-4" />
-              Browse Jobs
-              <ChevronDown
+          {(!user || user.role === "seeker") && (
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown("categories")}
                 className={cn(
-                  "h-3.5 w-3.5 transition-transform",
-                  activeDropdown === "categories" && "rotate-180",
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  activeDropdown === "categories" || isActive("/job")
+                    ? "text-[#234C6A] bg-[#234C6A]/5"
+                    : "text-[#456882] hover:text-[#234C6A]",
                 )}
-              />
-            </button>
+              >
+                <Grid3X3 className="h-4 w-4" />
+                Browse Jobs
+                <ChevronDown
+                  className={cn(
+                    "h-3.5 w-3.5 transition-transform",
+                    activeDropdown === "categories" && "rotate-180",
+                  )}
+                />
+              </button>
 
-            <DropdownPanel
-              isOpen={activeDropdown === "categories"}
-              className="left-0"
-            >
-              <div className="flex w-[600px]">
-                {/* Categories List */}
-                <div className="w-[280px] border-r border-[#E3E3E3]">
-                  <DropdownHeader
-                    icon={Briefcase}
-                    title="Job Categories"
-                    subtitle="Find your perfect role"
-                  />
-                  <Link
-                    href="/job"
-                    onClick={closeAll}
-                    className="flex items-center gap-3 p-3 mx-2 mt-2 rounded-xl bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 hover:from-[#234C6A]/10 hover:to-[#456882]/10 group"
-                  >
-                    <IconBox
-                      icon={Zap}
-                      gradient="from-[#234C6A] to-[#456882]"
-                      className="w-10 h-10 shadow-md"
+              <DropdownPanel
+                isOpen={activeDropdown === "categories"}
+                className="left-0"
+              >
+                <div className="flex w-[600px]">
+                  {/* Categories List */}
+                  <div className="w-[280px] border-r border-[#E3E3E3]">
+                    <DropdownHeader
+                      icon={Briefcase}
+                      title="Job Categories"
+                      subtitle="Find your perfect role"
                     />
-                    <div className="flex-1">
-                      <p className="font-semibold text-[#234C6A]">All Jobs</p>
-                      <p className="text-xs text-[#456882]">
-                        Browse all positions
-                      </p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-[#456882] group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                  <div className="p-2 max-h-[350px] overflow-y-auto">
-                    {jobCategories.map((cat) => {
-                      const Icon = getCategoryIcon(cat.icon);
-                      return (
-                        <button
-                          key={cat.id}
-                          onMouseEnter={() => setHoveredCategory(cat.id)}
-                          onClick={() => navigateToCategory(cat.id)}
-                          className={cn(
-                            "flex items-center gap-3 w-full p-3 rounded-xl transition-all text-left group",
-                            hoveredCategory === cat.id
-                              ? "bg-[#234C6A]/10"
-                              : "hover:bg-[#E3E3E3]/50",
-                          )}
-                        >
-                          <IconBox
-                            icon={Icon}
-                            gradient={cat.color}
-                            className="w-10 h-10 shadow-md group-hover:scale-105 transition-transform"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-[#234C6A] truncate">
-                              {cat.name}
-                            </p>
-                            <p className="text-xs text-[#456882]">
-                              {cat.count.toLocaleString()} jobs
-                            </p>
-                          </div>
-                          <ChevronRight
-                            className={cn(
-                              "h-4 w-4 text-[#456882] transition-all",
-                              hoveredCategory === cat.id &&
-                                "translate-x-1 text-[#234C6A]",
-                            )}
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Subcategories Panel */}
-                <div className="w-[320px] bg-[#FAFAFA]">
-                  {selectedCategory ? (
-                    <>
-                      <div className="p-4 border-b border-[#E3E3E3]">
-                        <h4 className="font-bold text-[#234C6A]">
-                          {selectedCategory.name}
-                        </h4>
-                        <p className="text-sm text-[#456882]">
-                          {selectedCategory.subcategories.length}{" "}
-                          specializations
+                    <Link
+                      href="/job"
+                      onClick={closeAll}
+                      className="flex items-center gap-3 p-3 mx-2 mt-2 rounded-xl bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 hover:from-[#234C6A]/10 hover:to-[#456882]/10 group"
+                    >
+                      <IconBox
+                        icon={Zap}
+                        gradient="from-[#234C6A] to-[#456882]"
+                        className="w-10 h-10 shadow-md"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-[#234C6A]">All Jobs</p>
+                        <p className="text-xs text-[#456882]">
+                          Browse all positions
                         </p>
                       </div>
-                      <div className="p-2 max-h-[380px] overflow-y-auto">
-                        {selectedCategory.subcategories.map((sub) => (
+                      <ArrowRight className="h-4 w-4 text-[#456882] group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                    <div className="p-2 max-h-[350px] overflow-y-auto">
+                      {jobCategories.map((cat) => {
+                        const Icon = getCategoryIcon(cat.icon);
+                        return (
                           <button
-                            key={sub.id}
-                            onClick={() =>
-                              navigateToCategory(selectedCategory.id, sub.id)
-                            }
-                            className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-white hover:shadow-md transition-all text-left group"
+                            key={cat.id}
+                            onMouseEnter={() => setHoveredCategory(cat.id)}
+                            onClick={() => {
+                              navigateToCategory(cat.id);
+                              closeAll();
+                            }}
+                            className={cn(
+                              "flex items-center gap-3 w-full p-3 rounded-xl transition-all group/item",
+                              hoveredCategory === cat.id
+                                ? "bg-[#234C6A]/5 text-[#234C6A]"
+                                : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5",
+                            )}
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#234C6A] to-[#456882]" />
-                              <span className="text-sm font-medium text-[#234C6A]">
+                            <div
+                              className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                                hoveredCategory === cat.id
+                                  ? `bg-gradient-to-br ${cat.color} shadow-lg scale-110`
+                                  : "bg-gray-100",
+                              )}
+                            >
+                              <Icon
+                                className={cn(
+                                  "h-4 w-4",
+                                  hoveredCategory === cat.id
+                                    ? "text-white"
+                                    : "text-[#234C6A]",
+                                )}
+                              />
+                            </div>
+                            <span className="flex-1 text-left font-semibold text-sm">
+                              {cat.name}
+                            </span>
+                            <ChevronRight
+                              className={cn(
+                                "h-4 w-4 transition-all",
+                                hoveredCategory === cat.id
+                                  ? "opacity-100 translate-x-0"
+                                  : "opacity-0 -translate-x-2",
+                              )}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Subcategories Details */}
+                  <div className="flex-1 bg-gray-50/50 p-6">
+                    {selectedCategory ? (
+                      <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="flex items-center justify-between mb-6">
+                          <div>
+                            <h4 className="text-xl font-bold text-[#234C6A]">
+                              {selectedCategory.name}
+                            </h4>
+                            <p className="text-sm text-[#456882]">
+                              {selectedCategory.count.toLocaleString()} active
+                              openings
+                            </p>
+                          </div>
+                          <IconBox
+                            icon={getCategoryIcon(selectedCategory.icon)}
+                            gradient={selectedCategory.color}
+                            className="w-12 h-12 shadow-xl"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          {selectedCategory.subcategories.map((sub) => (
+                            <button
+                              key={sub.id}
+                              onClick={() => {
+                                navigateToCategory(selectedCategory.id, sub.id);
+                                closeAll();
+                              }}
+                              className="flex items-center justify-between p-3 rounded-xl hover:bg-white hover:shadow-md transition-all group/sub"
+                            >
+                              <span className="text-sm font-medium text-[#456882] group-hover/sub:text-[#234C6A]">
                                 {sub.name}
                               </span>
-                            </div>
-                            <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs">
-                              {sub.count}
-                            </Badge>
-                          </button>
-                        ))}
+                              <Badge
+                                variant="secondary"
+                                className="bg-[#234C6A]/5 text-[#234C6A] border-none text-[10px] font-bold"
+                              >
+                                {sub.count} jobs
+                              </Badge>
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                      <div className="p-3 border-t border-[#E3E3E3]">
-                        <button
-                          onClick={() =>
-                            navigateToCategory(selectedCategory.id)
-                          }
-                          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-[#234C6A] to-[#456882] text-white font-medium hover:shadow-lg transition-all"
-                        >
-                          View all {selectedCategory.name} jobs
-                          <ArrowRight className="h-4 w-4" />
-                        </button>
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
+                        <Grid3X3 className="h-12 w-12 text-[#234C6A]" />
+                        <p className="text-sm font-medium text-[#234C6A]">
+                          Select a category to view <br /> specialized job roles
+                        </p>
                       </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                      <div className="w-16 h-16 rounded-2xl bg-[#234C6A]/10 flex items-center justify-center mb-4">
-                        <Search className="h-8 w-8 text-[#234C6A]" />
-                      </div>
-                      <h4 className="font-bold text-[#234C6A] mb-2">
-                        Explore Categories
-                      </h4>
-                      <p className="text-sm text-[#456882]">
-                        Hover over a category to see specializations
-                      </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            </DropdownPanel>
-          </div>
+              </DropdownPanel>
+            </div>
+          )}
 
           {/* Nav Items */}
           {NAV_ITEMS.map((item) => (
@@ -675,81 +673,85 @@ const Header = () => {
           ))}
 
           {/* For Employers Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => toggleDropdown("employers")}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
-                activeDropdown === "employers"
-                  ? "text-[#234C6A] bg-[#234C6A]/5"
-                  : "text-[#456882] hover:text-[#234C6A]",
-              )}
-            >
-              <Building2 className="h-4 w-4" />
-              For Employers
-              <ChevronDown
+          {(!user || user.role === "recruiter") && (
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown("employers")}
                 className={cn(
-                  "h-3.5 w-3.5 transition-transform",
-                  activeDropdown === "employers" && "rotate-180",
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  activeDropdown === "employers"
+                    ? "text-[#234C6A] bg-[#234C6A]/5"
+                    : "text-[#456882] hover:text-[#234C6A]",
                 )}
-              />
-            </button>
+              >
+                <Building2 className="h-4 w-4" />
+                For Employers
+                <ChevronDown
+                  className={cn(
+                    "h-3.5 w-3.5 transition-transform",
+                    activeDropdown === "employers" && "rotate-180",
+                  )}
+                />
+              </button>
 
-            <DropdownPanel
-              isOpen={activeDropdown === "employers"}
-              className="right-0 w-[380px]"
-            >
-              <DropdownHeader
-                icon={Sparkles}
-                title="Hire Top Talent"
-                subtitle="Access millions of job seekers"
-              />
-              <div className="p-2">
-                {EMPLOYER_MENU.map((item, i) => (
-                  <MenuLink key={i} {...item} onClick={closeAll} />
-                ))}
-              </div>
-              <div className="p-4 bg-[#E3E3E3]/30 border-t border-[#E3E3E3] flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-[#456882]">
-                  <Shield className="h-4 w-4" />
-                  <span>Trusted by 10,000+ companies</span>
+              <DropdownPanel
+                isOpen={activeDropdown === "employers"}
+                className="right-0 w-[380px]"
+              >
+                <DropdownHeader
+                  icon={Sparkles}
+                  title="Hire Top Talent"
+                  subtitle="Access millions of job seekers"
+                />
+                <div className="p-2">
+                  {EMPLOYER_MENU.map((item, i) => (
+                    <MenuLink key={i} {...item} onClick={closeAll} />
+                  ))}
                 </div>
-                <Link
-                  href="/auth"
-                  onClick={closeAll}
-                  className="text-sm font-semibold text-[#234C6A] hover:text-[#456882] flex items-center gap-1"
-                >
-                  Get Started <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </DropdownPanel>
-          </div>
+                <div className="p-4 bg-[#E3E3E3]/30 border-t border-[#E3E3E3] flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-[#456882]">
+                    <Shield className="h-4 w-4" />
+                    <span>Trusted by 10,000+ companies</span>
+                  </div>
+                  <Link
+                    href="/auth"
+                    onClick={closeAll}
+                    className="text-sm font-semibold text-[#234C6A] hover:text-[#456882] flex items-center gap-1"
+                  >
+                    Get Started <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </DropdownPanel>
+            </div>
+          )}
         </nav>
 
         {/* Desktop Right Side */}
         <div className="hidden lg:flex items-center gap-2">
           {user ? (
             <>
-              <Button
-                variant="ghost"
-                size="icon"
-                asChild
-                className={cn(
-                  "h-10 w-10 rounded-xl",
-                  isActive("/job/saved")
-                    ? "text-[#234C6A] bg-[#234C6A]/10"
-                    : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5",
-                )}
-              >
-                <Link href="/job/saved">
-                  <Heart
-                    className={cn(
-                      "h-5 w-5",
-                      isActive("/job/saved") && "fill-[#234C6A]",
-                    )}
-                  />
-                </Link>
-              </Button>
+              {user.role === "seeker" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                  className={cn(
+                    "h-10 w-10 rounded-xl",
+                    isActive("/job/saved")
+                      ? "text-[#234C6A] bg-[#234C6A]/10"
+                      : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5",
+                  )}
+                >
+                  <Link href="/job/saved">
+                    <Heart
+                      className={cn(
+                        "h-5 w-5",
+                        isActive("/job/saved") && "fill-[#234C6A]",
+                      )}
+                    />
+                  </Link>
+                </Button>
+              )}
 
               {/* Notifications */}
               <div className="relative">
@@ -1100,20 +1102,22 @@ const Header = () => {
         <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-5">
           {/* Main Nav */}
           <div className="space-y-2">
-            <Link
-              href="/job"
-              onClick={closeAll}
-              className="flex items-center gap-3 px-4 py-4 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] text-white font-semibold shadow-lg active:scale-[0.98]"
-            >
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                <Grid3X3 className="h-5 w-5" />
-              </div>
-              <div className="flex-1">
-                <p className="font-bold">Browse Jobs</p>
-                <p className="text-xs text-white/80">Find your dream job</p>
-              </div>
-              <ArrowRight className="h-5 w-5" />
-            </Link>
+            {(!user || user.role === "seeker") && (
+              <Link
+                href="/job"
+                onClick={closeAll}
+                className="flex items-center gap-4 p-4 rounded-3xl bg-gradient-to-br from-[#234C6A] to-[#456882] text-white shadow-xl hover:shadow-2xl transition-all active:scale-95 mb-2"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
+                  <Grid3X3 className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold">Browse Jobs</p>
+                  <p className="text-xs text-white/80">Find your dream job</p>
+                </div>
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            )}
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
@@ -1143,114 +1147,119 @@ const Header = () => {
                 {isActive(item.href) && <CheckCircle className="h-5 w-5" />}
               </Link>
             ))}
-            <Link
-              href="/recruiter"
-              onClick={closeAll}
-              className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-[#234C6A] font-medium active:scale-[0.98] hover:shadow-md"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
-                <Building2 className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">For Employers</span>
-                  <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-none text-[10px] px-1.5">
-                    Hire
-                  </Badge>
+            {(!user || user.role === "recruiter") && (
+              <Link
+                href="/recruiter"
+                onClick={closeAll}
+                className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-[#234C6A] font-medium active:scale-[0.98] hover:shadow-md"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+                  <Building2 className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-xs text-[#456882]">
-                  Post jobs & find talent
-                </p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-[#456882]" />
-            </Link>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">For Employers</span>
+                    <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-none text-[10px] px-1.5">
+                      Hire
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-[#456882]">
+                    Post jobs & find talent
+                  </p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-[#456882]" />
+              </Link>
+            )}
           </div>
 
           <div className="border-t border-[#E3E3E3]" />
 
-          {/* Categories */}
-          <div>
-            <p className="text-xs font-bold text-[#456882] uppercase tracking-wider px-1 mb-3 flex items-center gap-2">
-              <Briefcase className="h-3.5 w-3.5" />
-              Job Categories
-            </p>
-            <div className="space-y-1">
-              {jobCategories.map((cat) => {
-                const Icon = getCategoryIcon(cat.icon);
-                const isExpanded = mobileExpandedCategory === cat.id;
-                return (
-                  <div key={cat.id} className="rounded-xl overflow-hidden">
-                    <button
-                      onClick={() =>
-                        setMobileExpandedCategory(isExpanded ? null : cat.id)
-                      }
-                      className={cn(
-                        "flex items-center gap-3 w-full px-3 py-3 text-sm font-medium active:scale-[0.98]",
-                        isExpanded
-                          ? "bg-[#234C6A]/10 text-[#234C6A]"
-                          : "text-[#234C6A] hover:bg-[#E3E3E3]/50",
-                      )}
-                    >
-                      <IconBox
-                        icon={Icon}
-                        gradient={cat.color}
-                        className="w-10 h-10 shadow-md"
-                      />
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold">{cat.name}</p>
-                        <p className="text-xs text-[#456882]">
-                          {cat.count.toLocaleString()} jobs
-                        </p>
-                      </div>
-                      <ChevronDown
+          {(!user || user.role === "seeker") && (
+            <div>
+              <p className="text-xs font-bold text-[#456882] uppercase tracking-wider px-1 mb-3 flex items-center gap-2">
+                <Briefcase className="h-3.5 w-3.5" />
+                Job Categories
+              </p>
+              <div className="space-y-1">
+                {jobCategories.map((cat) => {
+                  const Icon = getCategoryIcon(cat.icon);
+                  const isExpanded = mobileExpandedCategory === cat.id;
+                  return (
+                    <div key={cat.id} className="rounded-xl overflow-hidden">
+                      <button
+                        onClick={() =>
+                          setMobileExpandedCategory(isExpanded ? null : cat.id)
+                        }
                         className={cn(
-                          "h-5 w-5 text-[#456882] transition-transform",
-                          isExpanded && "rotate-180",
+                          "flex items-center gap-3 w-full px-3 py-3 text-sm font-medium active:scale-[0.98]",
+                          isExpanded
+                            ? "bg-[#234C6A]/10 text-[#234C6A]"
+                            : "text-[#234C6A] hover:bg-[#E3E3E3]/50",
                         )}
-                      />
-                    </button>
-                    <div
-                      className={cn(
-                        "overflow-hidden transition-all",
-                        isExpanded
-                          ? "max-h-[500px] opacity-100"
-                          : "max-h-0 opacity-0",
-                      )}
-                    >
-                      <div className="ml-5 pl-4 border-l-2 border-[#234C6A]/20 py-2 space-y-1">
-                        <button
-                          onClick={() => {
-                            navigateToCategory(cat.id);
-                            closeAll();
-                          }}
-                          className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-semibold text-[#234C6A] bg-[#234C6A]/5 hover:bg-[#234C6A]/10 active:scale-[0.98]"
-                        >
-                          <Zap className="h-4 w-4" />
-                          View all {cat.name}
-                          <ArrowRight className="h-4 w-4 ml-auto" />
-                        </button>
-                        {cat.subcategories.map((sub) => (
+                      >
+                        <IconBox
+                          icon={Icon}
+                          gradient={cat.color}
+                          className="w-10 h-10 shadow-md"
+                        />
+                        <div className="flex-1 text-left">
+                          <p className="font-semibold">{cat.name}</p>
+                          <p className="text-xs text-[#456882]">
+                            {cat.count.toLocaleString()} jobs
+                          </p>
+                        </div>
+                        <ChevronDown
+                          className={cn(
+                            "h-5 w-5 text-[#456882] transition-transform",
+                            isExpanded && "rotate-180",
+                          )}
+                        />
+                      </button>
+                      <div
+                        className={cn(
+                          "overflow-hidden transition-all",
+                          isExpanded
+                            ? "max-h-[500px] opacity-100"
+                            : "max-h-0 opacity-0",
+                        )}
+                      >
+                        <div className="ml-5 pl-4 border-l-2 border-[#234C6A]/20 py-2 space-y-1">
                           <button
-                            key={sub.id}
                             onClick={() => {
-                              navigateToCategory(cat.id, sub.id);
+                              navigateToCategory(cat.id);
                               closeAll();
                             }}
-                            className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5 active:scale-[0.98]"
+                            className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-semibold text-[#234C6A] bg-[#234C6A]/5 hover:bg-[#234C6A]/10 active:scale-[0.98]"
                           >
-                            <span>{sub.name}</span>
-                            <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs font-semibold">
-                              {sub.count}
-                            </Badge>
+                            <Zap className="h-4 w-4" />
+                            View all {cat.name}
+                            <ArrowRight className="h-4 w-4 ml-auto" />
                           </button>
-                        ))}
+                          {cat.subcategories.map((sub) => (
+                            <button
+                              key={sub.id}
+                              onClick={() => {
+                                navigateToCategory(cat.id, sub.id);
+                                closeAll();
+                              }}
+                              className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5 active:scale-[0.98]"
+                            >
+                              <span>{sub.name}</span>
+                              <Badge
+                                className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs font-semibold"
+                              >
+                                {sub.count}
+                              </Badge>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* User Account */}
           {user && (
