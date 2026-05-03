@@ -12,6 +12,11 @@ router.post(
   applicationController.createApplication,
 ); // Create a new application
 router.get("/", authMiddleware, applicationController.getUserApplications); // Get user's applications
+router.get(
+  "/recruiter",
+  authMiddleware,
+  applicationController.getRecruiterApplications,
+); // Get recruiter's applications
 router.put(
   "/:applicationId/status",
   authMiddleware,

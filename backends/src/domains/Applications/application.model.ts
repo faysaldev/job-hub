@@ -30,6 +30,10 @@ const applicationSchema = new Schema(
       type: Number,
       default: 0,
     },
+    rejection_note: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true }
 );

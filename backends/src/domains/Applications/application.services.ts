@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Application from "./application.model";
 
 // Create a new application
@@ -32,7 +33,11 @@ const getApplicationById = async (id: string) => {
 };
 
 // Update application status
-const updateApplicationStatus = async (id: string, status: string) => {
+const updateApplicationStatus = async (
+  id: string,
+  status: string,
+  rejection_note?: string,
+) => {
   const validStatuses = [
     "applied",
     "under_review",
@@ -44,7 +49,10 @@ const updateApplicationStatus = async (id: string, status: string) => {
     throw new Error("Invalid status value");
   }
 
-  return await Application.findByIdAndUpdate(id, { status }, { new: true })
+  const updateData: any = { status };
+  if (rejection_note) updateData.rejection_note = rejection_note;
+
+  return await Application.findByIdAndUpdate(id, updateData, { new: true })
     .populate("applicant", "name email")
     .populate("job_id", "job_title company_name");
 };
@@ -77,6 +85,25 @@ const getApplicationsForJob = async (jobId: string) => {
     .sort({ paid_amount: -1, createdAt: -1 });
 };
 
+// Get applications for jobs owned by a recruiter
+const getRecruiterApplications = async (
+  recruiterId: string,
+  filters: any = {},
+) => {
+  const Job = mongoose.model("Job");
+  const recruiterJobs = await Job.find({ author: recruiterId }).select("_id");
+  const jobIds = recruiterJobs.map((job) => job._id);
+
+  const query: any = { job_id: { $in: jobIds } };
+
+  if (filters.status) query.status = filters.status;
+
+  return await Application.find(query)
+    .populate("applicant", "name email image")
+    .populate("job_id", "title location type")
+    .sort({ paid_amount: -1, createdAt: -1 });
+};
+
 const applicationService = {
   createApplication,
   getApplications,
@@ -85,6 +112,7 @@ const applicationService = {
   deleteApplication,
   getApplicationsByApplicant,
   getApplicationsForJob,
+  getRecruiterApplications,
 };
 
 export default applicationService;

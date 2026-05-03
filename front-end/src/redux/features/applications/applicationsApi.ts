@@ -31,12 +31,30 @@ const applicationsApi = baseApi.injectEndpoints({
       providesTags: ["applications"],
     }),
 
+    // GET /applications/recruiter - Get recruiter's applications
+    getRecruiterApplications: builder.query<Application[], { status?: string }>({
+      query: (params) => ({
+        url: "/applications/recruiter",
+        method: "GET",
+        params,
+      }),
+      transformResponse: (response: { data: Application[] }) => response.data,
+      providesTags: ["applications"],
+    }),
+
     // PUT /applications/:applicationId/status - Update application status (Recruiter)
-    updateApplicationStatus: builder.mutation<Application, { applicationId: string; status: ApplicationStatus }>({
-      query: ({ applicationId, status }) => ({
+    updateApplicationStatus: builder.mutation<
+      Application,
+      {
+        applicationId: string;
+        status: ApplicationStatus;
+        rejection_note?: string;
+      }
+    >({
+      query: ({ applicationId, status, rejection_note }) => ({
         url: `/applications/${applicationId}/status`,
         method: "PUT",
-        body: { status },
+        body: { status, rejection_note },
       }),
       invalidatesTags: (result, error, { applicationId }) => [
         { type: "applications", id: applicationId },
@@ -60,4 +78,5 @@ export const {
   useGetUserApplicationsQuery,
   useUpdateApplicationStatusMutation,
   useDeleteApplicationMutation,
+  useGetRecruiterApplicationsQuery,
 } = applicationsApi;
