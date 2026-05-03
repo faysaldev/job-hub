@@ -20,6 +20,7 @@ import {
   Mail,
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
+import { useGetAllSeekersQuery } from "@/src/redux/features/seeker/seekerApi";
 
 const MOCK_CANDIDATES = [
   {
@@ -30,7 +31,8 @@ const MOCK_CANDIDATES = [
     experience: "8 years",
     rating: 4.9,
     skills: ["React", "Next.js", "TypeScript", "TailwindCSS"],
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
     bio: "Passionate about building highly interactive and accessible web applications.",
     availability: "Immediate",
   },
@@ -42,7 +44,8 @@ const MOCK_CANDIDATES = [
     experience: "5 years",
     rating: 4.8,
     skills: ["Figma", "UI/UX", "Prototyping", "Adobe Suite"],
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
     bio: "Focused on creating emotional connections through thoughtful digital design.",
     availability: "2 weeks notice",
   },
@@ -54,7 +57,8 @@ const MOCK_CANDIDATES = [
     experience: "6 years",
     rating: 4.7,
     skills: ["Node.js", "Python", "PostgreSQL", "AWS"],
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
     bio: "Specializing in scalable backend architectures and robust API designs.",
     availability: "Immediate",
   },
@@ -66,7 +70,8 @@ const MOCK_CANDIDATES = [
     experience: "4 years",
     rating: 4.9,
     skills: ["Python", "Machine Learning", "TensorFlow", "SQL"],
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop",
     bio: "Turning complex data into actionable business insights and predictive models.",
     availability: "1 month notice",
   },
@@ -78,20 +83,37 @@ const MOCK_CANDIDATES = [
     experience: "7 years",
     rating: 4.6,
     skills: ["React Native", "Flutter", "Swift", "Firebase"],
-    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop",
     bio: "Crafting seamless mobile experiences across iOS and Android platforms.",
     availability: "Immediate",
-  }
+  },
 ];
 
 export default function CandidatesListingPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredCandidates = MOCK_CANDIDATES.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const { data: seekersData, isLoading } = useGetAllSeekersQuery({
+    search: searchQuery,
+  });
+
+  const candidatesList =
+    seekersData?.data?.seekers?.map((s: any) => ({
+      id: s._id,
+      name: s.userId?.name || "Anonymous Candidate",
+      role: s.designation || "Professional",
+      location: s.userLocation || "Remote",
+      experience: "5+ years", // Default for now
+      rating: 4.9, // Default for now
+      skills: s.skills || [],
+      image:
+        s.userId?.image ||
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      bio: s.aboutMe || "No bio provided.",
+      availability: "Immediate",
+    })) || [];
+
+  const filteredCandidates = candidatesList;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -102,17 +124,18 @@ export default function CandidatesListingPage() {
             Discover Exceptional <span className="text-blue-400">Talent</span>
           </h1>
           <p className="text-xl text-blue-100/80 max-w-2xl mx-auto font-medium">
-            Browse through our curated list of world-class professionals ready to take your team to the next level.
+            Browse through our curated list of world-class professionals ready
+            to take your team to the next level.
           </p>
-          
+
           <div className="max-w-3xl mx-auto mt-10">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
               <div className="relative flex flex-col md:flex-row gap-3 p-2 bg-white rounded-[28px] shadow-2xl">
                 <div className="flex-1 flex items-center px-4 gap-3">
                   <Search className="h-6 w-6 text-gray-400" />
-                  <Input 
-                    placeholder="Search by name, role, or skills..." 
+                  <Input
+                    placeholder="Search by name, role, or skills..."
                     className="border-none bg-transparent h-14 text-lg focus-visible:ring-0 placeholder:text-gray-400 font-medium"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -146,50 +169,76 @@ export default function CandidatesListingPage() {
                 <h3 className="text-xl font-bold text-[#234C6A] flex items-center gap-2">
                   <Filter className="h-5 w-5" /> Filters
                 </h3>
-                <button className="text-sm font-bold text-blue-600 hover:text-blue-700">Clear all</button>
+                <button className="text-sm font-bold text-blue-600 hover:text-blue-700">
+                  Clear all
+                </button>
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">Experience Level</h4>
+                <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">
+                  Experience Level
+                </h4>
                 <div className="space-y-3">
-                  {['Entry Level', 'Mid Level', 'Senior Level', 'Expert'].map((level) => (
-                    <label key={level} className="flex items-center gap-3 cursor-pointer group">
-                      <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-blue-500 transition-colors"></div>
-                      <span className="text-gray-600 font-medium group-hover:text-[#234C6A] transition-colors">{level}</span>
-                    </label>
-                  ))}
+                  {["Entry Level", "Mid Level", "Senior Level", "Expert"].map(
+                    (level) => (
+                      <label
+                        key={level}
+                        className="flex items-center gap-3 cursor-pointer group"
+                      >
+                        <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-blue-500 transition-colors"></div>
+                        <span className="text-gray-600 font-medium group-hover:text-[#234C6A] transition-colors">
+                          {level}
+                        </span>
+                      </label>
+                    ),
+                  )}
                 </div>
               </div>
 
               <div className="space-y-4">
-                <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">Availability</h4>
+                <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">
+                  Availability
+                </h4>
                 <div className="space-y-3">
-                  {['Immediate', '2 Weeks', '1 Month', 'Remote Only'].map((item) => (
-                    <label key={item} className="flex items-center gap-3 cursor-pointer group">
-                      <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-blue-500 transition-colors"></div>
-                      <span className="text-gray-600 font-medium group-hover:text-[#234C6A] transition-colors">{item}</span>
-                    </label>
-                  ))}
+                  {["Immediate", "2 Weeks", "1 Month", "Remote Only"].map(
+                    (item) => (
+                      <label
+                        key={item}
+                        className="flex items-center gap-3 cursor-pointer group"
+                      >
+                        <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-blue-500 transition-colors"></div>
+                        <span className="text-gray-600 font-medium group-hover:text-[#234C6A] transition-colors">
+                          {item}
+                        </span>
+                      </label>
+                    ),
+                  )}
                 </div>
               </div>
 
               <div className="pt-4 border-t border-gray-50">
-                <Button variant="outline" className="w-full rounded-2xl border-gray-100 text-[#234C6A] font-bold h-12 hover:bg-gray-50">
+                <Button
+                  variant="outline"
+                  className="w-full rounded-2xl border-gray-100 text-[#234C6A] font-bold h-12 hover:bg-gray-50"
+                >
                   Apply Filters
                 </Button>
               </div>
             </div>
 
             <Card className="p-8 bg-gradient-to-br from-[#234C6A] to-[#456882] border-none rounded-[32px] text-white shadow-xl relative overflow-hidden group">
-               <div className="relative z-10">
-                  <Star className="h-8 w-8 text-yellow-400 mb-4 fill-yellow-400" />
-                  <h3 className="text-xl font-bold mb-2">Featured Talent</h3>
-                  <p className="text-blue-100/70 text-sm mb-6 leading-relaxed">Promote your profile to reach thousands of top employers daily.</p>
-                  <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90 rounded-2xl font-bold h-12 shadow-lg transition-transform group-hover:scale-105 active:scale-95">
-                    Upgrade Profile
-                  </Button>
-               </div>
-               <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
+              <div className="relative z-10">
+                <Star className="h-8 w-8 text-yellow-400 mb-4 fill-yellow-400" />
+                <h3 className="text-xl font-bold mb-2">Featured Talent</h3>
+                <p className="text-blue-100/70 text-sm mb-6 leading-relaxed">
+                  Promote your profile to reach thousands of top employers
+                  daily.
+                </p>
+                <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90 rounded-2xl font-bold h-12 shadow-lg transition-transform group-hover:scale-105 active:scale-95">
+                  Upgrade Profile
+                </Button>
+              </div>
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
             </Card>
           </aside>
 
@@ -197,10 +246,16 @@ export default function CandidatesListingPage() {
           <div className="flex-1 space-y-6">
             <div className="flex items-center justify-between mb-4">
               <p className="text-gray-500 font-medium">
-                Showing <span className="text-[#234C6A] font-bold">{filteredCandidates.length}</span> exceptional candidates
+                Showing{" "}
+                <span className="text-[#234C6A] font-bold">
+                  {filteredCandidates.length}
+                </span>{" "}
+                exceptional candidates
               </p>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400 font-medium">Sort by:</span>
+                <span className="text-sm text-gray-400 font-medium">
+                  Sort by:
+                </span>
                 <select className="bg-transparent border-none text-[#234C6A] font-bold focus:ring-0 cursor-pointer text-sm">
                   <option>Top Rated</option>
                   <option>Most Experience</option>
@@ -210,20 +265,32 @@ export default function CandidatesListingPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-              {filteredCandidates.map((candidate) => (
-                <CandidateCard key={candidate.id} candidate={candidate} />
-              ))}
-            </div>
-
-            {filteredCandidates.length === 0 && (
-              <div className="text-center py-32 bg-white rounded-[40px] border-2 border-dashed border-gray-100">
-                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <User className="h-10 w-10 text-gray-200" />
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[40px] border border-gray-100 shadow-sm">
+                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+                    Discovering Talent...
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-[#234C6A]">No candidates found</h3>
-                <p className="text-gray-400 mt-2">Try adjusting your search or filters to find what you're looking for.</p>
-              </div>
-            )}
+              ) : filteredCandidates.length > 0 ? (
+                filteredCandidates.map((candidate: any) => (
+                  <CandidateCard key={candidate.id} candidate={candidate} />
+                ))
+              ) : (
+                <div className="text-center py-32 bg-white rounded-[40px] border-2 border-dashed border-gray-100">
+                  <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <User className="h-10 w-10 text-gray-200" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-[#234C6A]">
+                    No candidates found
+                  </h3>
+                  <p className="text-gray-400 mt-2">
+                    Try adjusting your search or filters to find what you're
+                    looking for.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -239,8 +306,8 @@ function CandidateCard({ candidate }: { candidate: any }) {
           {/* Avatar & Basic Info */}
           <div className="relative">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-[28px] overflow-hidden border-4 border-gray-50 shadow-inner">
-              <img 
-                src={candidate.image} 
+              <img
+                src={candidate.image}
                 alt={candidate.name}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
@@ -256,11 +323,15 @@ function CandidateCard({ candidate }: { candidate: any }) {
                 <h3 className="text-2xl font-black text-[#234C6A] group-hover:text-blue-600 transition-colors">
                   {candidate.name}
                 </h3>
-                <p className="text-[#456882] font-bold text-lg">{candidate.role}</p>
+                <p className="text-[#456882] font-bold text-lg">
+                  {candidate.role}
+                </p>
               </div>
               <div className="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-2xl border border-yellow-100 shadow-sm">
                 <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                <span className="font-black text-yellow-700 text-lg">{candidate.rating}</span>
+                <span className="font-black text-yellow-700 text-lg">
+                  {candidate.rating}
+                </span>
               </div>
             </div>
 
@@ -285,7 +356,10 @@ function CandidateCard({ candidate }: { candidate: any }) {
 
             <div className="flex flex-wrap gap-2 pt-2">
               {candidate.skills.map((skill: string) => (
-                <Badge key={skill} className="bg-blue-50 text-blue-600 border-none px-4 py-1.5 rounded-xl font-bold text-xs uppercase tracking-tight">
+                <Badge
+                  key={skill}
+                  className="bg-blue-50 text-blue-600 border-none px-4 py-1.5 rounded-xl font-bold text-xs uppercase tracking-tight"
+                >
                   {skill}
                 </Badge>
               ))}
@@ -297,8 +371,14 @@ function CandidateCard({ candidate }: { candidate: any }) {
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
-                   <img src={`https://i.pravatar.cc/100?u=${candidate.id}${i}`} alt="Company" />
+                <div
+                  key={i}
+                  className="w-10 h-10 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden"
+                >
+                  <img
+                    src={`https://i.pravatar.cc/100?u=${candidate.id}${i}`}
+                    alt="Company"
+                  />
                 </div>
               ))}
             </div>
@@ -306,9 +386,12 @@ function CandidateCard({ candidate }: { candidate: any }) {
               Vouched by 12+ Top Recruiters
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="rounded-2xl font-bold text-gray-400 hover:text-red-500 transition-colors px-4 h-14">
+            <Button
+              variant="ghost"
+              className="rounded-2xl font-bold text-gray-400 hover:text-red-500 transition-colors px-4 h-14"
+            >
               <Heart className="h-6 w-6" />
             </Button>
             <Link href={`/candidates/${candidate.id}`}>

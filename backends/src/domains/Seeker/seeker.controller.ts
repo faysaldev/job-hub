@@ -55,7 +55,7 @@ export const getSeeker = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getAllSeekers = asyncHandler(async (req: Request, res: Response) => {
-  const seekers = await getAllSeekersService();
+  const seekers = await getAllSeekersService(req.query);
 
   res.status(httpStatus.OK).json(
     response({

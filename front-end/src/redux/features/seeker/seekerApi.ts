@@ -23,10 +23,11 @@ const seekerApi = baseApi.injectEndpoints({
     }),
 
     // GET /job-seekers/all - Get all seekers (Recruiter browsing)
-    getAllSeekers: builder.query<JobSeekerProfile[], void>({
-      query: () => ({
+    getAllSeekers: builder.query<any, any>({
+      query: (params) => ({
         url: "/job-seekers/all",
         method: "GET",
+        params,
       }),
       providesTags: ["jobSeekerProfile"],
     }),
