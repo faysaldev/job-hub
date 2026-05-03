@@ -68,52 +68,38 @@ const InterviewsPage = () => {
   const { user } = useAuth();
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const { data: conversations = [], isLoading } = useGetUserConversationsQuery();
-  console.log("Conversations fetched for interviews:", conversations);
+  const { data: conversations = [], isLoading } =
+    useGetUserConversationsQuery();
 
-  // Sample candidates for scheduling
-  const [candidates] = useState<Candidate[]>([
-    {
-      id: "c1",
-      name: "Sarah Johnson",
-      email: "sarah.j@email.com",
-      jobTitle: "Senior Frontend Developer",
-      unreadCount: 2,
-      lastMessage: "Yes, that time works for me!",
-      lastMessageTime: "10:30 AM",
-      interviewStatus: "pending",
-    },
-    {
-      id: "c2",
-      name: "Michael Chen",
-      email: "m.chen@email.com",
-      jobTitle: "Product Designer",
+  // Helper Functions
+  const formatLastMessageTime = (date: string) => {
+    return new Date(date).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const getInterviewStatus = (status: string): Candidate["interviewStatus"] => {
+    if (status === "interview") return "scheduled";
+    if (status === "under_review") return "pending";
+    return "none";
+  };
+
+  // Directly map from API response
+  const candidates: Candidate[] = conversations.map((conv: any) => {
+    const otherParticipant = conv.participants[0];
+    return {
+      id: conv._id,
+      name: otherParticipant?.name || "Unknown Candidate",
+      email: otherParticipant?.email || "",
+      jobTitle: conv.role || "Candidate",
+      avatar: otherParticipant?.image,
       unreadCount: 0,
-      lastMessage: "Looking forward to our conversation",
-      lastMessageTime: "Yesterday",
-      interviewStatus: "scheduled",
-    },
-    {
-      id: "c3",
-      name: "Emily Davis",
-      email: "emily.d@email.com",
-      jobTitle: "Backend Developer",
-      unreadCount: 1,
-      lastMessage: "Could we reschedule?",
-      lastMessageTime: "2 days ago",
-      interviewStatus: "none",
-    },
-    {
-      id: "c4",
-      name: "James Wilson",
-      email: "j.wilson@email.com",
-      jobTitle: "DevOps Engineer",
-      unreadCount: 0,
-      lastMessage: "Interview confirmed for Friday",
-      lastMessageTime: "3 days ago",
-      interviewStatus: "scheduled",
-    },
-  ]);
+      lastMessage: "Click to start coordination",
+      lastMessageTime: formatLastMessageTime(conv.updatedAt),
+      interviewStatus: getInterviewStatus(conv.status),
+    };
+  });
 
   // Sample scheduled interviews
   const [interviews] = useState<Interview[]>([
@@ -289,15 +275,27 @@ const InterviewsPage = () => {
                 >
                   <div className="flex items-start gap-3">
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden ${
                         selectedCandidate?.id === candidate.id
                           ? "bg-white/20"
                           : "bg-[#234C6A]/10"
                       }`}
                     >
-                      <User
-                        className={`h-5 w-5 ${selectedCandidate?.id === candidate.id ? "text-white" : "text-[#234C6A]"}`}
-                      />
+                      {candidate.avatar ? (
+                        <img
+                          src={candidate.avatar}
+                          alt={candidate.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User
+                          className={`h-5 w-5 ${
+                            selectedCandidate?.id === candidate.id
+                              ? "text-white"
+                              : "text-[#234C6A]"
+                          }`}
+                        />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
@@ -353,8 +351,16 @@ const InterviewsPage = () => {
                 {/* Chat Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-[#E3E3E3]">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#234C6A]/10 flex items-center justify-center">
-                      <User className="h-5 w-5 text-[#234C6A]" />
+                    <div className="w-10 h-10 rounded-full bg-[#234C6A]/10 flex items-center justify-center overflow-hidden">
+                      {selectedCandidate.avatar ? (
+                        <img
+                          src={selectedCandidate.avatar}
+                          alt={selectedCandidate.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-5 w-5 text-[#234C6A]" />
+                      )}
                     </div>
                     <div>
                       <p className="font-semibold text-[#234C6A]">

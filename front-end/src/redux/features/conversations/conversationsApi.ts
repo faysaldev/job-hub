@@ -19,6 +19,7 @@ const conversationsApi = baseApi.injectEndpoints({
         url: "/conversations",
         method: "GET",
       }),
+      transformResponse: (response: { data: Conversation[] }) => response.data,
       providesTags: ["conversations"],
     }),
 
