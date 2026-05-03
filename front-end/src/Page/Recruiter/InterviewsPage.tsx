@@ -15,43 +15,39 @@ import {
   Video,
   Phone,
   MapPin,
-  CheckCircle,
-  XCircle,
+  Trash2,
+  MoreVertical,
   MessageSquare,
-  ChevronRight,
-  Briefcase,
 } from "lucide-react";
-
-interface Interview {
-  id: string;
-  candidateName: string;
-  candidateEmail: string;
-  jobTitle: string;
-  scheduledDate: string;
-  scheduledTime: string;
-  duration: string;
-  type: "video" | "phone" | "in-person";
-  status: "scheduled" | "completed" | "cancelled" | "pending";
-  notes?: string;
-}
-
-interface ChatMessage {
-  id: string;
-  senderId: string;
-  senderName: string;
-  content: string;
-  timestamp: string;
-  type: "text" | "scheduling" | "confirmation";
-  schedulingData?: {
-    date?: string;
-    time?: string;
-    type?: string;
-    confirmed?: boolean;
-  };
-}
+import {
+  useGetUserConversationsQuery,
+  useDeleteConversationMutation,
+} from "@/src/redux/features/conversations/conversationsApi";
+import {
+  useGetConversationMessagesQuery,
+  useSendMessageMutation,
+  useDeleteMessageMutation,
+} from "@/src/redux/features/messages/messagesApi";
+import { useScheduleInterviewMutation } from "@/src/redux/features/interviews/interviewsApi";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/src/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/src/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface Candidate {
   id: string;
+  conversationId: string;
   name: string;
   email: string;
   jobTitle: string;
@@ -60,16 +56,50 @@ interface Candidate {
   lastMessage: string;
   lastMessageTime: string;
   interviewStatus: "none" | "pending" | "scheduled";
+  rawConversation: any;
 }
-
-import { useGetUserConversationsQuery } from "@/src/redux/features/conversations/conversationsApi";
 
 const InterviewsPage = () => {
   const { user } = useAuth();
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: conversations = [], isLoading } =
+  // Refs for uncontrolled inputs to improve performance
+  const messageInputRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
+  const typeRef = useRef<HTMLSelectElement>(null);
+  const startTimeRef = useRef<HTMLInputElement>(null);
+  const endTimeRef = useRef<HTMLInputElement>(null);
+  const meetLinkRef = useRef<HTMLInputElement>(null);
+
+  // API Hooks
+  const { data: conversations = [], isLoading: isLoadingConvs } =
     useGetUserConversationsQuery();
+  const [deleteConversation] = useDeleteConversationMutation();
+  const [sendMessage] = useSendMessageMutation();
+  const [deleteMessage] = useDeleteMessageMutation();
+  const [scheduleInterview, { isLoading: isScheduling }] =
+    useScheduleInterviewMutation();
+
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
+    null,
+  );
+  const [showScheduler, setShowScheduler] = useState(false);
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [allMessages, setAllMessages] = useState<any[]>([]);
+
+  // Fetch messages for selected conversation
+  const { data: messagesData = [], isFetching: isFetchingMessages } =
+    useGetConversationMessagesQuery(
+      {
+        conversationId: selectedCandidate?.conversationId || "",
+        page: page,
+        limit: 50,
+      },
+      { skip: !selectedCandidate?.conversationId },
+    );
 
   // Helper Functions
   const formatLastMessageTime = (date: string) => {
@@ -79,279 +109,283 @@ const InterviewsPage = () => {
     });
   };
 
-  const getInterviewStatus = (status: string): Candidate["interviewStatus"] => {
+  const getInterviewStatus = (
+    status: string | undefined,
+  ): Candidate["interviewStatus"] => {
+    if (!status) return "none";
     if (status === "interview") return "scheduled";
     if (status === "under_review") return "pending";
     return "none";
   };
 
-  // Directly map from API response
-  const candidates: Candidate[] = conversations.map((conv: any) => {
-    const otherParticipant = conv.participants[0];
-    return {
-      id: conv._id,
-      name: otherParticipant?.name || "Unknown Candidate",
-      email: otherParticipant?.email || "",
-      jobTitle: conv.role || "Candidate",
-      avatar: otherParticipant?.image,
-      unreadCount: 0,
-      lastMessage: "Click to start coordination",
-      lastMessageTime: formatLastMessageTime(conv.updatedAt),
-      interviewStatus: getInterviewStatus(conv.status),
-    };
-  });
-
-  // Sample scheduled interviews
-  const [interviews] = useState<Interview[]>([
-    {
-      id: "int1",
-      candidateName: "Michael Chen",
-      candidateEmail: "m.chen@email.com",
-      jobTitle: "Product Designer",
-      scheduledDate: "2024-01-28",
-      scheduledTime: "10:00 AM",
-      duration: "45 min",
-      type: "video",
-      status: "scheduled",
-    },
-    {
-      id: "int2",
-      candidateName: "James Wilson",
-      candidateEmail: "j.wilson@email.com",
-      jobTitle: "DevOps Engineer",
-      scheduledDate: "2024-01-26",
-      scheduledTime: "2:00 PM",
-      duration: "60 min",
-      type: "video",
-      status: "scheduled",
-    },
-  ]);
-
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
-    null,
-  );
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [showScheduler, setShowScheduler] = useState(false);
-  const [schedulingStep, setSchedulingStep] = useState(0);
-  const [schedulingData, setSchedulingData] = useState({
-    date: "",
-    time: "",
-    type: "video",
-  });
-
-  // Sample chat messages when candidate is selected
+  // Reset page and messages when conversation changes
   useEffect(() => {
-    if (selectedCandidate) {
-      setMessages([
-        {
-          id: "m1",
-          senderId: selectedCandidate.id,
-          senderName: selectedCandidate.name,
-          content: `Hi, I applied for the ${selectedCandidate.jobTitle} position and I'm excited about the opportunity!`,
-          timestamp: "Yesterday 9:00 AM",
-          type: "text",
-        },
-        {
-          id: "m2",
-          senderId: user?._id || "",
-          senderName: user?.name || "Recruiter",
-          content:
-            "Hi! Thanks for your application. We'd love to schedule an interview with you. When would be a good time?",
-          timestamp: "Yesterday 10:15 AM",
-          type: "text",
-        },
-        {
-          id: "m3",
-          senderId: selectedCandidate.id,
-          senderName: selectedCandidate.name,
-          content:
-            "I'm flexible this week. Would Thursday or Friday afternoon work?",
-          timestamp: "Yesterday 2:30 PM",
-          type: "text",
-        },
-      ]);
+    setPage(1);
+    setAllMessages([]);
+  }, [selectedCandidate?.conversationId]);
+
+  // Update all messages when new data arrives
+  useEffect(() => {
+    if (messagesData && Array.isArray(messagesData) && messagesData.length > 0) {
+      if (page === 1) {
+        setAllMessages(messagesData);
+      } else {
+        // Prepend older messages
+        setAllMessages((prev) => {
+          const newMessages = messagesData.filter(
+            (nm: any) => !prev.find((pm) => pm._id === nm._id),
+          );
+          return [...prev, ...newMessages];
+        });
+      }
     }
-  }, [selectedCandidate, user]);
+  }, [messagesData, page]);
+
+  // Select latest conversation by default
+  useEffect(() => {
+    if (conversations.length > 0 && !selectedCandidate) {
+      const conv = conversations[0];
+      const otherParticipant = conv.participants[0];
+      setSelectedCandidate({
+        id: otherParticipant?._id,
+        conversationId: conv._id,
+        name: otherParticipant?.name || "Unknown",
+        email: otherParticipant?.email || "",
+        jobTitle: conv.role || "Candidate",
+        avatar: otherParticipant?.image,
+        unreadCount: 0,
+        lastMessage: "Click to view",
+        lastMessageTime: formatLastMessageTime(conv.updatedAt),
+        interviewStatus: getInterviewStatus(conv.status),
+        rawConversation: conv,
+      });
+    }
+  }, [conversations, selectedCandidate]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (page === 1) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [allMessages, page]);
+
+  const handleSendMessage = async () => {
+    const content = messageInputRef.current?.value;
+    if (!content?.trim() || !selectedCandidate) return;
+
+    try {
+      await sendMessage({
+        conversationId: selectedCandidate.conversationId,
+        receiverId: selectedCandidate.id,
+        content,
+      }).unwrap();
+      if (messageInputRef.current) messageInputRef.current.value = "";
+      setPage(1); // Reset to first page to see the new message
+    } catch (error) {
+      toast.error("Failed to send message");
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await deleteMessage(messageId).unwrap();
+      toast.success("Message deleted");
+    } catch (error) {
+      toast.error("Failed to delete message");
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!selectedCandidate) return;
+    if (!confirm("Are you sure you want to delete this conversation?")) return;
+
+    try {
+      await deleteConversation(selectedCandidate.conversationId).unwrap();
+      setSelectedCandidate(null);
+      toast.success("Conversation deleted");
+    } catch (error) {
+      toast.error("Failed to delete conversation");
+    }
+  };
+
+  const handleScheduleInterview = async () => {
+    if (!selectedCandidate) return;
+
+    const date = dateRef.current?.value;
+    const start_time = startTimeRef.current?.value;
+    const end_time = endTimeRef.current?.value;
+    const type = typeRef.current?.value as any;
+    const meet_link = meetLinkRef.current?.value;
+
+    if (!date || !start_time || !end_time) {
+      toast.error("Please fill in date and time");
+      return;
+    }
+
+    try {
+      await scheduleInterview({
+        application_id: selectedCandidate.rawConversation.job_id,
+        job_id: selectedCandidate.rawConversation.job_id,
+        interviewee: selectedCandidate.id as any,
+        date: new Date(date).toISOString(),
+        start_time,
+        end_time,
+        type,
+        meet_link,
+      }).unwrap();
+
+      toast.success("Interview scheduled successfully");
+      setShowScheduler(false);
+    } catch (error) {
+      toast.error("Failed to schedule interview");
+    }
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (
+      e.currentTarget.scrollTop === 0 &&
+      !isFetchingMessages &&
+      messagesData.length >= 50
+    ) {
+      setPage((prev) => prev + 1);
+    }
+  };
 
   if (!user) return null;
-
-  const sendMessage = () => {
-    if (!newMessage.trim() || !selectedCandidate) return;
-
-    const newMsg: ChatMessage = {
-      id: `new-${Date.now()}`,
-      senderId: user?._id,
-      senderName: user.name || "Recruiter",
-      content: newMessage,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      type: "text",
-    };
-
-    setMessages([...messages, newMsg]);
-    setNewMessage("");
-  };
-
-  const sendScheduleRequest = () => {
-    if (!selectedCandidate || !schedulingData.date || !schedulingData.time)
-      return;
-
-    const scheduleMsg: ChatMessage = {
-      id: `schedule-${Date.now()}`,
-      senderId: user?._id,
-      senderName: user.name || "Recruiter",
-      content: "",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      type: "scheduling",
-      schedulingData: {
-        date: schedulingData.date,
-        time: schedulingData.time,
-        type: schedulingData.type,
-        confirmed: false,
-      },
-    };
-
-    setMessages([...messages, scheduleMsg]);
-    setShowScheduler(false);
-    setSchedulingData({ date: "", time: "", type: "video" });
-  };
-
-  const interviewTypeIcon = (type: string) => {
-    switch (type) {
-      case "video":
-        return <Video className="h-4 w-4" />;
-      case "phone":
-        return <Phone className="h-4 w-4" />;
-      default:
-        return <MapPin className="h-4 w-4" />;
-    }
-  };
 
   return (
     <RecruiterLayout>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-lg">
-            <Calendar className="h-7 w-7" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-[#234C6A]">
-              Schedule Interviews
-            </h1>
-            <p className="text-[#456882]">
-              Coordinate and schedule interviews with candidates via chat
-            </p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white shadow-lg">
+              <Calendar className="h-7 w-7" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-[#234C6A]">
+                Interview Hub
+              </h1>
+              <p className="text-[#456882]">
+                Coordinate and schedule with your top candidates
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Candidates List */}
-          <Card className="p-4 border-none bg-white shadow-lg rounded-2xl lg:col-span-1 h-[700px] flex flex-col">
-            <h3 className="font-semibold text-[#234C6A] mb-4 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Candidates
-            </h3>
-            <div className="flex-1 overflow-y-auto space-y-2">
-              {candidates.map((candidate) => (
-                <button
-                  key={candidate.id}
-                  onClick={() => setSelectedCandidate(candidate)}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    selectedCandidate?.id === candidate.id
-                      ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white shadow-lg"
-                      : "hover:bg-[#E3E3E3]/50"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden ${
-                        selectedCandidate?.id === candidate.id
-                          ? "bg-white/20"
-                          : "bg-[#234C6A]/10"
+          <Card className="p-4 border-none bg-white shadow-xl rounded-3xl lg:col-span-1 h-[750px] flex flex-col">
+            <div className="flex items-center justify-between mb-6 px-2">
+              <h3 className="font-bold text-[#234C6A] flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-[#456882]" />
+                Recent Chats
+              </h3>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+              {isLoadingConvs ? (
+                [1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-20 w-full animate-pulse bg-gray-50 rounded-2xl"
+                  />
+                ))
+              ) : conversations.length === 0 ? (
+                <div className="text-center py-10">
+                  <p className="text-sm text-[#456882]">No conversations yet</p>
+                </div>
+              ) : (
+                conversations.map((conv: any) => {
+                  const other = conv.participants[0];
+                  const isSelected =
+                    selectedCandidate?.conversationId === conv._id;
+
+                  return (
+                    <button
+                      key={conv._id}
+                      onClick={() =>
+                        setSelectedCandidate({
+                          id: other._id,
+                          conversationId: conv._id,
+                          name: other.name,
+                          email: other.email,
+                          jobTitle: conv.role,
+                          avatar: other.image,
+                          unreadCount: 0,
+                          lastMessage: "Click to view",
+                          lastMessageTime: formatLastMessageTime(
+                            conv.updatedAt,
+                          ),
+                          interviewStatus: getInterviewStatus(conv.status),
+                          rawConversation: conv,
+                        })
+                      }
+                      className={`w-full p-4 rounded-2xl text-left transition-all duration-300 group ${
+                        isSelected
+                          ? "bg-[#234C6A] text-white shadow-lg scale-[1.02]"
+                          : "hover:bg-gray-50 border border-transparent hover:border-gray-100"
                       }`}
                     >
-                      {candidate.avatar ? (
-                        <img
-                          src={candidate.avatar}
-                          alt={candidate.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User
-                          className={`h-5 w-5 ${
-                            selectedCandidate?.id === candidate.id
-                              ? "text-white"
-                              : "text-[#234C6A]"
-                          }`}
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p
-                          className={`font-semibold truncate ${selectedCandidate?.id === candidate.id ? "text-white" : "text-[#234C6A]"}`}
-                        >
-                          {candidate.name}
-                        </p>
-                        {candidate.unreadCount > 0 && (
-                          <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                            {candidate.unreadCount}
-                          </span>
-                        )}
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div
+                            className={`w-12 h-12 rounded-2xl overflow-hidden border-2 ${isSelected ? "border-white/20" : "border-gray-100"}`}
+                          >
+                            {other.image ? (
+                              <img
+                                src={other.image}
+                                alt={other.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-[#234C6A]/10 flex items-center justify-center text-[#234C6A]">
+                                <User className="h-6 w-6" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-1">
+                            <h4
+                              className={`font-bold truncate ${isSelected ? "text-white" : "text-[#234C6A]"}`}
+                            >
+                              {other.name}
+                            </h4>
+                            <span
+                              className={`text-[10px] ${isSelected ? "text-white/60" : "text-[#456882]/60"}`}
+                            >
+                              {formatLastMessageTime(conv.updatedAt)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <p
+                              className={`text-xs truncate font-medium ${isSelected ? "text-white/80" : "text-[#456882]"}`}
+                            >
+                              {conv.role}
+                            </p>
+                            <Badge
+                              className={`${isSelected ? "bg-white/20 text-white" : "bg-[#234C6A]/5 text-[#234C6A]"} text-[9px] px-1.5 py-0 border-none capitalize h-4`}
+                            >
+                              {conv.status?.replace("_", " ")}
+                            </Badge>
+                          </div>
+                        </div>
                       </div>
-                      <p
-                        className={`text-xs truncate ${selectedCandidate?.id === candidate.id ? "text-white/80" : "text-[#456882]"}`}
-                      >
-                        {candidate.jobTitle}
-                      </p>
-                      <p
-                        className={`text-xs truncate mt-1 ${selectedCandidate?.id === candidate.id ? "text-white/70" : "text-[#456882]/70"}`}
-                      >
-                        {candidate.lastMessage}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span
-                        className={`text-xs ${selectedCandidate?.id === candidate.id ? "text-white/70" : "text-[#456882]/70"}`}
-                      >
-                        {candidate.lastMessageTime}
-                      </span>
-                      {candidate.interviewStatus === "scheduled" && (
-                        <Badge className="bg-green-500 text-white text-xs">
-                          Scheduled
-                        </Badge>
-                      )}
-                      {candidate.interviewStatus === "pending" && (
-                        <Badge className="bg-amber-500 text-white text-xs">
-                          Pending
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))}
+                    </button>
+                  );
+                })
+              )}
             </div>
           </Card>
 
-          {/* Chat Area */}
-          <Card className="p-4 border-none bg-white shadow-lg rounded-2xl lg:col-span-2 h-[700px] flex flex-col">
+          {/* Chat Window */}
+          <Card className="lg:col-span-2 border-none bg-white shadow-xl rounded-3xl h-[750px] flex flex-col overflow-hidden relative">
             {selectedCandidate ? (
               <>
                 {/* Chat Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-[#E3E3E3]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#234C6A]/10 flex items-center justify-center overflow-hidden">
+                <div className="p-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                       {selectedCandidate.avatar ? (
                         <img
                           src={selectedCandidate.avatar}
@@ -359,294 +393,265 @@ const InterviewsPage = () => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <User className="h-5 w-5 text-[#234C6A]" />
+                        <div className="w-full h-full bg-[#234C6A]/5 flex items-center justify-center text-[#234C6A]">
+                          <User className="h-6 w-6" />
+                        </div>
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold text-[#234C6A]">
+                      <h3 className="font-bold text-[#234C6A] leading-tight">
                         {selectedCandidate.name}
-                      </p>
-                      <p className="text-xs text-[#456882]">
-                        {selectedCandidate.jobTitle}
-                      </p>
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge
+                          variant="outline"
+                          className="bg-blue-50 text-blue-600 border-blue-100 text-[10px] px-2 py-0"
+                        >
+                          {selectedCandidate.jobTitle}
+                        </Badge>
+                        {selectedCandidate.interviewStatus === "scheduled" && (
+                          <Badge className="bg-green-500 text-white text-[10px] px-2 py-0">
+                            Scheduled
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <Button
-                    onClick={() => setShowScheduler(!showScheduler)}
-                    className="bg-gradient-to-r from-[#234C6A] to-[#456882] text-white"
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Schedule Interview
-                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    {selectedCandidate.interviewStatus === "pending" && (
+                      <Button
+                        onClick={() => setShowScheduler(true)}
+                        className="bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-xl shadow-lg shadow-blue-100/50"
+                      >
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Schedule
+                      </Button>
+                    )}
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="rounded-xl hover:bg-gray-50"
+                        >
+                          <MoreVertical className="h-5 w-5 text-[#456882]" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="rounded-2xl border-gray-100 shadow-2xl p-2"
+                      >
+                        <DropdownMenuItem
+                          onClick={handleDeleteConversation}
+                          className="text-red-600 focus:text-red-600 focus:bg-red-50 rounded-xl cursor-pointer"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Conversation
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
 
-                {/* Schedule Picker */}
-                {showScheduler && (
-                  <div className="p-4 bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 rounded-xl my-4">
-                    <h4 className="font-semibold text-[#234C6A] mb-4">
-                      Schedule an Interview
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm text-[#456882] mb-1">
-                          Date
-                        </label>
-                        <Input
-                          type="date"
-                          value={schedulingData.date}
-                          onChange={(e) =>
-                            setSchedulingData({
-                              ...schedulingData,
-                              date: e.target.value,
-                            })
-                          }
-                          className="border-[#E3E3E3]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-[#456882] mb-1">
-                          Time
-                        </label>
-                        <Input
-                          type="time"
-                          value={schedulingData.time}
-                          onChange={(e) =>
-                            setSchedulingData({
-                              ...schedulingData,
-                              time: e.target.value,
-                            })
-                          }
-                          className="border-[#E3E3E3]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-[#456882] mb-1">
-                          Type
-                        </label>
-                        <div className="flex gap-2">
-                          {["video", "phone", "in-person"].map((type) => (
-                            <button
-                              key={type}
-                              onClick={() =>
-                                setSchedulingData({ ...schedulingData, type })
-                              }
-                              className={`flex-1 p-2 rounded-lg flex items-center justify-center gap-1 text-sm capitalize ${
-                                schedulingData.type === type
-                                  ? "bg-[#234C6A] text-white"
-                                  : "bg-[#E3E3E3] text-[#456882]"
-                              }`}
-                            >
-                              {interviewTypeIcon(type)}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                {/* Messages Area */}
+                <div
+                  ref={chatContainerRef}
+                  onScroll={handleScroll}
+                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/30 custom-scrollbar"
+                >
+                  {isFetchingMessages && page > 1 && (
+                    <div className="flex justify-center py-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#234C6A]" />
                     </div>
-                    <div className="flex justify-end mt-4 gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowScheduler(false)}
-                        className="border-[#234C6A]/20"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={sendScheduleRequest}
-                        disabled={!schedulingData.date || !schedulingData.time}
-                        className="bg-[#234C6A]"
-                      >
-                        Send Request
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto py-4 space-y-4">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.senderId === user?._id ? "justify-end" : "justify-start"}`}
-                    >
-                      {msg.type === "text" ? (
-                        <div
-                          className={`max-w-[80%] p-4 rounded-2xl ${
-                            msg.senderId === user?._id
-                              ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white rounded-br-none"
-                              : "bg-[#E3E3E3] text-[#234C6A] rounded-bl-none"
-                          }`}
-                        >
-                          <p className="text-sm">{msg.content}</p>
-                          <p className="text-xs opacity-70 mt-1 text-right">
-                            {msg.timestamp}
-                          </p>
-                        </div>
-                      ) : msg.type === "scheduling" && msg.schedulingData ? (
-                        <div className="max-w-[80%] bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Calendar className="h-5 w-5 text-amber-600" />
-                            <span className="font-semibold text-[#234C6A]">
-                              Interview Request
-                            </span>
-                          </div>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex items-center gap-2 text-[#456882]">
-                              <Calendar className="h-4 w-4" />
-                              <span>
-                                {new Date(
-                                  msg.schedulingData.date!,
-                                ).toLocaleDateString("en-US", {
-                                  weekday: "long",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-[#456882]">
-                              <Clock className="h-4 w-4" />
-                              <span>{msg.schedulingData.time}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-[#456882]">
-                              {interviewTypeIcon(msg.schedulingData.type!)}
-                              <span className="capitalize">
-                                {msg.schedulingData.type} Interview
-                              </span>
-                            </div>
-                          </div>
-                          {!msg.schedulingData.confirmed && (
-                            <div className="flex gap-2 mt-4">
-                              <Button
-                                size="sm"
-                                className="flex-1 bg-green-500 hover:bg-green-600"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Confirm
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="flex-1 border-red-200 text-red-500 hover:bg-red-50"
-                              >
-                                <XCircle className="h-4 w-4 mr-1" />
-                                Decline
-                              </Button>
-                            </div>
-                          )}
-                          <p className="text-xs text-[#456882]/70 mt-2 text-right">
-                            {msg.timestamp}
-                          </p>
-                        </div>
-                      ) : null}
+                  {allMessages.length === 0 && !isFetchingMessages ? (
+                    <div className="text-center py-20">
+                      <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <MessageSquare className="h-8 w-8 text-gray-300" />
+                      </div>
+                      <p className="text-[#456882] font-medium">
+                        No messages yet. Start the conversation!
+                      </p>
                     </div>
-                  ))}
+                  ) : (
+                    [...allMessages].reverse().map((msg: any) => {
+                      const isMe =
+                        msg.senderId?.toString() === user?._id?.toString();
+                      return (
+                        <div
+                          key={msg._id}
+                          className={`flex ${isMe ? "justify-end" : "justify-start"} group animate-in fade-in slide-in-from-bottom-2`}
+                        >
+                          <div
+                            className={`max-w-[85%] relative ${isMe ? "bg-[#234C6A] text-white rounded-2xl rounded-tr-none" : "bg-white text-[#234C6A] rounded-2xl rounded-tl-none shadow-sm border border-gray-100"} p-3 px-4`}
+                          >
+                            <div className="flex items-end justify-between gap-3">
+                              <p className="text-sm leading-relaxed">
+                                {msg.content}
+                              </p>
+                              <div className="flex items-center gap-2 flex-shrink-0 mb-[-2px]">
+                                <span className={`text-[9px] opacity-60`}>
+                                  {new Date(msg.createdAt).toLocaleTimeString(
+                                    [],
+                                    { hour: "2-digit", minute: "2-digit" },
+                                  )}
+                                </span>
+                                {isMe && (
+                                  <button
+                                    onClick={() => handleDeleteMessage(msg._id)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-white"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                   <div ref={chatEndRef} />
                 </div>
 
-                {/* Message Input */}
-                <div className="pt-4 border-t border-[#E3E3E3]">
-                  <div className="flex gap-2">
+                {/* Input Area */}
+                <div className="p-6 bg-white border-t border-gray-100">
+                  <div className="flex gap-3 bg-gray-50 p-2 rounded-[24px] border border-gray-100 shadow-inner">
                     <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                      placeholder="Type a message..."
-                      className="border-[#E3E3E3] focus:border-[#234C6A]"
+                      ref={messageInputRef}
+                      placeholder="Type your message..."
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && handleSendMessage()
+                      }
+                      className="border-none bg-transparent focus-visible:ring-0 text-[#234C6A]"
                     />
                     <Button
-                      onClick={sendMessage}
-                      className="bg-gradient-to-r from-[#234C6A] to-[#456882] text-white"
+                      onClick={handleSendMessage}
+                      className="bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-full w-12 h-12 flex-shrink-0 shadow-lg"
                     >
-                      <Send className="h-4 w-4" />
+                      <Send className="h-5 w-5" />
                     </Button>
                   </div>
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-20 rounded-full bg-[#234C6A]/10 flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="h-10 w-10 text-[#234C6A]" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-[#234C6A] mb-2">
-                    Select a Candidate
-                  </h3>
-                  <p className="text-[#456882] max-w-md">
-                    Choose a candidate from the list to start scheduling an
-                    interview through chat
-                  </p>
+              <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                <div className="bg-[#234C6A]/5 w-24 h-24 rounded-[40px] flex items-center justify-center mb-6">
+                  <MessageSquare className="h-12 w-12 text-[#234C6A]" />
                 </div>
+                <h3 className="text-2xl font-bold text-[#234C6A] mb-2">
+                  Select a Conversation
+                </h3>
+                <p className="text-[#456882] max-w-sm">
+                  Choose a candidate from the list to coordinate their interview
+                  and manage your pipeline.
+                </p>
               </div>
             )}
           </Card>
         </div>
-
-        {/* Upcoming Interviews */}
-        <Card className="mt-6 p-6 border-none bg-white shadow-lg rounded-2xl">
-          <h3 className="font-semibold text-[#234C6A] mb-4 flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Upcoming Interviews
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {interviews.map((interview) => (
-              <div
-                key={interview.id}
-                className="p-4 bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 rounded-xl hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-[#234C6A]/10 flex items-center justify-center">
-                      <User className="h-5 w-5 text-[#234C6A]" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-[#234C6A]">
-                        {interview.candidateName}
-                      </p>
-                      <p className="text-xs text-[#456882]">
-                        {interview.jobTitle}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge
-                    className={`${interview.type === "video" ? "bg-blue-500" : interview.type === "phone" ? "bg-green-500" : "bg-purple-500"} text-white`}
-                  >
-                    {interviewTypeIcon(interview.type)}
-                    <span className="ml-1 capitalize">{interview.type}</span>
-                  </Badge>
-                </div>
-                <div className="space-y-2 text-sm text-[#456882]">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      {new Date(interview.scheduledDate).toLocaleDateString(
-                        "en-US",
-                        { weekday: "short", month: "short", day: "numeric" },
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      {interview.scheduledTime} ({interview.duration})
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 border-[#234C6A]/20 text-[#234C6A]"
-                  >
-                    Reschedule
-                  </Button>
-                  <Button size="sm" className="flex-1 bg-[#234C6A]">
-                    Join
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
+
+      {/* Scheduler Modal */}
+      <Dialog open={showScheduler} onOpenChange={setShowScheduler}>
+        <DialogContent className="sm:max-w-[500px] rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
+          <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white">
+            <DialogHeader>
+              <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md">
+                <Calendar className="h-7 w-7" />
+              </div>
+              <DialogTitle className="text-3xl font-bold">
+                Schedule Interview
+              </DialogTitle>
+              <DialogDescription className="text-white/70 text-base">
+                Set up a time to meet with {selectedCandidate?.name}.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="p-8 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-[#234C6A] ml-1">
+                  Date
+                </label>
+                <Input
+                  ref={dateRef}
+                  type="date"
+                  className="rounded-2xl border-gray-100 bg-gray-50 focus:bg-white h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-[#234C6A] ml-1">
+                  Type
+                </label>
+                <select
+                  ref={typeRef}
+                  className="w-full h-12 rounded-2xl border border-gray-100 bg-gray-50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/10"
+                >
+                  <option value="video">Video Call</option>
+                  <option value="audio">Audio Call</option>
+                  <option value="in-person">In Person</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-[#234C6A] ml-1">
+                  Start Time
+                </label>
+                <Input
+                  ref={startTimeRef}
+                  type="time"
+                  className="rounded-2xl border-gray-100 bg-gray-50 h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-[#234C6A] ml-1">
+                  End Time
+                </label>
+                <Input
+                  ref={endTimeRef}
+                  type="time"
+                  className="rounded-2xl border-gray-100 bg-gray-50 h-12"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-[#234C6A] ml-1">
+                Meeting Link
+              </label>
+              <Input
+                ref={meetLinkRef}
+                placeholder="https://meet.google.com/..."
+                className="rounded-2xl border-gray-100 bg-gray-50 h-12"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="p-8 pt-0 flex gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => setShowScheduler(false)}
+              className="flex-1 h-12 rounded-2xl font-bold"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleScheduleInterview}
+              disabled={isScheduling}
+              className="flex-1 h-12 bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-2xl font-bold shadow-lg"
+            >
+              {isScheduling ? "Scheduling..." : "Schedule Now"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </RecruiterLayout>
   );
 };

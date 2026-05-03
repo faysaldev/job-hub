@@ -129,7 +129,7 @@ const getAllMessagesService = async (
   // Find messages in the conversation without problematic populate
   // We need to manually handle user data if populate is required
   const messages = await Message.find({ conversationId: conversationObjectId })
-    .sort({ createdAt: -1 }) // Most recent first
+    .sort({ createdAt: -1 }) // Get the latest messages first for pagination
     .skip(skip)
     .limit(limit);
 

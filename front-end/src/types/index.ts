@@ -211,7 +211,7 @@ export interface Interview {
 export type MessageType = "text" | "file" | "scheduling" | "system";
 
 export interface Message {
-  id: string;
+  _id: string;
   conversationId: string;
   senderId: string;
   senderName?: string;
@@ -223,6 +223,7 @@ export interface Message {
   isRead: boolean;
   readAt?: string;
   createdAt: string;
+  updatedAt?: string;
   deletedAt?: string;
 }
 
@@ -245,23 +246,26 @@ export interface SchedulingData {
 }
 
 export interface Conversation {
-  id: string;
+  _id: string;
   participants: ConversationParticipant[];
-  jobId?: string;
-  jobTitle?: string;
+  job_id?: string;
+  role?: string;
+  status?: string;
   lastMessage?: string;
   lastMessageAt?: string;
   lastMessageSenderId?: string;
-  unreadCount: number;
-  isArchived: boolean;
+  unreadCount?: number;
+  isArchived?: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ConversationParticipant {
+  _id: string;
   userId: string;
   name: string;
-  avatar?: string;
+  image?: string;
+  email?: string;
   role: UserRole;
   isOnline?: boolean;
   lastSeenAt?: string;
