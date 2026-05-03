@@ -10,6 +10,7 @@ import savedJobRoutes from "../domains/SavedJobs/savedjob.route";
 // Application Service domains
 import applicationRoutes from "../domains/Applications/application.route";
 import stripeRoutes from "../domains/Stripe/stripe.route";
+import interviewsRoute from "../domains/Interviews/interviews.route";
 // Message Queue domains
 import conversationsRoutes from "../domains/Conversations/conversations.route";
 import messageRoutes from "../domains/Messages/message.route";
@@ -32,6 +33,7 @@ router.use("/saved-jobs", savedJobRoutes);
 // Application routes
 router.use("/applications", applicationRoutes);
 router.use("/stripe", stripeRoutes);
+router.use("/interviews", interviewsRoute);
 // Message routes
 router.use("/conversations", conversationsRoutes);
 router.use("/messages", messageRoutes);
