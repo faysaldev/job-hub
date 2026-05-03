@@ -3,12 +3,17 @@ import { Types } from "mongoose";
 
 const createConversationService = async (
   participants: string[],
-  currentUserId: string
+  currentUserId: string,
+  metadata: {
+    status?: string;
+    role?: string;
+    job_id?: string;
+  } = {},
 ) => {
   // Ensure exactly 2 participants for private one-to-one chat
   if (participants.length !== 2) {
     throw new Error(
-      "Private one-to-one conversation must have exactly 2 participants"
+      "Private one-to-one conversation must have exactly 2 participants",
     );
   }
 
@@ -25,16 +30,22 @@ const createConversationService = async (
   }
 
   // Check if conversation already exists (in any order)
-  const existingConversation = await Conversation.findOne({
+  let existingConversation = await Conversation.findOne({
     participants: { $all: participants },
   });
 
   if (existingConversation) {
-    return existingConversation; // Return existing conversation instead of throwing an error
+    // If it exists, update metadata if provided
+    if (Object.keys(metadata).length > 0) {
+      existingConversation.set(metadata);
+      await existingConversation.save();
+    }
+    return existingConversation;
   }
 
   const conversation = new Conversation({
     participants: participants,
+    ...metadata,
   });
 
   return await conversation.save();
@@ -43,46 +54,16 @@ const createConversationService = async (
 // Additional service functions to handle sender/receiver specific operations
 const markMessagesAsReadByUser = async (
   conversationId: string,
-  userId: string
+  userId: string,
 ) => {
-  const conversation = await Conversation.findById(conversationId);
-
-  if (!conversation) {
-    throw new Error("Conversation not found");
-  }
-
-  // Determine which participant is the user (index 0 or 1) and reset their unread count
-  if (conversation.participants[0].toString() === userId) {
-    conversation.user1UnreadCount = 0;
-  } else if (conversation.participants[1].toString() === userId) {
-    conversation.user2UnreadCount = 0;
-  } else {
-    throw new Error("User is not part of this conversation");
-  }
-
-  return await conversation.save();
+  return await Conversation.findById(conversationId);
 };
 
 const incrementUnreadMessageCount = async (
   conversationId: string,
-  recipientId: string
+  recipientId: string,
 ) => {
-  const conversation = await Conversation.findById(conversationId);
-
-  if (!conversation) {
-    throw new Error("Conversation not found");
-  }
-
-  // Increment the unread count for the recipient
-  if (conversation.participants[0].toString() === recipientId) {
-    conversation.user1UnreadCount += 1;
-  } else if (conversation.participants[1].toString() === recipientId) {
-    conversation.user2UnreadCount += 1;
-  } else {
-    throw new Error("Recipient is not part of this conversation");
-  }
-
-  return await conversation.save();
+  return await Conversation.findById(conversationId);
 };
 
 const findConversationByTwoUsers = async (user1Id: string, user2Id: string) => {
@@ -114,7 +95,7 @@ const getUserConversationsService = async (userId: string) => {
     participants: userId,
   })
     .populate("participants", "name email image")
-    .sort({ lastMessageAt: -1 }); // Sort by most recent message
+    .sort({ updatedAt: -1 }); // Sort by most recent message
 
   return conversations;
 };

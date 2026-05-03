@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Application from "./application.model";
+import conversationService from "../Conversations/conversations.services";
 
 // Create a new application
 const createApplication = async (applicationData: {
@@ -52,9 +53,30 @@ const updateApplicationStatus = async (
   const updateData: any = { status };
   if (rejection_note) updateData.rejection_note = rejection_note;
 
-  return await Application.findByIdAndUpdate(id, updateData, { new: true })
-    .populate("applicant", "name email")
-    .populate("job_id", "job_title company_name");
+  const updatedApplication = await Application.findByIdAndUpdate(id, updateData, {
+    new: true,
+  })
+    .populate("applicant", "name email image")
+    .populate("job_id", "title author");
+
+  if (status === "under_review" && updatedApplication) {
+    const seeker = updatedApplication.applicant as any;
+    const job = updatedApplication.job_id as any;
+
+    if (seeker && job && job.author) {
+      await conversationService.createConversationService(
+        [seeker._id.toString(), job.author.toString()],
+        job.author.toString(),
+        {
+          status,
+          role: job.title,
+          job_id: job._id.toString(),
+        },
+      );
+    }
+  }
+
+  return updatedApplication;
 };
 
 // Delete application

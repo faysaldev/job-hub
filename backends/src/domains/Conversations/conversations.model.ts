@@ -4,9 +4,9 @@ export interface IConversation extends Document {
   _id: Types.ObjectId;
   participants: [Types.ObjectId, Types.ObjectId]; // Exactly 2 participants for one-to-one chat
   lastMessage?: Types.ObjectId;
-  lastMessageAt: Date;
-  user1UnreadCount: number;
-  user2UnreadCount: number;
+  status?: "applied" | "under_review" | "interview" | "rejected" | "hired";
+  role?: string;
+  job_id?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,17 +28,17 @@ const conversationSchema = new Schema<IConversation>(
       type: Schema.Types.ObjectId,
       ref: "Message",
     },
-    lastMessageAt: {
-      type: Date,
-      default: Date.now,
+    status: {
+      type: String,
+      enum: ["applied", "under_review", "interview", "rejected", "hired"],
     },
-    user1UnreadCount: {
-      type: Number,
-      default: 0,
+    role: {
+      type: String,
+      trim: true,
     },
-    user2UnreadCount: {
-      type: Number,
-      default: 0,
+    job_id: {
+      type: Schema.Types.ObjectId,
+      ref: "Job",
     },
   },
   { timestamps: true }
@@ -47,7 +47,6 @@ const conversationSchema = new Schema<IConversation>(
 // Add indexes for better query performance
 conversationSchema.index({ participants: 1 });
 conversationSchema.index({ "participants.0": 1, "participants.1": 1 }); // For one-to-one conversations
-conversationSchema.index({ lastMessageAt: -1 }); // For ordering conversations by recent activity
 conversationSchema.index({ updatedAt: -1 });
 
 const Conversation = mongoose.model<IConversation>(
