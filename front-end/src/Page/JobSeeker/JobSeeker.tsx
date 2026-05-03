@@ -1,19 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Header from "@/src/components/common/Header";
-import Footer from "@/src/components/common/Footer";
 import { useAuth } from "@/src/hooks/useAuth";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/src/components/ui/tabs";
-import {
   Briefcase,
-  User,
-  MessageSquare,
   Calendar,
   Award,
   TrendingUp,
@@ -25,18 +15,16 @@ import {
   ArrowUpRight,
   Bell,
 } from "lucide-react";
-import JobSeekerProfile from "@/src/components/JobSeeker/JobSeekerProfile";
-import AppliedJobs from "@/src/components/JobSeeker/AppliedJobs";
-import JobSeekerMessages from "@/src/components/JobSeeker/JobSeekerMessages";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
+import JobSeekerLayout from "@/src/components/JobSeeker/JobSeekerLayout";
 
 const JobSeekerDashboard = () => {
-  const { user, isAuthenticated, isJobSeeker } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -102,6 +90,7 @@ const JobSeekerDashboard = () => {
       color: "from-[#234C6A] to-[#456882]",
       trend: "+3 this week",
       trendUp: true,
+      href: "/job-seeker/applications",
     },
     {
       title: "Interviews",
@@ -110,6 +99,7 @@ const JobSeekerDashboard = () => {
       color: "from-blue-500 to-cyan-500",
       trend: "2 upcoming",
       trendUp: true,
+      href: "/job-seeker/interviews",
     },
     {
       title: "Offers",
@@ -118,6 +108,7 @@ const JobSeekerDashboard = () => {
       color: "from-green-500 to-emerald-500",
       trend: "Pending response",
       trendUp: true,
+      href: "/job-seeker/applications",
     },
     {
       title: "Profile Views",
@@ -126,6 +117,7 @@ const JobSeekerDashboard = () => {
       color: "from-purple-500 to-pink-500",
       trend: "+12 this week",
       trendUp: true,
+      href: "/job-seeker/profile",
     },
   ];
 
@@ -152,61 +144,53 @@ const JobSeekerDashboard = () => {
   ];
 
   return (
-    <div ref={containerRef} className="min-h-screen flex flex-col bg-[#E3E3E3]">
-      <Header />
+    <JobSeekerLayout>
+      <div ref={containerRef} className="space-y-8 max-w-7xl mx-auto">
+        {/* Dashboard Header */}
+        <div className="dashboard-header">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-[#234C6A]">
+                Welcome back, {user.name}!
+              </h1>
+              <p className="text-[#456882]">
+                Track your applications and find your dream job
+              </p>
+            </div>
 
-      <main className="flex-1 py-8">
-        <div className="container mx-auto px-4">
-          {/* Dashboard Header */}
-          <div className="dashboard-header mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                  {user.name.charAt(0)}
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-[#234C6A]">
-                    Welcome back, {user.name}!
-                  </h1>
-                  <p className="text-[#456882]">
-                    Track your applications and find your dream job
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Link href="/job">
-                  <Button className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white">
-                    <Briefcase className="h-4 w-4 mr-2" />
-                    Browse Jobs
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10"
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Resume
+            <div className="flex gap-3">
+              <Link href="/job">
+                <Button className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl px-6">
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  Browse Jobs
                 </Button>
-              </div>
+              </Link>
+              <Button
+                variant="outline"
+                className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10 rounded-xl px-6"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                View Resume
+              </Button>
             </div>
           </div>
+        </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat, index) => (
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((stat, index) => (
+            <Link key={index} href={stat.href}>
               <Card
-                key={index}
-                className="stats-card p-5 border-none bg-white shadow-md rounded-xl hover:shadow-lg transition-shadow"
+                className="stats-card p-5 border-none bg-white shadow-md rounded-2xl hover:shadow-xl transition-all duration-300 group cursor-pointer hover:-translate-y-1"
               >
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between mb-4">
                   <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center`}
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
                   >
                     <stat.icon className="h-6 w-6 text-white" />
                   </div>
                   {stat.trendUp && (
-                    <Badge className="bg-green-100 text-green-700 border-none text-xs">
+                    <Badge className="bg-green-100 text-green-700 border-none text-[10px] font-bold px-2 py-0.5">
                       <ArrowUpRight className="h-3 w-3 mr-1" />
                       Up
                     </Badge>
@@ -215,180 +199,117 @@ const JobSeekerDashboard = () => {
                 <p className="text-3xl font-bold text-[#234C6A] mb-1">
                   {stat.value}
                 </p>
-                <p className="text-sm text-[#456882]">{stat.title}</p>
+                <p className="text-sm font-semibold text-[#234C6A]/70 uppercase tracking-wider text-[10px]">{stat.title}</p>
                 <p className="text-xs text-[#456882]/70 mt-1">{stat.trend}</p>
               </Card>
-            ))}
+            </Link>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content Area - Overview Details */}
+          <div className="lg:col-span-2 space-y-8 main-content">
+            <Card className="p-8 border-none bg-white shadow-xl rounded-[32px] overflow-hidden relative">
+               <div className="relative z-10">
+                  <h2 className="text-2xl font-bold text-[#234C6A] mb-2">Get Noticed by Recruiters</h2>
+                  <p className="text-[#456882] mb-6 max-w-md">Complete your profile to increase your chances of being shortlisted by top companies.</p>
+                  <Link href="/job-seeker/profile">
+                    <Button className="bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-2xl px-8 h-12 font-bold shadow-lg shadow-[#234C6A]/20">
+                      Update Profile
+                    </Button>
+                  </Link>
+               </div>
+               <Sparkles className="absolute -bottom-10 -right-10 h-64 w-64 text-[#234C6A]/5 rotate-12" />
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <Card className="p-6 border-none bg-white shadow-lg rounded-[28px]">
+                  <h3 className="font-bold text-[#234C6A] mb-4 flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-[#234C6A]" />
+                    Recent Activity
+                  </h3>
+                  <div className="space-y-6">
+                    {recentActivity.map((activity, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
+                          <activity.icon className={`h-5 w-5 ${activity.color}`} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[#234C6A]">{activity.text}</p>
+                          <p className="text-xs text-[#456882] mt-0.5">{activity.time}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </Card>
+
+               <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-[28px] relative overflow-hidden">
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="h-5 w-5 text-amber-300" />
+                      <h3 className="font-bold">AI Recommendations</h3>
+                    </div>
+                    <p className="text-white/80 text-sm mb-6">
+                      Based on your profile, we found 15 jobs that match your skills.
+                    </p>
+                    <Link href="/job">
+                      <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90 rounded-xl font-bold">
+                        View Matches
+                      </Button>
+                    </Link>
+                  </div>
+                  <Target className="absolute -bottom-12 -right-12 h-40 w-40 text-white/10" />
+               </Card>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 main-content">
-              <Tabs defaultValue="applied" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-6 bg-white rounded-xl p-1 shadow-md">
-                  <TabsTrigger
-                    value="applied"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white rounded-lg"
-                  >
-                    <Briefcase className="h-4 w-4 mr-2" />
-                    Applications
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="profile"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white rounded-lg"
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Profile
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="messages"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white rounded-lg"
-                  >
-                    <MessageSquare className="h-4 w-4 mr-2" />
-                    Messages
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="applied">
-                  <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                    <div className="flex justify-between items-center mb-6">
-                      <div>
-                        <h2 className="text-xl font-bold text-[#234C6A]">
-                          Your Applications
-                        </h2>
-                        <p className="text-sm text-[#456882]">
-                          Track the status of your job applications
-                        </p>
-                      </div>
-                      <Button
-                        className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
-                        onClick={() => router.push("/job")}
-                      >
-                        Browse More Jobs
-                      </Button>
-                    </div>
-                    <AppliedJobs userId={user?._id} />
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="profile">
-                  <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                    <div className="mb-6">
-                      <h2 className="text-xl font-bold text-[#234C6A]">
-                        Your Profile
-                      </h2>
-                      <p className="text-sm text-[#456882]">
-                        Keep your profile updated to attract recruiters
-                      </p>
-                    </div>
-                    <JobSeekerProfile userId={user?._id} />
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="messages">
-                  <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                    <div className="mb-6">
-                      <h2 className="text-xl font-bold text-[#234C6A]">
-                        Messages
-                      </h2>
-                      <p className="text-sm text-[#456882]">
-                        Communicate with recruiters and employers
-                      </p>
-                    </div>
-                    <JobSeekerMessages userId={user?._id} />
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Recent Activity */}
-              <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                <h3 className="text-lg font-bold text-[#234C6A] mb-4 flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Recent Activity
-                </h3>
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <div
-                        className={`w-8 h-8 rounded-lg bg-[#E3E3E3] flex items-center justify-center flex-shrink-0`}
-                      >
-                        <activity.icon
-                          className={`h-4 w-4 ${activity.color}`}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-[#234C6A]">
-                          {activity.text}
-                        </p>
-                        <p className="text-xs text-[#456882]">
-                          {activity.time}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Profile Completion */}
+            <Card className="p-8 border-none bg-white shadow-xl rounded-[32px]">
+              <h3 className="text-xl font-bold text-[#234C6A] mb-6">Profile Strength</h3>
+              <div className="mb-8">
+                <div className="flex justify-between items-end mb-3">
+                  <span className="text-sm font-bold text-[#456882] uppercase tracking-wider">Completion</span>
+                  <span className="text-3xl font-black text-[#234C6A]">75%</span>
                 </div>
-              </Card>
-
-              {/* Profile Completion */}
-              <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                <h3 className="text-lg font-bold text-[#234C6A] mb-4">
-                  Profile Strength
-                </h3>
-                <div className="mb-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm text-[#456882]">Completion</span>
-                    <span className="text-sm font-semibold text-[#234C6A]">
-                      75%
-                    </span>
-                  </div>
-                  <div className="w-full bg-[#E3E3E3] rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-[#234C6A] to-[#456882] h-2 rounded-full"
-                      style={{ width: "75%" }}
-                    />
-                  </div>
+                <div className="w-full bg-gray-100 rounded-full h-3">
+                  <div
+                    className="bg-gradient-to-r from-[#234C6A] to-[#456882] h-3 rounded-full shadow-lg shadow-blue-200"
+                    style={{ width: "75%" }}
+                  />
                 </div>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2 text-green-600">
-                    <CheckCircle className="h-4 w-4" />
-                    Basic info completed
-                  </li>
-                  <li className="flex items-center gap-2 text-green-600">
-                    <CheckCircle className="h-4 w-4" />
-                    Resume uploaded
-                  </li>
-                  <li className="flex items-center gap-2 text-[#456882]">
-                    <div className="w-4 h-4 rounded-full border-2 border-[#456882]" />
-                    Add portfolio link
-                  </li>
-                </ul>
-              </Card>
+              </div>
+              <ul className="space-y-4">
+                <li className="flex items-center gap-3 text-green-600 font-bold text-sm bg-green-50/50 p-3 rounded-2xl">
+                  <CheckCircle className="h-5 w-5" />
+                  Basic info completed
+                </li>
+                <li className="flex items-center gap-3 text-green-600 font-bold text-sm bg-green-50/50 p-3 rounded-2xl">
+                  <CheckCircle className="h-5 w-5" />
+                  Resume uploaded
+                </li>
+                <li className="flex items-center gap-3 text-[#456882] font-bold text-sm p-3 rounded-2xl border-2 border-dashed border-gray-100">
+                  <div className="w-5 h-5 rounded-full border-2 border-[#456882]/30" />
+                  Add portfolio link
+                </li>
+              </ul>
+            </Card>
 
-              {/* Job Recommendations */}
-              <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-2xl">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-5 w-5" />
-                  <h3 className="font-bold">AI Recommendations</h3>
-                </div>
-                <p className="text-white/80 text-sm mb-4">
-                  Based on your profile, we found 15 jobs that match your skills
-                </p>
-                <Link href="/job">
-                  <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90">
-                    View Recommendations
-                  </Button>
-                </Link>
-              </Card>
-            </div>
+            <Card className="p-6 border-none bg-white shadow-lg rounded-[32px] text-center border border-gray-50">
+               <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                  <Bell className="h-8 w-8 text-blue-600" />
+               </div>
+               <h4 className="font-bold text-[#234C6A]">Job Alerts</h4>
+               <p className="text-xs text-[#456882] mt-2 mb-4">Get notified immediately when jobs matching your criteria are posted.</p>
+               <Button variant="outline" className="w-full rounded-xl border-gray-100 text-[#234C6A] font-bold">
+                  Manage Alerts
+               </Button>
+            </Card>
           </div>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </JobSeekerLayout>
   );
 };
 

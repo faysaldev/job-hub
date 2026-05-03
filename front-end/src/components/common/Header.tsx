@@ -36,6 +36,7 @@ import {
   Settings,
   Grid3X3,
   Zap,
+  Calendar,
   type LucideIcon,
 } from "lucide-react";
 import { jobCategories } from "@/src/lib/jobCategories";

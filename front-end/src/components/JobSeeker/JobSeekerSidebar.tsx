@@ -4,14 +4,14 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   Briefcase,
-  Users,
-  Building2,
+  User,
   MessageSquare,
-  Plus,
   Calendar,
   LayoutDashboard,
   ChevronLeft,
   ChevronRight,
+  Heart,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import { useState } from "react";
@@ -25,46 +25,36 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    href: "/recruiter",
+    href: "/job-seeker",
     icon: LayoutDashboard,
-    label: "Dashboard",
+    label: "Overview",
   },
   {
-    href: "/recruiter/jobs",
+    href: "/job-seeker/applications",
     icon: Briefcase,
-    label: "Job Listings",
-    badge: 24,
+    label: "My Applications",
+    badge: 12,
   },
   {
-    href: "/recruiter/create-job",
-    icon: Plus,
-    label: "Create Job",
+    href: "/job-seeker/interviews",
+    icon: Calendar,
+    label: "Interviews",
+    badge: 3,
   },
   {
-    href: "/recruiter/applicants",
-    icon: Users,
-    label: "Applicants",
-    badge: 28,
-  },
-  {
-    href: "/recruiter/interviews",
+    href: "/job-seeker/messages",
     icon: MessageSquare,
-    label: "Interviews Hub",
+    label: "Messages",
     badge: 5,
   },
   {
-    href: "/recruiter/interview-schedule",
-    icon: Calendar,
-    label: "Interview Schedule",
-  },
-  {
-    href: "/recruiter/company",
-    icon: Building2,
-    label: "Company Profile",
+    href: "/job-seeker/profile",
+    icon: User,
+    label: "My Profile",
   },
 ];
 
-const RecruiterSidebar = () => {
+const JobSeekerSidebar = () => {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -77,21 +67,21 @@ const RecruiterSidebar = () => {
     >
       {/* Logo Section */}
       <div className="p-4 border-b border-[#E3E3E3]">
-        <Link href="/recruiter" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center flex-shrink-0">
-            <Briefcase className="h-5 w-5 text-white" />
+        <Link href="/job-seeker" className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center flex-shrink-0 shadow-md">
+            <User className="h-5 w-5 text-white" />
           </div>
           {!isCollapsed && (
             <div>
               <h2 className="font-bold text-[#234C6A]">JobHub</h2>
-              <p className="text-xs text-[#456882]">Recruiter Portal</p>
+              <p className="text-xs text-[#456882]">Seeker Portal</p>
             </div>
           )}
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -165,4 +155,4 @@ const RecruiterSidebar = () => {
   );
 };
 
-export default RecruiterSidebar;
+export default JobSeekerSidebar;
