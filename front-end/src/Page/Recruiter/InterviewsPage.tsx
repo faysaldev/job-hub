@@ -18,6 +18,9 @@ import {
   Trash2,
   MoreVertical,
   MessageSquare,
+  X,
+  ChevronDown,
+  Info,
 } from "lucide-react";
 import {
   useGetUserConversationsQuery,
@@ -29,14 +32,6 @@ import {
   useDeleteMessageMutation,
 } from "@/src/redux/features/messages/messagesApi";
 import { useScheduleInterviewMutation } from "@/src/redux/features/interviews/interviewsApi";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/src/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -126,11 +121,15 @@ const InterviewsPage = () => {
 
   // Update all messages when new data arrives
   useEffect(() => {
-    if (messagesData && Array.isArray(messagesData) && messagesData.length > 0) {
+    if (
+      messagesData &&
+      Array.isArray(messagesData) &&
+      messagesData.length > 0
+    ) {
       if (page === 1) {
         setAllMessages(messagesData);
       } else {
-        // Prepend older messages
+        // Append older messages to the end of the list
         setAllMessages((prev) => {
           const newMessages = messagesData.filter(
             (nm: any) => !prev.find((pm) => pm._id === nm._id),
@@ -383,7 +382,7 @@ const InterviewsPage = () => {
             {selectedCandidate ? (
               <>
                 {/* Chat Header */}
-                <div className="p-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between">
+                <div className="p-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                       {selectedCandidate.avatar ? (
@@ -421,11 +420,20 @@ const InterviewsPage = () => {
                   <div className="flex items-center gap-2">
                     {selectedCandidate.interviewStatus === "pending" && (
                       <Button
-                        onClick={() => setShowScheduler(true)}
-                        className="bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-xl shadow-lg shadow-blue-100/50"
+                        onClick={() => setShowScheduler(!showScheduler)}
+                        className={`${showScheduler ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-[#234C6A] hover:bg-[#234C6A]/90 text-white"} rounded-xl shadow-lg transition-all duration-300`}
                       >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Schedule
+                        {showScheduler ? (
+                          <>
+                            <X className="h-4 w-4 mr-2" />
+                            Cancel
+                          </>
+                        ) : (
+                          <>
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Schedule
+                          </>
+                        )}
                       </Button>
                     )}
 
@@ -455,11 +463,107 @@ const InterviewsPage = () => {
                   </div>
                 </div>
 
+                {/* Scheduler Top Drawer */}
+                <div
+                  className={`absolute top-[7rem] md:top-[8rem] left-0 right-0 z-20 transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${
+                    showScheduler
+                      ? "translate-y-0 opacity-100"
+                      : "-translate-y-full opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <div className="mx-6 p-8 bg-white/95 backdrop-blur-2xl rounded-b-[40px] shadow-[0_20px_50px_rgba(35,76,106,0.15)] border-x border-b border-gray-100/50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-xs font-bold text-[#234C6A] ml-1 uppercase tracking-wider opacity-60">
+                          <Calendar className="h-3 w-3" />
+                          Meeting Date
+                        </label>
+                        <Input
+                          ref={dateRef}
+                          type="date"
+                          className="rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white h-12 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-xs font-bold text-[#234C6A] ml-1 uppercase tracking-wider opacity-60">
+                          <Video className="h-3 w-3" />
+                          Interview Type
+                        </label>
+                        <div className="relative group">
+                          <select
+                            ref={typeRef}
+                            className="w-full h-12 rounded-2xl border border-gray-100 bg-gray-50/50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/10 appearance-none transition-all group-hover:bg-white"
+                          >
+                            <option value="video">Video Call</option>
+                            <option value="audio">Audio Call</option>
+                            <option value="in-person">In Person</option>
+                          </select>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#456882] pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-xs font-bold text-[#234C6A] ml-1 uppercase tracking-wider opacity-60">
+                          <Clock className="h-3 w-3" />
+                          Start Time
+                        </label>
+                        <Input
+                          ref={startTimeRef}
+                          type="time"
+                          className="rounded-2xl border-gray-100 bg-gray-50/50 h-12"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-xs font-bold text-[#234C6A] ml-1 uppercase tracking-wider opacity-60">
+                          <Clock className="h-3 w-3" />
+                          End Time
+                        </label>
+                        <Input
+                          ref={endTimeRef}
+                          type="time"
+                          className="rounded-2xl border-gray-100 bg-gray-50/50 h-12"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mb-8">
+                      <label className="flex items-center gap-2 text-xs font-bold text-[#234C6A] ml-1 uppercase tracking-wider opacity-60">
+                        <MapPin className="h-3 w-3" />
+                        Meeting Link or Location
+                      </label>
+                      <Input
+                        ref={meetLinkRef}
+                        placeholder="Paste Google Meet / Zoom link or office address..."
+                        className="rounded-2xl border-gray-100 bg-gray-50/50 h-12 focus:bg-white"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <Button
+                        onClick={handleScheduleInterview}
+                        disabled={isScheduling}
+                        className="flex-1 h-14 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:opacity-90 text-white rounded-[20px] font-bold shadow-xl shadow-blue-200/50 transition-all active:scale-[0.98]"
+                      >
+                        {isScheduling ? "Confirming..." : "Confirm Schedule"}
+                      </Button>
+                      <div className="w-14 h-14 bg-blue-50 rounded-[20px] flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors cursor-help group relative">
+                        <Info className="h-6 w-6" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#234C6A] text-white text-[10px] rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity text-center shadow-xl">
+                          Candidate will be notified instantly via email and
+                          app.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Messages Area */}
                 <div
                   ref={chatContainerRef}
                   onScroll={handleScroll}
-                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/30 custom-scrollbar"
+                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/30 custom-scrollbar pt-10"
                 >
                   {isFetchingMessages && page > 1 && (
                     <div className="flex justify-center py-2">
@@ -554,104 +658,6 @@ const InterviewsPage = () => {
           </Card>
         </div>
       </div>
-
-      {/* Scheduler Modal */}
-      <Dialog open={showScheduler} onOpenChange={setShowScheduler}>
-        <DialogContent className="sm:max-w-[500px] rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
-          <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white">
-            <DialogHeader>
-              <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md">
-                <Calendar className="h-7 w-7" />
-              </div>
-              <DialogTitle className="text-3xl font-bold">
-                Schedule Interview
-              </DialogTitle>
-              <DialogDescription className="text-white/70 text-base">
-                Set up a time to meet with {selectedCandidate?.name}.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-
-          <div className="p-8 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-[#234C6A] ml-1">
-                  Date
-                </label>
-                <Input
-                  ref={dateRef}
-                  type="date"
-                  className="rounded-2xl border-gray-100 bg-gray-50 focus:bg-white h-12"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-[#234C6A] ml-1">
-                  Type
-                </label>
-                <select
-                  ref={typeRef}
-                  className="w-full h-12 rounded-2xl border border-gray-100 bg-gray-50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/10"
-                >
-                  <option value="video">Video Call</option>
-                  <option value="audio">Audio Call</option>
-                  <option value="in-person">In Person</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-[#234C6A] ml-1">
-                  Start Time
-                </label>
-                <Input
-                  ref={startTimeRef}
-                  type="time"
-                  className="rounded-2xl border-gray-100 bg-gray-50 h-12"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-[#234C6A] ml-1">
-                  End Time
-                </label>
-                <Input
-                  ref={endTimeRef}
-                  type="time"
-                  className="rounded-2xl border-gray-100 bg-gray-50 h-12"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-[#234C6A] ml-1">
-                Meeting Link
-              </label>
-              <Input
-                ref={meetLinkRef}
-                placeholder="https://meet.google.com/..."
-                className="rounded-2xl border-gray-100 bg-gray-50 h-12"
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="p-8 pt-0 flex gap-3">
-            <Button
-              variant="ghost"
-              onClick={() => setShowScheduler(false)}
-              className="flex-1 h-12 rounded-2xl font-bold"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleScheduleInterview}
-              disabled={isScheduling}
-              className="flex-1 h-12 bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-2xl font-bold shadow-lg"
-            >
-              {isScheduling ? "Scheduling..." : "Schedule Now"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </RecruiterLayout>
   );
 };
