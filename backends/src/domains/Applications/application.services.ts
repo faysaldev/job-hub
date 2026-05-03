@@ -20,7 +20,8 @@ const createApplication = async (applicationData: {
 const getApplications = async (filters: any = {}) => {
   return await Application.find(filters)
     .populate("applicant", "name email")
-    .populate("job_id", "job_title company_name");
+    .populate("job_id", "job_title company_name")
+    .sort({ paid_amount: -1, createdAt: -1 });
 };
 
 // Get application by ID
@@ -62,10 +63,9 @@ const getApplicationsByApplicant = async (applicantId: string) => {
 
 // Get applications for a specific job
 const getApplicationsForJob = async (jobId: string) => {
-  return await Application.find({ job_id: jobId }).populate(
-    "applicant",
-    "name email"
-  );
+  return await Application.find({ job_id: jobId })
+    .populate("applicant", "name email")
+    .sort({ paid_amount: -1, createdAt: -1 });
 };
 
 const applicationService = {
