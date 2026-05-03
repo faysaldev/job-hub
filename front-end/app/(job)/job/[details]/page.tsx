@@ -319,15 +319,11 @@ const JobDetail = () => {
                   companyName={companyName}
                 />
 
-                <p className="text-center text-sm text-[#456882]">
-                  or{" "}
-                  <Link
-                    href="#"
-                    className="text-[#234C6A] font-semibold hover:underline"
-                  >
-                    Apply with LinkedIn
-                  </Link>
-                </p>
+                <div className="mt-4 text-center">
+                  <span className="text-xs text-[#456882]/60 italic font-medium bg-[#F5F5F5] px-3 py-1.5 rounded-full border border-[#E3E3E3]/50">
+                    LinkedIn Apply • Coming Soon
+                  </span>
+                </div>
 
                 <div className="mt-6 pt-6 border-t border-[#E3E3E3]">
                   <div className="flex items-center justify-between text-sm mb-3">
