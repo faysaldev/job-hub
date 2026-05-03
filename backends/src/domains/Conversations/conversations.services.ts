@@ -97,7 +97,14 @@ const getUserConversationsService = async (userId: string) => {
     .populate("participants", "name email image")
     .sort({ updatedAt: -1 }); // Sort by most recent message
 
-  return conversations;
+  // Filter out the current user from participants to return only the "other" participant
+  return conversations.map((conv) => {
+    const convObj = conv.toObject() as any;
+    convObj.participants = convObj.participants.filter(
+      (participant: any) => participant._id.toString() !== userId,
+    );
+    return convObj;
+  });
 };
 
 const findConversationByParticipantsService = async (

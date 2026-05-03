@@ -62,9 +62,14 @@ interface Candidate {
   interviewStatus: "none" | "pending" | "scheduled";
 }
 
+import { useGetUserConversationsQuery } from "@/src/redux/features/conversations/conversationsApi";
+
 const InterviewsPage = () => {
   const { user } = useAuth();
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const { data: conversations = [], isLoading } = useGetUserConversationsQuery();
+  console.log("Conversations fetched for interviews:", conversations);
 
   // Sample candidates for scheduling
   const [candidates] = useState<Candidate[]>([
