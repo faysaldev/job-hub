@@ -187,6 +187,25 @@ export interface Application {
   interviewDate?: string;
 }
 
+// ---------- Interviews ----------
+
+export interface Interview {
+  _id: string;
+  application_id: string | any;
+  job_id: string | any;
+  interviewer: string | any;
+  interviewee: string | any;
+  date: string;
+  start_time: string;
+  end_time: string;
+  meet_link?: string;
+  type: "video" | "audio" | "in-person";
+  status: "scheduled" | "completed" | "cancelled";
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ---------- Messaging ----------
 
 export type MessageType = "text" | "file" | "scheduling" | "system";
