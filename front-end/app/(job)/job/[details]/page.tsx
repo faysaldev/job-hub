@@ -27,6 +27,7 @@ import {
 import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 import { useSaveJobMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
 import { toast } from "sonner";
+import ApplyJobModal from "@/src/components/jobs/ApplyJobModal";
 
 interface PopulatedJob {
   _id: string;
@@ -312,10 +313,11 @@ const JobDetail = () => {
                   future.
                 </p>
 
-                <Button className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold mb-4 group">
-                  <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
-                  Apply Now
-                </Button>
+                <ApplyJobModal
+                  jobId={job._id}
+                  jobTitle={job.title}
+                  companyName={companyName}
+                />
 
                 <p className="text-center text-sm text-[#456882]">
                   or{" "}
