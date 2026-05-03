@@ -75,8 +75,8 @@ export default function ApplyJobModal({
       return;
     }
 
-    if (coverLetter.length < 300) {
-      toast.error("Cover letter must be at least 300 characters");
+    if (coverLetter.length < 150) {
+      toast.error("Cover letter must be at least 150 characters");
       return;
     }
 
@@ -219,11 +219,11 @@ export default function ApplyJobModal({
                 className="text-sm font-semibold text-[#234C6A] flex items-center gap-2"
               >
                 <FileText className="h-4 w-4" />
-                Cover Letter (Min. 300 chars)
+                Cover Letter (Min. 150 chars)
               </Label>
               <Textarea
                 id="coverLetter"
-                placeholder="Why are you a great fit for this role? (Minimum 300 characters)"
+                placeholder="Why are you a great fit for this role? (Minimum 150 characters)"
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
                 className="min-h-[150px] rounded-xl border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]/10 p-4 leading-relaxed"
@@ -231,14 +231,14 @@ export default function ApplyJobModal({
               />
               <div className="flex justify-between items-center px-1">
                 <span
-                  className={`text-[10px] font-bold ${coverLetter.length < 300 ? "text-red-500" : "text-green-500"}`}
+                  className={`text-[10px] font-bold ${coverLetter.length < 150 ? "text-red-500" : "text-green-500"}`}
                 >
-                  {coverLetter.length < 300
-                    ? `${300 - coverLetter.length} more characters needed`
+                  {coverLetter.length < 150
+                    ? `${150 - coverLetter.length} more characters needed`
                     : "Character limit met"}
                 </span>
                 <p className="text-[10px] text-[#456882]">
-                  {coverLetter.length} / 300 minimum
+                  {coverLetter.length} / 150 minimum
                 </p>
               </div>
             </div>

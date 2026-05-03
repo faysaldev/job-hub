@@ -4,7 +4,15 @@ import { Application, ApplicationStatus } from "@/src/types";
 const applicationsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // POST /applications - Apply to a job (Seeker)
-    applyToJob: builder.mutation<Application, { job_id: string; cover_letter: string; resume_url: string }>({
+    applyToJob: builder.mutation<
+      Application,
+      {
+        job_id: string;
+        cover_letter: string;
+        resume_url: string;
+        paid_amount?: number;
+      }
+    >({
       query: (body) => ({
         url: "/applications",
         method: "POST",
