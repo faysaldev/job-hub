@@ -85,6 +85,17 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+// Virtual for seeker profile
+userSchema.virtual("seeker", {
+  ref: "Seeker",
+  localField: "_id",
+  foreignField: "userId",
+  justOne: true,
+});
+
+userSchema.set("toJSON", { virtuals: true });
+userSchema.set("toObject", { virtuals: true });
+
 const User = mongoose.model<IAMUser>("User", userSchema);
 
 export default User;

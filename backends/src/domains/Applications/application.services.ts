@@ -10,7 +10,7 @@ const createApplication = async (applicationData: {
 }) => {
   const application = new Application(applicationData);
   const savedApplication = await application.save();
-  
+
   // Logic to notify recruiter should be here or in controller
   // For now, just fix the return
   return savedApplication;
@@ -58,7 +58,16 @@ const deleteApplication = async (id: string) => {
 const getApplicationsByApplicant = async (applicantId: string) => {
   return await Application.find({
     applicant: applicantId,
-  }).populate("job_id", "title company");
+  })
+    .populate({
+      path: "job_id",
+      select: "title company type author",
+      populate: {
+        path: "company",
+        select: "companyName companyLogo",
+      },
+    })
+    .sort({ createdAt: -1 });
 };
 
 // Get applications for a specific job
