@@ -80,6 +80,12 @@ const hireCandidate = async (
     { status: "hired" },
   );
 
+  // 3. Update interview status to "completed"
+  await Interview.updateMany(
+    { job_id: jobId, interviewee: applicantId, status: "scheduled" },
+    { status: "completed" },
+  );
+
   return { success: true };
 };
 
