@@ -10,18 +10,6 @@ const scheduleInterview = asyncHandler(
     const interviewData = req.body;
     const userId = req.user?._id;
 
-    if (!userId) {
-      return res
-        .status(httpStatus.UNAUTHORIZED)
-        .json(
-          response({
-            message: "Unauthorized",
-            status: "ERROR",
-            statusCode: httpStatus.UNAUTHORIZED,
-          }),
-        );
-    }
-
     // Ensure the current user is the interviewer
     interviewData.interviewer = userId;
 
@@ -44,15 +32,13 @@ const getMyInterviews = asyncHandler(
     const { role } = req.query; // "interviewer" or "interviewee"
 
     if (!userId) {
-      return res
-        .status(httpStatus.UNAUTHORIZED)
-        .json(
-          response({
-            message: "Unauthorized",
-            status: "ERROR",
-            statusCode: httpStatus.UNAUTHORIZED,
-          }),
-        );
+      return res.status(httpStatus.UNAUTHORIZED).json(
+        response({
+          message: "Unauthorized",
+          status: "ERROR",
+          statusCode: httpStatus.UNAUTHORIZED,
+        }),
+      );
     }
 
     const interviews = await interviewService.getInterviewsForUser(

@@ -1,22 +1,45 @@
 import Interview, { IInterview } from "./interviews.model";
 import Application from "../Applications/application.model";
+import Conversation from "../Conversations/conversations.model";
 
 const scheduleInterview = async (interviewData: Partial<IInterview>) => {
   const interview = new Interview(interviewData);
   const savedInterview = await interview.save();
 
-  // Optionally update application status if not already set
-  if (interviewData.application_id) {
-    await Application.findByIdAndUpdate(interviewData.application_id, {
-      status: "interview",
-    });
+  // 1. Update application status to "interview"
+
+  await Application.findOneAndUpdate(
+    { job_id: interviewData.job_id, applicant: interviewData.interviewee },
+    { status: "interview" },
+  );
+
+  // 2. Update conversation status to "interview"
+  // Find the conversation for this specific job and these participants
+  if (
+    interviewData.job_id &&
+    interviewData.interviewee &&
+    interviewData.interviewer
+  ) {
+    await Conversation.findOneAndUpdate(
+      {
+        job_id: interviewData.job_id,
+        participants: {
+          $all: [interviewData.interviewee, interviewData.interviewer],
+        },
+      },
+      { status: "interview" },
+    );
   }
 
   return savedInterview;
 };
 
-const getInterviewsForUser = async (userId: string, role: "interviewer" | "interviewee") => {
-  const query = role === "interviewer" ? { interviewer: userId } : { interviewee: userId };
+const getInterviewsForUser = async (
+  userId: string,
+  role: "interviewer" | "interviewee",
+) => {
+  const query =
+    role === "interviewer" ? { interviewer: userId } : { interviewee: userId };
   return await Interview.find(query)
     .populate("application_id")
     .populate("job_id", "title")
@@ -26,7 +49,11 @@ const getInterviewsForUser = async (userId: string, role: "interviewer" | "inter
 };
 
 const updateInterviewStatus = async (interviewId: string, status: string) => {
-  return await Interview.findByIdAndUpdate(interviewId, { status }, { new: true });
+  return await Interview.findByIdAndUpdate(
+    interviewId,
+    { status },
+    { new: true },
+  );
 };
 
 const deleteInterview = async (interviewId: string) => {
