@@ -72,6 +72,25 @@ const JobDetail = () => {
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: job?.title || "Job Opportunity",
+      text: `Check out this ${job?.title} position at ${companyName}!`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#E3E3E3]">
@@ -196,6 +215,7 @@ const JobDetail = () => {
                 <Button
                   variant="outline"
                   className="border-white/30 text-white hover:bg-white/10"
+                  onClick={handleShare}
                 >
                   <Share2 className="h-4 w-4 mr-2" />
                   Share
