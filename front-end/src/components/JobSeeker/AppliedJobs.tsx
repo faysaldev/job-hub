@@ -20,13 +20,19 @@ import {
 import { Application } from "@/src/types";
 import Link from "next/link";
 import gsap from "gsap";
+import { useGetUserApplicationsQuery } from "@/src/redux/features/applications/applicationsApi";
 
-interface AppliedJob extends Omit<Application, 'jobSeekerId' | 'jobSeekerName' | 'jobId' | 'resumeUrl' | 'profileUrl'> {
+interface AppliedJob extends Omit<
+  Application,
+  "jobSeekerId" | "jobSeekerName" | "jobId" | "resumeUrl" | "profileUrl"
+> {
   jobId: string;
 }
 
 const AppliedJobs = ({ userId }: { userId: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { data: applications, isLoading } = useGetUserApplicationsQuery();
+  console.log(applications);
 
   const dummyApplications: AppliedJob[] = [
     {
@@ -35,9 +41,10 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
       jobTitle: "Senior Frontend Developer",
       companyName: "TechCorp Inc.",
       appliedDate: "2024-11-20",
-      coverLetter: "I am excited to apply for this position as I have extensive experience with React and TypeScript, which aligns perfectly with your requirements.",
+      coverLetter:
+        "I am excited to apply for this position as I have extensive experience with React and TypeScript, which aligns perfectly with your requirements.",
       status: "shortlisted",
-      paymentAmount: 25
+      paymentAmount: 25,
     },
     {
       id: "2",
@@ -45,9 +52,10 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
       jobTitle: "Product Designer",
       companyName: "DesignStudio",
       appliedDate: "2024-11-18",
-      coverLetter: "With 5 years of product design experience and a strong portfolio, I believe I can contribute significantly to your design team.",
+      coverLetter:
+        "With 5 years of product design experience and a strong portfolio, I believe I can contribute significantly to your design team.",
       status: "reviewed",
-      paymentAmount: 10
+      paymentAmount: 10,
     },
     {
       id: "3",
@@ -55,9 +63,10 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
       jobTitle: "Backend Engineer",
       companyName: "DataFlow",
       appliedDate: "2024-11-15",
-      coverLetter: "My expertise in Node.js and cloud infrastructure makes me a great fit for this backend position. Excited about your innovative projects.",
+      coverLetter:
+        "My expertise in Node.js and cloud infrastructure makes me a great fit for this backend position. Excited about your innovative projects.",
       status: "pending",
-      paymentAmount: 0
+      paymentAmount: 0,
     },
     {
       id: "4",
@@ -65,10 +74,11 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
       jobTitle: "DevOps Engineer",
       companyName: "CloudSystems",
       appliedDate: "2024-11-10",
-      coverLetter: "I have hands-on experience with Docker, Kubernetes, and CI/CD pipelines that align with your tech stack requirements.",
+      coverLetter:
+        "I have hands-on experience with Docker, Kubernetes, and CI/CD pipelines that align with your tech stack requirements.",
       status: "rejected",
-      paymentAmount: 50
-    }
+      paymentAmount: 50,
+    },
   ];
 
   useEffect(() => {
@@ -82,7 +92,7 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
           duration: 0.5,
           stagger: 0.1,
           ease: "power2.out",
-        }
+        },
       );
     }, containerRef);
 
@@ -130,7 +140,9 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
         <div className="w-20 h-20 rounded-full bg-[#234C6A]/10 flex items-center justify-center mx-auto mb-6">
           <Briefcase className="h-10 w-10 text-[#234C6A]" />
         </div>
-        <h3 className="text-xl font-bold text-[#234C6A] mb-2">No Applications Yet</h3>
+        <h3 className="text-xl font-bold text-[#234C6A] mb-2">
+          No Applications Yet
+        </h3>
         <p className="text-[#456882] mb-6">
           Start browsing jobs and apply to get started!
         </p>
@@ -159,7 +171,9 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
             className="application-card p-6 bg-white border-none shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group overflow-hidden relative"
           >
             {/* Status indicator bar */}
-            <div className={`absolute top-0 left-0 right-0 h-1 ${statusConfig.bgColor}`} />
+            <div
+              className={`absolute top-0 left-0 right-0 h-1 ${statusConfig.bgColor}`}
+            />
 
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
               <div className="flex gap-4 flex-1">
@@ -179,7 +193,9 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
                         <span>{app.companyName}</span>
                       </div>
                     </div>
-                    <Badge className={`${statusConfig.color} border flex items-center gap-1`}>
+                    <Badge
+                      className={`${statusConfig.color} border flex items-center gap-1`}
+                    >
                       <StatusIcon className="h-3 w-3" />
                       {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
                     </Badge>
@@ -188,14 +204,17 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
                   <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-[#456882]">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      <span>Applied {new Date(app.appliedDate).toLocaleDateString()}</span>
+                      <span>
+                        Applied {new Date(app.appliedDate).toLocaleDateString()}
+                      </span>
                     </div>
-                    {app.paymentAmount !== undefined && app.paymentAmount > 0 && (
-                      <div className="flex items-center gap-1 text-[#234C6A] font-medium">
-                        <DollarSign className="h-4 w-4" />
-                        <span>${app.paymentAmount.toFixed(2)} boost</span>
-                      </div>
-                    )}
+                    {app.paymentAmount !== undefined &&
+                      app.paymentAmount > 0 && (
+                        <div className="flex items-center gap-1 text-[#234C6A] font-medium">
+                          <DollarSign className="h-4 w-4" />
+                          <span>${app.paymentAmount.toFixed(2)} boost</span>
+                        </div>
+                      )}
                   </div>
 
                   {app.coverLetter && (
