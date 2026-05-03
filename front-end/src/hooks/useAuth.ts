@@ -58,14 +58,14 @@ export const useAuth = (): UseAuthReturn => {
       }
       return true;
     },
-    [user, token, router]
+    [user, token, router],
   );
 
   return {
     user,
     token,
     isAuthenticated: !!user && !!token,
-    isJobSeeker: user?.role === "jobseeker",
+    isJobSeeker: user?.role === "seeker",
     isRecruiter: user?.role === "recruiter",
     isAdmin: user?.role === "admin",
     isProfileCompleted: user?.isProfileCompleted ?? false,

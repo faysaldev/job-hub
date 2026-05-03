@@ -6,7 +6,7 @@ export interface AuthUser {
   name: string;
   email: string;
   image: string | null;
-  role: "jobseeker" | "recruiter" | "admin";
+  role: "seeker" | "recruiter" | "admin";
   phoneNumber?: string;
   isProfileCompleted: boolean;
   isVerified: boolean;
