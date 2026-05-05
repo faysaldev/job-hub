@@ -108,6 +108,7 @@ export default function ApplyJobModal({
       } else {
         toast.success("Application submitted successfully!");
         setOpen(false);
+        router.push("/applied-successfully");
         setCoverLetter("");
         setResumeUrl("");
         setPaidAmount("");
