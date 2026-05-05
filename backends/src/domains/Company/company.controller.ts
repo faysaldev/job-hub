@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   createCompanyService,
   getAllCompaniesService,
+  getCompanyService,
   getCompanyByUserIdService,
   updateCompanyByUserIdService,
 } from "./company.services";
@@ -54,18 +55,40 @@ export const getCompany = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
-export const getAllCompanies = asyncHandler(async (req: Request, res: Response) => {
-  const companies = await getAllCompaniesService();
+export const getAllCompanies = asyncHandler(
+  async (req: Request, res: Response) => {
+    const companies = await getAllCompaniesService(req.query);
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Companies retrieved successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: companies,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Companies retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: companies,
+      }),
+    );
+  },
+);
+
+export const getCompanyById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const company = await getCompanyService(id);
+
+    if (!company) {
+      throw new AppError("Company profile not found", httpStatus.NOT_FOUND);
+    }
+
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Company retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: company,
+      }),
+    );
+  },
+);
 
 export const updateCompany = asyncHandler(async (req: Request, res: Response) => {
   const protectedReq = req as ProtectedRequest;

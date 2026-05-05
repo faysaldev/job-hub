@@ -87,7 +87,15 @@ export type CompanySize =
   | "1000+";
 
 export interface CompanyProfile {
-  userId: string;
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    role: string;
+    phoneNumber?: string;
+  };
   companyLogo?: string;
   companyName: string;
   industries: string;
@@ -95,7 +103,8 @@ export interface CompanyProfile {
   website?: string;
   description: string;
   companyLocation: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ---------- Jobs ----------

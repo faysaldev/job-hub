@@ -2,6 +2,7 @@ import express from "express";
 import {
   createCompany,
   getCompany,
+  getCompanyById,
   getAllCompanies,
   updateCompany,
 } from "./company.controller";
@@ -18,18 +19,15 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  // cloudinaryFileUploadMiddleware().single("companyLogo"),
-  // processCloudinarySingleUpload("company", "companyLogo"),
   validate(companyValidator.createCompanyValidation),
   createCompany,
 );
-router.get("/", authMiddleware, getCompany); // Get authenticated user's company profile
+router.get("/profile", authMiddleware, getCompany); // Get authenticated user's company profile
 router.get("/all", authMiddleware, getAllCompanies); // Get all companies
+router.get("/:id", authMiddleware, getCompanyById); // Get company by ID
 router.put(
   "/",
   authMiddleware,
-  // cloudinaryFileUploadMiddleware().single("companyLogo"),
-  // processCloudinarySingleUpload("company", "companyLogo"),
   validate(companyValidator.updateCompanyValidation),
   updateCompany,
 ); // Update authenticated user's company profile

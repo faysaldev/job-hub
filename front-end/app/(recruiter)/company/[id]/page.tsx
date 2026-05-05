@@ -1,511 +1,252 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { CompanyProfile } from "@/src/types";
-import Header from "@/src/components/common/Header";
-import Footer from "@/src/components/common/Footer";
-import { Card } from "@/src/components/ui/card";
-import { Badge } from "@/src/components/ui/badge";
-import { Button } from "@/src/components/ui/button";
+"use client";
+
+import { useParams } from "next/navigation";
+import { useGetSingleCompanyQuery } from "@/src/redux/features/company/companyApi";
 import {
   Building2,
   Globe,
   MapPin,
   Users,
   Briefcase,
-  Star,
   Mail,
   Phone,
   ArrowLeft,
   Calendar,
-  TrendingUp,
-  Award,
-  Heart,
-  Share2,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Sparkles,
+  ExternalLink,
+  ShieldCheck,
   Target,
+  Users2,
   Zap,
-  Shield,
-  Coffee,
 } from "lucide-react";
+import Link from "next/link";
+import { Badge } from "@/src/components/ui/badge";
+import { Button } from "@/src/components/ui/button";
+import { Card } from "@/src/components/ui/card";
 
-// Function to fetch company data by ID
-async function getCompanyById(id: string): Promise<CompanyProfile | null> {
-  const mockCompanies: Record<string, CompanyProfile> = {
-    techcorp: {
-      userId: "techcorp",
-      companyName: "TechCorp",
-      industries: "Information Technology",
-      companySize: "51-200",
-      website: "https://techcorp.example.com",
-      description:
-        "We are an innovative technology company focused on creating cutting-edge solutions for businesses worldwide. Our team of experts delivers exceptional services and products that help organizations thrive in the digital era. We prioritize innovation, collaboration, and employee growth.",
-      companyLocation: "San Francisco, CA",
-      companyLogo: "https://placehold.co/150x150/234C6A/FFFFFF?text=TC",
-    },
-    designstudio: {
-      userId: "designstudio",
-      companyName: "DesignStudio",
-      industries: "Design & Creative",
-      companySize: "11-50",
-      website: "https://designstudio.example.com",
-      description:
-        "We are a creative team of designers focused on delivering beautiful and functional user experiences. Our team creates products that are not only visually appealing but also intuitive and user-friendly. We believe in the power of design to solve problems and create meaningful connections.",
-      companyLocation: "New York, NY",
-      companyLogo: "https://placehold.co/150x150/456882/FFFFFF?text=DS",
-    },
-  };
+const CompanyPage = () => {
+  const { id } = useParams();
+  const { data: response, isLoading, error } = useGetSingleCompanyQuery(id as string);
+  const company = response?.data;
 
-  return mockCompanies[id] || null;
-}
-
-// Mock open positions data
-const mockOpenPositions = [
-  {
-    id: 1,
-    title: "Senior Frontend Developer",
-    type: "Full-time",
-    location: "San Francisco, CA",
-    salary: "$120k - $160k",
-    posted: "2 days ago",
-    skills: ["React", "TypeScript", "Tailwind CSS"],
-    urgent: true,
-  },
-  {
-    id: 2,
-    title: "Product Designer",
-    type: "Full-time",
-    location: "Remote",
-    salary: "$90k - $130k",
-    posted: "1 week ago",
-    skills: ["Figma", "UI/UX", "Design Systems"],
-    urgent: false,
-  },
-  {
-    id: 3,
-    title: "Backend Engineer",
-    type: "Full-time",
-    location: "San Francisco, CA",
-    salary: "$130k - $170k",
-    posted: "3 days ago",
-    skills: ["Node.js", "PostgreSQL", "AWS"],
-    urgent: false,
-  },
-];
-
-// Company benefits
-const companyBenefits = [
-  { icon: Coffee, title: "Free Meals", description: "Daily catered lunch and snacks" },
-  { icon: Heart, title: "Health Insurance", description: "Comprehensive medical, dental, vision" },
-  { icon: Calendar, title: "Unlimited PTO", description: "Take time when you need it" },
-  { icon: TrendingUp, title: "401(k) Match", description: "Up to 4% company matching" },
-  { icon: Zap, title: "Learning Budget", description: "$3,000/year for development" },
-  { icon: Shield, title: "Parental Leave", description: "16 weeks paid leave" },
-];
-
-const CompanyDetailPage = async ({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) => {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
-  const companyId = id;
-  const company = await getCompanyById(companyId);
-
-  if (!company) {
-    notFound();
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-[#234C6A] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-[#234C6A] font-bold uppercase tracking-widest text-sm">
+          Loading Company Profile...
+        </p>
+      </div>
+    );
   }
 
-  const calculateRating = () => {
-    const ratings: Record<string, number> = {
-      techcorp: 4.5,
-      designstudio: 4.2,
-    };
-    return ratings[companyId] || 4.0;
-  };
-
-  const getJobCount = () => {
-    const counts: Record<string, number> = {
-      techcorp: 12,
-      designstudio: 8,
-    };
-    return counts[companyId] || 5;
-  };
+  if (error || !company) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
+          <Building2 className="h-10 w-10 text-red-400" />
+        </div>
+        <h3 className="text-2xl font-black text-[#234C6A]">Company not found</h3>
+        <p className="text-gray-500 mt-2 max-w-md">
+          We couldn't find the company profile you're looking for. It may have
+          been removed or the link might be incorrect.
+        </p>
+        <Link href="/job" className="mt-8">
+          <Button className="rounded-2xl bg-[#234C6A] hover:bg-[#1a3a52] text-white font-bold px-8 h-14">
+            Browse Jobs
+          </Button>
+        </Link>
+      </div>
+    );
+  }
 
   const stats = [
-    { label: "Open Positions", value: getJobCount(), icon: Briefcase },
-    { label: "Team Size", value: company.companySize, icon: Users },
-    { label: "Company Rating", value: `${calculateRating()}/5`, icon: Star },
-    { label: "Founded", value: "2015", icon: Calendar },
+    { label: "Company Size", value: company.companySize || "N/A", icon: Users },
+    { label: "Industry", value: company.industries || "Technology", icon: Briefcase },
+    { label: "Location", value: company.companyLocation || "Global", icon: MapPin },
+    { label: "Since", value: new Date(company.createdAt).getFullYear(), icon: Calendar },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#E3E3E3]">
-      <Header />
-
-      <main className="flex-1">
-        {/* Hero Section */}
-        <div className="bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] pt-8 pb-32 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
-            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/3 rounded-full blur-3xl" />
-          </div>
-
-          <div className="container mx-auto px-4 relative z-10">
-            {/* Breadcrumb */}
-            <Link
-              href="/job"
-              className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-6"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Jobs
-            </Link>
-
-            {/* Company Header */}
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-              <div className="flex items-start gap-6">
-                {/* Company Logo */}
-                <div className="w-24 h-24 rounded-2xl bg-white shadow-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {company.companyLogo ? (
-                    <img
-                      src={company.companyLogo}
-                      alt={`${company.companyName} logo`}
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <Building2 className="h-12 w-12 text-[#234C6A]" />
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
-                      <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse" />
-                      Actively Hiring
-                    </Badge>
-                    <Badge className="bg-white/10 text-white border-white/20">
-                      {company.industries}
-                    </Badge>
-                  </div>
-
-                  <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-                    {company.companyName}
-                  </h1>
-
-                  <div className="flex flex-wrap items-center gap-4 text-white/80">
-                    <span className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      {company.companyLocation}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      {company.companySize} employees
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      {calculateRating()} rating
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4" />
-                      {getJobCount()} open positions
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3 lg:flex-col xl:flex-row">
-                <Button
-                  variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10"
-                >
-                  <Heart className="h-4 w-4 mr-2" />
-                  Follow
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#F8FAFC]">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] pt-32 pb-48 relative overflow-hidden">
+        {/* Background Patterns */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white rounded-full blur-[120px] -mr-64 -mt-64" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-400 rounded-full blur-[100px] -ml-48 -mb-48" />
         </div>
 
-        {/* Main Content */}
-        <div className="container mx-auto px-4 -mt-20 relative z-20 pb-12">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat, index) => (
-              <Card
-                key={index}
-                className="p-5 border-none bg-white shadow-lg rounded-xl"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center">
-                    <stat.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[#234C6A]">
-                      {stat.value}
-                    </p>
-                    <p className="text-sm text-[#456882]">{stat.label}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* About Section */}
-              <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                <h2 className="text-xl font-bold text-[#234C6A] mb-4 flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  About {company.companyName}
-                </h2>
-                <p className="text-[#456882] leading-relaxed mb-6">
-                  {company.description}
-                </p>
-
-                {/* Company Values */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    { icon: Target, title: "Mission", text: "Innovate for impact" },
-                    { icon: Sparkles, title: "Vision", text: "Shape the future" },
-                    { icon: Award, title: "Values", text: "Excellence first" },
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className="p-4 bg-gradient-to-br from-[#234C6A]/5 to-[#456882]/5 rounded-xl"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-[#234C6A]/10 flex items-center justify-center mb-3">
-                        <item.icon className="h-5 w-5 text-[#234C6A]" />
-                      </div>
-                      <h4 className="font-semibold text-[#234C6A] mb-1">
-                        {item.title}
-                      </h4>
-                      <p className="text-sm text-[#456882]">{item.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Open Positions */}
-              <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-[#234C6A] flex items-center gap-2">
-                    <Briefcase className="h-5 w-5" />
-                    Open Positions
-                  </h2>
-                  <Badge className="bg-[#234C6A]/10 text-[#234C6A]">
-                    {mockOpenPositions.length} jobs
-                  </Badge>
-                </div>
-
-                <div className="space-y-4">
-                  {mockOpenPositions.map((position) => (
-                    <div
-                      key={position.id}
-                      className="p-5 border border-[#E3E3E3] rounded-xl hover:border-[#234C6A]/30 hover:shadow-md transition-all group"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-[#234C6A] group-hover:text-[#456882] transition-colors">
-                              {position.title}
-                            </h3>
-                            {position.urgent && (
-                              <Badge className="bg-red-100 text-red-600 text-xs">
-                                Urgent
-                              </Badge>
-                            )}
-                          </div>
-
-                          <div className="flex flex-wrap gap-3 text-sm text-[#456882] mb-3">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3.5 w-3.5" />
-                              {position.location}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Briefcase className="h-3.5 w-3.5" />
-                              {position.type}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="h-3.5 w-3.5" />
-                              {position.salary}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              {position.posted}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            {position.skills.map((skill, index) => (
-                              <Badge
-                                key={index}
-                                className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs"
-                              >
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <Link href={`/job/${position.id}`}>
-                          <Button className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white">
-                            Apply Now
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-[#E3E3E3]">
-                  <Link href="/job">
-                    <Button
-                      variant="outline"
-                      className="w-full border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10"
-                    >
-                      View All Open Positions
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-
-              {/* Benefits & Perks */}
-              <Card className="p-6 border-none bg-white shadow-lg rounded-2xl">
-                <h2 className="text-xl font-bold text-[#234C6A] mb-6 flex items-center gap-2">
-                  <Award className="h-5 w-5" />
-                  Benefits & Perks
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {companyBenefits.map((benefit, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-4 p-4 bg-green-50 rounded-xl"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <benefit.icon className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-[#234C6A]">
-                          {benefit.title}
-                        </h4>
-                        <p className="text-sm text-[#456882]">
-                          {benefit.description}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-10">
+            {/* Logo Wrapper */}
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-white/20 rounded-[40px] blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative w-40 h-40 bg-white rounded-[36px] shadow-2xl flex items-center justify-center p-6 border-8 border-white/10">
+                {company.companyLogo ? (
+                  <img
+                    src={company.companyLogo}
+                    alt={company.companyName}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <Building2 className="w-20 h-20 text-[#234C6A]" />
+                )}
+              </div>
             </div>
 
-            {/* Right Column - Sidebar */}
-            <div className="space-y-6">
-              {/* Quick Apply Card */}
-              <Card className="p-6 border-none bg-white shadow-lg rounded-2xl sticky top-24">
-                <h3 className="text-xl font-bold text-[#234C6A] mb-4">
-                  Work at {company.companyName}
-                </h3>
-                <p className="text-[#456882] mb-6">
-                  Join an amazing team and build the future together. We are
-                  always looking for talented individuals.
-                </p>
+            {/* Title & Info */}
+            <div className="flex-1 text-center lg:text-left space-y-4">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                <Badge className="bg-green-400/20 text-green-300 border-green-500/30 px-4 py-1.5 rounded-full font-bold uppercase text-[10px] tracking-widest flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                  Verified Employer
+                </Badge>
+                <Badge className="bg-white/10 text-white border-white/20 px-4 py-1.5 rounded-full font-bold text-[10px] tracking-widest">
+                  {company.industries}
+                </Badge>
+              </div>
 
-                <Button className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold mb-4">
-                  <Briefcase className="h-4 w-4 mr-2" />
-                  View All Jobs
-                </Button>
+              <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight">
+                {company.companyName}
+              </h1>
 
-                <div className="grid grid-cols-2 gap-3">
-                  {company.website && (
-                    <Button
-                      variant="outline"
-                      className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10"
-                    >
-                      <Globe className="h-4 w-4 mr-2" />
-                      Website
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10"
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-blue-100/80 font-medium text-lg">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-blue-300" />
+                  {company.companyLocation}
+                </div>
+                {company.website && (
+                  <a
+                    href={company.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 hover:text-white transition-colors"
                   >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Contact
-                  </Button>
-                </div>
+                    <Globe className="h-5 w-5 text-blue-300" />
+                    Visit Website
+                  </a>
+                )}
+              </div>
+            </div>
 
-                <div className="mt-6 pt-6 border-t border-[#E3E3E3]">
-                  <h4 className="font-semibold text-[#234C6A] mb-4">
-                    Company Details
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm">
-                      <Building2 className="h-4 w-4 text-[#456882]" />
-                      <span className="text-[#456882]">{company.industries}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <Users className="h-4 w-4 text-[#456882]" />
-                      <span className="text-[#456882]">
-                        {company.companySize} employees
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <MapPin className="h-4 w-4 text-[#456882]" />
-                      <span className="text-[#456882]">{company.companyLocation}</span>
-                    </div>
-                    {company.website && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Globe className="h-4 w-4 text-[#456882]" />
-                        <span className="text-[#456882] truncate">
-                          {company.website}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-3 text-sm">
-                      <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                      <span className="text-[#456882]">
-                        {calculateRating()}/5 company rating
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Similar Companies */}
-              <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-2xl">
-                <h3 className="text-lg font-bold mb-2">Similar Companies</h3>
-                <p className="text-white/80 text-sm mb-4">
-                  Explore other companies in {company.industries}
-                </p>
-                <Link href="/job">
-                  <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90">
-                    Browse Companies
-                  </Button>
-                </Link>
-              </Card>
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-3 w-full lg:w-auto">
+              <Button className="h-14 px-10 rounded-2xl bg-white text-[#234C6A] hover:bg-blue-50 font-black text-lg shadow-xl transition-all active:scale-95">
+                Apply for Jobs
+              </Button>
+              <Button variant="outline" className="h-14 px-10 rounded-2xl border-white/30 text-white hover:bg-white/10 font-bold text-lg">
+                Save Company
+              </Button>
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
-      <Footer />
+      {/* Main Content Area */}
+      <div className="container mx-auto px-6 -mt-24 pb-20 relative z-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Left Side: Stats & Details */}
+          <div className="lg:col-span-1 space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+              {stats.map((stat, i) => (
+                <Card key={i} className="p-6 border-none shadow-xl rounded-3xl bg-white group hover:translate-y-[-4px] transition-all duration-300">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center group-hover:bg-[#234C6A] transition-colors">
+                      <stat.icon className="h-6 w-6 text-[#234C6A] group-hover:text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-[#456882] uppercase tracking-wider">
+                        {stat.label}
+                      </p>
+                      <p className="text-xl font-black text-[#234C6A]">
+                        {stat.value}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Contact Card */}
+            <Card className="p-8 border-none shadow-xl rounded-[32px] bg-white space-y-6">
+              <h3 className="text-xl font-black text-[#234C6A] flex items-center gap-2">
+                <Target className="h-6 w-6 text-blue-500" />
+                Contact Details
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                    <Mail className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</p>
+                    <p className="text-[#234C6A] font-bold truncate">{company.userId?.email}</p>
+                  </div>
+                </div>
+                {company.userId?.phoneNumber && (
+                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                      <Phone className="h-5 w-5 text-emerald-500" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</p>
+                      <p className="text-[#234C6A] font-bold">{company.userId?.phoneNumber}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+
+          {/* Right Side: Main Description & More */}
+          <div className="lg:col-span-2 space-y-8">
+            <Card className="p-10 border-none shadow-xl rounded-[40px] bg-white">
+              <h2 className="text-3xl font-black text-[#234C6A] mb-8 flex items-center gap-3">
+                <ShieldCheck className="h-8 w-8 text-blue-500" />
+                About the Company
+              </h2>
+              <div className="prose prose-blue max-w-none text-gray-600 font-medium text-lg leading-relaxed whitespace-pre-line">
+                {company.description || "No description provided."}
+              </div>
+            </Card>
+
+            {/* Placeholders for Values / Culture */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-8 border-none shadow-lg rounded-3xl bg-gradient-to-br from-blue-50 to-white">
+                <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6">
+                  <Zap className="h-7 w-7 text-yellow-500" />
+                </div>
+                <h4 className="text-xl font-black text-[#234C6A] mb-2">Our Mission</h4>
+                <p className="text-gray-500 font-medium">To innovate and lead in the {company.industries} sector through excellence and technology.</p>
+              </Card>
+              <Card className="p-8 border-none shadow-lg rounded-3xl bg-gradient-to-br from-emerald-50 to-white">
+                <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6">
+                  <Users2 className="h-7 w-7 text-emerald-500" />
+                </div>
+                <h4 className="text-xl font-black text-[#234C6A] mb-2">Our Culture</h4>
+                <p className="text-gray-500 font-medium">We foster a collaborative environment where every team member is empowered to grow.</p>
+              </Card>
+            </div>
+
+            {/* Bottom Call to Action */}
+            <Card className="p-10 border-none shadow-2xl rounded-[40px] bg-[#234C6A] text-white flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16" />
+              <div className="relative z-10 text-center md:text-left">
+                <h3 className="text-2xl font-black mb-2">Want to work at {company.companyName}?</h3>
+                <p className="text-blue-100/70 font-medium">Explore our current job openings and start your journey with us.</p>
+              </div>
+              <Button className="relative z-10 bg-white text-[#234C6A] hover:bg-blue-50 rounded-2xl font-black px-10 h-14 shadow-lg transition-all active:scale-95 whitespace-nowrap">
+                Browse Jobs
+              </Button>
+            </Card>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 };
 
-export default CompanyDetailPage;
+export default CompanyPage;
+
