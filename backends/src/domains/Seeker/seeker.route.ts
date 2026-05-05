@@ -2,8 +2,9 @@ import express from "express";
 import {
   createSeeker,
   getSeeker,
+  getSeekerById,
   getAllSeekers,
-  updateSeeker
+  updateSeeker,
 } from "./seeker.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import validate from "../../middlewares/validation.middleware";
@@ -17,8 +18,9 @@ router.post(
   validate(seekerValidation.createSeekerValidation),
   createSeeker,
 );
-router.get("/", authMiddleware, getSeeker); // Get authenticated user's seeker profile
+router.get("/profile", authMiddleware, getSeeker); // Get authenticated user's seeker profile
 router.get("/all", authMiddleware, getAllSeekers); // Get all seekers
+router.get("/:id", authMiddleware, getSeekerById); // Get seeker by ID
 router.put(
   "/",
   authMiddleware,

@@ -10,10 +10,9 @@ export const createSeekerService = async (
 };
 
 export const getSeekerService = async (id: string): Promise<ISeeker | null> => {
-  return await Seeker.findById(id).populate(
-    "userId",
-    "name email image role phoneNumber",
-  );
+  return await Seeker.findById(id)
+    .select("-profileStrength")
+    .populate("userId", "name email image role phoneNumber");
 };
 
 export const getSeekerByUserIdService = async (

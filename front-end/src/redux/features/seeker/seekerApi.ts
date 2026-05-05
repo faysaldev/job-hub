@@ -16,10 +16,19 @@ const seekerApi = baseApi.injectEndpoints({
     // GET /job-seekers - Get authenticated user's seeker profile
     getSeekerProfile: builder.query<JobSeekerProfile, void>({
       query: () => ({
-        url: "/job-seekers",
+        url: "/job-seekers/profile",
         method: "GET",
       }),
       providesTags: ["jobSeekerProfile"],
+    }),
+
+    // GET /job-seekers/:id - Get seeker by ID
+    getSeekerById: builder.query<any, string>({
+      query: (id) => ({
+        url: `/job-seekers/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "jobSeekerProfile", id }],
     }),
 
     // GET /job-seekers/all - Get all seekers (Recruiter browsing)
@@ -47,6 +56,7 @@ const seekerApi = baseApi.injectEndpoints({
 export const {
   useCreateSeekerProfileMutation,
   useGetSeekerProfileQuery,
+  useGetSeekerByIdQuery,
   useGetAllSeekersQuery,
   useUpdateSeekerProfileMutation,
 } = seekerApi;

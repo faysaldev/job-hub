@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   createSeekerService,
   getAllSeekersService,
+  getSeekerService,
   getSeekerByUserIdService,
   updateSeekerByUserIdService,
 } from "./seeker.services";
@@ -93,6 +94,26 @@ export const updateSeeker = asyncHandler(
         status: "OK",
         statusCode: httpStatus.OK,
         data: updatedSeeker,
+      }),
+    );
+  },
+);
+
+export const getSeekerById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const seeker = await getSeekerService(id);
+
+    if (!seeker) {
+      throw new AppError("Seeker profile not found", httpStatus.NOT_FOUND);
+    }
+
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Seeker profile retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: seeker,
       }),
     );
   },
