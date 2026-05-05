@@ -11,7 +11,14 @@ export const createCompanyService = async (
 export const getCompanyService = async (
   id: string,
 ): Promise<ICompany | null> => {
-  return await Company.findById(id).populate("userId", "name email image role");
+  return await Company.findById(id)
+    .populate("userId", "email")
+    .populate({
+      path: "jobs",
+      match: { isActive: true }, // Only show active jobs
+      select:
+        "title type location locationType salaryMax salaryMin salaryPeriod",
+    });
 };
 
 export const getCompanyByUserIdService = async (

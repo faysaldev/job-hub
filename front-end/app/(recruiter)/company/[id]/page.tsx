@@ -17,6 +17,8 @@ import {
   Target,
   Users2,
   Zap,
+  Clock,
+  DollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/src/components/ui/badge";
@@ -25,8 +27,14 @@ import { Card } from "@/src/components/ui/card";
 
 const CompanyPage = () => {
   const { id } = useParams();
-  const { data: response, isLoading, error } = useGetSingleCompanyQuery(id as string);
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useGetSingleCompanyQuery(id as string);
   const company = response?.data;
+
+  console.log(company);
 
   if (isLoading) {
     return (
@@ -45,7 +53,9 @@ const CompanyPage = () => {
         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
           <Building2 className="h-10 w-10 text-red-400" />
         </div>
-        <h3 className="text-2xl font-black text-[#234C6A]">Company not found</h3>
+        <h3 className="text-2xl font-black text-[#234C6A]">
+          Company not found
+        </h3>
         <p className="text-gray-500 mt-2 max-w-md">
           We couldn't find the company profile you're looking for. It may have
           been removed or the link might be incorrect.
@@ -61,9 +71,21 @@ const CompanyPage = () => {
 
   const stats = [
     { label: "Company Size", value: company.companySize || "N/A", icon: Users },
-    { label: "Industry", value: company.industries || "Technology", icon: Briefcase },
-    { label: "Location", value: company.companyLocation || "Global", icon: MapPin },
-    { label: "Since", value: new Date(company.createdAt).getFullYear(), icon: Calendar },
+    {
+      label: "Industry",
+      value: company.industries || "Technology",
+      icon: Briefcase,
+    },
+    {
+      label: "Location",
+      value: company.companyLocation || "Global",
+      icon: MapPin,
+    },
+    {
+      label: "Since",
+      value: new Date(company.createdAt).getFullYear(),
+      icon: Calendar,
+    },
   ];
 
   return (
@@ -134,7 +156,10 @@ const CompanyPage = () => {
               <Button className="h-14 px-10 rounded-2xl bg-white text-[#234C6A] hover:bg-blue-50 font-black text-lg shadow-xl transition-all active:scale-95">
                 Apply for Jobs
               </Button>
-              <Button variant="outline" className="h-14 px-10 rounded-2xl border-white/30 text-white hover:bg-white/10 font-bold text-lg">
+              <Button
+                variant="outline"
+                className="h-14 px-10 rounded-2xl border-white/30 text-white hover:bg-white/10 font-bold text-lg"
+              >
                 Save Company
               </Button>
             </div>
@@ -145,12 +170,14 @@ const CompanyPage = () => {
       {/* Main Content Area */}
       <div className="container mx-auto px-6 -mt-24 pb-20 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
           {/* Left Side: Stats & Details */}
           <div className="lg:col-span-1 space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
               {stats.map((stat, i) => (
-                <Card key={i} className="p-6 border-none shadow-xl rounded-3xl bg-white group hover:translate-y-[-4px] transition-all duration-300">
+                <Card
+                  key={i}
+                  className="p-6 border-none shadow-xl rounded-3xl bg-white group hover:translate-y-[-4px] transition-all duration-300"
+                >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center group-hover:bg-[#234C6A] transition-colors">
                       <stat.icon className="h-6 w-6 text-[#234C6A] group-hover:text-white" />
@@ -180,8 +207,12 @@ const CompanyPage = () => {
                     <Mail className="h-5 w-5 text-blue-500" />
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</p>
-                    <p className="text-[#234C6A] font-bold truncate">{company.userId?.email}</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Email Address
+                    </p>
+                    <p className="text-[#234C6A] font-bold truncate">
+                      {company.userId?.email}
+                    </p>
                   </div>
                 </div>
                 {company.userId?.phoneNumber && (
@@ -190,8 +221,12 @@ const CompanyPage = () => {
                       <Phone className="h-5 w-5 text-emerald-500" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</p>
-                      <p className="text-[#234C6A] font-bold">{company.userId?.phoneNumber}</p>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        Phone Number
+                      </p>
+                      <p className="text-[#234C6A] font-bold">
+                        {company.userId?.phoneNumber}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -211,21 +246,90 @@ const CompanyPage = () => {
               </div>
             </Card>
 
+            {/* Open Positions Section */}
+            {company.jobs && company.jobs.length > 0 && (
+              <Card className="p-10 border-none shadow-xl rounded-[40px] bg-white space-y-8">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-black text-[#234C6A] flex items-center gap-3">
+                    <Briefcase className="h-7 w-7 text-blue-500" />
+                    Open Positions
+                  </h2>
+                  <Badge className="bg-blue-50 text-blue-600 border-none px-4 py-1.5 rounded-full font-black uppercase text-[10px] tracking-widest">
+                    {company.jobs.length} Active Jobs
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {company.jobs.map((job: any) => (
+                    <div
+                      key={job._id}
+                      className="group p-6 rounded-3xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:shadow-xl hover:border-blue-100 transition-all duration-300"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-xl font-black text-[#234C6A] group-hover:text-blue-600 transition-colors">
+                              {job.title}
+                            </h3>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-4 text-sm font-bold text-[#456882]">
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="h-4 w-4 text-gray-400" />
+                              {job.location} ({job.locationType})
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-4 w-4 text-gray-400" />
+                              {job.type.replace("-", " ")}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <DollarSign className="h-4 w-4 text-emerald-500" />
+                              <span className="capitalize">
+                                ${(job.salaryMin / 1000).toFixed(0)}k - $
+                                {(job.salaryMax / 1000).toFixed(0)}k /{" "}
+                                {job.salaryPeriod}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Link href={`/job/${job._id}`}>
+                          <Button className="rounded-2xl bg-[#234C6A] hover:bg-blue-600 text-white font-black px-8 h-14 shadow-lg transition-all active:scale-95 whitespace-nowrap">
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
             {/* Placeholders for Values / Culture */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="p-8 border-none shadow-lg rounded-3xl bg-gradient-to-br from-blue-50 to-white">
                 <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6">
                   <Zap className="h-7 w-7 text-yellow-500" />
                 </div>
-                <h4 className="text-xl font-black text-[#234C6A] mb-2">Our Mission</h4>
-                <p className="text-gray-500 font-medium">To innovate and lead in the {company.industries} sector through excellence and technology.</p>
+                <h4 className="text-xl font-black text-[#234C6A] mb-2">
+                  Our Mission
+                </h4>
+                <p className="text-gray-500 font-medium">
+                  To innovate and lead in the {company.industries} sector
+                  through excellence and technology.
+                </p>
               </Card>
               <Card className="p-8 border-none shadow-lg rounded-3xl bg-gradient-to-br from-emerald-50 to-white">
                 <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6">
                   <Users2 className="h-7 w-7 text-emerald-500" />
                 </div>
-                <h4 className="text-xl font-black text-[#234C6A] mb-2">Our Culture</h4>
-                <p className="text-gray-500 font-medium">We foster a collaborative environment where every team member is empowered to grow.</p>
+                <h4 className="text-xl font-black text-[#234C6A] mb-2">
+                  Our Culture
+                </h4>
+                <p className="text-gray-500 font-medium">
+                  We foster a collaborative environment where every team member
+                  is empowered to grow.
+                </p>
               </Card>
             </div>
 
@@ -233,15 +337,19 @@ const CompanyPage = () => {
             <Card className="p-10 border-none shadow-2xl rounded-[40px] bg-[#234C6A] text-white flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden relative">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16" />
               <div className="relative z-10 text-center md:text-left">
-                <h3 className="text-2xl font-black mb-2">Want to work at {company.companyName}?</h3>
-                <p className="text-blue-100/70 font-medium">Explore our current job openings and start your journey with us.</p>
+                <h3 className="text-2xl font-black mb-2">
+                  Want to work at {company.companyName}?
+                </h3>
+                <p className="text-blue-100/70 font-medium">
+                  Explore our current job openings and start your journey with
+                  us.
+                </p>
               </div>
               <Button className="relative z-10 bg-white text-[#234C6A] hover:bg-blue-50 rounded-2xl font-black px-10 h-14 shadow-lg transition-all active:scale-95 whitespace-nowrap">
                 Browse Jobs
               </Button>
             </Card>
           </div>
-
         </div>
       </div>
     </div>
@@ -249,4 +357,3 @@ const CompanyPage = () => {
 };
 
 export default CompanyPage;
-

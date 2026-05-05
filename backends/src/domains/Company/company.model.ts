@@ -33,7 +33,15 @@ const companySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   },
 );
+
+companySchema.virtual("jobs", {
+  ref: "Job",
+  localField: "userId",
+  foreignField: "author",
+});
 
 export default mongoose.model<ICompany>("Company", companySchema);

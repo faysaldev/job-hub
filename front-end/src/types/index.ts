@@ -105,6 +105,7 @@ export interface CompanyProfile {
   companyLocation: string;
   createdAt: string;
   updatedAt: string;
+  jobs?: any[];
 }
 
 // ---------- Jobs ----------
