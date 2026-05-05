@@ -27,6 +27,11 @@ import SkillsSection from "./JobSeeker/Skillssection";
 import ExperienceSection from "./JobSeeker/Experiencesection";
 import EducationSection from "./JobSeeker/Educationsection";
 import ResumePortfolioSection from "./JobSeeker/Resumeportfoliosection";
+import {
+  LogisticsSection,
+  ProjectsSection,
+  SocialLinksSection,
+} from "./JobSeeker/LogisticsAndProjects";
 
 // Bio section — isolated so typing doesn't re-render siblings
 const BioSection = memo(
@@ -56,6 +61,31 @@ const BioSection = memo(
   },
 );
 BioSection.displayName = "BioSection";
+
+const ProfileStrengthIndicator = ({ strength }: { strength: number }) => {
+  return (
+    <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-2xl shadow-xl">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-yellow-400" />
+          <h4 className="font-bold">Profile Strength</h4>
+        </div>
+        <span className="text-2xl font-black">{strength}%</span>
+      </div>
+      <div className="w-full bg-white/20 h-3 rounded-full overflow-hidden">
+        <div
+          className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-1000"
+          style={{ width: `${strength}%` }}
+        />
+      </div>
+      <p className="text-xs mt-3 text-blue-100/80 font-medium">
+        {strength < 100
+          ? "Complete your profile to stand out to top recruiters!"
+          : "Perfect! Your profile is fully optimized."}
+      </p>
+    </Card>
+  );
+};
 
 interface JobSeekerProfileProps {
   userId: string;
@@ -97,6 +127,16 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
       website: "",
       resume: "",
       skills: [],
+      totalExperience: "",
+      experienceLevel: "",
+      availability: "",
+      jobType: "",
+      socialProfiles: {
+        linkedin: "",
+        github: "",
+        twitter: "",
+      },
+      recentProjects: [],
       experience: [],
       education: [],
     },
@@ -118,6 +158,16 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
       website: data.portfolio || "",
       resume: data.resume?.resumeLink || "",
       skills: data.skills || [],
+      totalExperience: data.totalExperience || "",
+      experienceLevel: data.experienceLevel || "",
+      availability: data.availability || "",
+      jobType: data.jobType || "",
+      socialProfiles: {
+        linkedin: data.socialProfiles?.linkedin || "",
+        github: data.socialProfiles?.github || "",
+        twitter: data.socialProfiles?.twitter || "",
+      },
+      recentProjects: data.recentProjects || [],
       experience:
         data.workExperiences?.map((exp: any) => ({
           id: exp._id || Math.random().toString(),
@@ -185,6 +235,12 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         designation: data.headline,
         aboutMe: data.bio,
         skills: data.skills,
+        totalExperience: data.totalExperience,
+        experienceLevel: data.experienceLevel,
+        availability: data.availability,
+        jobType: data.jobType,
+        socialProfiles: data.socialProfiles,
+        recentProjects: data.recentProjects,
         workExperiences: data.experience?.map((exp) => ({
           position: exp.title,
           durationFrom: exp.startDate,
@@ -266,21 +322,34 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
           )}
         </div>
 
-        <ProfileHeader
-          editing={editing}
-          control={methods.control}
-          register={methods.register}
-          currentUser={currentUser}
-          profileData={profileData}
-          imagePreview={imageState.preview}
-          onImageChange={handleImageChange}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="lg:col-span-2 space-y-8">
+            <ProfileHeader
+              editing={editing}
+              control={methods.control}
+              register={methods.register}
+              currentUser={currentUser}
+              profileData={profileData}
+              imagePreview={imageState.preview}
+              onImageChange={handleImageChange}
+            />
+            <LogisticsSection editing={editing} />
+            <BioSection editing={editing} bio={profileData?.aboutMe || ""} />
+          </div>
 
-        <BioSection editing={editing} bio={profileData?.aboutMe || ""} />
+          <div className="space-y-8">
+            <ProfileStrengthIndicator
+              strength={profileData?.profileStrength || 0}
+            />
+            <SocialLinksSection editing={editing} />
+          </div>
+        </div>
+
         <SkillsSection
           editing={editing}
           profileSkills={profileData?.skills || []}
         />
+        <ProjectsSection editing={editing} />
         <ExperienceSection editing={editing} />
         <EducationSection editing={editing} />
         <ResumePortfolioSection editing={editing} profileData={profileData} />

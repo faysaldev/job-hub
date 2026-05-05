@@ -9,7 +9,10 @@ export const createSeekerService = async (
 };
 
 export const getSeekerService = async (id: string): Promise<ISeeker | null> => {
-  return await Seeker.findById(id).populate("userId", "-password");
+  return await Seeker.findById(id).populate(
+    "userId",
+    "name email image role phoneNumber",
+  );
 };
 
 export const getSeekerByUserIdService = async (
@@ -17,7 +20,7 @@ export const getSeekerByUserIdService = async (
 ): Promise<ISeeker | null> => {
   return await Seeker.findOne({ userId: new Types.ObjectId(userId) }).populate(
     "userId",
-    "-password",
+    "name email image role phoneNumber",
   );
 };
 
@@ -49,7 +52,7 @@ export const getAllSeekersService = async (query: any = {}) => {
   const [seekers, total] = await Promise.all([
     Seeker.find(filters)
       .select("userId userLocation designation aboutMe skills resume portfolio")
-      .populate("userId", "name email image")
+      .populate("userId", "name email image role phoneNumber")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit))
@@ -76,7 +79,7 @@ export const updateSeekerService = async (
     id,
     { ...seekerData },
     { new: true, runValidators: true },
-  ).populate("userId", "-password");
+  ).populate("userId", "name email image role phoneNumber");
 };
 
 export const updateSeekerByUserIdService = async (

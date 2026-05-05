@@ -19,9 +19,16 @@ const resumeSchema = z.object({
   resumeLink: z.string().optional(),
 });
 
+const projectSchema = z.object({
+  project_name: z.string().min(1, "Project name is required"),
+  description: z.string().min(1, "Description is required"),
+  live_url: z.string().url().optional().or(z.literal("")),
+});
+
 const socialProfilesSchema = z.object({
   linkedin: z.string().optional(),
   github: z.string().optional(),
+  twitter: z.string().optional(),
 });
 
 export const createSeekerValidation = z.object({
@@ -29,11 +36,21 @@ export const createSeekerValidation = z.object({
   designation: z.string().optional(),
   aboutMe: z.string().optional(),
   skills: z.array(z.string()).optional(),
+  totalExperience: z.string().optional(),
+  experienceLevel: z
+    .enum(["entry-level", "mid-level", "senior-level", "expert"])
+    .optional(),
+  availability: z
+    .enum(["immediately", "1-week", "2-weeks", "1-month"])
+    .optional(),
+  jobType: z.enum(["hybrid", "onsite", "remote"]).optional(),
+  recentProjects: z.array(projectSchema).optional(),
   workExperiences: z.array(workExperienceSchema).optional(),
   educations: z.array(educationSchema).optional(),
   resume: resumeSchema.optional(),
   portfolio: z.string().optional(),
   socialProfiles: socialProfilesSchema.optional(),
+  profileStrength: z.number().min(0).max(100).optional(),
 });
 
 export const updateSeekerValidation = z.object({
@@ -41,11 +58,21 @@ export const updateSeekerValidation = z.object({
   designation: z.string().optional(),
   aboutMe: z.string().optional(),
   skills: z.array(z.string()).optional(),
+  totalExperience: z.string().optional(),
+  experienceLevel: z
+    .enum(["entry-level", "mid-level", "senior-level", "expert"])
+    .optional(),
+  availability: z
+    .enum(["immediately", "1-week", "2-weeks", "1-month"])
+    .optional(),
+  jobType: z.enum(["hybrid", "onsite", "remote"]).optional(),
+  recentProjects: z.array(projectSchema).optional(),
   workExperiences: z.array(workExperienceSchema).optional(),
   educations: z.array(educationSchema).optional(),
   resume: resumeSchema.optional(),
   portfolio: z.string().optional(),
   socialProfiles: socialProfilesSchema.optional(),
+  profileStrength: z.number().min(0).max(100).optional(),
 });
 
 const seekerValidation = {

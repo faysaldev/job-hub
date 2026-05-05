@@ -11,34 +11,34 @@ import httpStatus from "http-status";
 import { response } from "../../lib/response";
 import { ProtectedRequest } from "../../types/protected-request";
 
-export const createSeeker = asyncHandler(async (req: Request, res: Response) => {
-  const seekerData = req.body;
-  const protectedReq = req as ProtectedRequest;
+export const createSeeker = asyncHandler(
+  async (req: Request, res: Response) => {
+    const seekerData = req.body;
+    const protectedReq = req as ProtectedRequest;
 
-  if (protectedReq.user) {
-    seekerData.userId = protectedReq.user._id;
-  }
+    if (protectedReq.user) {
+      seekerData.userId = protectedReq.user._id;
+    }
 
-  const seeker = await createSeekerService(seekerData);
+    const seeker = await createSeekerService(seekerData);
 
-  res.status(httpStatus.CREATED).json(
-    response({
-      message: "Seeker profile created successfully",
-      status: "OK",
-      statusCode: httpStatus.CREATED,
-      data: seeker,
-    })
-  );
-});
+    res.status(httpStatus.CREATED).json(
+      response({
+        message: "Seeker profile created successfully",
+        status: "OK",
+        statusCode: httpStatus.CREATED,
+        data: seeker,
+      }),
+    );
+  },
+);
 
 export const getSeeker = asyncHandler(async (req: Request, res: Response) => {
   const protectedReq = req as ProtectedRequest;
 
-  if (!protectedReq.user?._id) {
-    throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
-  }
-
-  const seeker = await getSeekerByUserIdService(protectedReq.user._id);
+  const seeker = await getSeekerByUserIdService(
+    protectedReq.user?._id as string,
+  );
 
   if (!seeker) {
     throw new AppError("Seeker profile not found", httpStatus.NOT_FOUND);
@@ -50,46 +50,50 @@ export const getSeeker = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: seeker,
-    })
+    }),
   );
 });
 
-export const getAllSeekers = asyncHandler(async (req: Request, res: Response) => {
-  const seekers = await getAllSeekersService(req.query);
+export const getAllSeekers = asyncHandler(
+  async (req: Request, res: Response) => {
+    const seekers = await getAllSeekersService(req.query);
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Seekers retrieved successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: seekers,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Seekers retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: seekers,
+      }),
+    );
+  },
+);
 
-export const updateSeeker = asyncHandler(async (req: Request, res: Response) => {
-  const protectedReq = req as ProtectedRequest;
+export const updateSeeker = asyncHandler(
+  async (req: Request, res: Response) => {
+    const protectedReq = req as ProtectedRequest;
 
-  if (!protectedReq.user?._id) {
-    throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
-  }
+    if (!protectedReq.user?._id) {
+      throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
+    }
 
-  const seekerData = req.body;
-  const updatedSeeker = await updateSeekerByUserIdService(
-    protectedReq.user._id,
-    seekerData
-  );
+    const seekerData = req.body;
+    const updatedSeeker = await updateSeekerByUserIdService(
+      protectedReq.user._id,
+      seekerData,
+    );
 
-  if (!updatedSeeker) {
-    throw new AppError("Seeker profile not found", httpStatus.NOT_FOUND);
-  }
+    if (!updatedSeeker) {
+      throw new AppError("Seeker profile not found", httpStatus.NOT_FOUND);
+    }
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Seeker profile updated successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: updatedSeeker,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Seeker profile updated successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: updatedSeeker,
+      }),
+    );
+  },
+);

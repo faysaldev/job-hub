@@ -410,6 +410,20 @@ export type ProfileFormValues = {
   website: string;
   resume: string;
   skills: string[];
+  totalExperience: string;
+  experienceLevel: "entry-level" | "mid-level" | "senior-level" | "expert" | "";
+  availability: "immediately" | "1-week" | "2-weeks" | "1-month" | "";
+  jobType: "hybrid" | "onsite" | "remote" | "";
+  socialProfiles: {
+    linkedin: string;
+    github: string;
+    twitter: string;
+  };
+  recentProjects: {
+    project_name: string;
+    description: string;
+    live_url: string;
+  }[];
   experience: {
     id: string;
     title: string;
