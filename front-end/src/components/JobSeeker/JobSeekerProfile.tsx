@@ -62,6 +62,39 @@ const BioSection = memo(
 );
 BioSection.displayName = "BioSection";
 
+const calculateProfileStrength = (data: any, user: any) => {
+  if (!data && !user) return 0;
+  let strength = 0;
+
+  // Basic Info (20%)
+  if (data?.designation) strength += 5;
+  if (data?.aboutMe) strength += 10;
+  if (data?.userLocation) strength += 5;
+
+  // Visual & Identity (10%)
+  if (user?.image) strength += 10;
+
+  // Skills (15%)
+  if (data?.skills?.length > 0) strength += 15;
+
+  // Experience (15%)
+  if (data?.workExperiences?.length > 0) strength += 15;
+
+  // Education (10%)
+  if (data?.educations?.length > 0) strength += 10;
+
+  // Projects (15%)
+  if (data?.recentProjects?.length > 0) strength += 15;
+
+  // Portfolio & Social (15%)
+  if (data?.resume?.resumeLink) strength += 5;
+  if (data?.portfolio) strength += 5;
+  const social = data?.socialProfiles;
+  if (social?.linkedin || social?.github || social?.twitter) strength += 5;
+
+  return Math.min(strength, 100);
+};
+
 const ProfileStrengthIndicator = ({ strength }: { strength: number }) => {
   return (
     <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-2xl shadow-xl">
@@ -255,6 +288,21 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         })),
         resume: { resumeName: "Resume", resumeLink: data.resume || "" },
         portfolio: data.website,
+        profileStrength: calculateProfileStrength(
+          {
+            designation: data.headline,
+            aboutMe: data.bio,
+            userLocation: data.location,
+            skills: data.skills,
+            workExperiences: data.experience,
+            educations: data.education,
+            recentProjects: data.recentProjects,
+            resume: { resumeLink: data.resume },
+            portfolio: data.website,
+            socialProfiles: data.socialProfiles,
+          },
+          currentUser,
+        ),
       };
 
       if (profileResponse) {
@@ -339,7 +387,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
 
           <div className="space-y-8">
             <ProfileStrengthIndicator
-              strength={profileData?.profileStrength || 0}
+              strength={calculateProfileStrength(profileData, currentUser)}
             />
             <SocialLinksSection editing={editing} />
           </div>
