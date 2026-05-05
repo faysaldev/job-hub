@@ -296,22 +296,20 @@ export type NotificationType =
   | "system";
 
 export interface Notification {
-  id: string;
-  userId: string;
-  type: NotificationType;
+  _id: string;
   title: string;
-  body: string;
   link?: string;
-  imageUrl?: string;
-  isRead: boolean;
-  readAt?: string;
   sender?: {
-    id: string;
+    _id: string;
     name: string;
-    avatar?: string;
+    email: string;
+    image: string | null;
   };
-  metadata?: Record<string, unknown>;
+  receiver: string;
+  isRead: boolean;
+  isDeleted: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 // ---------- Saved Jobs ----------

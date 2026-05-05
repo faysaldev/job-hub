@@ -1,13 +1,23 @@
 import { baseApi } from "@/src/redux/baseApi/baseApi";
-import { Notification } from "@/src/types";
+import { Notification, ApiResponse } from "@/src/types";
 
 const notificationsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // GET /notifications - Get all notifications
-    getUserNotifications: builder.query<Notification[], void>({
-      query: () => ({
+    getUserNotifications: builder.query<
+      ApiResponse<{
+        notifications: Notification[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+      }>,
+      { page?: number; limit?: number }
+    >({
+      query: (params) => ({
         url: "/notifications",
         method: "GET",
+        params,
       }),
       providesTags: ["notifications"],
     }),
