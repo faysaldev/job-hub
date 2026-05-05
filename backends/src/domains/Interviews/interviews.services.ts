@@ -1,20 +1,20 @@
 import Interview, { IInterview } from "./interviews.model";
 import Application from "../Applications/application.model";
 import Conversation from "../Conversations/conversations.model";
+import { createNotification } from "../Notifications/notifications.service";
+import Job from "../Jobs/job.model";
 
 const scheduleInterview = async (interviewData: Partial<IInterview>) => {
   const interview = new Interview(interviewData);
   const savedInterview = await interview.save();
 
   // 1. Update application status to "interview"
-
   await Application.findOneAndUpdate(
     { job_id: interviewData.job_id, applicant: interviewData.interviewee },
     { status: "interview" },
   );
 
   // 2. Update conversation status to "interview"
-  // Find the conversation for this specific job and these participants
   if (
     interviewData.job_id &&
     interviewData.interviewee &&
@@ -29,6 +29,15 @@ const scheduleInterview = async (interviewData: Partial<IInterview>) => {
       },
       { status: "interview" },
     );
+
+    // Send notification to interviewee
+    const job = await Job.findById(interviewData.job_id);
+    await createNotification({
+      title: `Interview scheduled for ${job?.title || "your application"}`,
+      link: `/job-seeker/interviews`,
+      sender: interviewData.interviewer.toString(),
+      receiver: interviewData.interviewee.toString(),
+    });
   }
 
   return savedInterview;
@@ -96,6 +105,15 @@ const hireCandidate = async (
     { status: "completed" },
   );
 
+  // Send notification to applicant
+  const job = await Job.findById(jobId);
+  await createNotification({
+    title: `Congratulations! You have been hired for ${job?.title || "the position"}`,
+    link: `/job-seeker/applications`,
+    sender: interviewerId,
+    receiver: applicantId,
+  });
+
   return { success: true };
 };
 
@@ -103,7 +121,7 @@ const rescheduleInterview = async (
   interviewId: string,
   rescheduleData: { date: string; start_time: string; end_time: string },
 ) => {
-  return await Interview.findByIdAndUpdate(
+  const updatedInterview = await Interview.findByIdAndUpdate(
     interviewId,
     {
       date: rescheduleData.date,
@@ -112,6 +130,18 @@ const rescheduleInterview = async (
     },
     { new: true },
   );
+
+  if (updatedInterview) {
+    const job = await Job.findById(updatedInterview.job_id);
+    await createNotification({
+      title: `Interview rescheduled for ${job?.title || "your application"}`,
+      link: `/job-seeker/interviews`,
+      sender: updatedInterview.interviewer.toString(),
+      receiver: updatedInterview.interviewee.toString(),
+    });
+  }
+
+  return updatedInterview;
 };
 
 export default {

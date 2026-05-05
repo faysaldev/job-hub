@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Application from "./application.model";
 import conversationService from "../Conversations/conversations.services";
+import { createNotification } from "../Notifications/notifications.service";
 
 // Create a new application
 const createApplication = async (applicationData: {
@@ -73,6 +74,14 @@ const updateApplicationStatus = async (
           job_id: job._id.toString(),
         },
       );
+
+      // Send notification to seeker
+      await createNotification({
+        title: `Employer interested in your application for ${job.title}`,
+        link: `/job-seeker/messages`,
+        sender: job.author.toString(),
+        receiver: seeker._id.toString(),
+      });
     }
   }
 
