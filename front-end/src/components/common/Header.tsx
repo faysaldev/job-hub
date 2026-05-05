@@ -652,6 +652,24 @@ const Header = () => {
             </div>
           )}
 
+          {user?.role === "seeker" && (
+            <Link
+              href="/companies"
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                isActive("/companies")
+                  ? "text-[#234C6A]"
+                  : "text-[#456882] hover:text-[#234C6A]",
+              )}
+            >
+              <Building2 className="h-4 w-4" />
+              Companies
+              {isActive("/companies") && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-[#234C6A] to-[#456882] rounded-full" />
+              )}
+            </Link>
+          )}
+
           {/* Nav Items */}
           {NAV_ITEMS.map((item) => (
             <Link
@@ -1116,6 +1134,34 @@ const Header = () => {
                   <p className="text-xs text-white/80">Find your dream job</p>
                 </div>
                 <ArrowRight className="h-5 w-5" />
+              </Link>
+            )}
+            {user?.role === "seeker" && (
+              <Link
+                href="/companies"
+                onClick={closeAll}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3.5 rounded-xl font-medium active:scale-[0.98]",
+                  isActive("/companies")
+                    ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white shadow-lg"
+                    : "bg-[#E3E3E3]/50 text-[#234C6A] hover:bg-[#234C6A]/10",
+                )}
+              >
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center",
+                    isActive("/companies") ? "bg-white/20" : "bg-[#234C6A]/10",
+                  )}
+                >
+                  <Building2
+                    className={cn(
+                      "h-5 w-5",
+                      isActive("/companies") ? "text-white" : "text-[#234C6A]",
+                    )}
+                  />
+                </div>
+                <span className="flex-1">Companies</span>
+                {isActive("/companies") && <CheckCircle className="h-5 w-5" />}
               </Link>
             )}
             {NAV_ITEMS.map((item) => (
