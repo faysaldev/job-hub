@@ -8,7 +8,6 @@ const router = Router();
 router.post(
   "/",
   authMiddleware,
-  // userFileUploadMiddleware(USER_RESUME).single("resume"),
   applicationController.createApplication,
 ); // Create a new application
 router.get("/", authMiddleware, applicationController.getUserApplications); // Get user's applications

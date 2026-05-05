@@ -97,19 +97,22 @@ export default function ApplyJobModal({
           },
         } as any).unwrap();
       }
-      await applyToJob({
+      const res = (await applyToJob({
         job_id: jobId,
         cover_letter: coverLetter,
         resume_url: resumeUrl,
         paid_amount: paidAmount ? Number(paidAmount) : undefined,
-      }).unwrap();
-
-      toast.success("Application submitted successfully!");
-      setOpen(false);
-      setCoverLetter("");
-      setResumeUrl("");
-      setPaidAmount("");
-      setShowBoostSection(false);
+      }).unwrap()) as any;
+      if (res?.data?.checkoutData?.checkoutUrl) {
+        window.location.href = res?.data?.checkoutData?.checkoutUrl;
+      } else {
+        toast.success("Application submitted successfully!");
+        setOpen(false);
+        setCoverLetter("");
+        setResumeUrl("");
+        setPaidAmount("");
+        setShowBoostSection(false);
+      }
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to submit application");
     }
@@ -142,7 +145,8 @@ export default function ApplyJobModal({
           <div
             className={cn(
               "transition-all duration-500",
-              showBoostSection && "blur-xl pointer-events-none opacity-30 scale-[0.98]",
+              showBoostSection &&
+                "blur-xl pointer-events-none opacity-30 scale-[0.98]",
             )}
           >
             <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white">
@@ -396,7 +400,8 @@ export default function ApplyJobModal({
           <div
             className={cn(
               "px-8 pb-8 transition-all duration-500",
-              showBoostSection && "blur-xl pointer-events-none opacity-30 scale-[0.98]",
+              showBoostSection &&
+                "blur-xl pointer-events-none opacity-30 scale-[0.98]",
             )}
           >
             <DialogFooter className="gap-3 sm:gap-0 pt-2 border-t border-gray-50 mt-2">

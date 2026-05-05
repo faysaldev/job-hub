@@ -9,6 +9,12 @@ import { ProtectedRequest } from "../../types/protected-request";
 import { createNotification } from "../Notifications/notifications.service";
 import Job from "../Jobs/job.model";
 
+import Stripe from "stripe";
+import { STRIPE_SECRET_KEY } from "../../config/ENV";
+
+// Initialize Stripe
+const stripe = new Stripe(STRIPE_SECRET_KEY as string);
+
 // Create a new job application
 const createApplication = asyncHandler(
   async (req: ProtectedRequest, res: Response) => {
@@ -33,19 +39,58 @@ const createApplication = asyncHandler(
       await applicationService.createApplication(applicationData);
 
     // OPTIMIZATION: Send notification to the job recruiter
+    let jobDetails = null;
     try {
-      const job = await Job.findById(applicationData.job_id);
-      if (job && job.author) {
+      jobDetails = await Job.findById(applicationData.job_id);
+      if (jobDetails && jobDetails.author) {
         await createNotification({
-          title: `New application for "${job.title}"`,
+          title: `${applicationData.paid_amount > 0 ? "🚀 BOOSTED" : "New"} application for "${jobDetails.title}"`,
           link: `/recruiter/applications`,
           sender: userId as string,
-          receiver: job.author.toString(),
+          receiver: jobDetails.author.toString(),
         });
       }
     } catch (err) {
       console.error("Failed to send notification:", err);
-      // Don't fail the request if notification fails
+    }
+
+    // Stripe Checkout session if paid_amount > 0
+    let checkoutData = null;
+    if (applicationData.paid_amount && applicationData.paid_amount > 0) {
+      try {
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: `Application Boost: ${jobDetails?.title || "Job Application"}`,
+                },
+                unit_amount: Math.round(applicationData.paid_amount * 100),
+              },
+              quantity: 1,
+            },
+          ],
+          mode: "payment",
+          success_url: `http://localhost:3000/applied-successfully?session_id={CHECKOUT_SESSION_ID}&application_id=${application._id}`,
+          cancel_url: `http://localhost:3000/cancel`,
+          metadata: {
+            application_id: application._id.toString(),
+            job_id: applicationData.job_id.toString(),
+            applicant_id: userId?.toString() || "",
+          },
+        });
+
+        checkoutData = {
+          sessionId: session.id,
+          checkoutUrl: session.url,
+        };
+      } catch (err) {
+        console.error("Stripe session creation failed:", err);
+        // We don't throw error here to not break the application creation,
+        // but in a real app, you might want to handle this differently.
+      }
     }
 
     res.status(httpStatus.CREATED).json(
@@ -53,7 +98,7 @@ const createApplication = asyncHandler(
         message: "Application created successfully",
         status: "OK",
         statusCode: httpStatus.CREATED,
-        data: application,
+        data: { checkoutData },
       }),
     );
   },
