@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 export interface IWorkExperience {
   position: string;
@@ -116,6 +116,7 @@ const seekerSchema = new mongoose.Schema(
     socialProfiles: socialProfilesSchema,
     profileStrength: { type: Number, default: 0, min: 0, max: 100 },
   },
+
   {
     timestamps: true,
   },

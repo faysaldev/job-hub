@@ -19,101 +19,53 @@ import {
   Globe,
   Mail,
 } from "lucide-react";
-import { cn } from "@/src/lib/utils";
 import { useGetAllSeekersQuery } from "@/src/redux/features/seeker/seekerApi";
-
-const MOCK_CANDIDATES = [
-  {
-    id: "1",
-    name: "Alex Rivera",
-    role: "Senior Frontend Engineer",
-    location: "San Francisco, CA",
-    experience: "8 years",
-    rating: 4.9,
-    skills: ["React", "Next.js", "TypeScript", "TailwindCSS"],
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-    bio: "Passionate about building highly interactive and accessible web applications.",
-    availability: "Immediate",
-  },
-  {
-    id: "2",
-    name: "Sarah Chen",
-    role: "Product Designer",
-    location: "New York, NY",
-    experience: "5 years",
-    rating: 4.8,
-    skills: ["Figma", "UI/UX", "Prototyping", "Adobe Suite"],
-    image:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-    bio: "Focused on creating emotional connections through thoughtful digital design.",
-    availability: "2 weeks notice",
-  },
-  {
-    id: "3",
-    name: "Marcus Johnson",
-    role: "Full Stack Developer",
-    location: "Austin, TX",
-    experience: "6 years",
-    rating: 4.7,
-    skills: ["Node.js", "Python", "PostgreSQL", "AWS"],
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
-    bio: "Specializing in scalable backend architectures and robust API designs.",
-    availability: "Immediate",
-  },
-  {
-    id: "4",
-    name: "Elena Rodriguez",
-    role: "Data Scientist",
-    location: "Chicago, IL",
-    experience: "4 years",
-    rating: 4.9,
-    skills: ["Python", "Machine Learning", "TensorFlow", "SQL"],
-    image:
-      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop",
-    bio: "Turning complex data into actionable business insights and predictive models.",
-    availability: "1 month notice",
-  },
-  {
-    id: "5",
-    name: "David Kim",
-    role: "Mobile Developer",
-    location: "Seattle, WA",
-    experience: "7 years",
-    rating: 4.6,
-    skills: ["React Native", "Flutter", "Swift", "Firebase"],
-    image:
-      "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop",
-    bio: "Crafting seamless mobile experiences across iOS and Android platforms.",
-    availability: "Immediate",
-  },
-];
 
 export default function CandidatesListingPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState({
+    experienceLevel: "",
+    availability: "",
+    jobType: "",
+    totalExperience: "",
+    location: "",
+  });
+  const [sortBy, setSortBy] = useState("newest");
 
   const { data: seekersData, isLoading } = useGetAllSeekersQuery({
     search: searchQuery,
+    ...filters,
   });
 
-  const candidatesList =
-    seekersData?.data?.seekers?.map((s: any) => ({
-      id: s._id,
-      name: s.userId?.name || "Anonymous Candidate",
-      role: s.designation || "Professional",
-      location: s.userLocation || "Remote",
-      experience: "5+ years", // Default for now
-      rating: 4.9, // Default for now
-      skills: s.skills || [],
-      image:
-        s.userId?.image ||
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-      bio: s.aboutMe || "No bio provided.",
-      availability: "Immediate",
-    })) || [];
+  const seekers = seekersData?.data?.seekers || [];
+  const pagination = seekersData?.data?.pagination;
 
-  const filteredCandidates = candidatesList;
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: prev[key as keyof typeof prev] === value ? "" : value,
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      experienceLevel: "",
+      availability: "",
+      jobType: "",
+      totalExperience: "",
+      location: "",
+    });
+    setSearchQuery("");
+  };
+
+  // Frontend sorting logic since backend might not support all types yet
+  const sortedSeekers = [...seekers].sort((a, b) => {
+    if (sortBy === "job-type") {
+      return (a.jobType || "").localeCompare(b.jobType || "");
+    }
+    // Default to newest (based on creation date if available, or just keep order)
+    return 0;
+  });
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -144,10 +96,15 @@ export default function CandidatesListingPage() {
                 <div className="hidden md:block w-px h-10 bg-gray-100 self-center"></div>
                 <div className="flex items-center px-4 gap-3">
                   <MapPin className="h-6 w-6 text-gray-400" />
-                  <select className="bg-transparent border-none text-gray-600 font-medium focus:ring-0 cursor-pointer">
-                    <option>All Locations</option>
-                    <option>Remote</option>
-                    <option>On-site</option>
+                  <select
+                    className="bg-transparent border-none text-gray-600 font-medium focus:ring-0 cursor-pointer"
+                    value={filters.jobType}
+                    onChange={(e) => handleFilterChange("jobType", e.target.value)}
+                  >
+                    <option value="">All Types</option>
+                    <option value="remote">Remote</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="onsite">On-site</option>
                   </select>
                 </div>
                 <Button className="h-14 px-10 rounded-2xl bg-[#234C6A] hover:bg-[#1a3a52] text-white font-bold text-lg shadow-lg transition-all active:scale-95">
@@ -169,60 +126,156 @@ export default function CandidatesListingPage() {
                 <h3 className="text-xl font-bold text-[#234C6A] flex items-center gap-2">
                   <Filter className="h-5 w-5" /> Filters
                 </h3>
-                <button className="text-sm font-bold text-blue-600 hover:text-blue-700">
+                <button
+                  onClick={clearFilters}
+                  className="text-sm font-bold text-blue-600 hover:text-blue-700"
+                >
                   Clear all
                 </button>
               </div>
 
+              {/* Experience Level */}
               <div className="space-y-4">
                 <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">
                   Experience Level
                 </h4>
                 <div className="space-y-3">
-                  {["Entry Level", "Mid Level", "Senior Level", "Expert"].map(
-                    (level) => (
-                      <label
-                        key={level}
-                        className="flex items-center gap-3 cursor-pointer group"
+                  {[
+                    { label: "Entry Level", value: "entry-level" },
+                    { label: "Mid Level", value: "mid-level" },
+                    { label: "Senior Level", value: "senior-level" },
+                    { label: "Expert", value: "expert" },
+                  ].map((level) => (
+                    <label
+                      key={level.value}
+                      className="flex items-center gap-3 cursor-pointer group"
+                    >
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={filters.experienceLevel === level.value}
+                        onChange={() =>
+                          handleFilterChange("experienceLevel", level.value)
+                        }
+                      />
+                      <div
+                        className={`w-5 h-5 rounded-md border-2 transition-colors flex items-center justify-center ${
+                          filters.experienceLevel === level.value
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-200 group-hover:border-blue-500"
+                        }`}
                       >
-                        <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-blue-500 transition-colors"></div>
-                        <span className="text-gray-600 font-medium group-hover:text-[#234C6A] transition-colors">
-                          {level}
-                        </span>
-                      </label>
-                    ),
-                  )}
+                        {filters.experienceLevel === level.value && (
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        )}
+                      </div>
+                      <span
+                        className={`font-medium transition-colors ${
+                          filters.experienceLevel === level.value
+                            ? "text-[#234C6A] font-bold"
+                            : "text-gray-600 group-hover:text-[#234C6A]"
+                        }`}
+                      >
+                        {level.label}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
+              {/* Availability */}
               <div className="space-y-4">
                 <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">
                   Availability
                 </h4>
                 <div className="space-y-3">
-                  {["Immediate", "2 Weeks", "1 Month", "Remote Only"].map(
-                    (item) => (
-                      <label
-                        key={item}
-                        className="flex items-center gap-3 cursor-pointer group"
+                  {[
+                    { label: "Immediately", value: "immediately" },
+                    { label: "1 Week", value: "1-week" },
+                    { label: "2 Weeks", value: "2-weeks" },
+                    { label: "1 Month", value: "1-month" },
+                  ].map((item) => (
+                    <label
+                      key={item.value}
+                      className="flex items-center gap-3 cursor-pointer group"
+                    >
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={filters.availability === item.value}
+                        onChange={() =>
+                          handleFilterChange("availability", item.value)
+                        }
+                      />
+                      <div
+                        className={`w-5 h-5 rounded-md border-2 transition-colors flex items-center justify-center ${
+                          filters.availability === item.value
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-200 group-hover:border-blue-500"
+                        }`}
                       >
-                        <div className="w-5 h-5 rounded-md border-2 border-gray-200 group-hover:border-blue-500 transition-colors"></div>
-                        <span className="text-gray-600 font-medium group-hover:text-[#234C6A] transition-colors">
-                          {item}
-                        </span>
-                      </label>
-                    ),
-                  )}
+                        {filters.availability === item.value && (
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        )}
+                      </div>
+                      <span
+                        className={`font-medium transition-colors ${
+                          filters.availability === item.value
+                            ? "text-[#234C6A] font-bold"
+                            : "text-gray-600 group-hover:text-[#234C6A]"
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-50">
-                <Button
-                  variant="outline"
-                  className="w-full rounded-2xl border-gray-100 text-[#234C6A] font-bold h-12 hover:bg-gray-50"
-                >
-                  Apply Filters
-                </Button>
+              {/* Job Type */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">
+                  Job Preference
+                </h4>
+                <div className="space-y-3">
+                  {[
+                    { label: "Remote", value: "remote" },
+                    { label: "Hybrid", value: "hybrid" },
+                    { label: "On-site", value: "onsite" },
+                  ].map((type) => (
+                    <label
+                      key={type.value}
+                      className="flex items-center gap-3 cursor-pointer group"
+                    >
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={filters.jobType === type.value}
+                        onChange={() => handleFilterChange("jobType", type.value)}
+                      />
+                      <div
+                        className={`w-5 h-5 rounded-md border-2 transition-colors flex items-center justify-center ${
+                          filters.jobType === type.value
+                            ? "border-blue-500 bg-blue-500"
+                            : "border-gray-200 group-hover:border-blue-500"
+                        }`}
+                      >
+                        {filters.jobType === type.value && (
+                          <div className="w-2 h-2 bg-white rounded-full" />
+                        )}
+                      </div>
+                      <span
+                        className={`font-medium transition-colors ${
+                          filters.jobType === type.value
+                            ? "text-[#234C6A] font-bold"
+                            : "text-gray-600 group-hover:text-[#234C6A]"
+                        }`}
+                      >
+                        {type.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -248,7 +301,7 @@ export default function CandidatesListingPage() {
               <p className="text-gray-500 font-medium">
                 Showing{" "}
                 <span className="text-[#234C6A] font-bold">
-                  {filteredCandidates.length}
+                  {sortedSeekers.length}
                 </span>{" "}
                 exceptional candidates
               </p>
@@ -256,10 +309,13 @@ export default function CandidatesListingPage() {
                 <span className="text-sm text-gray-400 font-medium">
                   Sort by:
                 </span>
-                <select className="bg-transparent border-none text-[#234C6A] font-bold focus:ring-0 cursor-pointer text-sm">
-                  <option>Top Rated</option>
-                  <option>Most Experience</option>
-                  <option>Newest</option>
+                <select
+                  className="bg-transparent border-none text-[#234C6A] font-bold focus:ring-0 cursor-pointer text-sm"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="newest">Newest</option>
+                  <option value="job-type">Job Type</option>
                 </select>
               </div>
             </div>
@@ -272,9 +328,9 @@ export default function CandidatesListingPage() {
                     Discovering Talent...
                   </p>
                 </div>
-              ) : filteredCandidates.length > 0 ? (
-                filteredCandidates.map((candidate: any) => (
-                  <CandidateCard key={candidate.id} candidate={candidate} />
+              ) : sortedSeekers.length > 0 ? (
+                sortedSeekers.map((s: any) => (
+                  <CandidateCard key={s._id} candidate={s} />
                 ))
               ) : (
                 <div className="text-center py-32 bg-white rounded-[40px] border-2 border-dashed border-gray-100">
@@ -307,8 +363,11 @@ function CandidateCard({ candidate }: { candidate: any }) {
           <div className="relative">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-[28px] overflow-hidden border-4 border-gray-50 shadow-inner">
               <img
-                src={candidate.image}
-                alt={candidate.name}
+                src={
+                  candidate.userId?.image ||
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+                }
+                alt={candidate.userId?.name}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
             </div>
@@ -321,41 +380,41 @@ function CandidateCard({ candidate }: { candidate: any }) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-2xl font-black text-[#234C6A] group-hover:text-blue-600 transition-colors">
-                  {candidate.name}
+                  {candidate.userId?.name || "Anonymous Candidate"}
                 </h3>
                 <p className="text-[#456882] font-bold text-lg">
-                  {candidate.role}
+                  {candidate.designation || "Professional"}
                 </p>
-              </div>
-              <div className="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-2xl border border-yellow-100 shadow-sm">
-                <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                <span className="font-black text-yellow-700 text-lg">
-                  {candidate.rating}
-                </span>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-y-2 gap-x-6">
               <div className="flex items-center gap-2 text-gray-500 font-medium">
                 <MapPin className="h-4 w-4 text-blue-500" />
-                {candidate.location}
+                {candidate.userLocation || "Remote"}
               </div>
               <div className="flex items-center gap-2 text-gray-500 font-medium">
                 <Briefcase className="h-4 w-4 text-blue-500" />
-                {candidate.experience} Exp
+                {candidate.totalExperience || "N/A"} Exp
               </div>
               <div className="flex items-center gap-2 text-gray-500 font-medium">
                 <Clock className="h-4 w-4 text-blue-500" />
-                {candidate.availability}
+                <span className="capitalize">
+                  {candidate.availability?.replace("-", " ") || "Immediate"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-500 font-medium">
+                <Globe className="h-4 w-4 text-blue-500" />
+                <span className="capitalize">{candidate.jobType || "Remote"}</span>
               </div>
             </div>
 
             <p className="text-gray-600 leading-relaxed max-w-2xl line-clamp-2">
-              {candidate.bio}
+              {candidate.aboutMe || "No bio provided."}
             </p>
 
             <div className="flex flex-wrap gap-2 pt-2">
-              {candidate.skills.map((skill: string) => (
+              {(candidate.skills || []).map((skill: string) => (
                 <Badge
                   key={skill}
                   className="bg-blue-50 text-blue-600 border-none px-4 py-1.5 rounded-xl font-bold text-xs uppercase tracking-tight"
@@ -367,34 +426,9 @@ function CandidateCard({ candidate }: { candidate: any }) {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-gray-50 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="flex -space-x-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden"
-                >
-                  <img
-                    src={`https://i.pravatar.cc/100?u=${candidate.id}${i}`}
-                    alt="Company"
-                  />
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
-              Vouched by 12+ Top Recruiters
-            </p>
-          </div>
-
+        <div className="mt-8 pt-8 border-t border-gray-50 flex flex-col sm:flex-row sm:items-center justify-end gap-6">
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              className="rounded-2xl font-bold text-gray-400 hover:text-red-500 transition-colors px-4 h-14"
-            >
-              <Heart className="h-6 w-6" />
-            </Button>
-            <Link href={`/candidates/${candidate.id}`}>
+            <Link href={`/candidates/${candidate._id}`}>
               <Button className="rounded-2xl bg-white border-2 border-gray-100 hover:border-blue-100 hover:bg-blue-50 text-[#234C6A] font-bold px-8 h-14 shadow-sm transition-all group-hover:shadow-lg">
                 View Profile
               </Button>
@@ -448,21 +482,3 @@ function Clock(props: any) {
   );
 }
 
-function Heart(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-    </svg>
-  );
-}

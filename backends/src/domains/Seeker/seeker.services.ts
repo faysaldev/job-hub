@@ -1,5 +1,6 @@
-import Seeker, { ISeeker } from "./seeker.model";
 import { Types } from "mongoose";
+import User from "../User/user.model";
+import Seeker, { ISeeker } from "./seeker.model";
 
 export const createSeekerService = async (
   seekerData: Partial<ISeeker>,
@@ -25,14 +26,32 @@ export const getSeekerByUserIdService = async (
 };
 
 export const getAllSeekersService = async (query: any = {}) => {
-  const { search, skills, location, page = 1, limit = 10 } = query;
+  const {
+    search,
+    skills,
+    location,
+    experienceLevel,
+    jobType,
+    availability,
+    totalExperience,
+    page = 1,
+    limit = 10,
+  } = query;
 
   const filters: any = {};
 
   if (search) {
+    // Find matching users by name first to include in search
+    const matchingUsers = await User.find({
+      name: { $regex: search, $options: "i" },
+    }).select("_id");
+    const userIds = matchingUsers.map((u: any) => u._id);
+
     filters.$or = [
       { designation: { $regex: search, $options: "i" } },
       { aboutMe: { $regex: search, $options: "i" } },
+      { skills: { $in: [new RegExp(search, "i")] } },
+      { userId: { $in: userIds } },
     ];
   }
 
@@ -47,11 +66,29 @@ export const getAllSeekersService = async (query: any = {}) => {
     filters.userLocation = { $regex: location, $options: "i" };
   }
 
+  if (experienceLevel) {
+    filters.experienceLevel = experienceLevel;
+  }
+
+  if (jobType) {
+    filters.jobType = jobType;
+  }
+
+  if (availability) {
+    filters.availability = availability;
+  }
+
+  if (totalExperience) {
+    filters.totalExperience = { $regex: totalExperience, $options: "i" };
+  }
+
   const skip = (Number(page) - 1) * Number(limit);
 
   const [seekers, total] = await Promise.all([
     Seeker.find(filters)
-      .select("userId userLocation designation aboutMe skills resume portfolio")
+      .select(
+        "userId userLocation designation aboutMe skills resume portfolio experienceLevel availability jobType totalExperience",
+      )
       .populate("userId", "name email image role phoneNumber")
       .sort({ createdAt: -1 })
       .skip(skip)
