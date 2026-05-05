@@ -23,6 +23,7 @@ import { useGetAllSeekersQuery } from "@/src/redux/features/seeker/seekerApi";
 
 export default function CandidatesListingPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [filters, setFilters] = useState({
     experienceLevel: "",
     availability: "",
@@ -56,6 +57,11 @@ export default function CandidatesListingPage() {
       location: "",
     });
     setSearchQuery("");
+    setSearchInput("");
+  };
+
+  const handleSearch = () => {
+    setSearchQuery(searchInput);
   };
 
   // Frontend sorting logic since backend might not support all types yet
@@ -89,8 +95,9 @@ export default function CandidatesListingPage() {
                   <Input
                     placeholder="Search by name, role, or skills..."
                     className="border-none bg-transparent h-14 text-lg focus-visible:ring-0 placeholder:text-gray-400 font-medium"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   />
                 </div>
                 <div className="hidden md:block w-px h-10 bg-gray-100 self-center"></div>
@@ -107,7 +114,10 @@ export default function CandidatesListingPage() {
                     <option value="onsite">On-site</option>
                   </select>
                 </div>
-                <Button className="h-14 px-10 rounded-2xl bg-[#234C6A] hover:bg-[#1a3a52] text-white font-bold text-lg shadow-lg transition-all active:scale-95">
+                <Button
+                  onClick={handleSearch}
+                  className="h-14 px-10 rounded-2xl bg-[#234C6A] hover:bg-[#1a3a52] text-white font-bold text-lg shadow-lg transition-all active:scale-95"
+                >
                   Search
                 </Button>
               </div>
