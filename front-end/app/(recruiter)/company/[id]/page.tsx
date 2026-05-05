@@ -24,6 +24,7 @@ import Link from "next/link";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
+import { toast } from "sonner";
 
 const CompanyPage = () => {
   const { id } = useParams();
@@ -150,19 +151,6 @@ const CompanyPage = () => {
                 )}
               </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-3 w-full lg:w-auto">
-              <Button className="h-14 px-10 rounded-2xl bg-white text-[#234C6A] hover:bg-blue-50 font-black text-lg shadow-xl transition-all active:scale-95">
-                Apply for Jobs
-              </Button>
-              <Button
-                variant="outline"
-                className="h-14 px-10 rounded-2xl border-white/30 text-white hover:bg-white/10 font-bold text-lg"
-              >
-                Save Company
-              </Button>
-            </div>
           </div>
         </div>
       </div>
@@ -202,7 +190,15 @@ const CompanyPage = () => {
                 Contact Details
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                <div
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => {
+                    if (company.userId?.email) {
+                      navigator.clipboard.writeText(company.userId.email);
+                      toast.success("Email copied to clipboard!");
+                    }
+                  }}
+                >
                   <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
                     <Mail className="h-5 w-5 text-blue-500" />
                   </div>
@@ -285,9 +281,8 @@ const CompanyPage = () => {
                             <div className="flex items-center gap-1.5">
                               <DollarSign className="h-4 w-4 text-emerald-500" />
                               <span className="capitalize">
-                                ${(job.salaryMin / 1000).toFixed(0)}k - $
-                                {(job.salaryMax / 1000).toFixed(0)}k /{" "}
-                                {job.salaryPeriod}
+                                ${job.salaryMin / 1000}k - $
+                                {job.salaryMax / 1000}k / {job.salaryPeriod}
                               </span>
                             </div>
                           </div>
@@ -332,23 +327,6 @@ const CompanyPage = () => {
                 </p>
               </Card>
             </div>
-
-            {/* Bottom Call to Action */}
-            <Card className="p-10 border-none shadow-2xl rounded-[40px] bg-[#234C6A] text-white flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16" />
-              <div className="relative z-10 text-center md:text-left">
-                <h3 className="text-2xl font-black mb-2">
-                  Want to work at {company.companyName}?
-                </h3>
-                <p className="text-blue-100/70 font-medium">
-                  Explore our current job openings and start your journey with
-                  us.
-                </p>
-              </div>
-              <Button className="relative z-10 bg-white text-[#234C6A] hover:bg-blue-50 rounded-2xl font-black px-10 h-14 shadow-lg transition-all active:scale-95 whitespace-nowrap">
-                Browse Jobs
-              </Button>
-            </Card>
           </div>
         </div>
       </div>
