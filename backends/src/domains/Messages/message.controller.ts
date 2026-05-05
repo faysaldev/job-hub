@@ -7,44 +7,50 @@ import { ProtectedRequest } from "../../types/protected-request";
 
 import { createNotification } from "../Notifications/notifications.service";
 
-const createMessage = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const { conversationId, receiverId, content } = req.body;
-  const senderId = req.user?._id as string;
+const createMessage = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const { conversationId, receiverId, content } = req.body;
+    const senderId = req.user?._id as string;
 
-  const message = await messageServices.createMessageService({
-    conversationId,
-    senderId,
-    receiverId,
-    content,
-  });
-
-  // OPTIMIZATION: Send notification to the receiver
-  try {
-    await createNotification({
-      title: `New message from ${req.user?.name || 'User'}`,
-      link: `/messages/${conversationId}`,
-      sender: senderId,
-      receiver: receiverId,
+    const message = await messageServices.createMessageService({
+      conversationId,
+      senderId,
+      receiverId,
+      content,
     });
-  } catch (err) {
-    console.error("Failed to send message notification:", err);
-  }
 
-  res.status(httpStatus.CREATED).json(
-    response({
-      message: "Message created successfully",
-      status: "OK",
-      statusCode: httpStatus.CREATED,
-      data: message,
-    })
-  );
-});
+    // OPTIMIZATION: Send notification to the receiver
+    // TODO: message link need to added
+    try {
+      await createNotification({
+        title: `New message from ${req.user?.name || "User"}`,
+        link: `/messages/${conversationId}`,
+        sender: senderId,
+        receiver: receiverId,
+      });
+    } catch (err) {
+      console.error("Failed to send message notification:", err);
+    }
+
+    res.status(httpStatus.CREATED).json(
+      response({
+        message: "Message created successfully",
+        status: "OK",
+        statusCode: httpStatus.CREATED,
+        data: message,
+      }),
+    );
+  },
+);
 
 const editMessage = asyncHandler(async (req: Request, res: Response) => {
   const { messageId } = req.params;
   const { content } = req.body;
 
-  const updatedMessage = await messageServices.editMessageService(messageId, content);
+  const updatedMessage = await messageServices.editMessageService(
+    messageId,
+    content,
+  );
 
   res.status(httpStatus.OK).json(
     response({
@@ -52,7 +58,7 @@ const editMessage = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: updatedMessage,
-    })
+    }),
   );
 });
 
@@ -67,7 +73,7 @@ const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: {},
-    })
+    }),
   );
 });
 
@@ -86,25 +92,30 @@ const getAllMessages = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: messages,
-    })
+    }),
   );
 });
 
-const markMessageAsRead = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const { messageId } = req.params;
-  const userId = req.user?._id as string;
+const markMessageAsRead = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const { messageId } = req.params;
+    const userId = req.user?._id as string;
 
-  const updatedMessage = await messageServices.markMessageAsReadService(messageId, userId);
+    const updatedMessage = await messageServices.markMessageAsReadService(
+      messageId,
+      userId,
+    );
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Message marked as read successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: updatedMessage,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Message marked as read successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: updatedMessage,
+      }),
+    );
+  },
+);
 
 export default {
   createMessage,
