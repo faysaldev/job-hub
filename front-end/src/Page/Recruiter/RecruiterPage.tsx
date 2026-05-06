@@ -76,9 +76,10 @@ const RecruiterDashboard = () => {
     {
       title: "Active Jobs",
       value: val(apiData?.activeJobs),
-      change: apiData?.activeJobs?.percentage != null
-        ? `${apiData.activeJobs.percentage}% of capacity`
-        : "Total posted",
+      change:
+        apiData?.activeJobs?.percentage != null
+          ? `${apiData.activeJobs.percentage}% of capacity`
+          : "Total posted",
       trend: Number(val(apiData?.activeJobs)) > 0 ? "up" : "neutral",
       icon: Briefcase,
       color: "from-[#234C6A] to-[#456882]",
@@ -87,9 +88,10 @@ const RecruiterDashboard = () => {
     {
       title: "Total Applicants",
       value: val(apiData?.applicants),
-      change: apiData?.applicants?.percentage != null
-        ? `${apiData.applicants.percentage}% response rate`
-        : "All applicants",
+      change:
+        apiData?.applicants?.percentage != null
+          ? `${apiData.applicants.percentage}% response rate`
+          : "All applicants",
       trend: Number(val(apiData?.applicants)) > 0 ? "up" : "neutral",
       icon: Users,
       color: "from-blue-500 to-cyan-500",
@@ -97,7 +99,10 @@ const RecruiterDashboard = () => {
     },
     {
       title: "Avg. Salary",
-      value: apiData?.avgSalary != null ? `$${Number(apiData.avgSalary).toLocaleString()}` : "—",
+      value:
+        apiData?.avgSalary != null
+          ? `$${Number(apiData.avgSalary).toLocaleString()}`
+          : "—",
       change: "Market competitive",
       trend: "neutral",
       icon: DollarSign,
@@ -230,7 +235,10 @@ const RecruiterDashboard = () => {
                   },
                   {
                     label: "Avg. Salary",
-                    value: apiData?.avgSalary != null ? `$${Number(apiData.avgSalary).toLocaleString()}` : "—",
+                    value:
+                      apiData?.avgSalary != null
+                        ? `$${Number(apiData.avgSalary).toLocaleString()}`
+                        : "—",
                     color: "bg-green-50 text-green-700",
                   },
                 ].map((item) => (
