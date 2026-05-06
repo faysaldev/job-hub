@@ -19,8 +19,8 @@ router.post(
   createSeeker,
 );
 router.get("/profile", authMiddleware, getSeeker); // Get authenticated user's seeker profile
-router.get("/all", authMiddleware, getAllSeekers); // Get all seekers
-router.get("/:id", authMiddleware, getSeekerById); // Get seeker by ID
+router.get("/all", getAllSeekers); // Get all seekers
+router.get("/:id", getSeekerById); // Get seeker by ID
 router.put(
   "/",
   authMiddleware,
