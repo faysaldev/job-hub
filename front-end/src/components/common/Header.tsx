@@ -44,6 +44,7 @@ import { jobCategories } from "@/src/lib/jobCategories";
 import { useAuth } from "@/src/hooks/useAuth";
 import Image from "next/image";
 import {
+  useGetAppliedJobIdsQuery,
   useGetCategoryStatsQuery,
   useGetHeaderStatsQuery,
   useGetTopJobsQuery,
@@ -413,6 +414,14 @@ const Header = () => {
   // category stats data
   const { data: categoryStats, isLoading: isCategoryStatsLoading } =
     useGetCategoryStatsQuery(undefined);
+
+  // applied job ids data
+  const { data: appliedJobIds, isLoading: isAppliedJobIdsLoading } =
+    useGetAppliedJobIdsQuery(undefined, {
+      skip: !user,
+    });
+
+  console.log(appliedJobIds);
 
   // Handlers
   const closeAll = useCallback(() => {

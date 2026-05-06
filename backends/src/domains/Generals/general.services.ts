@@ -166,12 +166,20 @@ const getSeekerDashboardStats = async (userId: string) => {
   };
 };
 
+const getAppliedJobIds = async (userId: string) => {
+  const applications = await Application.find({ applicant: userId })
+    .select("job_id")
+    .lean();
+  return applications.map((app) => app.job_id.toString());
+};
+
 const generalService = {
   getHeaderStats,
   getCategoryStats,
   getSubcategoryStats,
   getTopJobs,
   getSeekerDashboardStats,
+  getAppliedJobIds,
 };
 
 export default generalService;

@@ -72,12 +72,27 @@ const getSeekerDashboardStats = asyncHandler(async (req: ProtectedRequest, res: 
   );
 });
 
+const getAppliedJobIds = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const userId = req.user?._id;
+  const jobIds = await generalService.getAppliedJobIds(userId as string);
+
+  res.status(httpStatus.OK).json(
+    response({
+      message: "Applied job IDs retrieved successfully",
+      status: "OK",
+      statusCode: httpStatus.OK,
+      data: jobIds,
+    })
+  );
+});
+
 const generalController = {
   getHeaderStats,
   getCategoryStats,
   getSubcategoryStats,
   getTopJobs,
   getSeekerDashboardStats,
+  getAppliedJobIds,
 };
 
 export default generalController;

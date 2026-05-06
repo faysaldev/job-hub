@@ -36,4 +36,11 @@ router.get(
   generalController.getSeekerDashboardStats
 );
 
+// Get applied job IDs
+router.get(
+  "/applied-job-ids",
+  authMiddleware,
+  generalController.getAppliedJobIds
+);
+
 export default router;

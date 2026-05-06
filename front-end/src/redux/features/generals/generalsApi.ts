@@ -79,6 +79,16 @@ const generalsApi = baseApi.injectEndpoints({
         response.data,
       providesTags: ["applications", "jobs", "activities"],
     }),
+
+    // GET /generals/applied-job-ids - Get IDs of jobs user has applied for
+    getAppliedJobIds: builder.query<string[], void>({
+      query: () => ({
+        url: "/generals/applied-job-ids",
+        method: "GET",
+      }),
+      transformResponse: (response: ApiResponse<string[]>) => response.data,
+      providesTags: ["applications"],
+    }),
   }),
 });
 
@@ -88,4 +98,5 @@ export const {
   useGetSubcategoryStatsQuery,
   useGetTopJobsQuery,
   useGetSeekerDashboardStatsQuery,
+  useGetAppliedJobIdsQuery,
 } = generalsApi;
