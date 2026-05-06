@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -24,12 +24,16 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Card } from "@/src/components/ui/card";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/src/components/ui/tabs";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const AuthPage = () => {
   const [loading, setLoading] = useState(false);
@@ -127,15 +131,41 @@ const AuthPage = () => {
     { icon: Globe, text: "Global" },
   ];
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".auth-hero-content > *",
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.2, ease: "power3.out" },
+      );
+      gsap.fromTo(
+        ".auth-form-card",
+        { opacity: 0, x: 50 },
+        { opacity: 1, x: 0, duration: 1, ease: "back.out(1.2)", delay: 0.2 },
+      );
+    });
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <div className="min-h-screen flex bg-[#E3E3E3]">
+    <div className="min-h-screen flex bg-gradient-to-br from-[#E3E3E3] via-white to-[#E3E3E3] relative overflow-hidden">
+      {/* Floating Back to Home Button */}
+      <Link
+        href="/"
+        className="absolute top-8 right-8 z-50 flex items-center gap-2 px-4 py-2 bg-white/50 backdrop-blur-md border border-white/20 rounded-full text-[#234C6A] font-medium hover:bg-white hover:shadow-xl transition-all duration-300 group"
+      >
+        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+        Back to Home
+      </Link>
       {/* Left Hero Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-white/3 to-transparent rounded-full blur-3xl" />
         </div>
-        <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+        <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16 auth-hero-content">
           <Link href="/" className="flex items-center gap-3 mb-12">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2.5 border border-white/20">
               <Briefcase className="h-7 w-7 text-white" />
@@ -234,7 +264,8 @@ const AuthPage = () => {
               </p>
             </div>
 
-            <Card className="p-8 bg-white border-none shadow-2xl rounded-2xl">
+            <Card className="p-8 border border-white/40 bg-white/70 backdrop-blur-xl shadow-2xl rounded-3xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
               <div className="text-center mb-6 hidden lg:block">
                 <h2 className="text-2xl font-bold text-[#234C6A] mb-1">
                   Welcome Back
@@ -245,7 +276,7 @@ const AuthPage = () => {
               </div>
 
               <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6 bg-[#E3E3E3] p-1 rounded-xl">
+                <TabsList className="grid grid-cols-2 w-full h-12 bg-[#E3E3E3]/50 p-1 rounded-xl mb-8">
                   <TabsTrigger
                     value="signin"
                     className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white transition-all duration-300"

@@ -22,9 +22,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function AboutPage() {
-  const heroRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const missionRef = useRef<HTMLDivElement>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
@@ -255,12 +257,11 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#E3E3E3]">
+    <div className="min-h-screen bg-gradient-to-b from-[#E3E3E3] via-white to-[#E3E3E3]">
       <Header />
 
       {/* Hero Section */}
       <section
-        ref={heroRef}
         className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882]"
       >
         {/* Animated background elements */}
@@ -322,7 +323,7 @@ export default function AboutPage() {
           >
             <path
               d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              fill="#E3E3E3"
+              fill="white"
             />
           </svg>
         </div>
@@ -335,13 +336,14 @@ export default function AboutPage() {
             {stats.map((stat, index) => (
               <Card
                 key={index}
-                className="stat-card p-8 border-none bg-white shadow-lg hover:shadow-xl transition-all duration-300 group"
+                className="stat-card p-8 border-none bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 group relative overflow-hidden rounded-2xl"
               >
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#234C6A]/5 to-[#456882]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative flex flex-col items-center text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
                     {stat.icon}
                   </div>
-                  <div className="text-4xl md:text-5xl font-bold text-[#234C6A] mb-2">
+                  <div className="text-4xl md:text-5xl font-bold text-[#234C6A] mb-2 group-hover:text-[#456882] transition-colors">
                     {stat.value}
                   </div>
                   <div className="text-lg font-semibold text-[#234C6A] mb-1">
@@ -445,17 +447,17 @@ export default function AboutPage() {
             {values.map((value, index) => (
               <Card
                 key={index}
-                className="value-card p-8 border-none bg-white shadow-lg hover:shadow-2xl transition-all duration-300 group overflow-hidden relative"
+                className="value-card p-8 border border-transparent bg-white shadow-lg hover:shadow-2xl hover:border-[#234C6A]/20 transition-all duration-500 group overflow-hidden relative rounded-2xl"
               >
                 <div
-                  className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${value.color} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity duration-300 -translate-y-1/2 translate-x-1/2`}
+                  className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${value.color} opacity-5 rounded-full blur-3xl group-hover:opacity-15 group-hover:w-56 group-hover:h-56 transition-all duration-700 -translate-y-1/2 translate-x-1/2`}
                 />
                 <div
-                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${value.color} flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-300`}
+                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${value.color} flex items-center justify-center text-white mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-all duration-500 shadow-lg`}
                 >
                   {value.icon}
                 </div>
-                <h3 className="text-xl font-bold text-[#234C6A] mb-3">
+                <h3 className="text-xl font-bold text-[#234C6A] mb-3 group-hover:text-[#456882] transition-colors">
                   {value.title}
                 </h3>
                 <p className="text-[#456882] leading-relaxed">
@@ -486,18 +488,19 @@ export default function AboutPage() {
             {team.map((member, index) => (
               <Card
                 key={index}
-                className="team-card p-8 border-none bg-white shadow-lg hover:shadow-2xl transition-all duration-300 group"
+                className="team-card p-8 border border-transparent bg-white shadow-lg hover:shadow-2xl hover:border-[#234C6A]/10 transition-all duration-500 group rounded-2xl"
               >
                 <div className="flex flex-col items-center text-center">
                   <div className="relative mb-6">
-                    <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white text-3xl font-bold group-hover:scale-105 transition-transform duration-300">
+                    <div className="absolute -inset-1 bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+                    <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white text-3xl font-bold group-hover:scale-105 transition-transform duration-500 ring-4 ring-white">
                       {member.image}
                     </div>
-                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="h-5 w-5 text-white" />
+                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-white">
+                      <CheckCircle className="h-4 w-4 text-white" />
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-[#234C6A] mb-1">
+                  <h3 className="text-xl font-bold text-[#234C6A] mb-1 group-hover:text-[#456882] transition-colors">
                     {member.name}
                   </h3>
                   <p className="text-[#456882] font-medium mb-4">{member.role}</p>
@@ -507,13 +510,13 @@ export default function AboutPage() {
                   <div className="flex gap-3">
                     <a
                       href={member.linkedin}
-                      className="w-10 h-10 rounded-full bg-[#E3E3E3] flex items-center justify-center text-[#234C6A] hover:bg-[#234C6A] hover:text-white transition-all duration-300"
+                      className="w-10 h-10 rounded-full bg-[#E3E3E3] flex items-center justify-center text-[#234C6A] hover:bg-[#234C6A] hover:text-white hover:scale-110 transition-all duration-300"
                     >
                       <Linkedin className="h-5 w-5" />
                     </a>
                     <a
                       href={member.twitter}
-                      className="w-10 h-10 rounded-full bg-[#E3E3E3] flex items-center justify-center text-[#234C6A] hover:bg-[#234C6A] hover:text-white transition-all duration-300"
+                      className="w-10 h-10 rounded-full bg-[#E3E3E3] flex items-center justify-center text-[#234C6A] hover:bg-[#234C6A] hover:text-white hover:scale-110 transition-all duration-300"
                     >
                       <Twitter className="h-5 w-5" />
                     </a>

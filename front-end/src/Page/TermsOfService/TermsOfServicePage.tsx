@@ -64,7 +64,7 @@ export default function TermsOfServicePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#E3E3E3]">
+    <div className="min-h-screen bg-gradient-to-b from-[#E3E3E3] via-white to-[#E3E3E3]">
       <Header />
 
       {/* Hero Section */}
@@ -117,40 +117,52 @@ export default function TermsOfServicePage() {
           <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
             <path
               d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              fill="#E3E3E3"
+              fill="white"
             />
           </svg>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-16">
+      <section className="py-16 bg-gradient-to-b from-white to-[#E3E3E3]/30">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {/* Table of Contents Sidebar */}
-            <div className="lg:col-span-1">
-              <Card className="p-6 border-none bg-white shadow-lg sticky top-24">
-                <h3 className="font-bold text-[#234C6A] mb-4 flex items-center gap-2">
+            <aside className="lg:col-span-1">
+              <Card className="sticky top-28 p-6 border border-white/40 bg-white/70 backdrop-blur-xl shadow-xl rounded-2xl overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1 h-full bg-[#234C6A]/10 group-hover:bg-[#234C6A]/20 transition-colors" />
+                <h3 className="font-bold text-[#234C6A] mb-6 flex items-center gap-2 px-2">
                   <FileText className="h-5 w-5" />
                   Table of Contents
                 </h3>
-                <nav className="space-y-2">
+                <nav className="space-y-1">
                   {sections.map((section) => (
                     <button
                       key={section.id}
                       onClick={() => scrollToSection(section.id)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-all duration-200 ${
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 relative group/item ${
                         activeSection === section.id
-                          ? "bg-[#234C6A] text-white"
-                          : "text-[#456882] hover:bg-[#E3E3E3]"
+                          ? "bg-[#234C6A] text-white shadow-md translate-x-1"
+                          : "text-[#456882] hover:bg-[#234C6A]/5 hover:text-[#234C6A] hover:translate-x-1"
                       }`}
                     >
-                      {section.icon}
-                      {section.title}
+                      {activeSection === section.id && (
+                        <div className="absolute left-0 w-1 h-5 bg-white rounded-r-full" />
+                      )}
+                      <span className="flex-shrink-0 opacity-80 group-hover/item:opacity-100 transition-opacity">
+                        {section.icon}
+                      </span>
+                      <span className="truncate">{section.title}</span>
+                      <ChevronRight
+                        className={`h-4 w-4 ml-auto transition-transform duration-300 ${
+                          activeSection === section.id
+                            ? "rotate-90"
+                            : "opacity-0 group-hover/item:opacity-100 group-hover/item:translate-x-1"
+                        }`}
+                      />
                     </button>
                   ))}
                 </nav>
-
                 {/* Quick Info Card */}
                 <div className="mt-6 p-4 bg-[#E3E3E3]/50 rounded-xl">
                   <h4 className="font-semibold text-[#234C6A] text-sm mb-2">Quick Summary</h4>
@@ -159,11 +171,11 @@ export default function TermsOfServicePage() {
                   </p>
                 </div>
               </Card>
-            </div>
+            </aside>
 
             {/* Terms Content */}
-            <div className="lg:col-span-3 terms-content">
-              <Card className="p-8 md:p-12 border-none bg-white shadow-lg">
+            <main className="lg:col-span-3 terms-content">
+              <Card className="p-8 md:p-12 border border-white/40 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl space-y-12">
                 {/* Important Notice */}
                 <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl mb-10">
                   <div className="flex gap-3">
@@ -499,7 +511,7 @@ export default function TermsOfServicePage() {
                   </Link>
                 </div>
               </Card>
-            </div>
+            </main>
           </div>
         </div>
       </section>

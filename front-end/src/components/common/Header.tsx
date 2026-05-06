@@ -211,11 +211,7 @@ const NOTIFICATIONS: Notification[] = [
   },
 ];
 
-const USER_STATS = [
-  { label: "Applied", value: "12" },
-  { label: "Saved", value: "8" },
-  { label: "Views", value: "156" },
-];
+// User stats are now computed dynamically from API data below
 
 // ============================================================================
 // HELPER COMPONENTS
@@ -389,10 +385,7 @@ const Header = () => {
     () => (user?.role === "recruiter" ? RECRUITER_MENU : JOB_SEEKER_MENU),
     [user?.role],
   );
-  const selectedCategory = useMemo(
-    () => jobCategories.find((c) => c.id === hoveredCategory),
-    [hoveredCategory],
-  );
+  // selectedCategory is computed after enrichedCategories below
   const getCategoryIcon = useCallback(
     (iconName: string) => CATEGORY_ICONS[iconName] || Briefcase,
     [],
@@ -402,26 +395,44 @@ const Header = () => {
     [pathname],
   );
 
-  //  user stats data
-  const { data: headerStats, isLoading } = useGetHeaderStatsQuery(undefined, {
+  // API Data
+  const { data: headerStats } = useGetHeaderStatsQuery(undefined, {
+    skip: !user,
+  });
+  const { data: allTopsJobs } = useGetTopJobsQuery(undefined);
+  const { data: categoryStats } = useGetCategoryStatsQuery(undefined);
+  const { data: appliedJobIds } = useGetAppliedJobIdsQuery(undefined, {
     skip: !user,
   });
 
-  // browse jobs stats
-  const { data: allJobsStats, isLoading: isAllJobsStatsLoading } =
-    useGetTopJobsQuery(undefined);
+  // Computed values from API
+  const notificationCount = headerStats?.unreadNotificationsCount || 0;
+  const savedJobsCount = headerStats?.savedJobsCount || 0;
+  const appliedCount = appliedJobIds?.length || 0;
 
-  // category stats data
-  const { data: categoryStats, isLoading: isCategoryStatsLoading } =
-    useGetCategoryStatsQuery(undefined);
+  const userStats = useMemo(
+    () => [
+      { label: "Applied", value: String(appliedCount) },
+      { label: "Saved", value: String(savedJobsCount) },
+      { label: "Alerts", value: String(notificationCount) },
+    ],
+    [appliedCount, savedJobsCount, notificationCount],
+  );
 
-  // applied job ids data
-  const { data: appliedJobIds, isLoading: isAppliedJobIdsLoading } =
-    useGetAppliedJobIdsQuery(undefined, {
-      skip: !user,
+  const enrichedCategories = useMemo(() => {
+    if (!categoryStats || !Array.isArray(categoryStats)) return jobCategories;
+    return jobCategories.map((cat) => {
+      const stat = categoryStats.find(
+        (s: { category: string; count: number }) => s.category === cat.id,
+      );
+      return stat ? { ...cat, count: stat.count } : cat;
     });
+  }, [categoryStats]);
 
-  console.log(appliedJobIds);
+  const selectedCategory = useMemo(
+    () => enrichedCategories.find((c) => c.id === hoveredCategory),
+    [hoveredCategory, enrichedCategories],
+  );
 
   // Handlers
   const closeAll = useCallback(() => {
@@ -570,7 +581,7 @@ const Header = () => {
                       <ArrowRight className="h-4 w-4 text-[#456882] group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <div className="p-2 max-h-[350px] overflow-y-auto">
-                      {jobCategories.map((cat) => {
+                      {enrichedCategories.map((cat) => {
                         const Icon = getCategoryIcon(cat.icon);
                         return (
                           <button
@@ -812,12 +823,14 @@ const Header = () => {
                   )}
                 >
                   <Bell className="h-5 w-5" />
-                  <span className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
-                    <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white items-center justify-center">
-                      3
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
+                      <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white items-center justify-center">
+                        {notificationCount}
+                      </span>
                     </span>
-                  </span>
+                  )}
                 </Button>
 
                 <DropdownPanel
@@ -836,7 +849,7 @@ const Header = () => {
                           Notifications
                         </h3>
                         <p className="text-xs text-[#456882]">
-                          You have 3 new updates
+                          You have {notificationCount} new update{notificationCount !== 1 ? "s" : ""}
                         </p>
                       </div>
                     </div>
@@ -957,7 +970,7 @@ const Header = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-px bg-[#E3E3E3]/50 border-b border-[#E3E3E3]">
-                    {USER_STATS.map((s, i) => (
+                    {userStats.map((s, i) => (
                       <div key={i} className="bg-white p-3 text-center">
                         <p className="text-lg font-bold text-[#234C6A]">
                           {s.value}
@@ -1102,12 +1115,12 @@ const Header = () => {
             </div>
             <div className="flex gap-2 mt-4">
               {[
-                { href: "/job/saved", icon: Heart, label: "Saved" },
+                { href: "/job/saved", icon: Heart, label: "Saved", badge: savedJobsCount > 0 ? String(savedJobsCount) : undefined },
                 {
                   href: "/notifications",
                   icon: Bell,
                   label: "Alerts",
-                  badge: "3",
+                  badge: notificationCount > 0 ? String(notificationCount) : undefined,
                 },
                 { href: "/job", icon: Search, label: "Search" },
               ].map((item) => (
@@ -1254,7 +1267,7 @@ const Header = () => {
                 Job Categories
               </p>
               <div className="space-y-1">
-                {jobCategories.map((cat) => {
+                {enrichedCategories.map((cat) => {
                   const Icon = getCategoryIcon(cat.icon);
                   const isExpanded = mobileExpandedCategory === cat.id;
                   return (

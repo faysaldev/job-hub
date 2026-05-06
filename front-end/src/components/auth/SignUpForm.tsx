@@ -27,7 +27,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
             name="name"
             placeholder="Enter your full name"
             required
-            className="pl-10 h-12 border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] rounded-xl bg-[#E3E3E3]/30"
+            className="pl-10 h-12 border-white/20 bg-white/40 backdrop-blur-md shadow-inner focus:bg-white focus:border-[#234C6A]/30 focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl"
           />
         </div>
       </div>
@@ -43,7 +43,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
             type="email"
             placeholder="Enter your email"
             required
-            className="pl-10 h-12 border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] rounded-xl bg-[#E3E3E3]/30"
+            className="pl-10 h-12 border-white/20 bg-white/40 backdrop-blur-md shadow-inner focus:bg-white focus:border-[#234C6A]/30 focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl"
           />
         </div>
       </div>
@@ -59,7 +59,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
             type="tel"
             placeholder="+1 (555) 123-4567"
             required
-            className="pl-10 h-12 border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] rounded-xl bg-[#E3E3E3]/30"
+            className="pl-10 h-12 border-white/20 bg-white/40 backdrop-blur-md shadow-inner focus:bg-white focus:border-[#234C6A]/30 focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl"
           />
         </div>
       </div>
@@ -75,7 +75,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
             type={showPassword ? "text" : "password"}
             placeholder="Create a strong password"
             required
-            className="pl-10 pr-10 h-12 border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] rounded-xl bg-[#E3E3E3]/30"
+            className="pl-10 pr-10 h-12 border-white/20 bg-white/40 backdrop-blur-md shadow-inner focus:bg-white focus:border-[#234C6A]/30 focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl"
           />
           <button
             type="button"
@@ -88,35 +88,39 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
       </div>
       <div className="space-y-2">
         <Label className="text-[#234C6A] font-semibold">I am a</Label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
             onClick={() => setUserType("jobseeker")}
-            className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-300 ${
+            className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all duration-500 group/btn relative overflow-hidden ${
               userType === "jobseeker"
-                ? "border-[#234C6A] bg-[#234C6A]/10 text-[#234C6A]"
-                : "border-[#234C6A]/20 text-[#456882] hover:border-[#234C6A]/40"
+                ? "border-[#234C6A] bg-[#234C6A]/5 text-[#234C6A] shadow-lg shadow-[#234C6A]/10"
+                : "border-white/20 bg-white/40 text-[#456882] hover:border-[#234C6A]/30 hover:bg-white"
             }`}
           >
-            <Search className="h-5 w-5" />
-            <span className="font-medium">Job Seeker</span>
+            <div className={`p-2 rounded-lg transition-colors ${userType === 'jobseeker' ? 'bg-[#234C6A] text-white' : 'bg-[#456882]/10'}`}>
+              <Search className="h-5 w-5" />
+            </div>
+            <span className="font-bold">Job Seeker</span>
           </button>
           <button
             type="button"
             onClick={() => setUserType("recruiter")}
-            className={`flex items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-300 ${
+            className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all duration-500 group/btn relative overflow-hidden ${
               userType === "recruiter"
-                ? "border-[#234C6A] bg-[#234C6A]/10 text-[#234C6A]"
-                : "border-[#234C6A]/20 text-[#456882] hover:border-[#234C6A]/40"
+                ? "border-[#234C6A] bg-[#234C6A]/5 text-[#234C6A] shadow-lg shadow-[#234C6A]/10"
+                : "border-white/20 bg-white/40 text-[#456882] hover:border-[#234C6A]/30 hover:bg-white"
             }`}
           >
-            <Briefcase className="h-5 w-5" />
-            <span className="font-medium">Recruiter</span>
+            <div className={`p-2 rounded-lg transition-colors ${userType === 'recruiter' ? 'bg-[#234C6A] text-white' : 'bg-[#456882]/10'}`}>
+              <Briefcase className="h-5 w-5" />
+            </div>
+            <span className="font-bold">Recruiter</span>
           </button>
         </div>
         <input type="hidden" name="user-type" value={userType} />
       </div>
-      <div className="flex items-start space-x-3 p-4 bg-[#E3E3E3]/50 rounded-xl">
+      <div className="flex items-start space-x-3 p-4 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20">
         <Checkbox id="terms" name="terms" required className="mt-0.5 border-[#234C6A]/30 data-[state=checked]:bg-[#234C6A] data-[state=checked]:border-[#234C6A]" />
         <Label htmlFor="terms" className="text-[#456882] text-sm leading-relaxed">
           I agree to the <span className="text-[#234C6A] font-semibold hover:underline cursor-pointer">Terms of Service</span> and <span className="text-[#234C6A] font-semibold hover:underline cursor-pointer">Privacy Policy</span>
