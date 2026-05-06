@@ -4,6 +4,7 @@ import { asyncHandler } from "../../lib/errorsHandle";
 import { AppError } from "../../lib/errors";
 import httpStatus from "http-status";
 import { response } from "../../lib/response";
+import { addActivityLogService } from "../Seeker/seeker.services";
 
 const register = asyncHandler(async (req: Request, res: Response) => {
   const user = await authService.register(req.body);
@@ -34,6 +35,15 @@ const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
 const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = await authService.loginUser(email, password);
+
+  // Log activity for the user
+  if (user?.user?._id) {
+    await addActivityLogService(
+      user.user._id.toString(),
+      "Logged in to the platform",
+    );
+  }
+
   res.status(httpStatus.OK).json(
     response({
       message: "Login Successful",
