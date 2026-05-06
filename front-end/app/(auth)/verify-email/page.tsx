@@ -1,5 +1,12 @@
 import { Suspense } from 'react';
 import EmailVerificationPage from '@/src/Page/Auth/EmailVerificationPage';
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Verify Emails | JobHub",
+  description:
+    "Verify your email address to secure your account and unlock all features of the JobHub platform. Start your career journey with a verified profile.",
+};
 
 function EmailVerificationFallback() {
   return (
