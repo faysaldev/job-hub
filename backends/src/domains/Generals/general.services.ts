@@ -4,6 +4,7 @@ import Notification from "../Notifications/notifications.model";
 import SavedJob from "../SavedJobs/savedjob.model";
 import Application from "../Applications/application.model";
 import Seeker from "../Seeker/seeker.model";
+import Contact, { IContact } from "./contact.model";
 
 // Simple in-memory cache
 interface CacheEntry {
@@ -173,6 +174,11 @@ const getAppliedJobIds = async (userId: string) => {
   return applications.map((app) => app.job_id.toString());
 };
 
+const submitContactForm = async (contactData: Partial<IContact>) => {
+  const contact = new Contact(contactData);
+  return await contact.save();
+};
+
 const generalService = {
   getHeaderStats,
   getCategoryStats,
@@ -180,6 +186,7 @@ const generalService = {
   getTopJobs,
   getSeekerDashboardStats,
   getAppliedJobIds,
+  submitContactForm,
 };
 
 export default generalService;

@@ -29,6 +29,14 @@ export interface SeekerDashboardStats {
   };
 }
 
+export interface ContactFormData {
+  fullName: string;
+  email: string;
+  department: string;
+  subject: string;
+  message: string;
+}
+
 const generalsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // GET /generals/header-stats - Get unread notifications and saved jobs count
@@ -89,6 +97,15 @@ const generalsApi = baseApi.injectEndpoints({
       transformResponse: (response: ApiResponse<string[]>) => response.data,
       providesTags: ["applications"],
     }),
+
+    // POST /generals/contact - Submit contact form
+    submitContactForm: builder.mutation<any, ContactFormData>({
+      query: (body) => ({
+        url: "/generals/contact",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -99,4 +116,5 @@ export const {
   useGetTopJobsQuery,
   useGetSeekerDashboardStatsQuery,
   useGetAppliedJobIdsQuery,
+  useSubmitContactFormMutation,
 } = generalsApi;

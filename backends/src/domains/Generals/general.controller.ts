@@ -86,6 +86,20 @@ const getAppliedJobIds = asyncHandler(async (req: ProtectedRequest, res: Respons
   );
 });
 
+const submitContactForm = asyncHandler(async (req: Request, res: Response) => {
+  const contactData = req.body;
+  const contact = await generalService.submitContactForm(contactData);
+
+  res.status(httpStatus.CREATED).json(
+    response({
+      message: "Contact form submitted successfully",
+      status: "OK",
+      statusCode: httpStatus.CREATED,
+      data: contact,
+    })
+  );
+});
+
 const generalController = {
   getHeaderStats,
   getCategoryStats,
@@ -93,6 +107,7 @@ const generalController = {
   getTopJobs,
   getSeekerDashboardStats,
   getAppliedJobIds,
+  submitContactForm,
 };
 
 export default generalController;

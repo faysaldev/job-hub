@@ -23,19 +23,19 @@ import { toast } from "@/src/hooks/use-toast";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
 import gsap from "gsap";
+import { useSubmitContactFormMutation } from "@/src/redux/features/generals/generalsApi";
 
 export default function ContactPage() {
   const heroRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
+  const [contactSubmit] = useSubmitContactFormMutation();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-    department: "general",
-  });
+  const fullNameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const subjectRef = useRef<HTMLInputElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+  const departmentRef = useRef<HTMLSelectElement>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,7 +44,7 @@ export default function ContactPage() {
       gsap.fromTo(
         ".hero-content",
         { opacity: 0, y: 50 },
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
+        { opacity: 1, y: 0, duration: 1, ease: "power3.out" },
       );
 
       gsap.fromTo(
@@ -57,45 +57,62 @@ export default function ContactPage() {
           stagger: 0.1,
           ease: "power2.out",
           delay: 0.3,
-        }
+        },
       );
 
       gsap.fromTo(
         ".form-container",
         { opacity: 0, x: 30 },
-        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out", delay: 0.4 }
+        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out", delay: 0.4 },
       );
 
       gsap.fromTo(
         ".info-container",
         { opacity: 0, x: -30 },
-        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out", delay: 0.4 }
+        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out", delay: 0.4 },
       );
     });
 
     return () => ctx.revert();
   }, []);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const payload = {
+        fullName: fullNameRef.current?.value || "",
+        email: emailRef.current?.value || "",
+        subject: subjectRef.current?.value || "",
+        message: messageRef.current?.value || "",
+        department: departmentRef.current?.value || "general",
+      };
 
-    toast({
-      title: "Message Sent Successfully!",
-      description: "Thank you for reaching out. Our team will respond within 24 hours.",
-    });
-    setFormData({ name: "", email: "", subject: "", message: "", department: "general" });
-    setIsSubmitting(false);
+      await contactSubmit(payload).unwrap();
+
+      toast({
+        title: "Message Sent Successfully!",
+        description:
+          "Thank you for reaching out. Our team will respond within 24 hours.",
+      });
+
+      // Clear the form
+      if (fullNameRef.current) fullNameRef.current.value = "";
+      if (emailRef.current) emailRef.current.value = "";
+      if (subjectRef.current) subjectRef.current.value = "";
+      if (messageRef.current) messageRef.current.value = "";
+      if (departmentRef.current) departmentRef.current.value = "general";
+    } catch (error: any) {
+      toast({
+        title: "Error Sending Message",
+        description:
+          error?.data?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactMethods = [
@@ -144,7 +161,8 @@ export default function ContactPage() {
   const faqs = [
     {
       question: "How quickly will I receive a response?",
-      answer: "Our team typically responds within 24 hours during business days.",
+      answer:
+        "Our team typically responds within 24 hours during business days.",
     },
     {
       question: "Do you offer enterprise solutions?",
@@ -152,7 +170,8 @@ export default function ContactPage() {
     },
     {
       question: "Where are your offices located?",
-      answer: "Our headquarters is in San Francisco, with offices in New York, London, and Singapore.",
+      answer:
+        "Our headquarters is in San Francisco, with offices in New York, London, and Singapore.",
     },
   ];
 
@@ -202,7 +221,10 @@ export default function ContactPage() {
               {[
                 { icon: <Clock className="h-5 w-5" />, text: "24/7 Support" },
                 { icon: <Globe className="h-5 w-5" />, text: "Global Team" },
-                { icon: <CheckCircle className="h-5 w-5" />, text: "Fast Response" },
+                {
+                  icon: <CheckCircle className="h-5 w-5" />,
+                  text: "Fast Response",
+                },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-2">
                   {item.icon}
@@ -215,7 +237,12 @@ export default function ContactPage() {
 
         {/* Bottom wave */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full"
+          >
             <path
               d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
               fill="#E3E3E3"
@@ -241,7 +268,9 @@ export default function ContactPage() {
                 <h3 className="text-lg font-bold text-[#234C6A] mb-1">
                   {method.title}
                 </h3>
-                <p className="text-sm text-[#456882] mb-3">{method.description}</p>
+                <p className="text-sm text-[#456882] mb-3">
+                  {method.description}
+                </p>
                 <p className="text-[#234C6A] font-semibold">{method.primary}</p>
                 <p className="text-[#456882] text-sm">{method.secondary}</p>
               </Card>
@@ -264,7 +293,8 @@ export default function ContactPage() {
                   How Can We Help?
                 </h2>
                 <p className="text-[#456882]">
-                  Fill out the form below and we will get back to you as soon as possible.
+                  Fill out the form below and we will get back to you as soon as
+                  possible.
                 </p>
               </div>
 
@@ -272,21 +302,26 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-[#234C6A] font-semibold">
+                      <Label
+                        htmlFor="name"
+                        className="text-[#234C6A] font-semibold"
+                      >
                         Full Name *
                       </Label>
                       <Input
                         id="name"
                         name="name"
                         placeholder="John Doe"
-                        value={formData.name}
-                        onChange={handleInputChange}
+                        ref={fullNameRef}
                         className="border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] bg-white h-12 rounded-xl"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-[#234C6A] font-semibold">
+                      <Label
+                        htmlFor="email"
+                        className="text-[#234C6A] font-semibold"
+                      >
                         Email Address *
                       </Label>
                       <Input
@@ -294,8 +329,7 @@ export default function ContactPage() {
                         name="email"
                         type="email"
                         placeholder="john@example.com"
-                        value={formData.email}
-                        onChange={handleInputChange}
+                        ref={emailRef}
                         className="border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] bg-white h-12 rounded-xl"
                         required
                       />
@@ -303,14 +337,16 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="department" className="text-[#234C6A] font-semibold">
+                    <Label
+                      htmlFor="department"
+                      className="text-[#234C6A] font-semibold"
+                    >
                       Department
                     </Label>
                     <select
                       id="department"
                       name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
+                      ref={departmentRef}
                       className="w-full h-12 px-4 border border-[#234C6A]/20 rounded-xl bg-white text-[#234C6A] focus:border-[#234C6A] focus:ring-1 focus:ring-[#234C6A] focus:outline-none"
                     >
                       {departments.map((dept) => (
@@ -322,30 +358,34 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="subject" className="text-[#234C6A] font-semibold">
+                    <Label
+                      htmlFor="subject"
+                      className="text-[#234C6A] font-semibold"
+                    >
                       Subject *
                     </Label>
                     <Input
                       id="subject"
                       name="subject"
                       placeholder="How can we help you?"
-                      value={formData.subject}
-                      onChange={handleInputChange}
+                      ref={subjectRef}
                       className="border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] bg-white h-12 rounded-xl"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="text-[#234C6A] font-semibold">
+                    <Label
+                      htmlFor="message"
+                      className="text-[#234C6A] font-semibold"
+                    >
                       Message *
                     </Label>
                     <Textarea
                       id="message"
                       name="message"
                       placeholder="Tell us more about your inquiry..."
-                      value={formData.message}
-                      onChange={handleInputChange}
+                      ref={messageRef}
                       rows={6}
                       className="border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] bg-white rounded-xl resize-none"
                       required
@@ -359,9 +399,25 @@ export default function ContactPage() {
                   >
                     {isSubmitting ? (
                       <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Sending...
                       </span>
@@ -420,12 +476,16 @@ export default function ContactPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-bold text-[#234C6A]">{office.city}</h4>
+                            <h4 className="font-bold text-[#234C6A]">
+                              {office.city}
+                            </h4>
                             <span className="text-xs px-2 py-0.5 bg-[#234C6A]/10 text-[#234C6A] rounded-full">
                               {office.type}
                             </span>
                           </div>
-                          <p className="text-[#456882] text-sm">{office.address}</p>
+                          <p className="text-[#456882] text-sm">
+                            {office.address}
+                          </p>
                         </div>
                       </div>
                     </Card>
@@ -445,7 +505,9 @@ export default function ContactPage() {
                       key={index}
                       className="p-5 border-none bg-[#E3E3E3]/50"
                     >
-                      <h4 className="font-semibold text-[#234C6A] mb-2">{faq.question}</h4>
+                      <h4 className="font-semibold text-[#234C6A] mb-2">
+                        {faq.question}
+                      </h4>
                       <p className="text-[#456882] text-sm">{faq.answer}</p>
                     </Card>
                   ))}
@@ -459,9 +521,12 @@ export default function ContactPage() {
                     <Headphones className="h-6 w-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2">Need Immediate Help?</h4>
+                    <h4 className="font-bold text-lg mb-2">
+                      Need Immediate Help?
+                    </h4>
                     <p className="text-white/80 text-sm mb-4">
-                      Our support team is available 24/7 to assist you with any urgent inquiries.
+                      Our support team is available 24/7 to assist you with any
+                      urgent inquiries.
                     </p>
                     <Button
                       variant="outline"
@@ -489,7 +554,8 @@ export default function ContactPage() {
               Visit Our Headquarters
             </h2>
             <p className="text-[#456882] max-w-2xl mx-auto">
-              We would love to meet you in person. Schedule a visit to our San Francisco office.
+              We would love to meet you in person. Schedule a visit to our San
+              Francisco office.
             </p>
           </div>
 
@@ -501,9 +567,15 @@ export default function ContactPage() {
                   <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6">
                     <MapPin className="h-10 w-10" />
                   </div>
-                  <h3 className="text-3xl font-bold mb-2">JobHub Headquarters</h3>
-                  <p className="text-xl text-white/80 mb-2">123 Business Avenue</p>
-                  <p className="text-lg text-white/70 mb-6">San Francisco, CA 94107</p>
+                  <h3 className="text-3xl font-bold mb-2">
+                    JobHub Headquarters
+                  </h3>
+                  <p className="text-xl text-white/80 mb-2">
+                    123 Business Avenue
+                  </p>
+                  <p className="text-lg text-white/70 mb-6">
+                    San Francisco, CA 94107
+                  </p>
                   <Button className="bg-white text-[#234C6A] hover:bg-[#E3E3E3]">
                     Get Directions
                     <ArrowRight className="ml-2 h-4 w-4" />
