@@ -100,6 +100,20 @@ const submitContactForm = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
+const getRecruiterDashboardStats = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const recruiterId = req.user?._id;
+  const stats = await generalService.getRecruiterDashboardStats(recruiterId as string);
+
+  res.status(httpStatus.OK).json(
+    response({
+      message: "Recruiter dashboard stats retrieved successfully",
+      status: "OK",
+      statusCode: httpStatus.OK,
+      data: stats,
+    })
+  );
+});
+
 const generalController = {
   getHeaderStats,
   getCategoryStats,
@@ -108,6 +122,7 @@ const generalController = {
   getSeekerDashboardStats,
   getAppliedJobIds,
   submitContactForm,
+  getRecruiterDashboardStats,
 };
 
 export default generalController;

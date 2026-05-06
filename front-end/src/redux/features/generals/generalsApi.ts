@@ -37,6 +37,18 @@ export interface ContactFormData {
   message: string;
 }
 
+export interface RecruiterDashboardStats {
+  activeJobs: {
+    total: number;
+    percentage: number;
+  };
+  applicants: {
+    total: number;
+    percentage: number;
+  };
+  avgSalary: number;
+}
+
 const generalsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // GET /generals/header-stats - Get unread notifications and saved jobs count
@@ -106,6 +118,17 @@ const generalsApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+
+    // GET /generals/recruiter-dashboard-stats - Get stats for recruiter dashboard
+    getRecruiterDashboardStats: builder.query<RecruiterDashboardStats, void>({
+      query: () => ({
+        url: "/generals/recruiter-dashboard-stats",
+        method: "GET",
+      }),
+      transformResponse: (response: ApiResponse<RecruiterDashboardStats>) =>
+        response.data,
+      providesTags: ["applications", "jobs"],
+    }),
   }),
 });
 
@@ -117,4 +140,5 @@ export const {
   useGetSeekerDashboardStatsQuery,
   useGetAppliedJobIdsQuery,
   useSubmitContactFormMutation,
+  useGetRecruiterDashboardStatsQuery,
 } = generalsApi;

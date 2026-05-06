@@ -18,18 +18,24 @@ import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
+import { useGetRecruiterDashboardStatsQuery } from "@/src/redux/features/generals/generalsApi";
 
 const RecruiterDashboard = () => {
   const { user, isAuthenticated, isRecruiter } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { data: recruiterStats } = useGetRecruiterDashboardStatsQuery(
+    undefined,
+    { skip: !user },
+  );
+  console.log(recruiterStats);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".dashboard-header",
         { opacity: 0, y: -30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" },
       );
 
       gsap.fromTo(
@@ -43,7 +49,7 @@ const RecruiterDashboard = () => {
           stagger: 0.1,
           delay: 0.2,
           ease: "power2.out",
-        }
+        },
       );
     }, containerRef);
 
@@ -103,13 +109,16 @@ const RecruiterDashboard = () => {
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                   Active
                 </span>
-                <span className="text-[#456882] text-sm">Last login: Today, 9:30 AM</span>
+                <span className="text-[#456882] text-sm">
+                  Last login: Today, 9:30 AM
+                </span>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-[#234C6A] mb-2">
                 Welcome back, {user.name?.split(" ")[0] || "Recruiter"}!
               </h1>
               <p className="text-[#456882] max-w-2xl">
-                Manage your recruitment pipeline, track applicants, and build your dream team. Here is what is happening today.
+                Manage your recruitment pipeline, track applicants, and build
+                your dream team. Here is what is happening today.
               </p>
             </div>
 
@@ -134,20 +143,32 @@ const RecruiterDashboard = () => {
               className="stat-card p-6 border-none bg-white shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden relative cursor-pointer"
               onClick={() => router.push(stat.href)}
             >
-              <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:opacity-10 transition-opacity`} />
+              <div
+                className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:opacity-10 transition-opacity`}
+              />
 
               <div className="flex items-start justify-between relative z-10">
                 <div>
-                  <p className="text-[#456882] text-sm font-medium mb-1">{stat.title}</p>
-                  <p className="text-3xl font-bold text-[#234C6A] mb-2">{stat.value}</p>
+                  <p className="text-[#456882] text-sm font-medium mb-1">
+                    {stat.title}
+                  </p>
+                  <p className="text-3xl font-bold text-[#234C6A] mb-2">
+                    {stat.value}
+                  </p>
                   <div className="flex items-center gap-1">
-                    {stat.trend === "up" && <TrendingUp className="h-4 w-4 text-green-500" />}
-                    <span className={`text-xs font-medium ${stat.trend === "up" ? "text-green-600" : "text-[#456882]"}`}>
+                    {stat.trend === "up" && (
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                    )}
+                    <span
+                      className={`text-xs font-medium ${stat.trend === "up" ? "text-green-600" : "text-[#456882]"}`}
+                    >
                       {stat.change}
                     </span>
                   </div>
                 </div>
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                <div
+                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                >
                   <stat.icon className="h-7 w-7" />
                 </div>
               </div>
@@ -164,7 +185,9 @@ const RecruiterDashboard = () => {
               </div>
               <div>
                 <h3 className="text-xl font-bold mb-1">Q1 Hiring Goal</h3>
-                <p className="text-white/80">You are 75% towards your quarterly target</p>
+                <p className="text-white/80">
+                  You are 75% towards your quarterly target
+                </p>
               </div>
             </div>
             <div className="flex-1 max-w-md">

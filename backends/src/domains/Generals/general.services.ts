@@ -179,6 +179,66 @@ const submitContactForm = async (contactData: Partial<IContact>) => {
   return await contact.save();
 };
 
+const getRecruiterDashboardStats = async (recruiterId: string) => {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+  const recruiterJobs = await Job.find({ author: recruiterId }).select("_id");
+  const jobIds = recruiterJobs.map((j) => j._id);
+
+  const [
+    activeJobsCount,
+    lastMonthJobsCount,
+    totalApplicants,
+    lastMonthApplicants,
+    salaryStats,
+  ] = await Promise.all([
+    Job.countDocuments({ author: recruiterId, status: "active" }),
+    Job.countDocuments({
+      author: recruiterId,
+      status: "active",
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+    }),
+    Application.countDocuments({ job_id: { $in: jobIds } }),
+    Application.countDocuments({
+      job_id: { $in: jobIds },
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+    }),
+    Job.aggregate([
+      { $match: { author: new mongoose.Types.ObjectId(recruiterId) } },
+      {
+        $group: {
+          _id: null,
+          avgMin: { $avg: "$salaryMin" },
+          avgMax: { $avg: "$salaryMax" },
+        },
+      },
+    ]),
+  ]);
+
+  const calculatePercentage = (current: number, previous: number) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return Math.round(((current - previous) / previous) * 100);
+  };
+
+  const avgSalary = salaryStats[0]
+    ? Math.round((salaryStats[0].avgMin + salaryStats[0].avgMax) / 2)
+    : 0;
+
+  return {
+    activeJobs: {
+      total: activeJobsCount,
+      percentage: calculatePercentage(activeJobsCount, lastMonthJobsCount),
+    },
+    applicants: {
+      total: totalApplicants,
+      percentage: calculatePercentage(totalApplicants, lastMonthApplicants),
+    },
+    avgSalary,
+  };
+};
+
 const generalService = {
   getHeaderStats,
   getCategoryStats,
@@ -187,6 +247,7 @@ const generalService = {
   getSeekerDashboardStats,
   getAppliedJobIds,
   submitContactForm,
+  getRecruiterDashboardStats,
 };
 
 export default generalService;

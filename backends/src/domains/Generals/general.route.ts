@@ -39,4 +39,11 @@ router.post(
   generalController.submitContactForm,
 );
 
+// Get recruiter dashboard stats
+router.get(
+  "/recruiter-dashboard-stats",
+  authMiddleware,
+  generalController.getRecruiterDashboardStats,
+);
+
 export default router;
