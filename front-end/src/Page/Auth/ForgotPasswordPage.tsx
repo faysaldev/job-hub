@@ -18,17 +18,28 @@ import {
   Briefcase,
 } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
-import OTPVerification from "@/src/components/auth/OTPVerification";
 import ResetPassword from "@/src/components/auth/ResetPassword";
+import {
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+} from "@/src/redux/features/auth/authApi";
+import { Clock, RefreshCw } from "lucide-react";
 import gsap from "gsap";
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(60);
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const [forgotPassword, { isLoading: isForgotLoading }] =
+    useForgotPasswordMutation();
+  const [resetPassword, { isLoading: isResetLoading }] =
+    useResetPasswordMutation();
 
   // GSAP animations
   useEffect(() => {
@@ -60,9 +71,11 @@ const ForgotPasswordPage = () => {
     return () => clearInterval(timer);
   }, [step, timeLeft]);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const currentEmail = emailRef.current?.value || "";
+
+    if (!currentEmail) {
       toast({
         title: "Error",
         description: "Please enter your email address.",
@@ -71,40 +84,83 @@ const ForgotPasswordPage = () => {
       return;
     }
 
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    setLoading(false);
-    setStep(2);
-    setTimeLeft(60);
-    toast({
-      title: "OTP Sent",
-      description: `An OTP has been sent to ${email}. Please check your inbox.`,
-    });
+    try {
+      const res = await forgotPassword({ email: currentEmail }).unwrap();
+      setEmail(currentEmail);
+      setStep(2);
+      setTimeLeft(60);
+      toast({
+        title: "OTP Sent",
+        description: `An OTP has been sent to ${currentEmail}. Please check your inbox.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error?.error || "Failed to send OTP. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleVerifyOtp = async (otp: string) => {
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setLoading(false);
-    setStep(3);
-    toast({
-      title: "OTP Verified",
-      description: "OTP verified successfully. Please enter your new password.",
-    });
+  const handleOtpChange = (index: number, value: string) => {
+    if (/^\d$/.test(value) || value === "") {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+
+      if (value && index < 5) {
+        otpRefs.current[index + 1]?.focus();
+      }
+    }
+  };
+
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
   };
 
   const handleResetPassword = async (password: string) => {
-    setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setLoading(false);
+    const code = otp.join("");
+    if (code.length !== 6) {
+      toast({
+        title: "Error",
+        description: "Please enter the complete 6-digit verification code.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    toast({
-      title: "Success",
-      description: "Password has been reset successfully.",
-    });
+    try {
+      await resetPassword({
+        email,
+        code,
+        newPassword: password,
+      }).unwrap();
 
-    router.push("/auth");
+      toast({
+        title: "Success",
+        description: "Password has been reset successfully.",
+      });
+
+      router.push("/auth");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error?.data?.message || "Failed to reset password. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleResendOtp = async () => {
@@ -118,8 +174,7 @@ const ForgotPasswordPage = () => {
 
   const steps = [
     { number: 1, title: "Email", icon: <Mail className="h-4 w-4" /> },
-    { number: 2, title: "Verify", icon: <KeyRound className="h-4 w-4" /> },
-    { number: 3, title: "Reset", icon: <Lock className="h-4 w-4" /> },
+    { number: 2, title: "Reset", icon: <ShieldCheck className="h-4 w-4" /> },
   ];
 
   const getStepIcon = () => {
@@ -127,9 +182,7 @@ const ForgotPasswordPage = () => {
       case 1:
         return <Mail className="h-12 w-12 text-white" />;
       case 2:
-        return <KeyRound className="h-12 w-12 text-white" />;
-      case 3:
-        return <Lock className="h-12 w-12 text-white" />;
+        return <ShieldCheck className="h-12 w-12 text-white" />;
       default:
         return <Mail className="h-12 w-12 text-white" />;
     }
@@ -140,9 +193,7 @@ const ForgotPasswordPage = () => {
       case 1:
         return "Forgot Password?";
       case 2:
-        return "Enter Verification Code";
-      case 3:
-        return "Create New Password";
+        return "Verify & Reset";
       default:
         return "Forgot Password?";
     }
@@ -153,9 +204,7 @@ const ForgotPasswordPage = () => {
       case 1:
         return "No worries! Enter your email and we will send you a reset code.";
       case 2:
-        return `Enter the 6-digit code sent to ${email}`;
-      case 3:
-        return "Create a strong password for your account.";
+        return `Enter the code sent to ${email} and create your new password.`;
       default:
         return "";
     }
@@ -305,8 +354,7 @@ const ForgotPasswordPage = () => {
                         id="forgot-email"
                         type="email"
                         placeholder="Enter your email address"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        ref={emailRef}
                         className="pl-10 h-12 border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] rounded-xl"
                         required
                       />
@@ -316,9 +364,9 @@ const ForgotPasswordPage = () => {
                   <Button
                     type="submit"
                     className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold"
-                    disabled={loading}
+                    disabled={isForgotLoading}
                   >
-                    {loading ? (
+                    {isForgotLoading ? (
                       <span className="flex items-center gap-2">
                         <svg
                           className="animate-spin h-5 w-5"
@@ -361,20 +409,69 @@ const ForgotPasswordPage = () => {
               )}
 
               {step === 2 && (
-                <OTPVerification
-                  email={email}
-                  onVerify={handleVerifyOtp}
-                  onResend={handleResendOtp}
-                  loading={loading}
-                  timeLeft={timeLeft}
-                />
-              )}
+                <div className="space-y-8">
+                  {/* OTP Section */}
+                  <div className="space-y-4">
+                    <Label className="text-[#234C6A] font-semibold text-center block">
+                      Verification Code
+                    </Label>
+                    <div className="flex justify-center gap-2 sm:gap-3">
+                      {otp.map((digit, index) => (
+                        <Input
+                          key={index}
+                          ref={(el) => {
+                            otpRefs.current[index] = el;
+                          }}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={digit}
+                          onChange={(e) =>
+                            handleOtpChange(index, e.target.value)
+                          }
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          className={`w-10 h-12 sm:w-12 sm:h-14 text-xl sm:text-2xl font-bold text-center rounded-xl transition-all duration-300 ${
+                            digit
+                              ? "border-2 border-[#234C6A] bg-[#234C6A]/5 text-[#234C6A]"
+                              : "border-2 border-[#234C6A]/20 bg-[#E3E3E3]/30"
+                          } focus:outline-none focus:ring-2 focus:ring-[#234C6A]`}
+                        />
+                      ))}
+                    </div>
 
-              {step === 3 && (
-                <ResetPassword
-                  onSubmit={handleResetPassword}
-                  loading={loading}
-                />
+                    <div className="flex justify-center">
+                      {timeLeft > 0 ? (
+                        <p className="text-sm text-[#456882]">
+                          Resend in{" "}
+                          <span className="font-bold">
+                            {formatTime(timeLeft)}
+                          </span>
+                        </p>
+                      ) : (
+                        <Button
+                          onClick={() => handleSendOtp()}
+                          disabled={isForgotLoading}
+                          variant="ghost"
+                          size="sm"
+                          className="text-[#234C6A] hover:bg-[#234C6A]/10 h-8"
+                        >
+                          <RefreshCw
+                            className={`h-3 w-3 mr-2 ${isForgotLoading ? "animate-spin" : ""}`}
+                          />
+                          Resend Code
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Password Section */}
+                  <div className="pt-6 border-t border-[#E3E3E3]">
+                    <ResetPassword
+                      onSubmit={handleResetPassword}
+                      loading={isResetLoading}
+                    />
+                  </div>
+                </div>
               )}
 
               {/* Back button */}
