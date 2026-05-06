@@ -1,20 +1,18 @@
-"use client";
+import SeekerMessagesPage from "@/src/Page/JobSeeker/MessagesPage";
+import { Metadata } from "next";
 
-import JobSeekerMessages from "@/src/components/JobSeeker/JobSeekerMessages";
-import JobSeekerLayout from "@/src/components/JobSeeker/JobSeekerLayout";
-import { useAuth } from "@/src/hooks/useAuth";
-import { Card } from "@/src/components/ui/card";
+export const metadata: Metadata = {
+  title: "Messages | JobHub",
+  description:
+    "Communicate directly with employers and recruiters. Manage your conversations and stay connected during your job search.",
+  keywords: [
+    "messages",
+    "employer communication",
+    "job search chat",
+    "JobHub",
+  ],
+};
 
-export default function SeekerMessagesPage() {
-  const { user } = useAuth();
-
-  return (
-    <JobSeekerLayout>
-      <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-700">
-        <Card className="p-0 border-none bg-white shadow-xl rounded-[32px] overflow-hidden h-[calc(100vh-200px)]">
-          <JobSeekerMessages userId={user?._id as string} />
-        </Card>
-      </div>
-    </JobSeekerLayout>
-  );
+export default function Page() {
+  return <SeekerMessagesPage />;
 }
