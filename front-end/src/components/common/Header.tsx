@@ -852,16 +852,18 @@ const Header = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-px bg-[#E3E3E3]/50 border-b border-[#E3E3E3]">
-                    {userStats.map((s, i) => (
-                      <div key={i} className="bg-white p-3 text-center">
-                        <p className="text-lg font-bold text-[#234C6A]">
-                          {s.value}
-                        </p>
-                        <p className="text-xs text-[#456882]">{s.label}</p>
-                      </div>
-                    ))}
-                  </div>
+                  {user?.role === "seeker" && (
+                    <div className="grid grid-cols-3 gap-px bg-[#E3E3E3]/50 border-b border-[#E3E3E3]">
+                      {userStats.map((s, i) => (
+                        <div key={i} className="bg-white p-3 text-center">
+                          <p className="text-lg font-bold text-[#234C6A]">
+                            {s.value}
+                          </p>
+                          <p className="text-xs text-[#456882]">{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="p-2">
                     {userMenuItems.map((item, i) => (
                       <MenuLink
