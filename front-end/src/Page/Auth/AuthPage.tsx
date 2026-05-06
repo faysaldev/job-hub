@@ -45,17 +45,11 @@ const AuthPage = () => {
   const [signUp] = useRegisterMutation();
 
   // Already logged in → redirect
-  if (isAuthenticated && user) {
-    router.replace(user.role === "recruiter" ? "/recruiter" : "/job-seeker");
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#234C6A] to-[#456882]">
-        <div className="text-center text-white">
-          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="font-semibold">Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      router.replace(user.role === "recruiter" ? "/recruiter" : "/job-seeker");
+    }
+  }, [isAuthenticated, user, router]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,12 +70,6 @@ const AuthPage = () => {
         );
 
         toast.success("Login successfully!");
-
-        // Auto-redirect based on role after a delay
-        setTimeout(() => {
-          const role = result.data.user.role;
-          router.push(role === "recruiter" ? "/recruiter" : "/job-seeker");
-        }, 3000);
       } else {
         toast.error("Invalid response from server");
       }
@@ -147,6 +135,19 @@ const AuthPage = () => {
     return () => ctx.revert();
   }, []);
 
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#234C6A] to-[#456882]">
+        <div className="text-center text-white">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="font-semibold text-lg tracking-wide animate-pulse">
+            Redirecting...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-[#E3E3E3] via-white to-[#E3E3E3] relative overflow-hidden">
       {/* Floating Back to Home Button */}
@@ -161,10 +162,18 @@ const AuthPage = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div
+            className="absolute -bottom-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: "1s" }}
+          />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-white/3 to-transparent rounded-full blur-3xl" />
         </div>
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}
+        />
         <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16 auth-hero-content">
           <Link href="/" className="flex items-center gap-3 mb-12">
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2.5 border border-white/20">
