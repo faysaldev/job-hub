@@ -38,15 +38,20 @@ import {
   Zap,
   Calendar,
   type LucideIcon,
+  UndoIcon,
 } from "lucide-react";
 import { jobCategories } from "@/src/lib/jobCategories";
 import { useAuth } from "@/src/hooks/useAuth";
 import Image from "next/image";
+import {
+  useGetCategoryStatsQuery,
+  useGetHeaderStatsQuery,
+  useGetTopJobsQuery,
+} from "@/src/redux/features/generals/generalsApi";
 
 // ============================================================================
 // TYPES
 // ============================================================================
-type UserRole = "seeker" | "recruiter";
 type DropdownType =
   | "categories"
   | "employers"
@@ -395,6 +400,19 @@ const Header = () => {
     (path: string) => pathname === path || pathname?.startsWith(`${path}/`),
     [pathname],
   );
+
+  //  user stats data
+  const { data: headerStats, isLoading } = useGetHeaderStatsQuery(undefined, {
+    skip: !user,
+  });
+
+  // browse jobs stats
+  const { data: allJobsStats, isLoading: isAllJobsStatsLoading } =
+    useGetTopJobsQuery(undefined);
+
+  // category stats data
+  const { data: categoryStats, isLoading: isCategoryStatsLoading } =
+    useGetCategoryStatsQuery(undefined);
 
   // Handlers
   const closeAll = useCallback(() => {
@@ -1291,9 +1309,7 @@ const Header = () => {
                               className="flex items-center justify-between w-full px-3 py-2.5 rounded-lg text-sm text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5 active:scale-[0.98]"
                             >
                               <span>{sub.name}</span>
-                              <Badge
-                                className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs font-semibold"
-                              >
+                              <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs font-semibold">
                                 {sub.count}
                               </Badge>
                             </button>

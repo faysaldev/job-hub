@@ -1,21 +1,32 @@
 import { Router } from "express";
-import stripeController from "./general.controller";
+import generalController from "./general.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 
 const router = Router();
 
-// Create a new Stripe checkout session
-router.post(
-  "/create-checkout-session",
+// Get header stats (Saved jobs, Unread notifications)
+router.get(
+  "/header-stats",
   authMiddleware,
-  stripeController.createCheckoutSession,
+  generalController.getHeaderStats
 );
 
-// Get payment details by session ID
+// Get job category statistics
 router.get(
-  "/payment-details/:sessionId",
-  authMiddleware,
-  stripeController.getPaymentDetails,
+  "/category-stats",
+  generalController.getCategoryStats
+);
+
+// Get job subcategory statistics
+router.get(
+  "/subcategory-stats",
+  generalController.getSubcategoryStats
+);
+
+// Get top jobs (Trending or Latest)
+router.get(
+  "/top-jobs",
+  generalController.getTopJobs
 );
 
 export default router;

@@ -18,6 +18,8 @@ import messageRoutes from "../domains/Messages/message.route";
 import notificationRoutes from "../domains/Notifications/notifications.route";
 // Asset Service domains
 import assetRoutes from "../domains/Asset/asset.route";
+// General Service domains
+import generalRoutes from "../domains/Generals/general.route";
 
 // Initialize the router
 const router = Router();
@@ -40,5 +42,7 @@ router.use("/messages", messageRoutes);
 // Notification routes
 router.use("/notifications", notificationRoutes);
 router.use("/assets", assetRoutes);
+// General routes
+router.use("/generals", generalRoutes);
 
 export default router;
