@@ -7,9 +7,11 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { details } = await params;
-  
+
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/${details}`);
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${details}`,
+    );
     const data = await res.json();
     const job = data?.data;
 
@@ -19,7 +21,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const companyName = typeof job.company === 'object' ? job.company.companyName : 'Company';
+    const companyName =
+      typeof job.company === "object" ? job.company.companyName : "Company";
 
     return {
       title: `${job.title} at ${companyName} | JobHub`,

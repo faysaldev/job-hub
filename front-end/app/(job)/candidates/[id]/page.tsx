@@ -7,9 +7,11 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  
+
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/seekers/${id}`);
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/seekers/${id}`,
+    );
     const data = await res.json();
     const seeker = data?.data;
 
@@ -33,7 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch (error) {
     return {
       title: "Candidate Profile | JobHub",
-      description: "View candidate professional profiles and portfolios on JobHub.",
+      description:
+        "View candidate professional profiles and portfolios on JobHub.",
     };
   }
 }
