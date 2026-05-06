@@ -58,11 +58,26 @@ const getTopJobs = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
+const getSeekerDashboardStats = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const userId = req.user?._id;
+  const stats = await generalService.getSeekerDashboardStats(userId as string);
+
+  res.status(httpStatus.OK).json(
+    response({
+      message: "Seeker dashboard stats retrieved successfully",
+      status: "OK",
+      statusCode: httpStatus.OK,
+      data: stats,
+    })
+  );
+});
+
 const generalController = {
   getHeaderStats,
   getCategoryStats,
   getSubcategoryStats,
   getTopJobs,
+  getSeekerDashboardStats,
 };
 
 export default generalController;

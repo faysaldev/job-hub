@@ -16,6 +16,19 @@ export interface SubcategoryStat {
   count: number;
 }
 
+export interface SeekerDashboardStats {
+  profileStrength: number;
+  resumeLink: string;
+  applications: {
+    total: number;
+    thisWeek: number;
+    hired: number;
+  };
+  interviews: {
+    total: number;
+  };
+}
+
 const generalsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // GET /generals/header-stats - Get unread notifications and saved jobs count
@@ -55,6 +68,17 @@ const generalsApi = baseApi.injectEndpoints({
       transformResponse: (response: ApiResponse<Job[]>) => response.data,
       providesTags: ["jobs"],
     }),
+
+    // GET /generals/seeker-dashboard-stats - Get stats for seeker dashboard
+    getSeekerDashboardStats: builder.query<SeekerDashboardStats, void>({
+      query: () => ({
+        url: "/generals/seeker-dashboard-stats",
+        method: "GET",
+      }),
+      transformResponse: (response: ApiResponse<SeekerDashboardStats>) =>
+        response.data,
+      providesTags: ["applications", "jobs", "activities"],
+    }),
   }),
 });
 
@@ -63,4 +87,5 @@ export const {
   useGetCategoryStatsQuery,
   useGetSubcategoryStatsQuery,
   useGetTopJobsQuery,
+  useGetSeekerDashboardStatsQuery,
 } = generalsApi;

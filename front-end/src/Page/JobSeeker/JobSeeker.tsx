@@ -23,6 +23,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import JobSeekerLayout from "@/src/components/JobSeeker/JobSeekerLayout";
 import { useGetActivitiesQuery } from "@/src/redux/features/seeker/seekerApi";
+import { useGetSeekerDashboardStatsQuery } from "@/src/redux/features/generals/generalsApi";
 
 const JobSeekerDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -147,6 +148,9 @@ const JobSeekerDashboard = () => {
   const { data: activityLogs, isLoading: activityLogsLoading } =
     useGetActivitiesQuery();
   console.log(activityLogs);
+
+  const { data: seekerStats } = useGetSeekerDashboardStatsQuery();
+  console.log(seekerStats);
 
   return (
     <JobSeekerLayout>

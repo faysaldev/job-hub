@@ -3,6 +3,7 @@ import Job from "../Jobs/job.model";
 import Notification from "../Notifications/notifications.model";
 import SavedJob from "../SavedJobs/savedjob.model";
 import Application from "../Applications/application.model";
+import Seeker from "../Seeker/seeker.model";
 
 // Simple in-memory cache
 interface CacheEntry {
@@ -131,11 +132,46 @@ const getTopJobs = async () => {
   return jobs;
 };
 
+const getSeekerDashboardStats = async (userId: string) => {
+  const startOfWeek = new Date();
+  startOfWeek.setDate(startOfWeek.getDate() - 7);
+
+  const [seeker, totalApplications, weeklyApplications, hiredApplications] =
+    await Promise.all([
+      Seeker.findOne({ userId }).select("profileStrength resume").lean(),
+      Application.countDocuments({ applicant: userId }),
+      Application.countDocuments({
+        applicant: userId,
+        createdAt: { $gte: startOfWeek },
+      }),
+      Application.countDocuments({ applicant: userId, status: "hired" }),
+    ]);
+
+  // Dynamic import or mongoose.model to avoid circular dependency if any
+  const interviewCount = await mongoose
+    .model("Interview")
+    .countDocuments({ interviewee: userId });
+
+  return {
+    profileStrength: seeker?.profileStrength || 0,
+    resumeLink: seeker?.resume?.resumeLink || "",
+    applications: {
+      total: totalApplications,
+      thisWeek: weeklyApplications,
+      hired: hiredApplications,
+    },
+    interviews: {
+      total: interviewCount,
+    },
+  };
+};
+
 const generalService = {
   getHeaderStats,
   getCategoryStats,
   getSubcategoryStats,
   getTopJobs,
+  getSeekerDashboardStats,
 };
 
 export default generalService;

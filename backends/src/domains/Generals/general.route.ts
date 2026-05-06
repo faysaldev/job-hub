@@ -29,4 +29,11 @@ router.get(
   generalController.getTopJobs
 );
 
+// Get seeker dashboard stats
+router.get(
+  "/seeker-dashboard-stats",
+  authMiddleware,
+  generalController.getSeekerDashboardStats
+);
+
 export default router;
