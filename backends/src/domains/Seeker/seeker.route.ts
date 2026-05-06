@@ -5,6 +5,7 @@ import {
   getSeekerById,
   getAllSeekers,
   updateSeeker,
+  getActivities,
 } from "./seeker.controller";
 import { authMiddleware } from "../../middlewares/auth.middleware";
 import validate from "../../middlewares/validation.middleware";
@@ -12,6 +13,7 @@ import seekerValidation from "./seeker.validation";
 
 const router = express.Router();
 
+router.get("/activities", authMiddleware, getActivities);
 router.post(
   "/",
   authMiddleware,

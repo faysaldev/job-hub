@@ -18,7 +18,7 @@ const applicationsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["applications", "jobs"],
+      invalidatesTags: ["applications", "jobs", "activities"],
     }),
 
     // GET /applications - Get user's applications

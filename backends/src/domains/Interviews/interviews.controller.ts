@@ -4,6 +4,7 @@ import { asyncHandler } from "../../lib/errorsHandle";
 import httpStatus from "http-status";
 import { response } from "../../lib/response";
 import { ProtectedRequest } from "../../types/protected-request";
+import { addActivityLogService } from "../Seeker/seeker.services";
 
 const scheduleInterview = asyncHandler(
   async (req: ProtectedRequest, res: Response) => {
@@ -14,6 +15,14 @@ const scheduleInterview = asyncHandler(
     interviewData.interviewer = userId;
 
     const interview = await interviewService.scheduleInterview(interviewData);
+
+    // Log activity for the seeker (interviewee)
+    if (interviewData.interviewee) {
+      await addActivityLogService(
+        interviewData.interviewee.toString(),
+        `Interview scheduled for your application`,
+      );
+    }
 
     res.status(httpStatus.CREATED).json(
       response({

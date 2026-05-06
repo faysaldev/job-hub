@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import User from "../User/user.model";
 import Seeker, { ISeeker } from "./seeker.model";
+import ActivityLog from "./activity.model";
 
 export const createSeekerService = async (
   seekerData: Partial<ISeeker>,
@@ -127,4 +128,23 @@ export const updateSeekerByUserIdService = async (
     { ...seekerData },
     { new: true, runValidators: true },
   );
+};
+
+export const addActivityLogService = async (
+  userId: string,
+  activityTitle: string,
+) => {
+  const log = new ActivityLog({
+    userId: new Types.ObjectId(userId),
+    activityTitle,
+    date: new Date(),
+  });
+  return await log.save();
+};
+
+export const getActivityLogsService = async (userId: string) => {
+  return await ActivityLog.find({ userId: new Types.ObjectId(userId) })
+    .sort({ date: -1 })
+    .limit(5)
+    .lean();
 };

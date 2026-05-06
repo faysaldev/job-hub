@@ -1,8 +1,27 @@
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 import { JobSeekerProfile } from "@/src/types";
 
+export interface ActivityLog {
+  _id: string;
+  userId: string;
+  activityTitle: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const seekerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // GET /job-seekers/activities - Get latest 5 activities
+    getActivities: builder.query<ActivityLog[], void>({
+      query: () => ({
+        url: "/job-seekers/activities",
+        method: "GET",
+      }),
+      transformResponse: (response: { data: ActivityLog[] }) => response.data,
+      providesTags: ["activities"],
+    }),
+
     // POST /job-seekers - Create seeker profile
     createSeekerProfile: builder.mutation<JobSeekerProfile, Partial<JobSeekerProfile>>({
       query: (body) => ({
@@ -59,4 +78,5 @@ export const {
   useGetSeekerByIdQuery,
   useGetAllSeekersQuery,
   useUpdateSeekerProfileMutation,
+  useGetActivitiesQuery,
 } = seekerApi;

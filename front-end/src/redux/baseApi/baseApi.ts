@@ -29,6 +29,7 @@ export const baseApi = createApi({
     "savedJobs",
     "Asset",
     "analytics",
+    "activities",
   ],
   endpoints: () => ({}),
 });

@@ -11,6 +11,7 @@ import Job from "../Jobs/job.model";
 
 import Stripe from "stripe";
 import { STRIPE_SECRET_KEY } from "../../config/ENV";
+import { addActivityLogService } from "../Seeker/seeker.services";
 
 // Initialize Stripe
 const stripe = new Stripe(STRIPE_SECRET_KEY as string);
@@ -42,6 +43,15 @@ const createApplication = asyncHandler(
     let jobDetails = null;
     try {
       jobDetails = await Job.findById(applicationData.job_id);
+
+      // Log activity for the seeker
+      if (userId && jobDetails) {
+        await addActivityLogService(
+          userId.toString(),
+          `Applied for ${jobDetails.title}`,
+        );
+      }
+
       if (jobDetails && jobDetails.author) {
         await createNotification({
           title: `${applicationData.paid_amount > 0 ? "🚀 BOOSTED" : "New"} application for "${jobDetails.title}"`,

@@ -5,6 +5,7 @@ import {
   getSeekerService,
   getSeekerByUserIdService,
   updateSeekerByUserIdService,
+  getActivityLogsService,
 } from "./seeker.services";
 import { asyncHandler } from "../../lib/errorsHandle";
 import { AppError } from "../../lib/errors";
@@ -114,6 +115,24 @@ export const getSeekerById = asyncHandler(
         status: "OK",
         statusCode: httpStatus.OK,
         data: seeker,
+      }),
+    );
+  },
+);
+
+export const getActivities = asyncHandler(
+  async (req: Request, res: Response) => {
+    const protectedReq = req as ProtectedRequest;
+    const userId = protectedReq.user?._id;
+
+    const activities = await getActivityLogsService(userId as string);
+
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Recent activities retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: activities,
       }),
     );
   },

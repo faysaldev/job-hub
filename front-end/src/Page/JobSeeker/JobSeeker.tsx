@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
 import JobSeekerLayout from "@/src/components/JobSeeker/JobSeekerLayout";
+import { useGetActivitiesQuery } from "@/src/redux/features/seeker/seekerApi";
 
 const JobSeekerDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -143,6 +144,10 @@ const JobSeekerDashboard = () => {
     },
   ];
 
+  const { data: activityLogs, isLoading: activityLogsLoading } =
+    useGetActivitiesQuery();
+  console.log(activityLogs);
+
   return (
     <JobSeekerLayout>
       <div ref={containerRef} className="space-y-8 max-w-7xl mx-auto">
@@ -180,9 +185,7 @@ const JobSeekerDashboard = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
             <Link key={index} href={stat.href}>
-              <Card
-                className="stats-card p-5 border-none bg-white shadow-md rounded-2xl hover:shadow-xl transition-all duration-300 group cursor-pointer hover:-translate-y-1"
-              >
+              <Card className="stats-card p-5 border-none bg-white shadow-md rounded-2xl hover:shadow-xl transition-all duration-300 group cursor-pointer hover:-translate-y-1">
                 <div className="flex items-start justify-between mb-4">
                   <div
                     className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
@@ -199,7 +202,9 @@ const JobSeekerDashboard = () => {
                 <p className="text-3xl font-bold text-[#234C6A] mb-1">
                   {stat.value}
                 </p>
-                <p className="text-sm font-semibold text-[#234C6A]/70 uppercase tracking-wider text-[10px]">{stat.title}</p>
+                <p className="text-sm font-semibold text-[#234C6A]/70 uppercase tracking-wider text-[10px]">
+                  {stat.title}
+                </p>
                 <p className="text-xs text-[#456882]/70 mt-1">{stat.trend}</p>
               </Card>
             </Link>
@@ -210,56 +215,68 @@ const JobSeekerDashboard = () => {
           {/* Main Content Area - Overview Details */}
           <div className="lg:col-span-2 space-y-8 main-content">
             <Card className="p-8 border-none bg-white shadow-xl rounded-[32px] overflow-hidden relative">
-               <div className="relative z-10">
-                  <h2 className="text-2xl font-bold text-[#234C6A] mb-2">Get Noticed by Recruiters</h2>
-                  <p className="text-[#456882] mb-6 max-w-md">Complete your profile to increase your chances of being shortlisted by top companies.</p>
-                  <Link href="/job-seeker/profile">
-                    <Button className="bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-2xl px-8 h-12 font-bold shadow-lg shadow-[#234C6A]/20">
-                      Update Profile
-                    </Button>
-                  </Link>
-               </div>
-               <Sparkles className="absolute -bottom-10 -right-10 h-64 w-64 text-[#234C6A]/5 rotate-12" />
+              <div className="relative z-10">
+                <h2 className="text-2xl font-bold text-[#234C6A] mb-2">
+                  Get Noticed by Recruiters
+                </h2>
+                <p className="text-[#456882] mb-6 max-w-md">
+                  Complete your profile to increase your chances of being
+                  shortlisted by top companies.
+                </p>
+                <Link href="/job-seeker/profile">
+                  <Button className="bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-2xl px-8 h-12 font-bold shadow-lg shadow-[#234C6A]/20">
+                    Update Profile
+                  </Button>
+                </Link>
+              </div>
+              <Sparkles className="absolute -bottom-10 -right-10 h-64 w-64 text-[#234C6A]/5 rotate-12" />
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <Card className="p-6 border-none bg-white shadow-lg rounded-[28px]">
-                  <h3 className="font-bold text-[#234C6A] mb-4 flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-[#234C6A]" />
-                    Recent Activity
-                  </h3>
-                  <div className="space-y-6">
-                    {recentActivity.map((activity, index) => (
-                      <div key={index} className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
-                          <activity.icon className={`h-5 w-5 ${activity.color}`} />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-[#234C6A]">{activity.text}</p>
-                          <p className="text-xs text-[#456882] mt-0.5">{activity.time}</p>
-                        </div>
+              <Card className="p-6 border-none bg-white shadow-lg rounded-[28px]">
+                <h3 className="font-bold text-[#234C6A] mb-4 flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-[#234C6A]" />
+                  Recent Activity
+                </h3>
+                <div className="space-y-6">
+                  {recentActivity.map((activity, index) => (
+                    <div key={index} className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
+                        <activity.icon
+                          className={`h-5 w-5 ${activity.color}`}
+                        />
                       </div>
-                    ))}
-                  </div>
-               </Card>
-
-               <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-[28px] relative overflow-hidden">
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="h-5 w-5 text-amber-300" />
-                      <h3 className="font-bold">AI Recommendations</h3>
+                      <div>
+                        <p className="text-sm font-bold text-[#234C6A]">
+                          {activity.text}
+                        </p>
+                        <p className="text-xs text-[#456882] mt-0.5">
+                          {activity.time}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-white/80 text-sm mb-6">
-                      Based on your profile, we found 15 jobs that match your skills.
-                    </p>
-                    <Link href="/job">
-                      <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90 rounded-xl font-bold">
-                        View Matches
-                      </Button>
-                    </Link>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-[28px] relative overflow-hidden">
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="h-5 w-5 text-amber-300" />
+                    <h3 className="font-bold">AI Recommendations</h3>
                   </div>
-                  <Target className="absolute -bottom-12 -right-12 h-40 w-40 text-white/10" />
-               </Card>
+                  <p className="text-white/80 text-sm mb-6">
+                    Based on your profile, we found 15 jobs that match your
+                    skills.
+                  </p>
+                  <Link href="/job">
+                    <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90 rounded-xl font-bold">
+                      View Matches
+                    </Button>
+                  </Link>
+                </div>
+                <Target className="absolute -bottom-12 -right-12 h-40 w-40 text-white/10" />
+              </Card>
             </div>
           </div>
 
@@ -267,11 +284,17 @@ const JobSeekerDashboard = () => {
           <div className="space-y-6">
             {/* Profile Completion */}
             <Card className="p-8 border-none bg-white shadow-xl rounded-[32px]">
-              <h3 className="text-xl font-bold text-[#234C6A] mb-6">Profile Strength</h3>
+              <h3 className="text-xl font-bold text-[#234C6A] mb-6">
+                Profile Strength
+              </h3>
               <div className="mb-8">
                 <div className="flex justify-between items-end mb-3">
-                  <span className="text-sm font-bold text-[#456882] uppercase tracking-wider">Completion</span>
-                  <span className="text-3xl font-black text-[#234C6A]">75%</span>
+                  <span className="text-sm font-bold text-[#456882] uppercase tracking-wider">
+                    Completion
+                  </span>
+                  <span className="text-3xl font-black text-[#234C6A]">
+                    75%
+                  </span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-3">
                   <div
@@ -297,14 +320,20 @@ const JobSeekerDashboard = () => {
             </Card>
 
             <Card className="p-6 border-none bg-white shadow-lg rounded-[32px] text-center border border-gray-50">
-               <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
-                  <Bell className="h-8 w-8 text-blue-600" />
-               </div>
-               <h4 className="font-bold text-[#234C6A]">Job Alerts</h4>
-               <p className="text-xs text-[#456882] mt-2 mb-4">Get notified immediately when jobs matching your criteria are posted.</p>
-               <Button variant="outline" className="w-full rounded-xl border-gray-100 text-[#234C6A] font-bold">
-                  Manage Alerts
-               </Button>
+              <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                <Bell className="h-8 w-8 text-blue-600" />
+              </div>
+              <h4 className="font-bold text-[#234C6A]">Job Alerts</h4>
+              <p className="text-xs text-[#456882] mt-2 mb-4">
+                Get notified immediately when jobs matching your criteria are
+                posted.
+              </p>
+              <Button
+                variant="outline"
+                className="w-full rounded-xl border-gray-100 text-[#234C6A] font-bold"
+              >
+                Manage Alerts
+              </Button>
             </Card>
           </div>
         </div>
