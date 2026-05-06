@@ -12,47 +12,75 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "JobHub — Find Your Dream Job",
-    template: "%s | JobHub",
+    default: "JobHub — Find Your Dream Job & Accelerate Your Career",
+    template: "%s | JobHub Platform",
   },
   description:
-    "JobHub is a modern recruitment platform connecting top talent with leading companies. Browse thousands of jobs, apply in one click, and get hired faster.",
+    "JobHub is the ultimate modern recruitment platform connecting elite talent with industry-leading companies. Discover top-tier remote, hybrid, and on-site jobs, apply with a single click, and fast-track your professional growth.",
   keywords: [
-    "jobs",
-    "careers",
-    "recruitment",
-    "job search",
-    "hire talent",
+    "job search engine",
+    "career platform",
+    "hiring platform",
+    "recruitment software",
+    "find jobs online",
+    "remote tech jobs",
+    "executive search",
     "job board",
-    "job listings",
-    "remote jobs",
-    "full-time jobs",
-    "internships",
+    "career growth",
+    "JobHub",
+    "tech careers",
+    "freelance opportunities",
+    "full-time employment",
   ],
-  authors: [{ name: "JobHub Team" }],
-  creator: "JobHub",
+  authors: [{ name: "JobHub Team", url: "https://jobhub.com/about" }],
+  creator: "JobHub Inc.",
+  publisher: "JobHub Recruitment Services",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL || "https://jobhub.com"
   ),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "/",
     siteName: "JobHub",
-    title: "JobHub — Find Your Dream Job",
+    title: "JobHub — Find Your Dream Job & Accelerate Your Career",
     description:
-      "Connect with top employers. Browse thousands of jobs and apply with one click.",
+      "Connect with premier employers worldwide. Browse thousands of high-paying jobs, receive personalized recommendations, and apply instantly.",
+    images: [
+      {
+        url: "/og-image.jpg", // Assuming an og-image will exist
+        width: 1200,
+        height: 630,
+        alt: "JobHub Platform - Find your next career move",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "JobHub — Find Your Dream Job",
     description:
-      "Connect with top employers. Browse thousands of jobs and apply with one click.",
+      "Connect with premier employers worldwide. Browse thousands of high-paying jobs and apply instantly.",
+    creator: "@jobhub",
+    images: ["/twitter-image.jpg"],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
+  verification: {
+    google: "your-google-verification-code", // Placeholder for actual GSC verification
+  },
+  category: "technology",
 };
 
 export default function RootLayout({
