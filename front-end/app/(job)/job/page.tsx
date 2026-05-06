@@ -1,5 +1,23 @@
 import { Suspense } from "react";
 import JobsClient from "@/src/Page/Jobs/JobsPage";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Find Your Dream Job | JobHub",
+  description:
+    "Explore thousands of job opportunities across various industries. Filter by location, job type, and salary to find the perfect fit on JobHub.",
+  keywords: [
+    "jobs",
+    "career",
+    "employment",
+    "hiring",
+    "search jobs",
+    "JobHub",
+    "work",
+    "remote jobs",
+    "full time jobs",
+  ],
+};
 
 // Loading component
 function JobsLoading() {
