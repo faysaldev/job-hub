@@ -7,8 +7,17 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
 import {
-  Search, MapPin, Briefcase, Star, Filter,
-  User, Globe, CheckCircle, Clock, Users, Sparkles,
+  Search,
+  MapPin,
+  Briefcase,
+  Star,
+  Filter,
+  User,
+  Globe,
+  CheckCircle,
+  Clock,
+  Users,
+  Sparkles,
 } from "lucide-react";
 import { useGetAllSeekersQuery } from "@/src/redux/features/seeker/seekerApi";
 import Header from "@/src/components/common/Header";
@@ -36,21 +45,43 @@ const FILTER_OPTIONS = {
 };
 
 function FilterGroup({
-  title, options, active, onChange,
-}: { title: string; options: { label: string; value: string }[]; active: string; onChange: (v: string) => void }) {
+  title,
+  options,
+  active,
+  onChange,
+}: {
+  title: string;
+  options: { label: string; value: string }[];
+  active: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="space-y-3">
-      <h4 className="text-xs font-black uppercase tracking-widest text-[#456882]">{title}</h4>
+      <h4 className="text-xs font-black uppercase tracking-widest text-[#456882]">
+        {title}
+      </h4>
       <div className="space-y-2">
         {options.map((opt) => {
           const checked = active === opt.value;
           return (
-            <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
-              <input type="checkbox" className="hidden" checked={checked} onChange={() => onChange(opt.value)} />
-              <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${checked ? "border-[#234C6A] bg-[#234C6A]" : "border-[#E3E3E3] group-hover:border-[#234C6A]/50"}`}>
+            <label
+              key={opt.value}
+              className="flex items-center gap-3 cursor-pointer group"
+            >
+              <input
+                type="checkbox"
+                className="hidden"
+                checked={checked}
+                onChange={() => onChange(opt.value)}
+              />
+              <div
+                className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${checked ? "border-[#234C6A] bg-[#234C6A]" : "border-[#E3E3E3] group-hover:border-[#234C6A]/50"}`}
+              >
                 {checked && <div className="w-2 h-2 bg-white rounded-full" />}
               </div>
-              <span className={`text-sm font-medium transition-colors ${checked ? "text-[#234C6A] font-bold" : "text-[#456882] group-hover:text-[#234C6A]"}`}>
+              <span
+                className={`text-sm font-medium transition-colors ${checked ? "text-[#234C6A] font-bold" : "text-[#456882] group-hover:text-[#234C6A]"}`}
+              >
                 {opt.label}
               </span>
             </label>
@@ -73,7 +104,10 @@ function CandidateCard({ candidate }: { candidate: any }) {
           <div className="relative flex-shrink-0">
             <div className="w-24 h-24 rounded-3xl overflow-hidden border-4 border-[#E3E3E3]/50 shadow-lg group-hover:scale-105 transition-transform duration-500">
               <img
-                src={candidate.userId?.image || `https://api.dicebear.com/7.x/initials/svg?seed=${candidate.userId?.name || "U"}`}
+                src={
+                  candidate.userId?.image ||
+                  `https://api.dicebear.com/7.x/initials/svg?seed=${candidate.userId?.name || "U"}`
+                }
                 alt={candidate.userId?.name}
                 className="w-full h-full object-cover"
               />
@@ -90,7 +124,9 @@ function CandidateCard({ candidate }: { candidate: any }) {
                 <h3 className="text-xl font-black text-[#234C6A] group-hover:text-[#456882] transition-colors">
                   {candidate.userId?.name || "Anonymous Candidate"}
                 </h3>
-                <p className="text-[#456882] font-semibold">{candidate.designation || "Professional"}</p>
+                <p className="text-[#456882] font-semibold">
+                  {candidate.designation || "Professional"}
+                </p>
               </div>
               <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none font-semibold self-start">
                 {candidate.experienceLevel || "Professional"}
@@ -99,32 +135,51 @@ function CandidateCard({ candidate }: { candidate: any }) {
 
             <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-[#456882]">
               {candidate.userLocation && (
-                <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-[#234C6A]" />{candidate.userLocation}</span>
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 text-[#234C6A]" />
+                  {candidate.userLocation}
+                </span>
               )}
               {candidate.totalExperience && (
-                <span className="flex items-center gap-1.5"><Briefcase className="h-4 w-4 text-[#234C6A]" />{candidate.totalExperience} exp</span>
+                <span className="flex items-center gap-1.5">
+                  <Briefcase className="h-4 w-4 text-[#234C6A]" />
+                  {candidate.totalExperience} exp
+                </span>
               )}
               {candidate.availability && (
-                <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-[#234C6A]" />{candidate.availability.replace("-", " ")}</span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 text-[#234C6A]" />
+                  {candidate.availability.replace("-", " ")}
+                </span>
               )}
               {candidate.jobType && (
-                <span className="flex items-center gap-1.5"><Globe className="h-4 w-4 text-[#234C6A]" />{candidate.jobType}</span>
+                <span className="flex items-center gap-1.5">
+                  <Globe className="h-4 w-4 text-[#234C6A]" />
+                  {candidate.jobType}
+                </span>
               )}
             </div>
 
             {candidate.aboutMe && (
-              <p className="text-sm text-[#456882]/80 line-clamp-2 leading-relaxed">{candidate.aboutMe}</p>
+              <p className="text-sm text-[#456882]/80 line-clamp-2 leading-relaxed">
+                {candidate.aboutMe}
+              </p>
             )}
 
             {skills.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {skills.slice(0, 5).map((s) => (
-                  <Badge key={s} className="bg-[#234C6A]/5 text-[#234C6A] border border-[#234C6A]/10 font-medium text-xs">
+                  <Badge
+                    key={s}
+                    className="bg-[#234C6A]/5 text-[#234C6A] border border-[#234C6A]/10 font-medium text-xs"
+                  >
                     {s}
                   </Badge>
                 ))}
                 {skills.length > 5 && (
-                  <Badge className="bg-[#E3E3E3] text-[#456882] border-none text-xs">+{skills.length - 5}</Badge>
+                  <Badge className="bg-[#E3E3E3] text-[#456882] border-none text-xs">
+                    +{skills.length - 5}
+                  </Badge>
                 )}
               </div>
             )}
@@ -133,7 +188,10 @@ function CandidateCard({ candidate }: { candidate: any }) {
 
         <div className="mt-6 pt-5 border-t border-[#E3E3E3]/50 flex flex-col sm:flex-row sm:items-center justify-end gap-3">
           <Link href={`/candidates/${candidate._id}`}>
-            <Button variant="outline" className="rounded-xl border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/5 font-semibold px-6">
+            <Button
+              variant="outline"
+              className="rounded-xl border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/5 font-semibold px-6"
+            >
               View Profile
             </Button>
           </Link>
@@ -150,32 +208,58 @@ export default function CandidatesListingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [filters, setFilters] = useState({ experienceLevel: "", availability: "", jobType: "", totalExperience: "", location: "" });
+  const [filters, setFilters] = useState({
+    experienceLevel: "",
+    availability: "",
+    jobType: "",
+    totalExperience: "",
+    location: "",
+  });
   const [sortBy, setSortBy] = useState("newest");
 
-  const { data: seekersData, isLoading } = useGetAllSeekersQuery({ search: searchQuery, ...filters });
+  const { data: seekersData, isLoading } = useGetAllSeekersQuery({
+    search: searchQuery,
+    ...filters,
+  });
   const seekers = seekersData?.data?.seekers || [];
 
   const sortedSeekers = [...seekers].sort((a, b) =>
-    sortBy === "job-type" ? (a.jobType || "").localeCompare(b.jobType || "") : 0
+    sortBy === "job-type"
+      ? (a.jobType || "").localeCompare(b.jobType || "")
+      : 0,
   );
 
   const handleFilterChange = (key: string, value: string) =>
-    setFilters((prev) => ({ ...prev, [key]: prev[key as keyof typeof prev] === value ? "" : value }));
+    setFilters((prev) => ({
+      ...prev,
+      [key]: prev[key as keyof typeof prev] === value ? "" : value,
+    }));
 
-  const clearFilters = () => { setFilters({ experienceLevel: "", availability: "", jobType: "", totalExperience: "", location: "" }); setSearchQuery(""); setSearchInput(""); };
+  const clearFilters = () => {
+    setFilters({
+      experienceLevel: "",
+      availability: "",
+      jobType: "",
+      totalExperience: "",
+      location: "",
+    });
+    setSearchQuery("");
+    setSearchInput("");
+  };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(".candidate-card-item", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: "power2.out" });
+      gsap.fromTo(
+        ".candidate-card-item",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: "power2.out" },
+      );
     }, containerRef);
     return () => ctx.revert();
   }, [sortedSeekers.length]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#E3E3E3] via-white to-[#E3E3E3]">
-      <Header />
-
       {/* Hero */}
       <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882]">
         <div className="absolute inset-0 pointer-events-none">
@@ -191,7 +275,8 @@ export default function CandidatesListingPage() {
             Find Your Next <span className="text-blue-300">Hire</span>
           </h1>
           <p className="text-xl text-white/70 max-w-2xl mx-auto font-medium mb-10">
-            Browse world-class professionals ready to take your team to the next level.
+            Browse world-class professionals ready to take your team to the next
+            level.
           </p>
 
           {/* Search bar */}
@@ -204,7 +289,9 @@ export default function CandidatesListingPage() {
                   className="border-none bg-transparent h-12 text-base focus-visible:ring-0 placeholder:text-[#456882]/50"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && setSearchQuery(searchInput)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && setSearchQuery(searchInput)
+                  }
                 />
               </div>
               <Button
@@ -221,7 +308,10 @@ export default function CandidatesListingPage() {
       {/* Wave */}
       <div className="-mt-px">
         <svg viewBox="0 0 1440 80" fill="none" className="w-full block">
-          <path d="M0 80L60 70C120 60 240 40 360 30C480 20 600 20 720 25C840 30 960 40 1080 45C1200 50 1320 50 1380 50L1440 50V80H0Z" fill="white" />
+          <path
+            d="M0 80L60 70C120 60 240 40 360 30C480 20 600 20 720 25C840 30 960 40 1080 45C1200 50 1320 50 1380 50L1440 50V80H0Z"
+            fill="white"
+          />
         </svg>
       </div>
 
@@ -235,17 +325,35 @@ export default function CandidatesListingPage() {
                 <h3 className="text-lg font-bold text-[#234C6A] flex items-center gap-2">
                   <Filter className="h-4 w-4" /> Filters
                 </h3>
-                <button onClick={clearFilters} className="text-xs font-bold text-[#456882] hover:text-[#234C6A] transition-colors">
+                <button
+                  onClick={clearFilters}
+                  className="text-xs font-bold text-[#456882] hover:text-[#234C6A] transition-colors"
+                >
                   Clear all
                 </button>
               </div>
               <div className="space-y-6 divide-y divide-[#E3E3E3]/50">
-                <FilterGroup title="Experience Level" options={FILTER_OPTIONS.experienceLevel} active={filters.experienceLevel} onChange={(v) => handleFilterChange("experienceLevel", v)} />
+                <FilterGroup
+                  title="Experience Level"
+                  options={FILTER_OPTIONS.experienceLevel}
+                  active={filters.experienceLevel}
+                  onChange={(v) => handleFilterChange("experienceLevel", v)}
+                />
                 <div className="pt-6">
-                  <FilterGroup title="Availability" options={FILTER_OPTIONS.availability} active={filters.availability} onChange={(v) => handleFilterChange("availability", v)} />
+                  <FilterGroup
+                    title="Availability"
+                    options={FILTER_OPTIONS.availability}
+                    active={filters.availability}
+                    onChange={(v) => handleFilterChange("availability", v)}
+                  />
                 </div>
                 <div className="pt-6">
-                  <FilterGroup title="Job Preference" options={FILTER_OPTIONS.jobType} active={filters.jobType} onChange={(v) => handleFilterChange("jobType", v)} />
+                  <FilterGroup
+                    title="Job Preference"
+                    options={FILTER_OPTIONS.jobType}
+                    active={filters.jobType}
+                    onChange={(v) => handleFilterChange("jobType", v)}
+                  />
                 </div>
               </div>
             </Card>
@@ -255,7 +363,10 @@ export default function CandidatesListingPage() {
               <div className="relative z-10">
                 <Star className="h-7 w-7 text-amber-300 mb-3 fill-amber-300" />
                 <h3 className="text-lg font-bold mb-2">Featured Talent</h3>
-                <p className="text-white/70 text-sm mb-5 leading-relaxed">Promote your profile to reach thousands of top employers daily.</p>
+                <p className="text-white/70 text-sm mb-5 leading-relaxed">
+                  Promote your profile to reach thousands of top employers
+                  daily.
+                </p>
                 <Button className="w-full bg-white text-[#234C6A] hover:bg-white/90 rounded-xl font-bold h-11 transition-all active:scale-95">
                   Upgrade Profile
                 </Button>
@@ -268,13 +379,26 @@ export default function CandidatesListingPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-[#234C6A] font-bold text-lg">
-                  {isLoading ? "Loading..." : <><span className="text-2xl">{sortedSeekers.length}</span> candidates found</>}
+                  {isLoading ? (
+                    "Loading..."
+                  ) : (
+                    <>
+                      <span className="text-2xl">{sortedSeekers.length}</span>{" "}
+                      candidates found
+                    </>
+                  )}
                 </p>
-                <p className="text-sm text-[#456882]">Verified professionals across all industries</p>
+                <p className="text-sm text-[#456882]">
+                  Verified professionals across all industries
+                </p>
               </div>
               <div className="flex items-center gap-3 bg-white border border-[#E3E3E3] rounded-xl px-4 py-2 shadow-sm">
                 <Users className="h-4 w-4 text-[#456882]" />
-                <select className="bg-transparent border-none text-sm text-[#234C6A] font-semibold focus:ring-0 cursor-pointer" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <select
+                  className="bg-transparent border-none text-sm text-[#234C6A] font-semibold focus:ring-0 cursor-pointer"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
                   <option value="newest">Newest</option>
                   <option value="job-type">Job Type</option>
                 </select>
@@ -284,7 +408,10 @@ export default function CandidatesListingPage() {
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-52 rounded-3xl bg-white/80 animate-pulse shadow-sm" />
+                  <div
+                    key={i}
+                    className="h-52 rounded-3xl bg-white/80 animate-pulse shadow-sm"
+                  />
                 ))}
               </div>
             ) : sortedSeekers.length > 0 ? (
@@ -300,9 +427,18 @@ export default function CandidatesListingPage() {
                 <div className="w-20 h-20 bg-[#234C6A]/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
                   <User className="h-10 w-10 text-[#234C6A]/40" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#234C6A] mb-2">No candidates found</h3>
-                <p className="text-[#456882] max-w-sm mx-auto">Try adjusting your search or filters to find what you&apos;re looking for.</p>
-                <Button variant="outline" className="mt-6 border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/5" onClick={clearFilters}>
+                <h3 className="text-2xl font-bold text-[#234C6A] mb-2">
+                  No candidates found
+                </h3>
+                <p className="text-[#456882] max-w-sm mx-auto">
+                  Try adjusting your search or filters to find what you&apos;re
+                  looking for.
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-6 border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/5"
+                  onClick={clearFilters}
+                >
                   Clear Filters
                 </Button>
               </Card>
@@ -310,8 +446,6 @@ export default function CandidatesListingPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
