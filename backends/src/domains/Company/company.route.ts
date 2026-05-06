@@ -23,8 +23,8 @@ router.post(
   createCompany,
 );
 router.get("/profile", authMiddleware, getCompany); // Get authenticated user's company profile
-router.get("/all", authMiddleware, getAllCompanies); // Get all companies
-router.get("/:id", authMiddleware, getCompanyById); // Get company by ID
+router.get("/all", getAllCompanies); // Get all companies
+router.get("/:id", getCompanyById); // Get company by ID
 router.put(
   "/",
   authMiddleware,
