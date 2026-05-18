@@ -81,6 +81,14 @@ const InterviewsPage = () => {
   const searchParams = useSearchParams();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const scrollToBottom = useCallback((behavior: "smooth" | "auto" = "smooth") => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior,
+      });
+    }
+  }, []);
   const messageInputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
@@ -190,7 +198,7 @@ const InterviewsPage = () => {
           prev.find((m) => m._id === message._id) ? prev : [...prev, message],
         );
         setTimeout(
-          () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+          () => scrollToBottom("smooth"),
           50,
         );
       }
@@ -224,7 +232,7 @@ const InterviewsPage = () => {
         if (pag.currentPage === 1) {
           setAllMessages(msgs.slice().reverse());
           setTimeout(
-            () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+            () => scrollToBottom("smooth"),
             50,
           );
         } else {

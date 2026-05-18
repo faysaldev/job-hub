@@ -67,6 +67,14 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const scrollToBottom = useCallback((behavior: "smooth" | "auto" = "smooth") => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior,
+      });
+    }
+  }, []);
   const messageInputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
@@ -139,7 +147,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
           return [...prev, message];
         });
         setTimeout(
-          () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+          () => scrollToBottom("smooth"),
           50,
         );
       }
@@ -185,7 +193,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
         if (pag.currentPage === 1) {
           setMessages(msgs.slice().reverse()); // oldest → newest
           setTimeout(
-            () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+            () => scrollToBottom("smooth"),
             50,
           );
         } else {
