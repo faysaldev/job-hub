@@ -23,7 +23,10 @@ import { toast } from "@/src/hooks/use-toast";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useSubmitContactFormMutation } from "@/src/redux/features/generals/generalsApi";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function ContactPage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -176,7 +179,7 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#E3E3E3]">
+    <div className="min-h-screen bg-gradient-to-b from-[#E3E3E3] via-white to-[#E3E3E3]">
       <Header />
 
       {/* Hero Section */}
@@ -245,7 +248,7 @@ export default function ContactPage() {
           >
             <path
               d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              fill="#E3E3E3"
+              fill="white"
             />
           </svg>
         </div>
@@ -258,21 +261,24 @@ export default function ContactPage() {
             {contactMethods.map((method, index) => (
               <Card
                 key={index}
-                className="contact-card p-6 border-none bg-white shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                className="contact-card p-6 border border-[#234C6A]/5 bg-white/80 backdrop-blur-md shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer relative overflow-hidden rounded-2xl"
               >
-                <div
-                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${method.color} flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300`}
-                >
-                  {method.icon}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#234C6A]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative">
+                  <div
+                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${method.color} flex items-center justify-center text-white mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}
+                  >
+                    {method.icon}
+                  </div>
+                  <h3 className="text-lg font-bold text-[#234C6A] mb-1 group-hover:text-[#456882] transition-colors">
+                    {method.title}
+                  </h3>
+                  <p className="text-sm text-[#456882] mb-3">
+                    {method.description}
+                  </p>
+                  <p className="text-[#234C6A] font-semibold">{method.primary}</p>
+                  <p className="text-[#456882] text-sm">{method.secondary}</p>
                 </div>
-                <h3 className="text-lg font-bold text-[#234C6A] mb-1">
-                  {method.title}
-                </h3>
-                <p className="text-sm text-[#456882] mb-3">
-                  {method.description}
-                </p>
-                <p className="text-[#234C6A] font-semibold">{method.primary}</p>
-                <p className="text-[#456882] text-sm">{method.secondary}</p>
               </Card>
             ))}
           </div>
@@ -298,7 +304,7 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              <Card className="p-8 border-none bg-[#E3E3E3]/30 shadow-lg">
+              <Card className="p-8 border border-white/40 bg-white/60 backdrop-blur-xl shadow-2xl rounded-3xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -468,18 +474,18 @@ export default function ContactPage() {
                   ].map((office, index) => (
                     <Card
                       key={index}
-                      className="p-5 border-none bg-[#E3E3E3]/50 hover:bg-[#E3E3E3] transition-colors duration-300"
+                      className="p-5 border border-transparent bg-white/50 backdrop-blur-sm hover:bg-white hover:border-[#234C6A]/10 hover:shadow-xl transition-all duration-500 group rounded-2xl cursor-pointer"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white flex-shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-md">
                           <Building2 className="h-5 w-5" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-bold text-[#234C6A]">
+                            <h4 className="font-bold text-[#234C6A] group-hover:text-[#456882] transition-colors">
                               {office.city}
                             </h4>
-                            <span className="text-xs px-2 py-0.5 bg-[#234C6A]/10 text-[#234C6A] rounded-full">
+                            <span className="text-xs px-2 py-0.5 bg-[#234C6A]/10 text-[#234C6A] rounded-full font-medium">
                               {office.type}
                             </span>
                           </div>

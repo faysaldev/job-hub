@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
@@ -20,12 +20,21 @@ import {
   Star,
   MapPin,
   Clock,
+  DollarSign,
+  Building2,
+  Users,
+  CheckCircle,
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { jobCategories } from "@/src/lib/jobCategories";
+import Image from "next/image";
+import {
+  useGetCategoryStatsQuery,
+  useGetTopJobsQuery,
+} from "@/src/redux/features/generals/generalsApi";
 
-// Featured companies logos (text-based for simplicity)
+// Featured companies logos
 const featuredCompanies = [
   "Google",
   "Microsoft",
@@ -35,41 +44,42 @@ const featuredCompanies = [
   "Netflix",
 ];
 
-// Featured jobs preview
-const featuredJobs = [
-  {
-    title: "Senior Frontend Developer",
-    company: "TechCorp",
-    location: "Remote",
-    salary: "$120k - $180k",
-    type: "Full-time",
-    posted: "2h ago",
-    hot: true,
-  },
-  {
-    title: "Product Designer",
-    company: "DesignStudio",
-    location: "New York",
-    salary: "$90k - $130k",
-    type: "Full-time",
-    posted: "5h ago",
-    hot: false,
-  },
-  {
-    title: "Data Scientist",
-    company: "AI Labs",
-    location: "San Francisco",
-    salary: "$150k - $200k",
-    type: "Full-time",
-    posted: "1d ago",
-    hot: true,
-  },
-];
+// Helper: format relative time
+const formatRelativeTime = (dateStr: string) => {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return "Just now";
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+};
 
 function HomePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch real API data
+  const { data: allTopsJobs } = useGetTopJobsQuery(undefined);
+  const { data: categoryStats } = useGetCategoryStatsQuery(undefined);
+
+  // Merge real counts into static categories
+  const enrichedCategories = useMemo(() => {
+    if (!categoryStats || !Array.isArray(categoryStats)) return jobCategories;
+    return jobCategories.map((cat) => {
+      const stat = categoryStats.find(
+        (s: { category: string; count: number }) => s.category === cat.id,
+      );
+      return stat ? { ...cat, count: stat.count } : cat;
+    });
+  }, [categoryStats]);
+
+  // Top 3 jobs for hero section
+  const heroJobs = useMemo(() => {
+    if (!allTopsJobs || !Array.isArray(allTopsJobs)) return [];
+    return allTopsJobs.slice(0, 3);
+  }, [allTopsJobs]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -234,65 +244,100 @@ function HomePage() {
                   </div>
                 </div>
 
-                {/* Right content - Featured jobs cards */}
+                {/* Right content - Real top jobs from API */}
                 <div className="hidden lg:block relative">
                   <div className="absolute -top-10 -left-10 w-full h-full bg-gradient-to-br from-[#234C6A]/5 to-transparent rounded-3xl" />
 
                   <div className="relative space-y-4">
-                    {featuredJobs.map((job, i) => (
-                      <Card
-                        key={i}
-                        className={`p-5 bg-white border-none shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl cursor-pointer group ${
-                          i === 1 ? "ml-8" : i === 2 ? "ml-4" : ""
-                        }`}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white font-bold text-lg">
-                              {job.company[0]}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold text-[#234C6A] group-hover:text-[#456882] transition-colors">
-                                  {job.title}
-                                </h3>
-                                {job.hot && (
-                                  <Badge className="bg-orange-100 text-orange-600 border-none text-xs">
-                                    Hot
-                                  </Badge>
-                                )}
+                    {heroJobs.length > 0
+                      ? heroJobs.map((job: any, i: number) => (
+                          <Link
+                            key={job._id}
+                            href={`/job/${job._id}`}
+                            className="block"
+                          >
+                            <Card
+                              className={`p-5 bg-white border-none shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl cursor-pointer group ${
+                                i === 1 ? "ml-8" : i === 2 ? "ml-4" : ""
+                              }`}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex gap-4">
+                                  {job.company?.companyLogo ? (
+                                    <Image
+                                      src={job.company.companyLogo}
+                                      alt={job.company.companyName}
+                                      width={48}
+                                      height={48}
+                                      className="w-12 h-12 rounded-xl object-cover shadow-md"
+                                    />
+                                  ) : (
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white font-bold text-lg">
+                                      {job.company?.companyName?.[0] || "J"}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <h3 className="font-semibold text-[#234C6A] group-hover:text-[#456882] transition-colors">
+                                        {job.title}
+                                      </h3>
+                                      <Badge className="bg-orange-100 text-orange-600 border-none text-xs">
+                                        {job.locationType}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm text-[#456882]">
+                                      {job.company?.companyName}
+                                    </p>
+                                    <div className="flex items-center gap-4 mt-2 text-xs text-[#456882]">
+                                      <span className="flex items-center gap-1">
+                                        <MapPin className="h-3 w-3" />
+                                        {job.location}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <Clock className="h-3 w-3" />
+                                        {formatRelativeTime(job.createdAt)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-semibold text-[#234C6A]">
+                                    ${job.salaryMin} - ${job.salaryMax}
+                                  </p>
+                                  <p className="text-xs text-[#456882] capitalize">
+                                    {job.type}
+                                  </p>
+                                </div>
                               </div>
-                              <p className="text-sm text-[#456882]">
-                                {job.company}
-                              </p>
-                              <div className="flex items-center gap-4 mt-2 text-xs text-[#456882]">
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="h-3 w-3" />
-                                  {job.location}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {job.posted}
-                                </span>
+                            </Card>
+                          </Link>
+                        ))
+                      : /* Skeleton fallback */
+                        [0, 1, 2].map((i) => (
+                          <Card
+                            key={i}
+                            className={`p-5 bg-white border-none shadow-lg rounded-2xl animate-pulse ${
+                              i === 1 ? "ml-8" : i === 2 ? "ml-4" : ""
+                            }`}
+                          >
+                            <div className="flex gap-4">
+                              <div className="w-12 h-12 rounded-xl bg-[#E3E3E3]" />
+                              <div className="flex-1 space-y-2">
+                                <div className="h-4 bg-[#E3E3E3] rounded w-3/4" />
+                                <div className="h-3 bg-[#E3E3E3] rounded w-1/2" />
                               </div>
                             </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-[#234C6A]">
-                              {job.salary}
-                            </p>
-                            <p className="text-xs text-[#456882]">{job.type}</p>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
+                          </Card>
+                        ))}
                   </div>
 
                   {/* Floating badge */}
                   <div className="absolute -bottom-6 -right-6 px-4 py-3 bg-gradient-to-r from-[#234C6A] to-[#456882] text-white rounded-2xl shadow-xl">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-5 w-5" />
-                      <span className="font-semibold">500+ new jobs today</span>
+                      <span className="font-semibold">
+                        {allTopsJobs?.length || 0}+ top jobs available
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -338,7 +383,7 @@ function HomePage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-              {jobCategories.slice(0, 8).map((category, i) => (
+              {enrichedCategories.slice(0, 8).map((category) => (
                 <Link
                   key={category.id}
                   href={`/job?category=${category.id}`}
@@ -435,6 +480,101 @@ function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Live Top Jobs Section */}
+        {allTopsJobs && allTopsJobs.length > 0 && (
+          <section className="py-24 bg-[#FAFAFA]">
+            <div className="container mx-auto px-4">
+              <div className="fade-up text-center max-w-2xl mx-auto mb-16">
+                <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none px-4 py-2 mb-4">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Trending Now
+                </Badge>
+                <h2 className="text-4xl md:text-5xl font-bold text-[#234C6A] mb-4">
+                  Latest job openings
+                </h2>
+                <p className="text-lg text-[#456882]">
+                  Real opportunities from verified companies
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                {allTopsJobs.slice(0, 6).map((job: any) => (
+                  <Link key={job._id} href={`/job/${job._id}`}>
+                    <Card className="stagger-item p-6 bg-white border border-[#E3E3E3] hover:border-[#234C6A]/30 hover:shadow-xl transition-all duration-300 rounded-2xl group cursor-pointer h-full">
+                      <div className="flex items-start gap-4 mb-4">
+                        {job.company?.companyLogo ? (
+                          <Image
+                            src={job.company.companyLogo}
+                            alt={job.company.companyName}
+                            width={48}
+                            height={48}
+                            className="w-12 h-12 rounded-xl object-cover shadow-md"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white font-bold text-lg shadow-md">
+                            {job.company?.companyName?.[0] || "J"}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-[#234C6A] group-hover:text-[#456882] transition-colors truncate">
+                            {job.title}
+                          </h3>
+                          <p className="text-sm text-[#456882] truncate">
+                            {job.company?.companyName}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none text-xs capitalize">
+                          {job.type}
+                        </Badge>
+                        <Badge className="bg-green-100 text-green-700 border-none text-xs capitalize">
+                          {job.locationType}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-1 text-[#456882]">
+                          <MapPin className="h-3.5 w-3.5" />
+                          <span className="truncate max-w-[140px]">{job.location}</span>
+                        </span>
+                        <span className="font-semibold text-[#234C6A]">
+                          ${job.salaryMin} - ${job.salaryMax}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#E3E3E3]">
+                        <span className="text-xs text-[#456882] flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatRelativeTime(job.createdAt)}
+                        </span>
+                        <span className="text-xs font-medium text-[#234C6A] group-hover:text-[#456882] flex items-center gap-1">
+                          View Details
+                          <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                        </span>
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+
+              <div className="fade-up text-center mt-12">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl px-8 shadow-lg"
+                >
+                  <Link href="/job">
+                    Browse All Jobs
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* How it works */}
         <section className="py-24 bg-[#FAFAFA]">

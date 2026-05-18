@@ -53,12 +53,7 @@ import {
 // ============================================================================
 // TYPES
 // ============================================================================
-type DropdownType =
-  | "categories"
-  | "employers"
-  | "notifications"
-  | "user"
-  | null;
+type DropdownType = "categories" | "employers" | "user" | null;
 
 interface NavItem {
   href: string;
@@ -67,16 +62,6 @@ interface NavItem {
   description?: string;
   badge?: string;
   color?: string;
-}
-
-interface Notification {
-  id: number;
-  title: string;
-  description: string;
-  time: string;
-  icon: LucideIcon;
-  isNew: boolean;
-  color: string;
 }
 
 // ============================================================================
@@ -181,41 +166,7 @@ const EMPLOYER_MENU: NavItem[] = [
   },
 ];
 
-const NOTIFICATIONS: Notification[] = [
-  {
-    id: 1,
-    title: "New job matching your skills",
-    description: "Senior React Developer at TechCorp",
-    time: "2 hours ago",
-    icon: Briefcase,
-    isNew: true,
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    id: 2,
-    title: "Application viewed",
-    description: "Your profile was viewed by Google",
-    time: "5 hours ago",
-    icon: Eye,
-    isNew: true,
-    color: "from-green-500 to-emerald-500",
-  },
-  {
-    id: 3,
-    title: "Interview scheduled",
-    description: "Tomorrow at 2:00 PM with Meta",
-    time: "1 day ago",
-    icon: Users,
-    isNew: false,
-    color: "from-purple-500 to-pink-500",
-  },
-];
-
-const USER_STATS = [
-  { label: "Applied", value: "12" },
-  { label: "Saved", value: "8" },
-  { label: "Views", value: "156" },
-];
+// User stats are now computed dynamically from API data below
 
 // ============================================================================
 // HELPER COMPONENTS
@@ -389,10 +340,7 @@ const Header = () => {
     () => (user?.role === "recruiter" ? RECRUITER_MENU : JOB_SEEKER_MENU),
     [user?.role],
   );
-  const selectedCategory = useMemo(
-    () => jobCategories.find((c) => c.id === hoveredCategory),
-    [hoveredCategory],
-  );
+  // selectedCategory is computed after enrichedCategories below
   const getCategoryIcon = useCallback(
     (iconName: string) => CATEGORY_ICONS[iconName] || Briefcase,
     [],
@@ -402,26 +350,44 @@ const Header = () => {
     [pathname],
   );
 
-  //  user stats data
-  const { data: headerStats, isLoading } = useGetHeaderStatsQuery(undefined, {
+  // API Data
+  const { data: headerStats } = useGetHeaderStatsQuery(undefined, {
+    skip: !user,
+  });
+  const { data: allTopsJobs } = useGetTopJobsQuery(undefined);
+  const { data: categoryStats } = useGetCategoryStatsQuery(undefined);
+  const { data: appliedJobIds } = useGetAppliedJobIdsQuery(undefined, {
     skip: !user,
   });
 
-  // browse jobs stats
-  const { data: allJobsStats, isLoading: isAllJobsStatsLoading } =
-    useGetTopJobsQuery(undefined);
+  // Computed values from API
+  const notificationCount = headerStats?.unreadNotificationsCount || 0;
+  const savedJobsCount = headerStats?.savedJobsCount || 0;
+  const appliedCount = appliedJobIds?.length || 0;
 
-  // category stats data
-  const { data: categoryStats, isLoading: isCategoryStatsLoading } =
-    useGetCategoryStatsQuery(undefined);
+  const userStats = useMemo(
+    () => [
+      { label: "Applied", value: String(appliedCount) },
+      { label: "Saved", value: String(savedJobsCount) },
+      { label: "Alerts", value: String(notificationCount) },
+    ],
+    [appliedCount, savedJobsCount, notificationCount],
+  );
 
-  // applied job ids data
-  const { data: appliedJobIds, isLoading: isAppliedJobIdsLoading } =
-    useGetAppliedJobIdsQuery(undefined, {
-      skip: !user,
+  const enrichedCategories = useMemo(() => {
+    if (!categoryStats || !Array.isArray(categoryStats)) return jobCategories;
+    return jobCategories.map((cat) => {
+      const stat = categoryStats.find(
+        (s: { category: string; count: number }) => s.category === cat.id,
+      );
+      return stat ? { ...cat, count: stat.count } : cat;
     });
+  }, [categoryStats]);
 
-  console.log(appliedJobIds);
+  const selectedCategory = useMemo(
+    () => enrichedCategories.find((c) => c.id === hoveredCategory),
+    [hoveredCategory, enrichedCategories],
+  );
 
   // Handlers
   const closeAll = useCallback(() => {
@@ -570,7 +536,7 @@ const Header = () => {
                       <ArrowRight className="h-4 w-4 text-[#456882] group-hover:translate-x-1 transition-transform" />
                     </Link>
                     <div className="p-2 max-h-[350px] overflow-y-auto">
-                      {jobCategories.map((cat) => {
+                      {enrichedCategories.map((cat) => {
                         const Icon = getCategoryIcon(cat.icon);
                         return (
                           <button
@@ -803,101 +769,31 @@ const Header = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => toggleDropdown("notifications")}
+                  asChild
                   className={cn(
                     "relative h-10 w-10 rounded-xl",
-                    activeDropdown === "notifications"
+                    isActive("/notifications")
                       ? "text-[#234C6A] bg-[#234C6A]/10"
                       : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5",
                   )}
                 >
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
-                    <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white items-center justify-center">
-                      3
-                    </span>
-                  </span>
-                </Button>
-
-                <DropdownPanel
-                  isOpen={activeDropdown === "notifications"}
-                  className="right-0 w-[380px]"
-                >
-                  <div className="p-4 border-b border-[#E3E3E3] flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <IconBox
-                        icon={Bell}
-                        gradient="from-[#234C6A] to-[#456882]"
-                        className="w-10 h-10"
-                      />
-                      <div>
-                        <h3 className="font-bold text-[#234C6A]">
-                          Notifications
-                        </h3>
-                        <p className="text-xs text-[#456882]">
-                          You have 3 new updates
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs text-[#456882]"
-                    >
-                      Mark all read
-                    </Button>
-                  </div>
-                  <div className="max-h-[320px] overflow-y-auto">
-                    {NOTIFICATIONS.map((n) => (
-                      <Link
-                        key={n.id}
-                        href="/notifications"
-                        onClick={closeAll}
-                        className={cn(
-                          "flex items-start gap-4 p-4 hover:bg-[#E3E3E3]/30 border-b border-[#E3E3E3]/50 last:border-0",
-                          n.isNew &&
-                            "bg-gradient-to-r from-[#234C6A]/5 to-transparent",
-                        )}
-                      >
-                        <IconBox
-                          icon={n.icon}
-                          gradient={n.color}
-                          className="w-11 h-11 shadow-md flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p
-                              className={cn(
-                                "text-sm font-medium truncate",
-                                n.isNew ? "text-[#234C6A]" : "text-[#456882]",
-                              )}
-                            >
-                              {n.title}
-                            </p>
-                            {n.isNew && (
-                              <span className="w-2 h-2 rounded-full bg-[#234C6A] flex-shrink-0 mt-1.5" />
-                            )}
-                          </div>
-                          <p className="text-xs text-[#456882] truncate mt-0.5">
-                            {n.description}
-                          </p>
-                          <p className="text-xs text-[#456882]/70 mt-1 flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {n.time}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                  <Link
-                    href="/notifications"
-                    onClick={closeAll}
-                    className="flex items-center justify-center gap-2 p-3 bg-[#E3E3E3]/30 border-t border-[#E3E3E3] text-sm font-semibold text-[#234C6A] hover:text-[#456882]"
-                  >
-                    View all notifications <ArrowRight className="h-4 w-4" />
+                  <Link href="/notifications">
+                    <Bell
+                      className={cn(
+                        "h-5 w-5",
+                        isActive("/notifications") && "fill-[#234C6A]",
+                      )}
+                    />
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 h-5 w-5 flex items-center justify-center">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
+                        <span className="relative inline-flex h-4 w-4 rounded-full bg-red-500 text-[10px] font-bold text-white items-center justify-center">
+                          {notificationCount}
+                        </span>
+                      </span>
+                    )}
                   </Link>
-                </DropdownPanel>
+                </Button>
               </div>
 
               {/* User Menu */}
@@ -956,16 +852,18 @@ const Header = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-px bg-[#E3E3E3]/50 border-b border-[#E3E3E3]">
-                    {USER_STATS.map((s, i) => (
-                      <div key={i} className="bg-white p-3 text-center">
-                        <p className="text-lg font-bold text-[#234C6A]">
-                          {s.value}
-                        </p>
-                        <p className="text-xs text-[#456882]">{s.label}</p>
-                      </div>
-                    ))}
-                  </div>
+                  {user?.role === "seeker" && (
+                    <div className="grid grid-cols-3 gap-px bg-[#E3E3E3]/50 border-b border-[#E3E3E3]">
+                      {userStats.map((s, i) => (
+                        <div key={i} className="bg-white p-3 text-center">
+                          <p className="text-lg font-bold text-[#234C6A]">
+                            {s.value}
+                          </p>
+                          <p className="text-xs text-[#456882]">{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="p-2">
                     {userMenuItems.map((item, i) => (
                       <MenuLink
@@ -1102,12 +1000,21 @@ const Header = () => {
             </div>
             <div className="flex gap-2 mt-4">
               {[
-                { href: "/job/saved", icon: Heart, label: "Saved" },
+                {
+                  href: "/job/saved",
+                  icon: Heart,
+                  label: "Saved",
+                  badge:
+                    savedJobsCount > 0 ? String(savedJobsCount) : undefined,
+                },
                 {
                   href: "/notifications",
                   icon: Bell,
                   label: "Alerts",
-                  badge: "3",
+                  badge:
+                    notificationCount > 0
+                      ? String(notificationCount)
+                      : undefined,
                 },
                 { href: "/job", icon: Search, label: "Search" },
               ].map((item) => (
@@ -1254,7 +1161,7 @@ const Header = () => {
                 Job Categories
               </p>
               <div className="space-y-1">
-                {jobCategories.map((cat) => {
+                {enrichedCategories.map((cat) => {
                   const Icon = getCategoryIcon(cat.icon);
                   const isExpanded = mobileExpandedCategory === cat.id;
                   return (

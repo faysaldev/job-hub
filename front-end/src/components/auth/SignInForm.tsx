@@ -26,7 +26,7 @@ const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
             type="email"
             placeholder="Enter your email"
             required
-            className="pl-10 h-12 border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] rounded-xl bg-[#E3E3E3]/30"
+            className="pl-10 h-12 border-white/20 bg-white/40 backdrop-blur-md shadow-inner focus:bg-white focus:border-[#234C6A]/30 focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl"
           />
         </div>
       </div>
@@ -42,7 +42,7 @@ const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
             type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
             required
-            className="pl-10 pr-10 h-12 border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] rounded-xl bg-[#E3E3E3]/30"
+            className="pl-10 pr-10 h-12 border-white/20 bg-white/40 backdrop-blur-md shadow-inner focus:bg-white focus:border-[#234C6A]/30 focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl"
           />
           <button
             type="button"
