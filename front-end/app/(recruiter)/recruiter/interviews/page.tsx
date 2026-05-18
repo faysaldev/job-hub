@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import InterviewsPage from "@/src/Page/Recruiter/InterviewsPage";
 import { Metadata } from "next";
 
@@ -12,12 +13,13 @@ export const metadata: Metadata = {
     "candidate interviews",
     "jobhub recruiter",
   ],
-  robots: {
-    index: false,
-    follow: false,
-  },
+  robots: { index: false, follow: false },
 };
 
 export default function RecruiterInterviewsPage() {
-  return <InterviewsPage />;
+  return (
+    <Suspense>
+      <InterviewsPage />
+    </Suspense>
+  );
 }

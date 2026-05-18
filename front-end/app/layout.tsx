@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ReduxProvider from "@/src/Provider/ReduxProvider";
+import SocketProvider from "@/src/Provider/SocketProvider";
 import { Toaster } from "sonner";
 
 const inter = Inter({
@@ -92,8 +93,10 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="antialiased">
         <ReduxProvider>
-          <Toaster position="top-right" richColors closeButton />
-          {children}
+          <SocketProvider>
+            <Toaster position="top-right" richColors closeButton />
+            {children}
+          </SocketProvider>
         </ReduxProvider>
       </body>
     </html>

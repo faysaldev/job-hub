@@ -1,113 +1,87 @@
-import { useState, useEffect } from "react";
+"use client";
 
-// Define the Notification interface based on the model schema
+import { useState, useEffect, useCallback } from "react";
+import { useSocket } from "./useSocket";
+
 interface Notification {
   _id: string;
   title: string;
   link: string;
-  sender: {
-    id: string;
-    name: string;
-  };
+  sender?: { _id: string; name: string; email: string; image?: string };
   receiver: string;
   isRead: boolean;
-  createdAt: string; // ISO date string
+  createdAt: string;
 }
 
-// Mock notifications data - in a real app, this would come from an API
-const mockNotifications: Notification[] = [
-  {
-    _id: "1",
-    title: "New job matching your preferences",
-    link: "/jobs/123",
-    sender: { id: "recruiter1", name: "Tech Company" },
-    receiver: "1",
-    isRead: false,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-  },
-  {
-    _id: "2",
-    title: "Application status update",
-    link: "/applications/456",
-    sender: { id: "recruiter2", name: "Global Inc" },
-    receiver: "1",
-    isRead: false,
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-  },
-  {
-    _id: "3",
-    title: "Interview scheduled",
-    link: "/interviews/789",
-    sender: { id: "recruiter3", name: "Innovation Labs" },
-    receiver: "1",
-    isRead: true,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-  },
-  {
-    _id: "4",
-    title: "Welcome to JobHubs!",
-    link: "/welcome",
-    sender: { id: "admin", name: "JobHubs Admin" },
-    receiver: "1",
-    isRead: true,
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
-  },
-];
+interface NotifMeta { total: number; totalPages: number; page: number; limit: number; }
 
+/**
+ * Real-time notifications hook via Socket.IO.
+ * Replaces the old mock-data implementation.
+ */
 export const useNotifications = () => {
+  const socket = useSocket();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [meta, setMeta] = useState<NotifMeta>({ total: 0, totalPages: 1, page: 1, limit: 10 });
   const [loading, setLoading] = useState(true);
 
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   useEffect(() => {
-    // Simulate loading notifications from an API
-    setTimeout(() => {
-      setNotifications(mockNotifications);
+    if (!socket) return;
+
+    socket.emit("notifications:get", { page: 1, limit: 10 });
+
+    socket.on("notifications:loaded", ({ notifications: notifs, meta: m }: { notifications: Notification[]; meta: NotifMeta }) => {
+      setNotifications(notifs);
+      setMeta(m);
       setLoading(false);
-    }, 500);
-  }, []);
+    });
 
-  useEffect(() => {
-    // Calculate unread count
-    const count = notifications.filter(notification => !notification.isRead).length;
-    setUnreadCount(count);
-  }, [notifications]);
+    socket.on("notification:new", ({ notification }: { notification: Notification }) => {
+      setNotifications((prev) => [notification, ...prev]);
+    });
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification._id === id ? { ...notification, isRead: true } : notification
-      )
-    );
-  };
+    socket.on("notification:updated", ({ notification }: { notification: Notification }) => {
+      setNotifications((prev) => prev.map((n) => (n._id === notification._id ? notification : n)));
+    });
 
-  const markAsUnread = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification._id === id ? { ...notification, isRead: false } : notification
-      )
-    );
-  };
+    socket.on("notification:deleted", ({ notificationId }: { notificationId: string }) => {
+      setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+    });
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
-    );
-  };
+    socket.on("notifications:allRead", () => {
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    });
 
-  const markAllAsUnread = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: false }))
-    );
-  };
+    return () => {
+      socket.off("notifications:loaded");
+      socket.off("notification:new");
+      socket.off("notification:updated");
+      socket.off("notification:deleted");
+      socket.off("notifications:allRead");
+    };
+  }, [socket]);
+
+  const markAsRead = useCallback((id: string) => {
+    socket?.emit("notification:read", { notificationId: id });
+  }, [socket]);
+
+  const markAllAsRead = useCallback(() => {
+    socket?.emit("notification:readAll");
+  }, [socket]);
+
+  const deleteNotification = useCallback((id: string) => {
+    socket?.emit("notification:delete", { notificationId: id });
+  }, [socket]);
 
   return {
     notifications,
+    meta,
     unreadCount,
     loading,
     markAsRead,
-    markAsUnread,
     markAllAsRead,
-    markAllAsUnread,
+    deleteNotification,
   };
 };

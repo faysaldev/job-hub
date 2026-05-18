@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { useAuth } from "@/src/hooks/useAuth";
+import { useSocket } from "@/src/hooks/useSocket";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -13,29 +15,22 @@ import {
   User,
   Send,
   Video,
-  Phone,
   MapPin,
   Trash2,
   MoreVertical,
   MessageSquare,
   X,
   ChevronDown,
+  ChevronUp,
   Info,
   CheckCircle,
+  Pencil,
+  Check,
+  Loader2,
 } from "lucide-react";
-import {
-  useGetUserConversationsQuery,
-  useDeleteConversationMutation,
-} from "@/src/redux/features/conversations/conversationsApi";
-import {
-  useGetConversationMessagesQuery,
-  useSendMessageMutation,
-  useDeleteMessageMutation,
-} from "@/src/redux/features/messages/messagesApi";
+import { useDeleteConversationMutation } from "@/src/redux/features/conversations/conversationsApi";
 import {
   useScheduleInterviewMutation,
-  useGetMyInterviewsQuery,
-  useUpdateInterviewStatusMutation,
   useHireCandidateMutation,
 } from "@/src/redux/features/interviews/interviewsApi";
 import {
@@ -46,6 +41,28 @@ import {
 } from "@/src/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
+interface MsgItem {
+  _id: string;
+  conversationId: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+}
+interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+interface ConvItem {
+  _id: string;
+  participants: any[];
+  role?: string;
+  status?: string;
+  updatedAt: string;
+}
 interface Candidate {
   id: string;
   conversationId: string;
@@ -53,162 +70,285 @@ interface Candidate {
   email: string;
   jobTitle: string;
   avatar?: string;
-  unreadCount: number;
-  lastMessage: string;
-  lastMessageTime: string;
   interviewStatus: "none" | "pending" | "scheduled";
   rawConversation: any;
 }
 
 const InterviewsPage = () => {
   const { user } = useAuth();
+  const socket = useSocket();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-
-  // Refs for uncontrolled inputs to improve performance
   const messageInputRef = useRef<HTMLInputElement>(null);
+  const editInputRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
   const typeRef = useRef<HTMLSelectElement>(null);
   const startTimeRef = useRef<HTMLInputElement>(null);
   const endTimeRef = useRef<HTMLInputElement>(null);
   const meetLinkRef = useRef<HTMLInputElement>(null);
 
-  // API Hooks
-  const { data: conversations = [], isLoading: isLoadingConvs } =
-    useGetUserConversationsQuery();
   const [deleteConversation] = useDeleteConversationMutation();
-  const [sendMessage] = useSendMessageMutation();
-  const [deleteMessage] = useDeleteMessageMutation();
   const [scheduleInterview, { isLoading: isScheduling }] =
     useScheduleInterviewMutation();
   const [hireCandidate, { isLoading: isHiring }] = useHireCandidateMutation();
 
+  const [conversations, setConversations] = useState<ConvItem[]>([]);
+  const [isLoadingConvs, setIsLoadingConvs] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
     null,
   );
+  const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
+  const [allMessages, setAllMessages] = useState<MsgItem[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [isLoadingMsgs, setIsLoadingMsgs] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
   const [showScheduler, setShowScheduler] = useState(false);
+  const isFetchingMessages = isLoadingMore;
 
-  // Pagination state
-  const [page, setPage] = useState(1);
-  const [allMessages, setAllMessages] = useState<any[]>([]);
-
-  // Fetch messages for selected conversation
-  const { data: messagesData = [], isFetching: isFetchingMessages } =
-    useGetConversationMessagesQuery(
-      {
-        conversationId: selectedCandidate?.conversationId || "",
-        page: page,
-        limit: 50,
-      },
-      { skip: !selectedCandidate?.conversationId },
-    );
-
-  // Helper Functions
-  const formatLastMessageTime = (date: string) => {
-    return new Date(date).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getInterviewStatus = (
-    status: string | undefined,
-  ): Candidate["interviewStatus"] => {
-    if (!status) return "none";
-    if (status === "interview") return "scheduled";
-    if (status === "under_review") return "pending";
+  const fmtTime = (d: string) =>
+    new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const getInterviewStatus = (s?: string): Candidate["interviewStatus"] => {
+    if (s === "interview") return "scheduled";
+    if (s === "under_review") return "pending";
     return "none";
   };
+  const buildCandidate = (conv: ConvItem): Candidate => {
+    const o = conv.participants[0];
+    return {
+      id: o?._id,
+      conversationId: conv._id,
+      name: o?.name || "Unknown",
+      email: o?.email || "",
+      jobTitle: conv.role || "Candidate",
+      avatar: o?.image,
+      interviewStatus: getInterviewStatus(conv.status),
+      rawConversation: conv,
+    };
+  };
 
-  // Reset page and messages when conversation changes
+  // URL sync
   useEffect(() => {
-    setPage(1);
-    setAllMessages([]);
-  }, [selectedCandidate?.conversationId]);
-
-  // Update all messages when new data arrives
-  useEffect(() => {
-    if (
-      messagesData &&
-      Array.isArray(messagesData) &&
-      messagesData.length > 0
-    ) {
-      if (page === 1) {
-        setAllMessages(messagesData);
-      } else {
-        // Append older messages to the end of the list
-        setAllMessages((prev) => {
-          const newMessages = messagesData.filter(
-            (nm: any) => !prev.find((pm) => pm._id === nm._id),
-          );
-          return [...prev, ...newMessages];
-        });
+    const id = searchParams.get("conversation");
+    setSelectedConvId(id);
+    console.log(id);
+    if (!id) {
+      setSelectedCandidate(null);
+    } else if (conversations.length > 0) {
+      const conv = conversations.find((c) => c._id === id);
+      if (conv) {
+        setSelectedCandidate(buildCandidate(conv));
       }
     }
-  }, [messagesData, page]);
+  }, [searchParams, conversations]);
 
-  // Select latest conversation by default
+  const selectConv = useCallback(
+    (conv: ConvItem) => {
+      if (selectedConvId === conv._id) return;
+      const c = buildCandidate(conv);
+      setSelectedCandidate(c);
+      setSelectedConvId(conv._id);
+      setAllMessages([]);
+      setCurrentPage(1);
+      setPagination(null);
+      router.replace(`?conversation=${conv._id}`, { scroll: false });
+    },
+    [router, selectedConvId],
+  );
+
+  // Socket events
   useEffect(() => {
-    if (conversations.length > 0 && !selectedCandidate) {
-      const conv = conversations[0];
-      const otherParticipant = conv.participants[0];
-      setSelectedCandidate({
-        id: otherParticipant?._id,
-        conversationId: conv._id,
-        name: otherParticipant?.name || "Unknown",
-        email: otherParticipant?.email || "",
-        jobTitle: conv.role || "Candidate",
-        avatar: otherParticipant?.image,
-        unreadCount: 0,
-        lastMessage: "Click to view",
-        lastMessageTime: formatLastMessageTime(conv.updatedAt),
-        interviewStatus: getInterviewStatus(conv.status),
-        rawConversation: conv,
+    if (!socket) return;
+    socket.emit("conversations:get");
+    socket.on(
+      "conversations:loaded",
+      ({ conversations: convs }: { conversations: ConvItem[] }) => {
+        setConversations(convs);
+        setIsLoadingConvs(false);
+        const urlId = searchParams.get("conversation");
+        if (urlId) {
+          const conv = convs.find((c) => c._id === urlId);
+          if (conv) {
+            setSelectedConvId(urlId);
+            setSelectedCandidate(buildCandidate(conv));
+          } else {
+            setSelectedConvId(null);
+            setSelectedCandidate(null);
+          }
+        } else {
+          setSelectedConvId(null);
+          setSelectedCandidate(null);
+        }
+      },
+    );
+    socket.on("message:new", ({ message }: { message: MsgItem }) => {
+      if (message.conversationId === selectedConvId) {
+        setAllMessages((prev) =>
+          prev.find((m) => m._id === message._id) ? prev : [...prev, message],
+        );
+        setTimeout(
+          () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+          50,
+        );
+      }
+    });
+    socket.on("message:edited", ({ message }: { message: MsgItem }) =>
+      setAllMessages((prev) =>
+        prev.map((m) => (m._id === message._id ? message : m)),
+      ),
+    );
+    socket.on("message:deleted", ({ messageId }: { messageId: string }) =>
+      setAllMessages((prev) => prev.filter((m) => m._id !== messageId)),
+    );
+    socket.on("message:read", ({ messageId }: { messageId: string }) =>
+      setAllMessages((prev) =>
+        prev.map((m) => (m._id === messageId ? { ...m, isRead: true } : m)),
+      ),
+    );
+    socket.on(
+      "messages:loaded",
+      ({
+        messages: msgs,
+        pagination: pag,
+      }: {
+        messages: MsgItem[];
+        pagination: Pagination;
+        conversationId: string;
+      }) => {
+        setIsLoadingMsgs(false);
+        setIsLoadingMore(false);
+        setPagination(pag);
+        if (pag.currentPage === 1) {
+          setAllMessages(msgs.slice().reverse());
+          setTimeout(
+            () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+            50,
+          );
+        } else {
+          const prevH = chatContainerRef.current?.scrollHeight ?? 0;
+          setAllMessages((prev) => {
+            const inc = msgs
+              .slice()
+              .reverse()
+              .filter((m) => !prev.find((p) => p._id === m._id));
+            return [...inc, ...prev];
+          });
+          requestAnimationFrame(() => {
+            if (chatContainerRef.current)
+              chatContainerRef.current.scrollTop =
+                chatContainerRef.current.scrollHeight - prevH;
+          });
+        }
+      },
+    );
+    socket.on("socket:error", ({ message: msg }: { message: string }) =>
+      toast.error(msg),
+    );
+    return () => {
+      socket.off("conversations:loaded");
+      socket.off("message:new");
+      socket.off("message:edited");
+      socket.off("message:deleted");
+      socket.off("message:read");
+      socket.off("messages:loaded");
+      socket.off("socket:error");
+    };
+  }, [socket, selectedConvId]);
+
+  // Join room + load messages
+  useEffect(() => {
+    if (!socket || !selectedConvId) return;
+    socket.emit("conversation:join", { conversationId: selectedConvId });
+    setIsLoadingMsgs(true);
+    setAllMessages([]);
+    setCurrentPage(1);
+    setPagination(null);
+    socket.emit("messages:get", {
+      conversationId: selectedConvId,
+      page: 1,
+      limit: 20,
+    });
+    return () => {
+      socket.emit("conversation:leave", { conversationId: selectedConvId });
+    };
+  }, [socket, selectedConvId]);
+
+  // Auto mark as read
+  useEffect(() => {
+    if (!socket || !selectedConvId) return;
+    allMessages.forEach((m) => {
+      if (!m.isRead && m.receiverId === user?._id)
+        socket.emit("message:read", {
+          messageId: m._id,
+          conversationId: selectedConvId,
+        });
+    });
+  }, [allMessages, socket, selectedConvId, user?._id]);
+
+  const loadMore = useCallback(() => {
+    if (!socket || !selectedConvId || !pagination?.hasNext || isLoadingMore)
+      return;
+    const next = currentPage + 1;
+    setCurrentPage(next);
+    setIsLoadingMore(true);
+    socket.emit("messages:get", {
+      conversationId: selectedConvId,
+      page: next,
+      limit: 20,
+    });
+  }, [socket, selectedConvId, pagination, currentPage, isLoadingMore]);
+
+  const handleSendMessage = useCallback(() => {
+    const content = messageInputRef.current?.value?.trim();
+    if (!content || !socket || !selectedConvId || !selectedCandidate) return;
+    socket.emit("message:send", {
+      conversationId: selectedConvId,
+      receiverId: selectedCandidate.id,
+      content,
+    });
+    if (messageInputRef.current) messageInputRef.current.value = "";
+  }, [socket, selectedConvId, selectedCandidate]);
+
+  const commitEdit = useCallback(() => {
+    const c = editInputRef.current?.value?.trim();
+    if (!c || !socket || !editingMsgId || !selectedConvId) {
+      setEditingMsgId(null);
+      return;
+    }
+    socket.emit("message:edit", {
+      messageId: editingMsgId,
+      content: c,
+      conversationId: selectedConvId,
+    });
+    setEditingMsgId(null);
+  }, [socket, editingMsgId, selectedConvId]);
+
+  const handleDeleteMessage = useCallback(
+    (msgId: string) => {
+      if (!socket || !selectedConvId) return;
+      socket.emit("message:delete", {
+        messageId: msgId,
+        conversationId: selectedConvId,
       });
-    }
-  }, [conversations, selectedCandidate]);
-
-  useEffect(() => {
-    if (page === 1) {
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [allMessages, page]);
-
-  const handleSendMessage = async () => {
-    const content = messageInputRef.current?.value;
-    if (!content?.trim() || !selectedCandidate) return;
-
-    try {
-      await sendMessage({
-        conversationId: selectedCandidate.conversationId,
-        receiverId: selectedCandidate.id,
-        content,
-      }).unwrap();
-      if (messageInputRef.current) messageInputRef.current.value = "";
-      setPage(1); // Reset to first page to see the new message
-    } catch (error) {
-      toast.error("Failed to send message");
-    }
-  };
-
-  const handleDeleteMessage = async (messageId: string) => {
-    try {
-      await deleteMessage(messageId).unwrap();
-      toast.success("Message deleted");
-    } catch (error) {
-      toast.error("Failed to delete message");
-    }
-  };
+    },
+    [socket, selectedConvId],
+  );
 
   const handleDeleteConversation = async () => {
-    if (!selectedCandidate) return;
-    if (!confirm("Are you sure you want to delete this conversation?")) return;
-
+    if (!selectedConvId) return;
+    if (!confirm("Delete this conversation?")) return;
     try {
-      await deleteConversation(selectedCandidate.conversationId).unwrap();
+      await deleteConversation(selectedConvId).unwrap();
+      setConversations((prev) => prev.filter((c) => c._id !== selectedConvId));
       setSelectedCandidate(null);
+      setSelectedConvId(null);
+      setAllMessages([]);
+      router.replace("?", { scroll: false });
       toast.success("Conversation deleted");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete conversation");
     }
   };
@@ -263,13 +403,7 @@ const InterviewsPage = () => {
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (
-      e.currentTarget.scrollTop === 0 &&
-      !isFetchingMessages &&
-      messagesData.length >= 50
-    ) {
-      setPage((prev) => prev + 1);
-    }
+    if (e.currentTarget.scrollTop === 0) loadMore();
   };
 
   if (!user) return null;
@@ -317,66 +451,46 @@ const InterviewsPage = () => {
                   <p className="text-sm text-[#456882]">No conversations yet</p>
                 </div>
               ) : (
-                conversations.map((conv: any) => {
+                conversations.map((conv: ConvItem) => {
                   const other = conv.participants[0];
-                  const isSelected =
-                    selectedCandidate?.conversationId === conv._id;
-
+                  const isSelected = selectedConvId === conv._id;
                   return (
                     <button
                       key={conv._id}
-                      onClick={() =>
-                        setSelectedCandidate({
-                          id: other._id,
-                          conversationId: conv._id,
-                          name: other.name,
-                          email: other.email,
-                          jobTitle: conv.role,
-                          avatar: other.image,
-                          unreadCount: 0,
-                          lastMessage: "Click to view",
-                          lastMessageTime: formatLastMessageTime(
-                            conv.updatedAt,
-                          ),
-                          interviewStatus: getInterviewStatus(conv.status),
-                          rawConversation: conv,
-                        })
-                      }
-                      className={`w-full p-4 rounded-2xl text-left transition-all duration-300 group ${
+                      onClick={() => selectConv(conv)}
+                      className={`w-full p-4 rounded-2xl text-left transition-all duration-300 ${
                         isSelected
                           ? "bg-[#234C6A] text-white shadow-lg scale-[1.02]"
                           : "hover:bg-gray-50 border border-transparent hover:border-gray-100"
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="relative">
-                          <div
-                            className={`w-12 h-12 rounded-2xl overflow-hidden border-2 ${isSelected ? "border-white/20" : "border-gray-100"}`}
-                          >
-                            {other.image ? (
-                              <img
-                                src={other.image}
-                                alt={other.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-[#234C6A]/10 flex items-center justify-center text-[#234C6A]">
-                                <User className="h-6 w-6" />
-                              </div>
-                            )}
-                          </div>
+                        <div
+                          className={`w-12 h-12 rounded-2xl overflow-hidden border-2 ${isSelected ? "border-white/20" : "border-gray-100"}`}
+                        >
+                          {other?.image ? (
+                            <img
+                              src={other.image}
+                              alt={other.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-[#234C6A]/10 flex items-center justify-center text-[#234C6A]">
+                              <User className="h-6 w-6" />
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-center mb-1">
                             <h4
                               className={`font-bold truncate ${isSelected ? "text-white" : "text-[#234C6A]"}`}
                             >
-                              {other.name}
+                              {other?.name}
                             </h4>
                             <span
                               className={`text-[10px] ${isSelected ? "text-white/60" : "text-[#456882]/60"}`}
                             >
-                              {formatLastMessageTime(conv.updatedAt)}
+                              {fmtTime(conv.updatedAt)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between gap-2">
@@ -388,7 +502,7 @@ const InterviewsPage = () => {
                             <Badge
                               className={`${isSelected ? "bg-white/20 text-white" : "bg-[#234C6A]/5 text-[#234C6A]"} text-[9px] px-1.5 py-0 border-none capitalize h-4`}
                             >
-                              {conv.status?.replace("_", " ")}
+                              {conv.status?.replace(/_/g, " ")}
                             </Badge>
                           </div>
                         </div>
@@ -594,18 +708,32 @@ const InterviewsPage = () => {
                 </div>
 
                 {/* Messages Area */}
+                {pagination?.hasNext && (
+                  <div className="flex justify-center py-2 border-b border-gray-100 bg-gray-50/50 flex-shrink-0">
+                    <button
+                      onClick={loadMore}
+                      disabled={isLoadingMore}
+                      className="flex items-center gap-1.5 text-xs text-[#234C6A] font-semibold hover:bg-[#234C6A]/5 px-4 py-1.5 rounded-full transition-all"
+                    >
+                      {isLoadingMore ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <ChevronUp className="h-3 w-3" />
+                      )}
+                      Load earlier messages
+                    </button>
+                  </div>
+                )}
                 <div
                   ref={chatContainerRef}
                   onScroll={handleScroll}
-                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/30 custom-scrollbar pt-10"
+                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/30 custom-scrollbar"
                 >
-                  {isFetchingMessages && page > 1 && (
-                    <div className="flex justify-center py-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#234C6A]" />
+                  {isLoadingMsgs ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="h-6 w-6 text-[#234C6A] animate-spin" />
                     </div>
-                  )}
-
-                  {allMessages.length === 0 && !isFetchingMessages ? (
+                  ) : allMessages.length === 0 ? (
                     <div className="text-center py-20">
                       <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                         <MessageSquare className="h-8 w-8 text-gray-300" />
@@ -615,38 +743,85 @@ const InterviewsPage = () => {
                       </p>
                     </div>
                   ) : (
-                    [...allMessages].reverse().map((msg: any) => {
+                    allMessages.map((msg: MsgItem) => {
                       const isMe =
                         msg.senderId?.toString() === user?._id?.toString();
+                      const isEditing = editingMsgId === msg._id;
                       return (
                         <div
                           key={msg._id}
-                          className={`flex ${isMe ? "justify-end" : "justify-start"} group animate-in fade-in slide-in-from-bottom-2`}
+                          className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
                         >
                           <div
-                            className={`max-w-[85%] relative ${isMe ? "bg-[#234C6A] text-white rounded-2xl rounded-tr-none" : "bg-white text-[#234C6A] rounded-2xl rounded-tl-none shadow-sm border border-gray-100"} p-3 px-4`}
+                            className={`max-w-[85%] relative ${isMe ? "bg-[#234C6A] text-white rounded-2xl rounded-tr-sm" : "bg-white text-[#234C6A] rounded-2xl rounded-tl-sm shadow-sm border border-gray-100"} p-3 px-4`}
                           >
-                            <div className="flex items-end justify-between gap-3">
-                              <p className="text-sm leading-relaxed">
-                                {msg.content}
-                              </p>
-                              <div className="flex items-center gap-2 flex-shrink-0 mb-[-2px]">
-                                <span className={`text-[9px] opacity-60`}>
-                                  {new Date(msg.createdAt).toLocaleTimeString(
-                                    [],
-                                    { hour: "2-digit", minute: "2-digit" },
-                                  )}
-                                </span>
-                                {isMe && (
-                                  <button
-                                    onClick={() => handleDeleteMessage(msg._id)}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-white"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </button>
-                                )}
+                            {isEditing ? (
+                              <div className="flex items-center gap-2 min-w-[180px]">
+                                <input
+                                  ref={editInputRef}
+                                  className="flex-1 bg-transparent outline-none text-sm border-b border-white/40 pb-0.5"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") commitEdit();
+                                    if (e.key === "Escape")
+                                      setEditingMsgId(null);
+                                  }}
+                                />
+                                <button
+                                  onClick={commitEdit}
+                                  className="text-white/70 hover:text-white"
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => setEditingMsgId(null)}
+                                  className="text-white/70 hover:text-white"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
                               </div>
-                            </div>
+                            ) : (
+                              <div className="flex items-end gap-3">
+                                <p className="text-sm leading-relaxed">
+                                  {msg.content}
+                                </p>
+                                <div className="flex items-center gap-1.5 flex-shrink-0 mb-[-2px]">
+                                  <span className="text-[9px] opacity-60">
+                                    {fmtTime(msg.createdAt)}
+                                  </span>
+                                  {isMe && (
+                                    <span
+                                      className={`text-[9px] opacity-60 ${msg.isRead ? "text-blue-300" : ""}`}
+                                    >
+                                      {msg.isRead ? "✓✓" : "✓"}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {!isEditing && isMe && (
+                              <div className="absolute -top-7 right-0 hidden group-hover:flex items-center gap-1 bg-white border border-gray-100 shadow-lg rounded-xl px-1.5 py-1">
+                                <button
+                                  onClick={() => {
+                                    setEditingMsgId(msg._id);
+                                    setTimeout(() => {
+                                      if (editInputRef.current)
+                                        editInputRef.current.value =
+                                          msg.content;
+                                    }, 0);
+                                  }}
+                                  className="p-1 text-[#456882] hover:text-[#234C6A] hover:bg-gray-50 rounded-lg"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteMessage(msg._id)}
+                                  className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

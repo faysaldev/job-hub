@@ -4,27 +4,10 @@ import { authMiddleware } from "../../middlewares/auth.middleware";
 
 const router = express.Router();
 
-// Create a new message
-router.post("/", authMiddleware, messageRoutes.createMessage);
-
-// Get all messages in a conversation
-router.get(
-  "/conversation/:conversationId",
-  authMiddleware,
-  messageRoutes.getAllMessages
-);
-
-// Edit a message
-router.put("/:messageId", authMiddleware, messageRoutes.editMessage);
-
-// Delete a message
+/**
+ * DELETE /messages/:messageId
+ * Hard-delete a message. Send/edit/read are all handled via Socket.IO.
+ */
 router.delete("/:messageId", authMiddleware, messageRoutes.deleteMessage);
-
-// Mark message as read
-router.patch(
-  "/:messageId/read",
-  authMiddleware,
-  messageRoutes.markMessageAsRead
-);
 
 export default router;
