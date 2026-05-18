@@ -21,6 +21,7 @@ const createMessage = asyncHandler(
 
     // OPTIMIZATION: Send notification to the receiver
     // TODO: message link need to added
+    console.log("Message created successfully", message, req.user);
     try {
       await createNotification({
         title: `New message from ${req.user?.name || "User"}`,
