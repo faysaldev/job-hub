@@ -109,10 +109,19 @@ const setUpSocketIO = (server: Server) => {
     //  CONVERSATIONS
     // ════════════════════════════════════════════════════════════════
 
-    socket.on("conversations:get", async () => {
+    socket.on("conversations:get", async (data?: { search?: string }) => {
       try {
-        const conversations =
+        let conversations =
           await conversationService.getUserConversationsService(userId);
+        if (data?.search && data.search.trim() !== "") {
+          const query = data.search.toLowerCase().trim();
+          conversations = conversations.filter((conv: any) => {
+            const other = conv.participants.find(
+              (p: any) => p._id.toString() !== userId,
+            );
+            return other?.name?.toLowerCase().includes(query);
+          });
+        }
         socket.emit("conversations:loaded", { conversations });
       } catch {
         socket.emit("socket:error", { message: "Failed to load conversations" });

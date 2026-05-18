@@ -27,6 +27,7 @@ import {
   Pencil,
   Check,
   Loader2,
+  Search,
 } from "lucide-react";
 import { useDeleteConversationMutation } from "@/src/redux/features/conversations/conversationsApi";
 import {
@@ -81,14 +82,17 @@ const InterviewsPage = () => {
   const searchParams = useSearchParams();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const scrollToBottom = useCallback((behavior: "smooth" | "auto" = "smooth") => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior,
-      });
-    }
-  }, []);
+  const scrollToBottom = useCallback(
+    (behavior: "smooth" | "auto" = "smooth") => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior,
+        });
+      }
+    },
+    [],
+  );
   const messageInputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const dateRef = useRef<HTMLInputElement>(null);
@@ -103,6 +107,21 @@ const InterviewsPage = () => {
   const [hireCandidate, { isLoading: isHiring }] = useHireCandidateMutation();
 
   const [conversations, setConversations] = useState<ConvItem[]>([]);
+  const [searchInput, setSearchInput] = useState("");
+  const handleSearch = useCallback(() => {
+    if (socket) {
+      socket.emit("conversations:get", { search: searchInput });
+    }
+  }, [socket, searchInput]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+    },
+    [handleSearch],
+  );
   const [isLoadingConvs, setIsLoadingConvs] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
     null,
@@ -178,13 +197,10 @@ const InterviewsPage = () => {
         setIsLoadingConvs(false);
         const urlId = searchParams.get("conversation");
         if (urlId) {
+          setSelectedConvId(urlId);
           const conv = convs.find((c) => c._id === urlId);
           if (conv) {
-            setSelectedConvId(urlId);
             setSelectedCandidate(buildCandidate(conv));
-          } else {
-            setSelectedConvId(null);
-            setSelectedCandidate(null);
           }
         } else {
           setSelectedConvId(null);
@@ -197,10 +213,7 @@ const InterviewsPage = () => {
         setAllMessages((prev) =>
           prev.find((m) => m._id === message._id) ? prev : [...prev, message],
         );
-        setTimeout(
-          () => scrollToBottom("smooth"),
-          50,
-        );
+        setTimeout(() => scrollToBottom("smooth"), 50);
       }
     });
     socket.on("message:edited", ({ message }: { message: MsgItem }) =>
@@ -231,10 +244,7 @@ const InterviewsPage = () => {
         setPagination(pag);
         if (pag.currentPage === 1) {
           setAllMessages(msgs.slice().reverse());
-          setTimeout(
-            () => scrollToBottom("smooth"),
-            50,
-          );
+          setTimeout(() => scrollToBottom("smooth"), 50);
         } else {
           const prevH = chatContainerRef.current?.scrollHeight ?? 0;
           setAllMessages((prev) => {
@@ -438,12 +448,25 @@ const InterviewsPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Candidates List */}
-          <Card className="p-4 border-none bg-white shadow-xl rounded-3xl lg:col-span-1 h-[750px] flex flex-col">
-            <div className="flex items-center justify-between mb-6 px-2">
-              <h3 className="font-bold text-[#234C6A] flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-[#456882]" />
-                Recent Chats
-              </h3>
+          <Card className="p-4 border-none bg-white shadow-xl rounded-3xl lg:col-span-1 h-[750px] flex flex-col space-y-4">
+            <div className="px-2 space-y-4 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-[#234C6A] flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-[#456882]" />
+                  Recent Chats
+                </h3>
+              </div>
+              <div className="relative flex items-center">
+                <Search className="absolute left-3.5 h-4 w-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Type the name and hit enter"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-2xl text-xs outline-none focus:bg-white focus:border-[#234C6A]/20 transition-all text-[#234C6A] placeholder-gray-400 font-semibold"
+                />
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">

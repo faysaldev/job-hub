@@ -17,6 +17,7 @@ import {
   MessageSquare,
   ChevronUp,
   Loader2,
+  Search,
 } from "lucide-react";
 import { useDeleteConversationMutation } from "@/src/redux/features/conversations/conversationsApi";
 import { useDeleteMessageMutation } from "@/src/redux/features/messages/messagesApi";
@@ -67,19 +68,37 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const scrollToBottom = useCallback((behavior: "smooth" | "auto" = "smooth") => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior,
-      });
-    }
-  }, []);
+  const scrollToBottom = useCallback(
+    (behavior: "smooth" | "auto" = "smooth") => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior,
+        });
+      }
+    },
+    [],
+  );
   const messageInputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [conversations, setConversations] = useState<ConvItem[]>([]);
+  const [searchInput, setSearchInput] = useState("");
+  const handleSearch = useCallback(() => {
+    if (socket) {
+      socket.emit("conversations:get", { search: searchInput });
+    }
+  }, [socket, searchInput]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+    },
+    [handleSearch],
+  );
   const [isLoadingConvs, setIsLoadingConvs] = useState(true);
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MsgItem[]>([]);
@@ -131,7 +150,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
 
         // Auto-select from URL
         const urlConv = searchParams.get("conversation");
-        if (urlConv && convs.find((c) => c._id === urlConv)) {
+        if (urlConv) {
           setSelectedConvId(urlConv);
         } else {
           setSelectedConvId(null);
@@ -146,10 +165,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
           if (prev.find((m) => m._id === message._id)) return prev;
           return [...prev, message];
         });
-        setTimeout(
-          () => scrollToBottom("smooth"),
-          50,
-        );
+        setTimeout(() => scrollToBottom("smooth"), 50);
       }
     });
 
@@ -192,10 +208,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
 
         if (pag.currentPage === 1) {
           setMessages(msgs.slice().reverse()); // oldest → newest
-          setTimeout(
-            () => scrollToBottom("smooth"),
-            50,
-          );
+          setTimeout(() => scrollToBottom("smooth"), 50);
         } else {
           // Prepend older messages, preserve scroll position
           const container = chatContainerRef.current;
@@ -380,11 +393,22 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 h-full">
       {/* ── Conversations Sidebar ────────────────────────────────────── */}
       <div className="lg:col-span-1 border-r border-gray-100 flex flex-col overflow-hidden">
-        <div className="px-4 py-4 border-b border-gray-100 bg-white">
-          <h3 className="font-bold text-[#234C6A] flex items-center gap-2 text-sm">
+        <div className="px-4 py-3 border-b border-gray-100 bg-white space-y-2">
+          <h3 className="font-bold text-[#234C6A] flex items-center gap-2 text-xs">
             <MessageSquare className="h-4 w-4 text-[#456882]" />
             Recruiter Chats
           </h3>
+          <div className="relative flex items-center">
+            <Search className="absolute left-3 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Type the name and hit enter"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="w-full pl-8 pr-4 py-1.5 bg-gray-50 border border-gray-100 rounded-xl text-xs outline-none focus:bg-white focus:border-[#234C6A]/20 transition-all text-[#234C6A] placeholder-gray-400 font-semibold"
+            />
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
