@@ -4,17 +4,18 @@ import { authMiddleware } from "../../middlewares/auth.middleware";
 
 const router = express.Router();
 
-// Create a new conversation
+/**
+ * POST /conversations  — Create a new conversation (REST)
+ * DELETE /conversations/:id — Delete a conversation (REST)
+ *
+ * GET /conversations is handled via Socket.IO (conversations:get event).
+ */
 router.post("/", authMiddleware, conversationRoute.createConversation);
 
-// Get user's conversations
-router.get("/", authMiddleware, conversationRoute.getUserConversations);
-
-// Delete a conversation
 router.delete(
   "/:conversationId",
   authMiddleware,
-  conversationRoute.deleteConversation
+  conversationRoute.deleteConversation,
 );
 
 export default router;

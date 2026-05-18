@@ -1,10 +1,18 @@
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 import { Conversation } from "@/src/types";
 
+/**
+ * Conversations REST API.
+ * - GET (list) is handled by Socket.IO (conversations:get event)
+ * - Only CREATE and DELETE remain as REST endpoints
+ */
 const conversationsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // POST /conversations - Create a new conversation
-    createConversation: builder.mutation<Conversation, { receiverId: string }>({
+    // POST /conversations — Create or find an existing conversation
+    createConversation: builder.mutation<
+      Conversation,
+      { participants: string | string[] }
+    >({
       query: (body) => ({
         url: "/conversations",
         method: "POST",
@@ -13,17 +21,7 @@ const conversationsApi = baseApi.injectEndpoints({
       invalidatesTags: ["conversations"],
     }),
 
-    // GET /conversations - Get user's conversations
-    getUserConversations: builder.query<Conversation[], void>({
-      query: () => ({
-        url: "/conversations",
-        method: "GET",
-      }),
-      transformResponse: (response: { data: Conversation[] }) => response.data,
-      providesTags: ["conversations"],
-    }),
-
-    // DELETE /conversations/:conversationId - Delete a conversation
+    // DELETE /conversations/:conversationId
     deleteConversation: builder.mutation<{ success: boolean }, string>({
       query: (conversationId) => ({
         url: `/conversations/${conversationId}`,
@@ -34,8 +32,5 @@ const conversationsApi = baseApi.injectEndpoints({
   }),
 });
 
-export const {
-  useCreateConversationMutation,
-  useGetUserConversationsQuery,
-  useDeleteConversationMutation,
-} = conversationsApi;
+export const { useCreateConversationMutation, useDeleteConversationMutation } =
+  conversationsApi;

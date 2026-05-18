@@ -1,90 +1,21 @@
-import { baseApi } from "@/src/redux/baseApi/baseApi";
-import { Notification, ApiResponse } from "@/src/types";
-
-const notificationsApi = baseApi.injectEndpoints({
-  endpoints: (builder) => ({
-    // GET /notifications - Get all notifications
-    getUserNotifications: builder.query<
-      ApiResponse<{
-        notifications: Notification[];
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-      }>,
-      { page?: number; limit?: number }
-    >({
-      query: (params) => ({
-        url: "/notifications",
-        method: "GET",
-        params,
-      }),
-      providesTags: ["notifications"],
-    }),
-
-    // GET /notifications/unread - Get unread notifications
-    getUnreadNotifications: builder.query<Notification[], void>({
-      query: () => ({
-        url: "/notifications/unread",
-        method: "GET",
-      }),
-      providesTags: ["notifications"],
-    }),
-
-    // GET /notifications/unread/count - Get unread count
-    getUnreadCount: builder.query<{ count: number }, void>({
-      query: () => ({
-        url: "/notifications/unread/count",
-        method: "GET",
-      }),
-      providesTags: ["notifications"],
-    }),
-
-    // PATCH /notifications/:id/read - Mark one as read
-    markNotificationAsRead: builder.mutation<Notification, string>({
-      query: (id) => ({
-        url: `/notifications/${id}/read`,
-        method: "PATCH",
-      }),
-      invalidatesTags: ["notifications"],
-    }),
-
-    // PATCH /notifications/read-all - Mark all as read
-    markAllNotificationsAsRead: builder.mutation<{ success: boolean }, void>({
-      query: () => ({
-        url: "/notifications/read-all",
-        method: "PATCH",
-      }),
-      invalidatesTags: ["notifications"],
-    }),
-
-    // DELETE /notifications/:id - Soft delete notification
-    deleteNotification: builder.mutation<{ success: boolean }, string>({
-      query: (id) => ({
-        url: `/notifications/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: ["notifications"],
-    }),
-
-    // POST /notifications - Create a new notification
-    createNotification: builder.mutation<Notification, { title: string; link: string; receiver: string }>({
-      query: (body) => ({
-        url: "/notifications",
-        method: "POST",
-        body,
-      }),
-      invalidatesTags: ["notifications"],
-    }),
-  }),
-});
-
-export const {
-  useGetUserNotificationsQuery,
-  useGetUnreadNotificationsQuery,
-  useGetUnreadCountQuery,
-  useMarkNotificationAsReadMutation,
-  useMarkAllNotificationsAsReadMutation,
-  useDeleteNotificationMutation,
-  useCreateNotificationMutation,
-} = notificationsApi;
+/**
+ * Notifications via Socket.IO only.
+ *
+ * All notification operations (get, mark read, mark all, delete) are handled
+ * through Socket.IO events. This file is intentionally empty of RTK Query
+ * endpoints to avoid duplicate state management.
+ *
+ * Socket events (client → server):
+ *   notifications:get      { page, limit }
+ *   notification:read      { notificationId }
+ *   notification:readAll   {}
+ *   notification:delete    { notificationId }
+ *
+ * Socket events (server → client):
+ *   notifications:loaded   { notifications[], meta }
+ *   notification:new       { notification }
+ *   notification:updated   { notification }
+ *   notification:deleted   { notificationId }
+ *   notifications:allRead  {}
+ */
+export {};

@@ -4,45 +4,16 @@ import { authMiddleware } from "../../middlewares/auth.middleware";
 
 const router = Router();
 
-// Get all notifications for authenticated user
-router.get("/", authMiddleware, notificationController.getUserNotifications);
-
-// Get unread notifications for authenticated user
-router.get(
-  "/unread",
-  authMiddleware,
-  notificationController.getUserUnreadNotifications
-);
-
-// Get count of unread notifications
+/**
+ * GET /notifications/unread/count
+ * Still a REST endpoint — used by the header stats query for the unread badge.
+ * All other notification operations (list, mark-read, delete) are handled via
+ * Socket.IO events to keep the UI fully real-time.
+ */
 router.get(
   "/unread/count",
   authMiddleware,
-  notificationController.getUnreadNotificationCount
+  notificationController.getUnreadNotificationCount,
 );
-
-// Mark a notification as read
-router.patch(
-  "/:id/read",
-  authMiddleware,
-  notificationController.markNotificationAsRead
-);
-
-// Mark all notifications as read
-router.patch(
-  "/read-all",
-  authMiddleware,
-  notificationController.markAllNotificationsAsRead
-);
-
-// Delete a notification (soft delete)
-router.delete(
-  "/:id",
-  authMiddleware,
-  notificationController.deleteNotification
-);
-
-// Create a new notification
-router.post("/", authMiddleware, notificationController.createNotification);
 
 export default router;

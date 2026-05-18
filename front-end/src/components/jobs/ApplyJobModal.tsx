@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/src/lib/utils";
+import { useAuth } from "@/src/hooks/useAuth";
 
 interface ApplyJobModalProps {
   jobId: string;
@@ -45,6 +46,7 @@ export default function ApplyJobModal({
   companyName,
 }: ApplyJobModalProps) {
   const [open, setOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
   const [coverLetter, setCoverLetter] = useState("");
   const [resumeUrl, setResumeUrl] = useState("");
   const [shouldUpdateProfile, setShouldUpdateProfile] = useState(false);
@@ -132,14 +134,24 @@ export default function ApplyJobModal({
     toast.success(`Boost of $${paidAmount} added to your application!`);
   };
 
+  const handleApplyClick = () => {
+    if (!isAuthenticated) {
+      toast.error("Please login to apply for this job.");
+      router.push("/auth");
+      return;
+    }
+    setOpen(true);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold mb-4 group">
-          <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
-          Apply Now
-        </Button>
-      </DialogTrigger>
+      <Button
+        onClick={handleApplyClick}
+        className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold mb-4 group"
+      >
+        <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
+        Apply Now
+      </Button>
       <DialogContent className="sm:max-w-[550px] bg-white rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
         <form onSubmit={handleApply} className="relative">
           {/* Top Section - Blurred when boosting */}
