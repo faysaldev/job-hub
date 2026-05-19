@@ -27,7 +27,6 @@ import {
   ArrowRight,
   LayoutDashboard,
   PlusCircle,
-  Eye,
   Users,
   Code,
   Palette,
@@ -36,9 +35,7 @@ import {
   Settings,
   Grid3X3,
   Zap,
-  Calendar,
   type LucideIcon,
-  UndoIcon,
 } from "lucide-react";
 import { jobCategories } from "@/src/lib/jobCategories";
 import { useAuth } from "@/src/hooks/useAuth";
@@ -47,7 +44,6 @@ import {
   useGetAppliedJobIdsQuery,
   useGetCategoryStatsQuery,
   useGetHeaderStatsQuery,
-  useGetTopJobsQuery,
 } from "@/src/redux/features/generals/generalsApi";
 
 // ============================================================================
@@ -67,15 +63,6 @@ interface NavItem {
 // ============================================================================
 // CONSTANTS
 // ============================================================================
-/** @deprecated Use useAuth() hook instead */
-export const mockUser = {
-  id: "1",
-  name: "John Doe",
-  email: "john.doe@example.com",
-  role: "jobseeker" as const,
-  avatar: "",
-};
-
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
   Code,
   Palette,
@@ -210,16 +197,16 @@ const MenuLink = ({
     href={href}
     onClick={onClick}
     className={cn(
-      "flex items-center gap-3 p-3 rounded-xl transition-all group",
+      "group flex items-center gap-3 rounded-2xl p-3 transition-all",
       isActive
-        ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white shadow-lg"
-        : "hover:bg-[#E3E3E3]/50",
+        ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white shadow-lg shadow-[#234C6A]/15"
+        : "hover:bg-[#234C6A]/5",
       className,
     )}
   >
     <div
       className={cn(
-        "w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition-transform group-hover:scale-105",
+        "flex h-10 w-10 items-center justify-center rounded-2xl shadow-md transition-transform group-hover:scale-105",
         color
           ? `bg-gradient-to-br ${color}`
           : isActive
@@ -281,14 +268,14 @@ const DropdownPanel = ({
 }) => (
   <div
     className={cn(
-      "absolute top-full pt-3 transition-all duration-300",
+      "absolute top-full pt-3 transition-all duration-200",
       isOpen
         ? "opacity-100 visible translate-y-0"
         : "opacity-0 invisible -translate-y-2 pointer-events-none",
       className,
     )}
   >
-    <div className="bg-white rounded-2xl shadow-2xl shadow-[#234C6A]/10 border border-[#234C6A]/10 overflow-hidden">
+    <div className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/12 backdrop-blur-xl">
       {children}
     </div>
   </div>
@@ -303,9 +290,9 @@ const DropdownHeader = ({
   title: string;
   subtitle: string;
 }) => (
-  <div className="p-4 bg-gradient-to-r from-[#234C6A] to-[#456882]">
+  <div className="bg-gradient-to-r from-[#234C6A] to-[#456882] p-4">
     <div className="flex items-center gap-3">
-      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20">
         <Icon className="h-5 w-5 text-white" />
       </div>
       <div>
@@ -354,7 +341,6 @@ const Header = () => {
   const { data: headerStats } = useGetHeaderStatsQuery(undefined, {
     skip: !user,
   });
-  const { data: allTopsJobs } = useGetTopJobsQuery(undefined);
   const { data: categoryStats } = useGetCategoryStatsQuery(undefined);
   const { data: appliedJobIds } = useGetAppliedJobIdsQuery(undefined, {
     skip: !user,
@@ -459,13 +445,13 @@ const Header = () => {
       className={cn(
         "sticky top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-[#234C6A]/10"
-          : "bg-[#E3E3E3]/95 backdrop-blur-lg border-b border-[#456882]/10",
+          ? "border-b border-[#234C6A]/10 bg-white/95 shadow-lg shadow-[#234C6A]/5 backdrop-blur-xl"
+          : "border-b border-[#234C6A]/8 bg-white/85 backdrop-blur-xl",
       )}
     >
       <div
         ref={dropdownRef}
-        className="container flex h-16 items-center justify-between mx-auto px-4 lg:px-6"
+        className="container mx-auto flex h-[72px] items-center justify-between px-4 lg:px-6"
       >
         {/* Logo */}
         <Link
@@ -477,7 +463,8 @@ const Header = () => {
             height={100}
             src={"/job-hub-logo-removebg-preview.png"}
             alt="Logo"
-            className="max-w-[250px] max-h-[60px] object-contain"
+            priority
+            className="h-auto max-h-14 w-[150px] object-contain md:w-[175px]"
           />
         </Link>
 
@@ -489,10 +476,10 @@ const Header = () => {
               <button
                 onClick={() => toggleDropdown("categories")}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  "flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-black transition-all",
                   activeDropdown === "categories" || isActive("/job")
-                    ? "text-[#234C6A] bg-[#234C6A]/5"
-                    : "text-[#456882] hover:text-[#234C6A]",
+                    ? "bg-[#234C6A]/8 text-[#234C6A]"
+                    : "text-[#456882] hover:bg-[#234C6A]/5 hover:text-[#234C6A]",
                 )}
               >
                 <Grid3X3 className="h-4 w-4" />
@@ -509,9 +496,9 @@ const Header = () => {
                 isOpen={activeDropdown === "categories"}
                 className="left-0"
               >
-                <div className="flex w-[600px]">
+                <div className="flex w-[640px]">
                   {/* Categories List */}
-                  <div className="w-[280px] border-r border-[#E3E3E3]">
+                  <div className="w-[290px] border-r border-[#234C6A]/10">
                     <DropdownHeader
                       icon={Briefcase}
                       title="Job Categories"
@@ -520,7 +507,7 @@ const Header = () => {
                     <Link
                       href="/job"
                       onClick={closeAll}
-                      className="flex items-center gap-3 p-3 mx-2 mt-2 rounded-xl bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 hover:from-[#234C6A]/10 hover:to-[#456882]/10 group"
+                      className="mx-2 mt-2 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 p-3 transition-colors hover:from-[#234C6A]/10 hover:to-[#456882]/10 group"
                     >
                       <IconBox
                         icon={Zap}
@@ -535,7 +522,7 @@ const Header = () => {
                       </div>
                       <ArrowRight className="h-4 w-4 text-[#456882] group-hover:translate-x-1 transition-transform" />
                     </Link>
-                    <div className="p-2 max-h-[350px] overflow-y-auto">
+                    <div className="custom-scrollbar max-h-[350px] overflow-y-auto p-2">
                       {enrichedCategories.map((cat) => {
                         const Icon = getCategoryIcon(cat.icon);
                         return (
@@ -547,7 +534,7 @@ const Header = () => {
                               closeAll();
                             }}
                             className={cn(
-                              "flex items-center gap-3 w-full p-3 rounded-xl transition-all group/item",
+                              "group/item flex w-full items-center gap-3 rounded-2xl p-3 transition-all",
                               hoveredCategory === cat.id
                                 ? "bg-[#234C6A]/5 text-[#234C6A]"
                                 : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5",
@@ -588,7 +575,7 @@ const Header = () => {
                   </div>
 
                   {/* Subcategories Details */}
-                  <div className="flex-1 bg-gray-50/50 p-6">
+                  <div className="flex-1 bg-[#F8FAFC] p-6">
                     {selectedCategory ? (
                       <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="flex items-center justify-between mb-6">
@@ -616,7 +603,7 @@ const Header = () => {
                                 navigateToCategory(selectedCategory.id, sub.id);
                                 closeAll();
                               }}
-                              className="flex items-center justify-between p-3 rounded-xl hover:bg-white hover:shadow-md transition-all group/sub"
+                              className="group/sub flex items-center justify-between rounded-2xl p-3 transition-all hover:bg-white hover:shadow-md"
                             >
                               <span className="text-sm font-medium text-[#456882] group-hover/sub:text-[#234C6A]">
                                 {sub.name}
@@ -649,10 +636,10 @@ const Header = () => {
             <Link
               href="/companies"
               className={cn(
-                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                "relative flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-black transition-all",
                 isActive("/companies")
-                  ? "text-[#234C6A]"
-                  : "text-[#456882] hover:text-[#234C6A]",
+                  ? "bg-[#234C6A]/8 text-[#234C6A]"
+                  : "text-[#456882] hover:bg-[#234C6A]/5 hover:text-[#234C6A]",
               )}
             >
               <Building2 className="h-4 w-4" />
@@ -669,10 +656,10 @@ const Header = () => {
               key={item.href}
               href={item.href}
               className={cn(
-                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                "relative flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-black transition-all",
                 isActive(item.href)
-                  ? "text-[#234C6A]"
-                  : "text-[#456882] hover:text-[#234C6A]",
+                  ? "bg-[#234C6A]/8 text-[#234C6A]"
+                  : "text-[#456882] hover:bg-[#234C6A]/5 hover:text-[#234C6A]",
               )}
             >
               <item.icon className="h-4 w-4" />
@@ -689,10 +676,10 @@ const Header = () => {
               <button
                 onClick={() => toggleDropdown("employers")}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  "flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-black transition-all",
                   activeDropdown === "employers"
-                    ? "text-[#234C6A] bg-[#234C6A]/5"
-                    : "text-[#456882] hover:text-[#234C6A]",
+                    ? "bg-[#234C6A]/8 text-[#234C6A]"
+                    : "text-[#456882] hover:bg-[#234C6A]/5 hover:text-[#234C6A]",
                 )}
               >
                 <Building2 className="h-4 w-4" />
@@ -707,7 +694,7 @@ const Header = () => {
 
               <DropdownPanel
                 isOpen={activeDropdown === "employers"}
-                className="right-0 w-[380px]"
+                className="right-0 w-[400px]"
               >
                 <DropdownHeader
                   icon={Sparkles}
@@ -719,7 +706,7 @@ const Header = () => {
                     <MenuLink key={i} {...item} onClick={closeAll} />
                   ))}
                 </div>
-                <div className="p-4 bg-[#E3E3E3]/30 border-t border-[#E3E3E3] flex items-center justify-between">
+                <div className="flex items-center justify-between border-t border-[#234C6A]/10 bg-[#F8FAFC] p-4">
                   <div className="flex items-center gap-2 text-sm text-[#456882]">
                     <Shield className="h-4 w-4" />
                     <span>Trusted by 10,000+ companies</span>
@@ -747,7 +734,7 @@ const Header = () => {
                   size="icon"
                   asChild
                   className={cn(
-                    "h-10 w-10 rounded-xl",
+                    "h-10 w-10 rounded-2xl",
                     isActive("/job/saved")
                       ? "text-[#234C6A] bg-[#234C6A]/10"
                       : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5",
@@ -771,7 +758,7 @@ const Header = () => {
                   size="icon"
                   asChild
                   className={cn(
-                    "relative h-10 w-10 rounded-xl",
+                    "relative h-10 w-10 rounded-2xl",
                     isActive("/notifications")
                       ? "text-[#234C6A] bg-[#234C6A]/10"
                       : "text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5",
@@ -801,20 +788,20 @@ const Header = () => {
                 <button
                   onClick={() => toggleDropdown("user")}
                   className={cn(
-                    "flex items-center gap-2.5 px-2 py-1.5 rounded-xl transition-all",
+                    "flex items-center gap-2.5 rounded-2xl px-2 py-1.5 transition-all",
                     activeDropdown === "user"
                       ? "bg-[#234C6A]/10"
                       : "hover:bg-[#234C6A]/5",
                   )}
                 >
                   <div className="relative">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white font-bold text-sm shadow-md">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] text-sm font-bold text-white shadow-md">
                       {user.name.charAt(0)}
                     </div>
                     <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                   </div>
                   <div className="hidden xl:block text-left">
-                    <p className="text-sm font-semibold text-[#234C6A] leading-tight">
+                    <p className="text-sm font-black leading-tight text-[#234C6A]">
                       {user.name}
                     </p>
                     <p className="text-xs text-[#456882] capitalize">
@@ -833,9 +820,9 @@ const Header = () => {
                   isOpen={activeDropdown === "user"}
                   className="right-0 w-[280px]"
                 >
-                  <div className="p-4 bg-gradient-to-br from-[#234C6A] to-[#456882]">
+                  <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold text-xl border-2 border-white/30">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-white/30 bg-white/20 text-xl font-bold text-white">
                         {user.name.charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -874,10 +861,10 @@ const Header = () => {
                       />
                     ))}
                   </div>
-                  <div className="p-2 border-t border-[#E3E3E3]">
+                  <div className="border-t border-[#234C6A]/10 p-2">
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-3 w-full p-3 rounded-xl text-red-500 hover:bg-red-50 transition-all"
+                      className="flex w-full items-center gap-3 rounded-2xl p-3 text-red-500 transition-all hover:bg-red-50"
                     >
                       <div className="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center">
                         <LogOut className="h-4 w-4" />
@@ -911,7 +898,7 @@ const Header = () => {
 
         {/* Mobile Menu Button */}
         <button
-          className="lg:hidden relative z-10 text-[#234C6A] p-2.5 rounded-xl hover:bg-[#234C6A]/10 transition-all"
+        className="relative z-10 rounded-2xl p-2.5 text-[#234C6A] transition-all hover:bg-[#234C6A]/10 lg:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <div className="w-6 h-5 flex flex-col justify-center items-center">
@@ -944,7 +931,7 @@ const Header = () => {
       {/* Mobile Menu Overlay */}
       <div
         className={cn(
-          "lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-all",
+          "fixed inset-0 z-40 bg-[#234C6A]/55 backdrop-blur-sm transition-all lg:hidden",
           mobileMenuOpen
             ? "opacity-100 visible"
             : "opacity-0 invisible pointer-events-none",
@@ -955,24 +942,24 @@ const Header = () => {
       {/* Mobile Menu Panel */}
       <div
         className={cn(
-          "lg:hidden fixed inset-0 h-[100dvh] w-screen bg-white z-50 shadow-2xl flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "fixed inset-y-0 right-0 z-50 flex h-[100dvh] w-full max-w-md flex-col bg-white shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] lg:hidden",
           mobileMenuOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
         {/* Mobile Header */}
-        <div className="flex-shrink-0 p-4 border-b border-[#E3E3E3] flex items-center justify-between bg-gradient-to-r from-[#234C6A] to-[#456882]">
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-white/10 bg-gradient-to-r from-[#234C6A] to-[#456882] p-4">
           <Link
             href="/"
             className="flex items-center gap-2.5"
             onClick={closeAll}
           >
-            <div className="bg-white/20 rounded-xl p-2">
+            <div className="rounded-2xl bg-white/20 p-2">
               <Briefcase className="h-5 w-5 text-white" />
             </div>
             <span className="font-bold text-white text-lg">JobHub</span>
           </Link>
           <button
-            className="text-white p-2 rounded-xl hover:bg-white/20 active:scale-95"
+            className="rounded-2xl p-2 text-white hover:bg-white/20 active:scale-95"
             onClick={closeAll}
           >
             <X className="h-6 w-6" />
@@ -981,10 +968,10 @@ const Header = () => {
 
         {/* User Section */}
         {user ? (
-          <div className="flex-shrink-0 p-4 border-b border-[#E3E3E3] bg-gradient-to-br from-[#E3E3E3]/50 to-white">
+          <div className="flex-shrink-0 border-b border-[#234C6A]/10 bg-gradient-to-br from-[#E3E3E3]/50 to-white p-4">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] text-xl font-bold text-white shadow-lg">
                   {user.name.charAt(0)}
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
@@ -1022,7 +1009,7 @@ const Header = () => {
                   key={item.href}
                   href={item.href}
                   onClick={closeAll}
-                  className="flex-1 flex flex-col items-center gap-1 p-3 rounded-xl bg-white shadow-sm hover:shadow-md active:scale-95 relative"
+                  className="relative flex flex-1 flex-col items-center gap-1 rounded-2xl bg-white p-3 shadow-sm hover:shadow-md active:scale-95"
                 >
                   <item.icon className="h-5 w-5 text-[#234C6A]" />
                   <span className="text-xs font-medium text-[#456882]">
@@ -1038,11 +1025,11 @@ const Header = () => {
             </div>
           </div>
         ) : (
-          <div className="flex-shrink-0 p-4 border-b border-[#E3E3E3] bg-[#E3E3E3]/30">
+          <div className="flex-shrink-0 border-b border-[#234C6A]/10 bg-[#E3E3E3]/30 p-4">
             <Link
               href="/job"
               onClick={closeAll}
-              className="flex items-center gap-3 w-full p-3 rounded-xl bg-white border border-[#E3E3E3] text-[#456882] hover:border-[#234C6A] hover:text-[#234C6A]"
+              className="flex w-full items-center gap-3 rounded-2xl border border-[#234C6A]/10 bg-white p-3 text-[#456882] hover:border-[#234C6A] hover:text-[#234C6A]"
             >
               <Search className="h-5 w-5" />
               <span className="text-sm">Search for jobs...</span>
