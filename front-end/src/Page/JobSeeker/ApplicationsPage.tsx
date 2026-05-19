@@ -36,7 +36,7 @@ export default function SeekerApplicationsPage() {
               <h1 className="text-3xl font-black tracking-tight md:text-5xl">
                 Your Applications
               </h1>
-              <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-white/75">
+              <p className="mt-3 max-w-2xl text-[16px] font-medium leading-7 text-white/75">
                 Monitor every role you have applied to, review submitted
                 materials, and keep your next move organized.
               </p>
@@ -60,9 +60,9 @@ export default function SeekerApplicationsPage() {
             ].map(({ icon: Icon, label }) => (
               <div
                 key={label}
-                className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
+                className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
               >
-                <Icon className="mr-2 inline h-4 w-4" />
+                <Icon className="mr-2 inline h-3 w-4" />
                 {label}
               </div>
             ))}
@@ -70,7 +70,7 @@ export default function SeekerApplicationsPage() {
           <Sparkles className="absolute -bottom-8 -right-8 h-40 w-40 text-white/5" />
         </section>
 
-        <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
+        <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur pt-0">
           <div className="border-b border-[#E3E3E3]/70 bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5 md:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>

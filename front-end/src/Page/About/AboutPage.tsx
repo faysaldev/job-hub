@@ -254,7 +254,7 @@ export default function AboutPage() {
                 ].map(({ icon: Icon, label }) => (
                   <div
                     key={label}
-                    className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
+                    className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
                   >
                     <Icon className="mr-2 inline h-4 w-4" />
                     {label}

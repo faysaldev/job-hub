@@ -243,7 +243,7 @@ export default function ContactPage() {
               ].map(({ icon: Icon, label }) => (
                 <div
                   key={label}
-                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
+                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
                 >
                   <Icon className="mr-2 inline h-4 w-4" />
                   {label}
@@ -329,7 +329,10 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <form onSubmit={handleSubmit} className="space-y-6 p-6 md:p-8">
+                  <form
+                    onSubmit={handleSubmit}
+                    className="space-y-6 p-6 md:p-8"
+                  >
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label
@@ -539,8 +542,8 @@ export default function ContactPage() {
                 Visit our headquarters
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-base font-medium leading-8 text-[#456882]">
-                We would love to meet you in person. Schedule a visit to our
-                San Francisco office.
+                We would love to meet you in person. Schedule a visit to our San
+                Francisco office.
               </p>
             </div>
 

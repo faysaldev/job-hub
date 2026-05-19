@@ -89,7 +89,7 @@ export default function JobSeekerInterviewsPage() {
               <h1 className="text-3xl font-black tracking-tight md:text-5xl">
                 Stay ready for every interview.
               </h1>
-              <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-white/75">
+              <p className="mt-3 max-w-2xl text-[16px] font-medium leading-7 text-white/75">
                 Manage upcoming sessions, meeting links, interviewer details,
                 and past interview history in one focused view.
               </p>
@@ -103,7 +103,7 @@ export default function JobSeekerInterviewsPage() {
               ].map(({ icon: Icon, label }) => (
                 <div
                   key={label}
-                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
+                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
                 >
                   <Icon className="mr-2 inline h-4 w-4" />
                   {label}
@@ -116,7 +116,7 @@ export default function JobSeekerInterviewsPage() {
 
         <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
           <div className="space-y-6 xl:col-span-2">
-            <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
+            <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-xl shadow-[#234C6A]/8 backdrop-blur pt-0">
               <div className="border-b border-[#E3E3E3]/70 bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5">
                 <div className="flex items-center justify-between gap-4">
                   <div>
