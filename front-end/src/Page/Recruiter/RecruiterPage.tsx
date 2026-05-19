@@ -15,6 +15,13 @@ import {
   MessageSquare,
   Clock,
   DollarSign,
+  BarChart3,
+  ArrowRight,
+  Building2,
+  Shield,
+  Activity,
+  Sparkles,
+  CheckCircle,
 } from "lucide-react";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
@@ -23,6 +30,45 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
 import { useGetRecruiterDashboardStatsQuery } from "@/src/redux/features/generals/generalsApi";
+
+interface StatDef {
+  title: string;
+  value: number | string;
+  change: string;
+  trend: "up" | "neutral";
+  icon: React.ElementType;
+  href: string;
+}
+
+function StatCard({ stat }: { stat: StatDef }) {
+  return (
+    <Link href={stat.href}>
+      <Card className="stat-card group relative h-full overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#234C6A]/25 hover:shadow-2xl hover:shadow-[#234C6A]/10">
+        <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-[#234C6A] to-[#456882] transition-transform duration-300 group-hover:scale-x-100" />
+        <div className="mb-5 flex items-start justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/15 transition-transform duration-300 group-hover:scale-105">
+            <stat.icon className="h-6 w-6" />
+          </div>
+          {stat.trend === "up" && (
+            <Badge className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700">
+              <TrendingUp className="mr-1 h-3 w-3" />
+              Up
+            </Badge>
+          )}
+        </div>
+        <p className="text-3xl font-black tracking-tight text-[#234C6A]">
+          {stat.value ?? "-"}
+        </p>
+        <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#456882]">
+          {stat.title}
+        </p>
+        <p className="mt-2 text-sm font-medium text-[#456882]/75">
+          {stat.change}
+        </p>
+      </Card>
+    </Link>
+  );
+}
 
 const RecruiterDashboard = () => {
   const { user } = useAuth();
@@ -64,7 +110,7 @@ const RecruiterDashboard = () => {
       gsap.fromTo(
         ".main-section",
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.6, delay: 0.5, ease: "power2.out" },
+        { opacity: 1, y: 0, duration: 0.6, delay: 0.45, ease: "power2.out" },
       );
     }, containerRef);
     return () => ctx.revert();
@@ -72,257 +118,267 @@ const RecruiterDashboard = () => {
 
   if (!user) return null;
 
-  const stats = [
+  const activeJobs = val(apiData?.activeJobs);
+  const applicants = val(apiData?.applicants);
+  const interviews = val(apiData?.interviews);
+  const avgSalary =
+    apiData?.avgSalary != null
+      ? `$${Number(apiData.avgSalary).toLocaleString()}`
+      : "—";
+
+  const stats: StatDef[] = [
     {
       title: "Active Jobs",
-      value: val(apiData?.activeJobs),
+      value: activeJobs,
       change:
         apiData?.activeJobs?.percentage != null
           ? `${apiData.activeJobs.percentage}% of capacity`
           : "Total posted",
-      trend: Number(val(apiData?.activeJobs)) > 0 ? "up" : "neutral",
+      trend: Number(activeJobs) > 0 ? "up" : "neutral",
       icon: Briefcase,
-      color: "from-[#234C6A] to-[#456882]",
       href: "/recruiter/jobs",
     },
     {
       title: "Total Applicants",
-      value: val(apiData?.applicants),
+      value: applicants,
       change:
         apiData?.applicants?.percentage != null
           ? `${apiData.applicants.percentage}% response rate`
           : "All applicants",
-      trend: Number(val(apiData?.applicants)) > 0 ? "up" : "neutral",
+      trend: Number(applicants) > 0 ? "up" : "neutral",
       icon: Users,
-      color: "from-blue-500 to-cyan-500",
       href: "/recruiter/applicants",
     },
     {
       title: "Avg. Salary",
-      value:
-        apiData?.avgSalary != null
-          ? `$${Number(apiData.avgSalary).toLocaleString()}`
-          : "—",
+      value: avgSalary,
       change: "Market competitive",
       trend: "neutral",
       icon: DollarSign,
-      color: "from-green-500 to-emerald-500",
       href: "/recruiter/jobs",
     },
     {
       title: "Interviews",
-      value: val(apiData?.interviews),
+      value: interviews,
       change: "Scheduled sessions",
-      trend: Number(val(apiData?.interviews)) > 0 ? "up" : "neutral",
+      trend: Number(interviews) > 0 ? "up" : "neutral",
       icon: Calendar,
-      color: "from-purple-500 to-violet-500",
       href: "/recruiter/interviews",
+    },
+  ];
+
+  const pipelineItems = [
+    {
+      label: "Active Jobs",
+      value: activeJobs,
+      detail: "Open roles receiving applicants",
+      icon: Briefcase,
+    },
+    {
+      label: "Applicants",
+      value: applicants,
+      detail: "Candidates in your hiring funnel",
+      icon: Users,
+    },
+    {
+      label: "Interviews",
+      value: interviews,
+      detail: "Conversation-ready candidates",
+      icon: MessageSquare,
+    },
+  ];
+
+  const quickActions = [
+    {
+      label: "Post a New Job",
+      href: "/recruiter/create-job",
+      icon: Plus,
+    },
+    {
+      label: "Review Applicants",
+      href: "/recruiter/applicants",
+      icon: Users,
+    },
+    {
+      label: "Schedule Interview",
+      href: "/recruiter/interview-schedule",
+      icon: Calendar,
+    },
+    {
+      label: "Update Company",
+      href: "/recruiter/company",
+      icon: Building2,
     },
   ];
 
   return (
     <RecruiterLayout>
-      <div ref={containerRef} className="max-w-7xl mx-auto space-y-8">
-        {/* Dashboard Header */}
-        <div className="dashboard-header">
-          <div className="relative overflow-hidden bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] rounded-3xl p-8 text-white shadow-2xl">
-            <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
-            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <div ref={containerRef} className="mx-auto max-w-7xl space-y-8">
+        <section className="dashboard-header">
+          <div className="relative overflow-hidden rounded-3xl bg-[#234C6A] p-7 text-white shadow-2xl shadow-[#234C6A]/20 md:p-9">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
+            <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  <span className="text-white/70 text-sm font-medium">
-                    Recruiter Dashboard
-                  </span>
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
+                  <Shield className="h-4 w-4" />
+                  <span>Recruiter Command Center</span>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold">
-                  Welcome back,{" "}
-                  <span className="text-blue-300">
-                    {user.name?.split(" ")[0] || "Recruiter"}!
-                  </span>
+                <h1 className="text-3xl font-black tracking-tight md:text-5xl">
+                  Welcome back, {user.name?.split(" ")[0] || "Recruiter"}!
                 </h1>
-                <p className="text-white/70 mt-1">
-                  Manage your recruitment pipeline and build your dream team
+                <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-white/75">
+                  Manage open roles, review candidate momentum, and move your
+                  strongest applicants toward interviews.
                 </p>
               </div>
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                 <Button
-                  className="bg-white text-[#234C6A] hover:bg-white/90 rounded-xl px-6 font-semibold shadow-lg"
+                  className="h-12 w-full rounded-2xl bg-white px-6 font-black text-[#234C6A] hover:bg-[#E3E3E3]"
                   onClick={() => router.push("/recruiter/create-job")}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Post New Job
-                  <ArrowUpRight className="h-4 w-4 ml-1" />
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 rounded-xl px-6"
+                  className="h-12 rounded-2xl border-white/30 bg-transparent px-6 font-black text-white hover:bg-white/10"
                   onClick={() => router.push("/recruiter/messages")}
                 >
-                  <MessageSquare className="h-4 w-4 mr-2" />
+                  <MessageSquare className="mr-2 h-4 w-4" />
                   Messages
                 </Button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-          {stats.map((stat, index) => (
-            <Link key={index} href={stat.href}>
-              <Card className="stat-card p-5 border-none bg-white shadow-md rounded-2xl hover:shadow-xl transition-all duration-300 group cursor-pointer hover:-translate-y-1 overflow-hidden relative">
-                <div
-                  className={`absolute top-0 right-0 w-28 h-28 bg-gradient-to-br ${stat.color} opacity-5 rounded-full blur-2xl group-hover:opacity-10 transition-opacity -translate-y-1/2 translate-x-1/2`}
-                />
-                <div className="flex items-start justify-between mb-4 relative">
-                  <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
-                  >
-                    <stat.icon className="h-6 w-6 text-white" />
-                  </div>
-                  {stat.trend === "up" && (
-                    <Badge className="bg-green-100 text-green-700 border-none text-[10px] font-bold px-2 py-0.5">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      Up
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-3xl font-bold text-[#234C6A] mb-1">
-                  {stat.value}
-                </p>
-                <p className="text-[10px] font-semibold text-[#234C6A]/70 uppercase tracking-wider">
-                  {stat.title}
-                </p>
-                <p className="text-xs text-[#456882]/70 mt-1">{stat.change}</p>
-              </Card>
-            </Link>
+        <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          {stats.map((stat) => (
+            <StatCard key={stat.title} stat={stat} />
           ))}
-        </div>
+        </section>
 
-        {/* Bottom section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 main-section">
-          {/* Hiring Goal */}
-          <Card className="lg:col-span-2 p-8 border-none bg-white shadow-lg rounded-2xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#234C6A]/3 to-[#456882]/3 group-hover:from-[#234C6A]/6 group-hover:to-[#456882]/6 transition-all duration-500" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center shadow-md">
-                  <Target className="h-6 w-6 text-white" />
-                </div>
+        <section className="main-section grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <Card className="relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+              <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-[#234C6A]">
-                    Recruitment Pipeline
-                  </h3>
-                  <p className="text-sm text-[#456882]">
-                    Track your hiring progress
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#234C6A] text-white">
+                      <Target className="h-5 w-5" />
+                    </div>
+                    <span className="text-xs font-black uppercase tracking-widest text-[#456882]">
+                      Hiring Pipeline
+                    </span>
+                  </div>
+                  <h2 className="text-2xl font-black tracking-tight text-[#234C6A]">
+                    Keep every role moving
+                  </h2>
+                  <p className="mt-2 max-w-md text-sm font-medium leading-6 text-[#456882]">
+                    Review active jobs, shortlist applicants, and schedule
+                    interviews from one focused recruiter workspace.
                   </p>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  {
-                    label: "Active Jobs",
-                    value: val(apiData?.activeJobs),
-                    color: "bg-[#234C6A]/10 text-[#234C6A]",
-                  },
-                  {
-                    label: "Applicants",
-                    value: val(apiData?.applicants),
-                    color: "bg-blue-50 text-blue-700",
-                  },
-                  {
-                    label: "Avg. Salary",
-                    value:
-                      apiData?.avgSalary != null
-                        ? `$${Number(apiData.avgSalary).toLocaleString()}`
-                        : "—",
-                    color: "bg-green-50 text-green-700",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="p-4 rounded-xl border border-[#E3E3E3]/50 text-center"
-                  >
-                    <p
-                      className={`text-3xl font-bold ${item.color.split(" ")[1]}`}
-                    >
-                      {item.value}
-                    </p>
-                    <p className="text-xs font-semibold text-[#456882] mt-1 uppercase tracking-wider">
-                      {item.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 flex gap-3">
-                <Link href="/recruiter/applicants" className="flex-1">
-                  <Button
-                    variant="outline"
-                    className="w-full rounded-xl border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/5 font-semibold"
-                  >
+                <Link href="/recruiter/applicants" className="shrink-0">
+                  <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-7 font-black text-white shadow-lg shadow-[#234C6A]/20 hover:from-[#1c405a] hover:to-[#3b5a71]">
                     View Pipeline
-                  </Button>
-                </Link>
-                <Link href="/recruiter/schedule" className="flex-1">
-                  <Button
-                    variant="outline"
-                    className="w-full rounded-xl border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/5 font-semibold"
-                  >
-                    <Clock className="h-4 w-4 mr-2" />
-                    View Schedule
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
-            </div>
-          </Card>
+              <Sparkles className="absolute -bottom-8 -right-8 h-44 w-44 rotate-12 text-[#234C6A]/5" />
+            </Card>
 
-          {/* Quick Actions */}
-          <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-2xl shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-8 -mt-8 blur-2xl" />
-            <div className="relative z-10">
-              <h3 className="font-bold text-xl mb-1">Quick Actions</h3>
-              <p className="text-white/70 text-sm mb-6">
-                Jump to the most common tasks
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+                <div className="mb-5 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 font-black text-[#234C6A]">
+                    <Activity className="h-5 w-5" />
+                    Pipeline Snapshot
+                  </h3>
+                  <Badge className="rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 text-[10px] font-black uppercase tracking-wide text-[#234C6A]">
+                    Live
+                  </Badge>
+                </div>
+                <div className="space-y-4">
+                  {pipelineItems.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center gap-4 rounded-2xl bg-[#F8FAFC] p-4"
+                    >
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#234C6A]/10 text-[#234C6A]">
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-black text-[#234C6A]">
+                          {item.label}
+                        </p>
+                        <p className="mt-0.5 text-xs font-semibold text-[#456882]">
+                          {item.detail}
+                        </p>
+                      </div>
+                      <p className="text-2xl font-black text-[#234C6A]">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card className="relative overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#234C6A] to-[#456882] p-6 text-white shadow-xl shadow-[#234C6A]/20">
+                <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[3rem] bg-white/10" />
+                <div className="relative z-10">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+                    <Award className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl font-black">Hiring Performance</h3>
+                  <p className="mt-3 text-sm leading-6 text-white/75">
+                    You are managing{" "}
+                    <span className="font-black text-white">
+                      {activeJobs ?? 0} active jobs
+                    </span>{" "}
+                    with an average salary of{" "}
+                    <span className="font-black text-white">{avgSalary}</span>.
+                  </p>
+                  <Link href="/recruiter/jobs">
+                    <Button className="mt-6 h-11 w-full rounded-2xl bg-white font-black text-[#234C6A] hover:bg-[#E3E3E3]">
+                      Manage Jobs
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+                <Target className="absolute -bottom-10 -right-10 h-36 w-36 text-white/10" />
+              </Card>
+            </div>
+          </div>
+
+          <aside className="space-y-6">
+            <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#234C6A]/10 text-[#234C6A]">
+                <Clock className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-black text-[#234C6A]">
+                Quick Actions
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-[#456882]">
+                Jump into the recruiter tasks you use most.
               </p>
-              <div className="space-y-3">
-                {[
-                  {
-                    label: "Post a New Job",
-                    href: "/recruiter/create-job",
-                    icon: Plus,
-                  },
-                  {
-                    label: "Review Applicants",
-                    href: "/recruiter/applicants",
-                    icon: Users,
-                  },
-                  {
-                    label: "Schedule Interview",
-                    href: "/recruiter/schedule",
-                    icon: Calendar,
-                  },
-                  {
-                    label: "Update Company",
-                    href: "/recruiter/company",
-                    icon: Award,
-                  },
-                ].map((action) => (
+              <div className="mt-5 space-y-3">
+                {quickActions.map((action) => (
                   <Link key={action.label} href={action.href}>
-                    <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-left font-medium text-sm mb-0.5">
-                      <action.icon className="h-4 w-4 flex-shrink-0" />
-                      {action.label}
-                      <ArrowUpRight className="h-4 w-4 ml-auto opacity-50" />
+                    <button className="flex w-full items-center gap-3 rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-3 text-left text-sm font-black text-[#234C6A] transition-colors hover:bg-[#234C6A]/5">
+                      <action.icon className="h-4 w-4 shrink-0" />
+                      <span className="flex-1">{action.label}</span>
+                      <ArrowUpRight className="h-4 w-4 text-[#456882]" />
                     </button>
                   </Link>
                 ))}
               </div>
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </aside>
+        </section>
       </div>
     </RecruiterLayout>
   );
