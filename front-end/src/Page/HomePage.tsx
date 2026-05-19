@@ -154,7 +154,10 @@ function HomePage() {
   }, []);
 
   return (
-    <div ref={containerRef} className="min-h-screen flex flex-col jobhub-page-bg">
+    <div
+      ref={containerRef}
+      className="min-h-screen flex flex-col jobhub-page-bg"
+    >
       <Header />
 
       <main className="flex-1">
@@ -208,20 +211,24 @@ function HomePage() {
                 </div>
 
                 <div className="mt-5 flex flex-wrap items-center gap-2">
-                  {["Remote", "Frontend", "Full Stack", "Product", "Design"].map(
-                    (term) => (
-                      <button
-                        key={term}
-                        onClick={() => {
-                          setSearchQuery(term);
-                          router.push(`/job?s=${encodeURIComponent(term)}`);
-                        }}
-                        className="rounded-full border border-[#234C6A]/10 bg-white px-4 py-2 text-sm font-semibold text-[#456882] transition hover:border-[#234C6A]/25 hover:text-[#234C6A]"
-                      >
-                        {term}
-                      </button>
-                    ),
-                  )}
+                  {[
+                    "Remote",
+                    "Frontend",
+                    "Full Stack",
+                    "Product",
+                    "Design",
+                  ].map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => {
+                        setSearchQuery(term);
+                        router.push(`/job?s=${encodeURIComponent(term)}`);
+                      }}
+                      className="rounded-full border border-[#234C6A]/10 bg-white px-4 py-2 text-sm font-semibold text-[#456882] transition hover:border-[#234C6A]/25 hover:text-[#234C6A]"
+                    >
+                      {term}
+                    </button>
+                  ))}
                 </div>
 
                 <div className="mt-10 grid max-w-2xl grid-cols-3 gap-3">
@@ -449,8 +456,8 @@ function HomePage() {
                   A cleaner way to discover, compare, and apply.
                 </h2>
                 <p className="mt-5 text-lg leading-8 text-white/70">
-                  Keep the job search focused with verified roles, readable
-                  job cards, category browsing, and a premium application path.
+                  Keep the job search focused with verified roles, readable job
+                  cards, category browsing, and a premium application path.
                 </p>
               </div>
 
@@ -661,7 +668,11 @@ function HomePage() {
                     "Browse verified roles, save opportunities, apply faster, and manage your career flow from one focused dashboard.",
                   href: "/job",
                   action: "Explore jobs",
-                  points: ["Live openings", "Saved jobs", "Application tracking"],
+                  points: [
+                    "Live openings",
+                    "Saved jobs",
+                    "Application tracking",
+                  ],
                 },
                 {
                   icon: Building2,
@@ -670,7 +681,11 @@ function HomePage() {
                     "Post roles, review candidates, manage applicants, and keep hiring activity organized without changing your backend flow.",
                   href: "/auth",
                   action: "Start hiring",
-                  points: ["Candidate discovery", "Job posting", "Recruiter tools"],
+                  points: [
+                    "Candidate discovery",
+                    "Job posting",
+                    "Recruiter tools",
+                  ],
                 },
               ].map((item) => (
                 <Card
@@ -797,6 +812,7 @@ function HomePage() {
                   <p className="mt-4 max-w-2xl text-lg leading-8 text-white/75">
                     Join JobHub, browse live openings, and keep moving toward a
                     better role with a cleaner premium experience.
+                    /home/faysal/Projects/personal/job-hub/front-end/src/components{" "}
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">

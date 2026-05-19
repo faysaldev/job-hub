@@ -86,9 +86,6 @@ export default function CandidateDetailsPage() {
     error,
   } = useGetSeekerByIdQuery(params?.id as string);
   const seeker = response?.data;
-
-  console.log(" seeker", seeker);
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col jobhub-page-bg">
