@@ -4,7 +4,7 @@ import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import CompanyProfile from "@/src/components/Recruiter/CompanyProfile";
 import { useAuth } from "@/src/hooks/useAuth";
 import { Card } from "@/src/components/ui/card";
-import { Building2, ShieldCheck, Sparkles } from "lucide-react";
+import { Building2, ShieldCheck, Sparkles, BarChart3 } from "lucide-react";
 
 const CompanyPage = () => {
   const { user } = useAuth();
@@ -13,35 +13,67 @@ const CompanyPage = () => {
 
   return (
     <RecruiterLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Hero Banner */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] rounded-3xl p-8 text-white shadow-2xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg flex-shrink-0">
-              <Building2 className="h-8 w-8 text-white" />
-            </div>
+      <div className="mx-auto max-w-6xl space-y-8">
+        <section className="relative overflow-hidden rounded-3xl bg-[#234C6A] p-7 text-white shadow-2xl shadow-[#234C6A]/20 md:p-9">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <ShieldCheck className="h-4 w-4 text-green-400" />
-                <span className="text-green-300 text-xs font-semibold uppercase tracking-widest">Verified Company</span>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
+                <ShieldCheck className="h-4 w-4" />
+                <span>Verified Company Workspace</span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold">Company Profile</h1>
-              <p className="text-white/70 text-sm mt-1">
-                Manage your company information, branding, and employer presence
+              <h1 className="text-3xl font-black tracking-tight md:text-5xl">
+                Company Profile
+              </h1>
+              <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-white/75">
+                Manage your company identity, employer brand, location, and
+                public hiring presence.
               </p>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-center backdrop-blur-sm">
+                <Building2 className="mx-auto mb-1 h-5 w-5" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/65">
+                  Identity
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-center backdrop-blur-sm">
+                <BarChart3 className="mx-auto mb-1 h-5 w-5" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/65">
+                  Branding
+                </p>
+              </div>
+            </div>
           </div>
-          <Sparkles className="absolute -bottom-6 -right-6 h-40 w-40 text-white/5" />
-        </div>
+          <Sparkles className="absolute -bottom-8 -right-8 h-44 w-44 rotate-12 text-white/5" />
+        </section>
 
-        {/* Profile Form Card */}
-        <Card className="border border-white/60 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl overflow-hidden">
-          <div className="h-1 w-full bg-gradient-to-r from-[#234C6A] to-[#456882]" />
-          <div className="p-8">
-            <CompanyProfile userId={user._id} />
+        <Card className="relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-xl shadow-[#234C6A]/8 backdrop-blur md:p-8">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/20">
+                <Building2 className="h-7 w-7" />
+              </div>
+              <div>
+                <div className="mb-1 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-[#456882]" />
+                  <span className="text-xs font-black uppercase tracking-widest text-[#456882]">
+                    Employer Brand
+                  </span>
+                </div>
+                <h2 className="text-2xl font-black tracking-tight text-[#234C6A]">
+                  Company Presence
+                </h2>
+              </div>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-2xl border border-[#234C6A]/10 bg-[#234C6A]/5 px-4 py-3 text-sm font-black text-[#234C6A]">
+              <ShieldCheck className="h-4 w-4" />
+              Profile controls
+            </div>
           </div>
+          <CompanyProfile userId={user._id} />
         </Card>
       </div>
     </RecruiterLayout>

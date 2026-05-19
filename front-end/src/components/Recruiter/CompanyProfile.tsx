@@ -16,6 +16,8 @@ import {
   Users,
   Briefcase,
   Loader2,
+  Save,
+  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
 import {
@@ -123,60 +125,73 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
 
   if (isFetching) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex flex-col items-center justify-center rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] py-20">
         <Loader2 className="h-8 w-8 animate-spin text-[#234C6A]" />
+        <p className="mt-3 text-sm font-medium text-[#456882]">
+          Loading company profile...
+        </p>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <Card className="p-8 border-[#456882]/30 bg-white shadow-xl rounded-3xl overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#234C6A] via-[#456882] to-[#234C6A]" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <Card className="relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white p-6 shadow-sm md:p-8">
+        <div className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-[#234C6A] to-[#456882]" />
+
+        <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-[#234C6A]/10 rounded-2xl">
+            <div className="rounded-2xl bg-[#234C6A]/10 p-3">
               <Building2 className="h-6 w-6 text-[#234C6A]" />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-[#234C6A]">Company Identity</h2>
-              <p className="text-[#456882] font-medium">Define your brand presence</p>
+              <h2 className="text-2xl font-black text-[#234C6A]">
+                Company Identity
+              </h2>
+              <p className="font-medium text-[#456882]">
+                Define your brand presence
+              </p>
             </div>
           </div>
-          
+
           <Button
             type="submit"
             disabled={isUpdating || isCreating || !isDirty}
-            className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:shadow-lg hover:scale-105 transition-all duration-300 rounded-2xl px-8 h-12 text-white font-bold disabled:opacity-50"
+            className="h-12 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-8 font-black text-white shadow-lg shadow-[#234C6A]/15 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50"
           >
-            {(isUpdating || isCreating) ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
+            {isUpdating || isCreating ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
             Save Changes
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
           {/* Left: Branding & Preview */}
-          <div className="lg:col-span-4 space-y-8">
+          <div className="space-y-8 lg:col-span-4">
             <div className="group relative">
-              <Label className="text-sm font-bold text-[#234C6A] mb-3 block">Company Logo</Label>
-              <div className="relative aspect-square w-full max-w-[240px] mx-auto rounded-3xl overflow-hidden bg-gray-50 border-2 border-dashed border-[#456882]/20 group-hover:border-[#234C6A]/40 transition-colors flex items-center justify-center group">
+              <Label className="mb-3 block text-sm font-black text-[#234C6A]">
+                Company Logo
+              </Label>
+              <div className="group relative mx-auto flex aspect-square w-full max-w-[240px] items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-[#234C6A]/15 bg-[#F8FAFC] transition-colors group-hover:border-[#234C6A]/40">
                 {logoUrl ? (
                   <img
                     src={logoUrl}
                     alt="Company logo"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="text-center p-6">
-                    <Upload className="h-10 w-10 text-[#456882]/40 mx-auto mb-2" />
-                    <p className="text-xs font-semibold text-[#456882]/60">PNG, JPG up to 5MB</p>
+                  <div className="p-6 text-center">
+                    <Upload className="mx-auto mb-2 h-10 w-10 text-[#456882]/40" />
+                    <p className="text-xs font-semibold text-[#456882]/60">
+                      PNG, JPG up to 5MB
+                    </p>
                   </div>
                 )}
-                
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+
+                <div className="absolute inset-0 flex items-center justify-center bg-[#234C6A]/55 opacity-0 transition-opacity group-hover:opacity-100">
                   <Input
                     id="logo-upload"
                     type="file"
@@ -189,32 +204,55 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                     type="button"
                     variant="secondary"
                     onClick={() => document.getElementById("logo-upload")?.click()}
-                    className="bg-white/90 text-[#234C6A] hover:bg-white font-bold rounded-xl"
+                    className="rounded-2xl bg-white/90 font-black text-[#234C6A] hover:bg-white"
                   >
-                    {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Change Logo"}
+                    {isUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Change Logo"
+                    )}
                   </Button>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 bg-gray-50/50 rounded-3xl border border-gray-100">
-              <h4 className="text-sm font-bold text-[#234C6A] mb-4 uppercase tracking-wider">Live Preview</h4>
+            <div className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-6">
+              <h4 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-[#234C6A]">
+                <Sparkles className="h-4 w-4" />
+                Live Preview
+              </h4>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center p-2 overflow-hidden">
-                    {logoUrl ? <img src={logoUrl} alt="" className="object-contain" /> : <Building2 className="h-5 w-5 text-[#456882]" />}
+                  <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-sm">
+                    {logoUrl ? (
+                      <img src={logoUrl} alt="" className="object-contain" />
+                    ) : (
+                      <Building2 className="h-5 w-5 text-[#456882]" />
+                    )}
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-[#234C6A] line-clamp-1">{watchedValues.companyName || "Your Company Name"}</p>
-                    <p className="text-xs font-medium text-[#456882]">{watchedValues.industries || "Industry"}</p>
+                  <div className="min-w-0">
+                    <p className="line-clamp-1 text-sm font-black text-[#234C6A]">
+                      {watchedValues.companyName || "Your Company Name"}
+                    </p>
+                    <p className="text-xs font-medium text-[#456882]">
+                      {watchedValues.industries || "Industry"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="bg-white border-[#456882]/10 text-[#456882] text-[10px] py-0 px-2">
-                    <Users className="h-3 w-3 mr-1" /> {watchedValues.companySize}
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full border-[#234C6A]/10 bg-white px-2 py-1 text-[10px] text-[#456882]"
+                  >
+                    <Users className="mr-1 h-3 w-3" />{" "}
+                    {watchedValues.companySize}
                   </Badge>
-                  <Badge variant="secondary" className="bg-white border-[#456882]/10 text-[#456882] text-[10px] py-0 px-2">
-                    <MapPin className="h-3 w-3 mr-1" /> {watchedValues.companyLocation || "Location"}
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full border-[#234C6A]/10 bg-white px-2 py-1 text-[10px] text-[#456882]"
+                  >
+                    <MapPin className="mr-1 h-3 w-3" />{" "}
+                    {watchedValues.companyLocation || "Location"}
                   </Badge>
                 </div>
               </div>
@@ -222,10 +260,15 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
           </div>
 
           {/* Right: Form Fields */}
-          <div className="lg:col-span-8 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6 lg:col-span-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="companyName" className="text-sm font-bold text-[#234C6A]">Company Name</Label>
+                <Label
+                  htmlFor="companyName"
+                  className="text-sm font-black text-[#234C6A]"
+                >
+                  Company Name
+                </Label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#456882]">
                     <Building2 className="h-4 w-4" />
@@ -234,13 +277,18 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                     id="companyName"
                     {...register("companyName", { required: true })}
                     placeholder="e.g. TechCorp Inc."
-                    className="pl-11 h-12 rounded-xl border-[#456882]/20 focus:border-[#234C6A] focus:ring-[#234C6A]/5 bg-white font-medium"
+                    className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-11 font-medium focus:border-[#234C6A] focus:ring-[#234C6A]/5"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="industries" className="text-sm font-bold text-[#234C6A]">Industries</Label>
+                <Label
+                  htmlFor="industries"
+                  className="text-sm font-black text-[#234C6A]"
+                >
+                  Industries
+                </Label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#456882]">
                     <Briefcase className="h-4 w-4" />
@@ -249,13 +297,18 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                     id="industries"
                     {...register("industries", { required: true })}
                     placeholder="e.g. Information Technology"
-                    className="pl-11 h-12 rounded-xl border-[#456882]/20 focus:border-[#234C6A] focus:ring-[#234C6A]/5 bg-white font-medium"
+                    className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-11 font-medium focus:border-[#234C6A] focus:ring-[#234C6A]/5"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companySize" className="text-sm font-bold text-[#234C6A]">Company Size</Label>
+                <Label
+                  htmlFor="companySize"
+                  className="text-sm font-black text-[#234C6A]"
+                >
+                  Company Size
+                </Label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#456882]">
                     <Users className="h-4 w-4" />
@@ -263,7 +316,7 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                   <select
                     id="companySize"
                     {...register("companySize")}
-                    className="flex h-12 w-full rounded-xl border border-[#456882]/20 bg-white pl-11 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/5 focus:border-[#234C6A] font-medium appearance-none"
+                    className="flex h-12 w-full appearance-none rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] py-2 pl-11 pr-3 text-sm font-medium focus:border-[#234C6A] focus:outline-none focus:ring-2 focus:ring-[#234C6A]/5"
                   >
                     <option value="1-10">1-10 employees</option>
                     <option value="11-50">11-50 employees</option>
@@ -276,7 +329,12 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyLocation" className="text-sm font-bold text-[#234C6A]">Location</Label>
+                <Label
+                  htmlFor="companyLocation"
+                  className="text-sm font-black text-[#234C6A]"
+                >
+                  Location
+                </Label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#456882]">
                     <MapPin className="h-4 w-4" />
@@ -285,13 +343,18 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                     id="companyLocation"
                     {...register("companyLocation", { required: true })}
                     placeholder="e.g. San Francisco, CA"
-                    className="pl-11 h-12 rounded-xl border-[#456882]/20 focus:border-[#234C6A] focus:ring-[#234C6A]/5 bg-white font-medium"
+                    className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-11 font-medium focus:border-[#234C6A] focus:ring-[#234C6A]/5"
                   />
                 </div>
               </div>
 
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="website" className="text-sm font-bold text-[#234C6A]">Website</Label>
+              <div className="space-y-2 md:col-span-2">
+                <Label
+                  htmlFor="website"
+                  className="text-sm font-black text-[#234C6A]"
+                >
+                  Website
+                </Label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#456882]">
                     <Globe className="h-4 w-4" />
@@ -300,19 +363,24 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                     id="website"
                     {...register("website")}
                     placeholder="https://techcorp.com"
-                    className="pl-11 h-12 rounded-xl border-[#456882]/20 focus:border-[#234C6A] focus:ring-[#234C6A]/5 bg-white font-medium"
+                    className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-11 font-medium focus:border-[#234C6A] focus:ring-[#234C6A]/5"
                   />
                 </div>
               </div>
 
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="description" className="text-sm font-bold text-[#234C6A]">About Company</Label>
+              <div className="space-y-2 md:col-span-2">
+                <Label
+                  htmlFor="description"
+                  className="text-sm font-black text-[#234C6A]"
+                >
+                  About Company
+                </Label>
                 <Textarea
                   id="description"
                   {...register("description", { required: true })}
                   placeholder="We build great software..."
                   rows={6}
-                  className="rounded-2xl border-[#456882]/20 focus:border-[#234C6A] focus:ring-[#234C6A]/5 bg-white font-medium p-4"
+                  className="rounded-3xl border-[#234C6A]/10 bg-[#F8FAFC] p-4 font-medium focus:border-[#234C6A] focus:ring-[#234C6A]/5"
                 />
               </div>
             </div>
