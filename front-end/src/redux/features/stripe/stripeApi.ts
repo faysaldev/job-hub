@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 
 const stripeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // POST /stripe/create-checkout-session - Create checkout for application boost
-    createCheckoutSession: builder.mutation<{ url: string }, { applicationId?: string; amount: number }>({
+    createCheckoutSession: builder.mutation<
+      { url: string },
+      { applicationId?: string; amount: number }
+    >({
       query: (body) => ({
         url: "/stripe/create-checkout-session",
         method: "POST",
@@ -21,7 +26,5 @@ const stripeApi = baseApi.injectEndpoints({
   }),
 });
 
-export const {
-  useCreateCheckoutSessionMutation,
-  useGetPaymentDetailsQuery,
-} = stripeApi;
+export const { useCreateCheckoutSessionMutation, useGetPaymentDetailsQuery } =
+  stripeApi;

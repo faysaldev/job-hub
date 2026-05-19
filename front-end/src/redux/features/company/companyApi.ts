@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 import { CompanyProfile, ApiResponse } from "@/src/types";
 

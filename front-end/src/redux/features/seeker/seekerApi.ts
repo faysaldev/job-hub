@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 import { JobSeekerProfile } from "@/src/types";
 
@@ -23,7 +25,10 @@ const seekerApi = baseApi.injectEndpoints({
     }),
 
     // POST /job-seekers - Create seeker profile
-    createSeekerProfile: builder.mutation<JobSeekerProfile, Partial<JobSeekerProfile>>({
+    createSeekerProfile: builder.mutation<
+      JobSeekerProfile,
+      Partial<JobSeekerProfile>
+    >({
       query: (body) => ({
         url: "/job-seekers",
         method: "POST",
@@ -61,7 +66,10 @@ const seekerApi = baseApi.injectEndpoints({
     }),
 
     // PUT /job-seekers - Update seeker profile
-    updateSeekerProfile: builder.mutation<JobSeekerProfile, Partial<JobSeekerProfile>>({
+    updateSeekerProfile: builder.mutation<
+      JobSeekerProfile,
+      Partial<JobSeekerProfile>
+    >({
       query: (body) => ({
         url: "/job-seekers",
         method: "PUT",

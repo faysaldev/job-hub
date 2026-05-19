@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 import { ApiResponse, Job } from "@/src/types";
 
@@ -67,7 +68,8 @@ const generalsApi = baseApi.injectEndpoints({
         url: "/generals/category-stats",
         method: "GET",
       }),
-      transformResponse: (response: ApiResponse<CategoryStat[]>) => response.data,
+      transformResponse: (response: ApiResponse<CategoryStat[]>) =>
+        response.data,
     }),
 
     // GET /generals/subcategory-stats - Get job count by subcategory
@@ -76,7 +78,8 @@ const generalsApi = baseApi.injectEndpoints({
         url: "/generals/subcategory-stats",
         method: "GET",
       }),
-      transformResponse: (response: ApiResponse<SubcategoryStat[]>) => response.data,
+      transformResponse: (response: ApiResponse<SubcategoryStat[]>) =>
+        response.data,
     }),
 
     // GET /generals/top-jobs - Get top trending or latest jobs
