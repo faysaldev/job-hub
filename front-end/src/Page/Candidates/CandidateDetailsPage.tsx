@@ -24,6 +24,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { useGetSeekerByIdQuery } from "@/src/redux/features/seeker/seekerApi";
+import { formatDate, formatEduYear } from "@/src/utils/helper";
 
 const SOCIAL_CONFIG = [
   {
@@ -48,32 +49,6 @@ const SOCIAL_CONFIG = [
     hoverText: "hover:text-white",
   },
 ];
-
-function formatDate(dateStr: string) {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatEduYear(yearStr: string) {
-  if (!yearStr) return "";
-  const parseAndFormat = (str: string) => {
-    const trimmed = str.trim();
-    if (!trimmed) return "";
-    const date = new Date(trimmed);
-    if (isNaN(date.getTime())) return trimmed;
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    if (trimmed.length <= 4) return trimmed;
-    return `${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-  };
-
-  if (yearStr.includes(" - ")) {
-    return yearStr.split(" - ").map(parseAndFormat).join(" - ");
-  }
-  return parseAndFormat(yearStr);
-}
 
 function SectionHeading({
   icon: Icon,
@@ -308,19 +283,27 @@ export default function CandidateDetailsPage() {
                       const email = seeker.userId?.email;
                       if (email) {
                         const name = seeker.userId?.name || "Candidate";
-                        const designation = seeker.designation || "professional";
-                        const skills = seeker.skills?.slice(0, 3).join(", ") || "development";
-                        const subject = encodeURIComponent(`Exciting Career Opportunity at JobHub - ${designation}`);
+                        const designation =
+                          seeker.designation || "professional";
+                        const skills =
+                          seeker.skills?.slice(0, 3).join(", ") ||
+                          "development";
+                        const subject = encodeURIComponent(
+                          `Exciting Career Opportunity at JobHub - ${designation}`,
+                        );
                         const body = encodeURIComponent(
                           `Hello ${name},\n\n` +
-                          `I hope you are doing well.\n\n` +
-                          `I was reviewing your profile on JobHub and was highly impressed by your background as a ${designation}, particularly your expertise in ${skills}.\n\n` +
-                          `We are currently looking for talented individuals with your skillset and I would love to schedule a quick chat to discuss how your experience aligns with our goals. Are you available for a brief conversation this week?\n\n` +
-                          `Looking forward to hearing from you!\n\n` +
-                          `Best regards,\n` +
-                          `Recruiter`
+                            `I hope you are doing well.\n\n` +
+                            `I was reviewing your profile on JobHub and was highly impressed by your background as a ${designation}, particularly your expertise in ${skills}.\n\n` +
+                            `We are currently looking for talented individuals with your skillset and I would love to schedule a quick chat to discuss how your experience aligns with our goals. Are you available for a brief conversation this week?\n\n` +
+                            `Looking forward to hearing from you!\n\n` +
+                            `Best regards,\n` +
+                            `Recruiter`,
                         );
-                        window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+                        window.open(
+                          `mailto:${email}?subject=${subject}&body=${body}`,
+                          "_blank",
+                        );
                       }
                     }}
                   >
