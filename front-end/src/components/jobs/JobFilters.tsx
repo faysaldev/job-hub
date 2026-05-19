@@ -97,7 +97,7 @@ const JobFilters = ({
     setExpandedSections((prev) =>
       prev.includes(section)
         ? prev.filter((s) => s !== section)
-        : [...prev, section]
+        : [...prev, section],
     );
   };
 
@@ -201,7 +201,7 @@ const JobFilters = ({
   );
 
   return (
-    <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/90 shadow-sm backdrop-blur">
+    <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/90 shadow-sm backdrop-blur pt-0">
       <div className="border-b border-[#E3E3E3] bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

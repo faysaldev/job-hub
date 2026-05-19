@@ -24,13 +24,11 @@ const Footer = () => {
       { href: "/job", label: "Browse Jobs" },
       { href: "/job/saved", label: "Saved Jobs" },
       { href: "/job-seeker", label: "Dashboard" },
-      { href: "/notifications", label: "Job Alerts" },
     ],
     employers: [
-      { href: "/auth", label: "Post a Job" },
+      { href: "/recruiter/create-job", label: "Post a Job" },
       { href: "/recruiter", label: "Recruiter Dashboard" },
-      { href: "/auth", label: "Browse Candidates" },
-      { href: "/contact", label: "Pricing" },
+      { href: "/candidates", label: "Browse Candidates" },
     ],
     company: [
       { href: "/about", label: "About Us" },

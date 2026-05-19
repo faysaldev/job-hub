@@ -372,7 +372,7 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              <Card className="mission-content overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white shadow-2xl shadow-[#234C6A]/10">
+              <Card className="mission-content overflow-hidden pt-0 rounded-3xl border border-[#234C6A]/10 bg-white shadow-2xl shadow-[#234C6A]/10">
                 <div className="bg-[#234C6A] p-6 text-white">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                     <TrendingUp className="h-6 w-6" />
