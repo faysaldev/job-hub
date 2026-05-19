@@ -5,9 +5,7 @@ import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Badge } from "@/src/components/ui/badge";
-import { Input } from "@/src/components/ui/input";
 import {
-  Filter,
   Briefcase,
   GraduationCap,
   DollarSign,
@@ -22,7 +20,7 @@ import {
   X,
   Sliders,
 } from "lucide-react";
-import { jobCategories, companySizes, postedDateOptions } from "@/src/lib/jobCategories";
+import { jobCategories } from "@/src/lib/jobCategories";
 
 interface FilterOption {
   id: string;
@@ -92,18 +90,19 @@ const JobFilters = ({
     "category",
     "jobType",
     "experience",
-    "salary"
+    "salary",
   ]);
 
   const toggleSection = (section: string) => {
-    setExpandedSections(prev =>
+    setExpandedSections((prev) =>
       prev.includes(section)
-        ? prev.filter(s => s !== section)
+        ? prev.filter((s) => s !== section)
         : [...prev, section]
     );
   };
 
-  const isSectionExpanded = (section: string) => expandedSections.includes(section);
+  const isSectionExpanded = (section: string) =>
+    expandedSections.includes(section);
 
   const handleResetFilters = () => {
     if (onResetAllFilters) {
@@ -124,13 +123,16 @@ const JobFilters = ({
 
   // Get category name from ID
   const getCategoryName = (categoryId: string) => {
-    return jobCategories.find(c => c.id === categoryId)?.name || categoryId;
+    return jobCategories.find((c) => c.id === categoryId)?.name || categoryId;
   };
 
   // Get subcategory name
   const getSubcategoryName = (categoryId: string, subcategoryId: string) => {
-    const category = jobCategories.find(c => c.id === categoryId);
-    return category?.subcategories.find(s => s.id === subcategoryId)?.name || subcategoryId;
+    const category = jobCategories.find((c) => c.id === categoryId);
+    return (
+      category?.subcategories.find((s) => s.id === subcategoryId)?.name ||
+      subcategoryId
+    );
   };
 
   // Filter section component
@@ -147,16 +149,16 @@ const JobFilters = ({
     children: React.ReactNode;
     badge?: number;
   }) => (
-    <div className="border-b border-[#E3E3E3] last:border-0">
+    <div className="border-b border-[#E3E3E3]/80 last:border-0">
       <button
         onClick={() => toggleSection(sectionId)}
-        className="w-full flex items-center justify-between py-4 px-1 text-left hover:bg-[#234C6A]/5 rounded-lg transition-colors"
+        className="flex w-full items-center justify-between rounded-xl px-2 py-4 text-left transition-colors hover:bg-[#234C6A]/5"
       >
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-[#234C6A]" />
-          <span className="text-sm font-semibold text-[#234C6A]">{title}</span>
+          <span className="text-sm font-black text-[#234C6A]">{title}</span>
           {badge && badge > 0 && (
-            <Badge className="bg-[#234C6A] text-white border-none text-xs px-1.5 py-0 h-5">
+            <Badge className="h-5 rounded-full border-none bg-[#234C6A] px-1.5 py-0 text-xs text-white">
               {badge}
             </Badge>
           )}
@@ -168,9 +170,7 @@ const JobFilters = ({
         )}
       </button>
       {isSectionExpanded(sectionId) && (
-        <div className="pb-4 space-y-2">
-          {children}
-        </div>
+        <div className="space-y-2 pb-4">{children}</div>
       )}
     </div>
   );
@@ -183,43 +183,44 @@ const JobFilters = ({
     item: FilterOption;
     onChange: (id: string) => void;
   }) => (
-    <label className="flex items-center gap-3 py-1.5 px-1 cursor-pointer group rounded-lg hover:bg-[#234C6A]/5 transition-colors">
+    <label className="group flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-[#234C6A]/5">
       <Checkbox
         checked={item.checked}
         onCheckedChange={() => onChange(item.id)}
         className="border-[#234C6A]/30 data-[state=checked]:bg-[#234C6A] data-[state=checked]:border-[#234C6A]"
       />
-      <span className="flex-1 text-sm text-[#456882] group-hover:text-[#234C6A] transition-colors">
+      <span className="flex-1 text-sm font-medium text-[#456882] transition-colors group-hover:text-[#234C6A]">
         {item.label}
       </span>
       {item.count !== undefined && (
-        <span className="text-xs text-[#456882]/70">
-          ({item.count})
+        <span className="rounded-full bg-[#E3E3E3]/60 px-2 py-0.5 text-xs font-semibold text-[#456882]/80">
+          {item.count}
         </span>
       )}
     </label>
   );
 
   return (
-    <Card className="border-none bg-white shadow-lg rounded-2xl overflow-hidden">
-      {/* Header */}
-      <div className="p-5 bg-gradient-to-r from-[#234C6A]/5 to-[#456882]/5 border-b border-[#E3E3E3]">
+    <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/90 shadow-sm backdrop-blur">
+      <div className="border-b border-[#E3E3E3] bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882]">
               <Sliders className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-[#234C6A]">Filters</h3>
+              <h3 className="font-black text-[#234C6A]">Filters</h3>
               {activeFilterCount > 0 && (
-                <p className="text-xs text-[#456882]">{activeFilterCount} active</p>
+                <p className="text-xs font-semibold text-[#456882]">
+                  {activeFilterCount} active
+                </p>
               )}
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/10 text-xs"
+            className="rounded-xl text-xs font-bold text-[#456882] hover:bg-[#234C6A]/10 hover:text-[#234C6A]"
             onClick={handleResetFilters}
           >
             <RotateCcw className="h-3 w-3 mr-1" />
@@ -230,11 +231,13 @@ const JobFilters = ({
 
       {/* Active Filters Tags */}
       {(selectedCategory || selectedSubcategory) && (
-        <div className="p-4 border-b border-[#E3E3E3] bg-[#234C6A]/5">
-          <p className="text-xs font-semibold text-[#456882] mb-2">Active Filters</p>
+        <div className="border-b border-[#E3E3E3] bg-[#234C6A]/5 p-4">
+          <p className="mb-2 text-xs font-black uppercase tracking-wide text-[#456882]">
+            Active Filters
+          </p>
           <div className="flex flex-wrap gap-2">
             {selectedCategory && (
-              <Badge className="bg-gradient-to-r from-[#234C6A] to-[#456882] text-white border-none flex items-center gap-1 pr-1">
+              <Badge className="flex items-center gap-1 rounded-full border-none bg-gradient-to-r from-[#234C6A] to-[#456882] pr-1 text-white">
                 {getCategoryName(selectedCategory)}
                 {onClearCategory && (
                   <button
@@ -247,7 +250,7 @@ const JobFilters = ({
               </Badge>
             )}
             {selectedSubcategory && selectedCategory && (
-              <Badge className="bg-[#456882] text-white border-none flex items-center gap-1 pr-1">
+              <Badge className="flex items-center gap-1 rounded-full border-none bg-[#456882] pr-1 text-white">
                 {getSubcategoryName(selectedCategory, selectedSubcategory)}
                 {onClearSubcategory && (
                   <button
@@ -270,7 +273,7 @@ const JobFilters = ({
             title="Category"
             icon={Grid3X3}
             sectionId="category"
-            badge={categories.filter(c => c.checked).length}
+            badge={categories.filter((c) => c.checked).length}
           >
             <div className="max-h-48 overflow-y-auto space-y-1">
               {categories.map((category) => (
@@ -290,7 +293,7 @@ const JobFilters = ({
             title="Specialization"
             icon={Search}
             sectionId="subcategory"
-            badge={subcategories.filter(s => s.checked).length}
+            badge={subcategories.filter((s) => s.checked).length}
           >
             <div className="max-h-48 overflow-y-auto space-y-1">
               {subcategories.map((sub) => (
@@ -309,7 +312,7 @@ const JobFilters = ({
           title="Job Type"
           icon={Briefcase}
           sectionId="jobType"
-          badge={jobTypes.filter(t => t.checked).length}
+          badge={jobTypes.filter((t) => t.checked).length}
         >
           {jobTypes.map((type) => (
             <CheckboxItem
@@ -325,7 +328,7 @@ const JobFilters = ({
           title="Experience Level"
           icon={GraduationCap}
           sectionId="experience"
-          badge={experienceLevels.filter(e => e.checked).length}
+          badge={experienceLevels.filter((e) => e.checked).length}
         >
           {experienceLevels.map((level) => (
             <CheckboxItem
@@ -341,7 +344,7 @@ const JobFilters = ({
           title="Salary Range"
           icon={DollarSign}
           sectionId="salary"
-          badge={salaryRanges.filter(s => s.checked).length}
+          badge={salaryRanges.filter((s) => s.checked).length}
         >
           {salaryRanges.map((range) => (
             <CheckboxItem
@@ -358,7 +361,7 @@ const JobFilters = ({
             title="Date Posted"
             icon={Calendar}
             sectionId="postedDate"
-            badge={postedDateFilters.filter(d => d.checked).length}
+            badge={postedDateFilters.filter((d) => d.checked).length}
           >
             {postedDateFilters.map((date) => (
               <CheckboxItem
@@ -376,7 +379,7 @@ const JobFilters = ({
             title="Company Size"
             icon={Building2}
             sectionId="companySize"
-            badge={companySizeFilters.filter(c => c.checked).length}
+            badge={companySizeFilters.filter((c) => c.checked).length}
           >
             {companySizeFilters.map((size) => (
               <CheckboxItem
@@ -394,7 +397,7 @@ const JobFilters = ({
             title="Applicants"
             icon={Users}
             sectionId="applicantCount"
-            badge={applicantCountFilters.filter(a => a.checked).length}
+            badge={applicantCountFilters.filter((a) => a.checked).length}
           >
             {applicantCountFilters.map((count) => (
               <CheckboxItem
@@ -407,17 +410,15 @@ const JobFilters = ({
         )}
       </div>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-[#E3E3E3] bg-[#FAFAFA]">
-        <Button
-          className="w-full bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
-          onClick={() => {
-            // This could trigger a search/filter action
-          }}
-        >
-          <Filter className="h-4 w-4 mr-2" />
-          Apply Filters
-        </Button>
+      <div className="border-t border-[#E3E3E3] bg-[#F8FAFC] p-4">
+        <div className="rounded-2xl border border-[#234C6A]/10 bg-white p-4">
+          <p className="text-xs font-black uppercase tracking-wide text-[#234C6A]">
+            Instant filters
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[#456882]">
+            Results update as soon as you change filters or search terms.
+          </p>
+        </div>
       </div>
     </Card>
   );
