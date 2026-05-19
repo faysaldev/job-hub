@@ -31,13 +31,20 @@ import { useSaveJobMutation } from "@/src/redux/features/savedJobs/savedJobsApi"
 import { toast } from "sonner";
 import ApplyJobModal from "@/src/components/jobs/ApplyJobModal";
 import gsap from "gsap";
+import { selectSavedJobIds } from "@/src/redux/features/generals/generalsSlice";
+import { useSelector } from "react-redux";
 
 interface PopulatedJob {
   _id: string;
   title: string;
   company:
     | string
-    | { _id?: string; userId?: string; companyName: string; companyLogo?: string };
+    | {
+        _id?: string;
+        userId?: string;
+        companyName: string;
+        companyLogo?: string;
+      };
   location: string;
   type: string;
   locationType?: string;
@@ -62,6 +69,7 @@ const JobDetailsPage = () => {
 
   const { data: apiResponse, isLoading, error } = useGetJobByIdQuery(details);
   const [saveJob, { isLoading: isSaving }] = useSaveJobMutation();
+  const savedJobIds = useSelector(selectSavedJobIds);
 
   useEffect(() => {
     if (!isLoading) {
@@ -69,7 +77,13 @@ const JobDetailsPage = () => {
         gsap.fromTo(
           ".jd-card",
           { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 0.55, stagger: 0.08, ease: "power2.out" },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.55,
+            stagger: 0.08,
+            ease: "power2.out",
+          },
         );
       }, containerRef);
       return () => ctx.revert();
@@ -84,7 +98,9 @@ const JobDetailsPage = () => {
           <div className="rounded-3xl border border-[#234C6A]/10 bg-white/90 p-10 text-center shadow-xl">
             <div className="w-16 h-16 border-4 border-[#234C6A]/20 border-t-[#234C6A] rounded-full animate-spin mx-auto mb-4" />
             <p className="font-bold text-[#234C6A]">Loading job details...</p>
-            <p className="mt-1 text-sm text-[#456882]">Preparing the role overview</p>
+            <p className="mt-1 text-sm text-[#456882]">
+              Preparing the role overview
+            </p>
           </div>
         </div>
       </div>
@@ -134,6 +150,8 @@ const JobDetailsPage = () => {
     }
   };
 
+  console.log(savedJobIds);
+  console.log("job", job);
   return (
     <div className="min-h-screen flex flex-col jobhub-page-bg">
       <Header />
@@ -158,17 +176,15 @@ const JobDetailsPage = () => {
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex items-start gap-5">
               <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm">
-                {companyLogo
-                  ? (
-                      <img
-                        src={companyLogo}
-                        alt={companyName}
-                        className="h-full w-full object-cover"
-                      />
-                    )
-                  : (
-                      <Building2 className="h-10 w-10 text-white" />
-                    )}
+                {companyLogo ? (
+                  <img
+                    src={companyLogo}
+                    alt={companyName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Building2 className="h-10 w-10 text-white" />
+                )}
               </div>
 
               <div>
@@ -209,7 +225,8 @@ const JobDetailsPage = () => {
                   {job.positions && (
                     <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
                       <Users className="h-4 w-4" />
-                      {job.positions} {job.positions === 1 ? "opening" : "openings"}
+                      {job.positions}{" "}
+                      {job.positions === 1 ? "opening" : "openings"}
                     </span>
                   )}
                 </div>
@@ -219,16 +236,26 @@ const JobDetailsPage = () => {
             <div className="flex gap-3 flex-wrap">
               <Button
                 variant="outline"
-                className="rounded-xl border-white/25 bg-white/10 text-white hover:bg-white/15"
+                className={`rounded-xl border-white/25 bg-white/10 text-white hover:bg-white/15 ${
+                  savedJobIds?.includes(job._id) ? "opacity-75 cursor-not-allowed" : ""
+                }`}
                 onClick={handleSave}
-                disabled={isSaving}
+                disabled={isSaving || savedJobIds?.includes(job._id)}
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
-                  <Heart className="h-4 w-4 mr-2" />
+                  <Heart
+                    className={`h-4 w-4 mr-2 ${
+                      savedJobIds?.includes(job._id) ? "fill-white" : ""
+                    }`}
+                  />
                 )}
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving
+                  ? "Saving..."
+                  : savedJobIds?.includes(job._id)
+                    ? "Saved"
+                    : "Save"}
               </Button>
               <Button
                 variant="outline"
@@ -243,7 +270,10 @@ const JobDetailsPage = () => {
       </div>
 
       {/* Content */}
-      <div ref={containerRef} className="container mx-auto px-4 -mt-20 relative z-20 pb-16">
+      <div
+        ref={containerRef}
+        className="container mx-auto px-4 -mt-20 relative z-20 pb-16"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left */}
           <div className="lg:col-span-2 space-y-5">
@@ -374,7 +404,11 @@ const JobDetailsPage = () => {
                   </p>
                 </div>
               </div>
-              <ApplyJobModal jobId={job._id} jobTitle={job.title} companyName={companyName} />
+              <ApplyJobModal
+                jobId={job._id}
+                jobTitle={job.title}
+                companyName={companyName}
+              />
               <div className="mt-4 text-center">
                 <span className="rounded-full bg-[#E3E3E3]/60 px-3 py-1.5 text-xs font-semibold text-[#456882]">
                   LinkedIn Apply - Coming Soon
@@ -411,17 +445,15 @@ const JobDetailsPage = () => {
               </h3>
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882]">
-                  {companyLogo
-                    ? (
-                        <img
-                          src={companyLogo}
-                          alt={companyName}
-                          className="h-full w-full object-cover"
-                        />
-                      )
-                    : (
-                        <Building2 className="h-6 w-6 text-white" />
-                      )}
+                  {companyLogo ? (
+                    <img
+                      src={companyLogo}
+                      alt={companyName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Building2 className="h-6 w-6 text-white" />
+                  )}
                 </div>
                 <div>
                   <p className="font-black text-[#234C6A]">{companyName}</p>
@@ -430,7 +462,8 @@ const JobDetailsPage = () => {
               </div>
               <div className="mb-5 space-y-2 text-sm text-[#456882]">
                 <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-4 py-3">
-                  <Shield className="h-4 w-4 text-[#234C6A]" /> Verified employer
+                  <Shield className="h-4 w-4 text-[#234C6A]" /> Verified
+                  employer
                 </div>
                 <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-4 py-3">
                   <Globe className="h-4 w-4 text-[#234C6A]" /> www.

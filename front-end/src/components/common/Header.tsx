@@ -46,6 +46,12 @@ import {
   useGetHeaderStatsQuery,
   useGetSavedJobIdsQuery,
 } from "@/src/redux/features/generals/generalsApi";
+import { useAppDispatch } from "@/src/redux/hooks";
+import {
+  setAppliedJobIds,
+  setSavedJobIds,
+  clearGenerals,
+} from "@/src/redux/features/generals/generalsSlice";
 
 // ============================================================================
 // TYPES
@@ -308,6 +314,7 @@ const DropdownHeader = ({
 // MAIN COMPONENT
 // ============================================================================
 const Header = () => {
+  const dispatch = useAppDispatch();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownType>(null);
@@ -349,10 +356,6 @@ const Header = () => {
   const { data: savedJobIds } = useGetSavedJobIdsQuery(undefined, {
     skip: !user,
   });
-
-  console.log("savedJobIds", savedJobIds);
-  console.log("appliedJobIds", appliedJobIds);
-
   // Computed values from API
   const notificationCount = headerStats?.unreadNotificationsCount || 0;
   const savedJobsCount = headerStats?.savedJobsCount || 0;
@@ -408,10 +411,28 @@ const Header = () => {
 
   const handleLogout = useCallback(() => {
     handleLogoutFn();
+    dispatch(clearGenerals());
     closeAll();
-  }, [handleLogoutFn, closeAll]);
+  }, [handleLogoutFn, dispatch, closeAll]);
 
   // Effects
+  useEffect(() => {
+    if (appliedJobIds) {
+      dispatch(setAppliedJobIds(appliedJobIds));
+    }
+  }, [appliedJobIds, dispatch]);
+
+  useEffect(() => {
+    if (savedJobIds) {
+      dispatch(setSavedJobIds(savedJobIds));
+    }
+  }, [savedJobIds, dispatch]);
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(clearGenerals());
+    }
+  }, [user, dispatch]);
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll, { passive: true });

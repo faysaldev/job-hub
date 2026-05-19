@@ -33,6 +33,11 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/src/lib/utils";
 import { useAuth } from "@/src/hooks/useAuth";
+import { useAppSelector } from "@/src/redux/hooks";
+import {
+  selectAppliedJobIds,
+  selectSavedJobIds,
+} from "@/src/redux/features/generals/generalsSlice";
 
 interface ApplyJobModalProps {
   jobId: string;
@@ -47,6 +52,10 @@ export default function ApplyJobModal({
 }: ApplyJobModalProps) {
   const [open, setOpen] = useState(false);
   const { isAuthenticated } = useAuth();
+  const appliedJobIds = useAppSelector(selectAppliedJobIds);
+  const savedJobIds = useAppSelector(selectSavedJobIds);
+  const isApplied = appliedJobIds?.includes(jobId);
+  const isSaved = savedJobIds?.includes(jobId);
   const [coverLetter, setCoverLetter] = useState("");
   const [resumeUrl, setResumeUrl] = useState("");
   const [shouldUpdateProfile, setShouldUpdateProfile] = useState(false);
@@ -147,10 +156,16 @@ export default function ApplyJobModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <Button
         onClick={handleApplyClick}
-        className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold mb-4 group"
+        disabled={isApplied}
+        className={cn(
+          "w-full h-12 rounded-xl font-semibold mb-4 group transition-all",
+          isApplied
+            ? "bg-gray-300 text-gray-500 cursor-not-allowed hover:from-transparent hover:to-transparent"
+            : "bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
+        )}
       >
         <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
-        Apply Now
+        {isApplied ? "Already Applied" : "Apply Now"}
       </Button>
       <DialogContent className="sm:max-w-[550px] bg-white rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
         <form onSubmit={handleApply} className="relative">
@@ -164,8 +179,13 @@ export default function ApplyJobModal({
           >
             <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-black tracking-tight">
-                  Apply for {jobTitle}
+                <DialogTitle className="text-2xl font-black tracking-tight flex items-center justify-between gap-4">
+                  <span>Apply for {jobTitle}</span>
+                  {isSaved && (
+                    <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-black uppercase tracking-wider text-white">
+                      ★ Saved
+                    </span>
+                  )}
                 </DialogTitle>
                 <DialogDescription className="text-blue-100/80 font-medium">
                   at {companyName}
