@@ -335,6 +335,14 @@ const Jobs = () => {
   const [locationTerm, setLocationTerm] = useState(
     () => searchParams.get("location") || "",
   );
+
+  // Typing inputs
+  const [searchInput, setSearchInput] = useState(
+    () => searchParams.get("s") || "",
+  );
+  const [locationInput, setLocationInput] = useState(
+    () => searchParams.get("location") || "",
+  );
   const [currentPage, setCurrentPage] = useState(() =>
     parseInt(searchParams.get("page") || "1", 10),
   );
@@ -390,11 +398,39 @@ const Jobs = () => {
     })),
   );
 
+  // ── Active Filters for API ────────────────────────────────────────────────
+  const activeJobTypes = useMemo(
+    () => jobTypes.filter((t) => t.checked).map((t) => t.id).join(","),
+    [jobTypes],
+  );
+  const activeExperienceLevels = useMemo(
+    () => experienceLevels.filter((e) => e.checked).map((e) => e.id).join(","),
+    [experienceLevels],
+  );
+  const activeSalaryRanges = useMemo(
+    () => salaryRanges.filter((s) => s.checked).map((s) => `${s.min}-${s.max}`).join(","),
+    [salaryRanges],
+  );
+  const activeCompanySizes = useMemo(
+    () => companySizeFilters.filter((c) => c.checked).map((c) => c.id).join(","),
+    [companySizeFilters],
+  );
+  const activePostedDate = useMemo(() => {
+    const checked = postedDateFilters.find((d) => d.checked);
+    return checked && checked.id !== "anytime" ? checked.id : undefined;
+  }, [postedDateFilters]);
+
   // ── API Query (server-side search + pagination) ───────────────────────────
   const { data: searchJobsData, isFetching } = useSearchJobsQuery({
     search: searchTerm,
+    location: locationTerm || undefined,
     category: selectedCategory || undefined,
     subcategory: selectedSubcategory || undefined,
+    type: activeJobTypes || undefined,
+    experienceLevel: activeExperienceLevels || undefined,
+    salaryRanges: activeSalaryRanges || undefined,
+    companySizes: activeCompanySizes || undefined,
+    postedDate: activePostedDate || undefined,
     page: currentPage,
     limit: 10,
   });
@@ -414,45 +450,8 @@ const Jobs = () => {
   );
 
   // ── Client-side filters (applied on top of API results) ───────────────────
-  const filteredJobs = useMemo(() => {
-    return apiJobs.filter((job) => {
-      // Job type
-      const selectedTypes = jobTypes.filter((t) => t.checked).map((t) => t.id);
-      if (selectedTypes.length && selectedTypes.length < jobTypes.length) {
-        if (!selectedTypes.includes(job.type)) return false;
-      }
-
-      // Salary
-      const checkedSalaries = salaryRanges.filter((s) => s.checked);
-      if (checkedSalaries.length) {
-        const ok = checkedSalaries.some(
-          (r) => job.salaryMin <= r.max && job.salaryMax >= r.min,
-        );
-        if (!ok) return false;
-      }
-
-      // Experience
-      const checkedExp = experienceLevels
-        .filter((e) => e.checked)
-        .map((e) => e.id);
-      if (checkedExp.length && checkedExp.length < experienceLevels.length) {
-        if (!checkedExp.includes(job.experienceLevel)) return false;
-      }
-
-      // Location text
-      if (locationTerm) {
-        const loc = job.location.toLowerCase();
-        const lt = locationTerm.toLowerCase();
-        if (
-          !loc.includes(lt) &&
-          !(lt.includes("remote") && job.locationType === "remote")
-        )
-          return false;
-      }
-
-      return true;
-    });
-  }, [apiJobs, jobTypes, salaryRanges, experienceLevels, locationTerm]);
+  // delegated entirely to backend
+  const filteredJobs = apiJobs;
 
   // ── URL helpers ───────────────────────────────────────────────────────────
   const updateURLParams = useCallback(
@@ -525,12 +524,14 @@ const Jobs = () => {
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleSearch = useCallback(() => {
     setCurrentPage(1);
+    setSearchTerm(searchInput);
+    setLocationTerm(locationInput);
     updateURLParams({
-      s: searchTerm || null,
-      location: locationTerm || null,
+      s: searchInput || null,
+      location: locationInput || null,
       page: null,
     });
-  }, [searchTerm, locationTerm, updateURLParams]);
+  }, [searchInput, locationInput, updateURLParams]);
 
   const handleSearchKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -640,6 +641,8 @@ const Jobs = () => {
   }, [updateURLParams]);
 
   const handleResetAllFilters = useCallback(() => {
+    setSearchInput("");
+    setLocationInput("");
     setSearchTerm("");
     setLocationTerm("");
     setSelectedCategory(null);
@@ -665,13 +668,23 @@ const Jobs = () => {
     <div ref={containerRef} className="min-h-screen flex flex-col jobhub-page-bg">
       <Header />
       <main className="flex-1 w-full">
-        <SearchSection
-          searchTerm={searchTerm}
-          locationTerm={locationTerm}
-          onSearchChange={(e) => setSearchTerm(e.target.value)}
-          onLocationChange={(e) => setLocationTerm(e.target.value)}
+         <SearchSection
+          searchTerm={searchInput}
+          locationTerm={locationInput}
+          onSearchChange={(e) => setSearchInput(e.target.value)}
+          onLocationChange={(e) => setLocationInput(e.target.value)}
           onSearch={handleSearch}
           onSearchKeyDown={handleSearchKeyDown}
+          onTrendingClick={(term) => {
+            setSearchInput(term);
+            setSearchTerm(term);
+            setCurrentPage(1);
+            updateURLParams({
+              s: term || null,
+              location: locationInput || null,
+              page: null,
+            });
+          }}
         />
 
         <section className="py-8 md:py-12">

@@ -10,6 +10,7 @@ interface SearchSectionProps {
   onLocationChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSearch: () => void;
   onSearchKeyDown: (e: React.KeyboardEvent) => void;
+  onTrendingClick?: (term: string) => void;
 }
 
 const SearchSection = ({
@@ -19,6 +20,7 @@ const SearchSection = ({
   onLocationChange,
   onSearch,
   onSearchKeyDown,
+  onTrendingClick,
 }: SearchSectionProps) => {
   const popularSearches = [
     "Remote",
@@ -100,10 +102,14 @@ const SearchSection = ({
                 key={index}
                 className="cursor-pointer rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-white transition-colors hover:bg-white/20"
                 onClick={() => {
-                  const event = {
-                    target: { value: term },
-                  } as React.ChangeEvent<HTMLInputElement>;
-                  onSearchChange(event);
+                  if (onTrendingClick) {
+                    onTrendingClick(term);
+                  } else {
+                    const event = {
+                      target: { value: term },
+                    } as React.ChangeEvent<HTMLInputElement>;
+                    onSearchChange(event);
+                  }
                 }}
               >
                 {term}

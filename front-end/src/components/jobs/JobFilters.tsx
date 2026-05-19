@@ -287,26 +287,6 @@ const JobFilters = ({
           </FilterSection>
         )}
 
-        {/* Subcategory Filter - Only show if category is selected */}
-        {subcategories && subcategories.length > 0 && onSubcategoryChange && (
-          <FilterSection
-            title="Specialization"
-            icon={Search}
-            sectionId="subcategory"
-            badge={subcategories.filter((s) => s.checked).length}
-          >
-            <div className="max-h-48 overflow-y-auto space-y-1">
-              {subcategories.map((sub) => (
-                <CheckboxItem
-                  key={sub.id}
-                  item={sub}
-                  onChange={onSubcategoryChange}
-                />
-              ))}
-            </div>
-          </FilterSection>
-        )}
-
         {/* Job Type */}
         <FilterSection
           title="Job Type"
@@ -386,24 +366,6 @@ const JobFilters = ({
                 key={size.id}
                 item={size}
                 onChange={onCompanySizeChange}
-              />
-            ))}
-          </FilterSection>
-        )}
-
-        {/* Applicant Count */}
-        {applicantCountFilters && onApplicantCountChange && (
-          <FilterSection
-            title="Applicants"
-            icon={Users}
-            sectionId="applicantCount"
-            badge={applicantCountFilters.filter((a) => a.checked).length}
-          >
-            {applicantCountFilters.map((count) => (
-              <CheckboxItem
-                key={count.id}
-                item={count}
-                onChange={onApplicantCountChange}
               />
             ))}
           </FilterSection>

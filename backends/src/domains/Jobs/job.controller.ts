@@ -18,26 +18,29 @@ const getAllJobs = asyncHandler(async (req: Request, res: Response) => {
     experienceLevel,
     minSalary,
     maxSalary,
+    salaryRanges,
+    companySizes,
+    postedDate,
     page,
     limit,
   } = req.query;
 
-  const pageNum = parseInt(page as string) || 1;
-  const limitNum = parseInt(limit as string) || 10;
-
-  const result = await jobService.searchJobs(
-    q as string,
-    category as string,
-    subcategory as string,
-    type as string,
-    experienceLevel as string,
-    location as string,
-    locationType as string,
-    minSalary ? parseInt(minSalary as string) : undefined,
-    maxSalary ? parseInt(maxSalary as string) : undefined,
-    pageNum,
-    limitNum,
-  );
+  const result = await jobService.searchJobs({
+    searchTerm: (q || req.query.search) as string,
+    category: category as string,
+    subcategory: subcategory as string,
+    type: type as string,
+    experienceLevel: experienceLevel as string,
+    location: location as string,
+    locationType: locationType as string,
+    minSalary: minSalary ? parseInt(minSalary as string) : undefined,
+    maxSalary: maxSalary ? parseInt(maxSalary as string) : undefined,
+    salaryRanges: salaryRanges as string,
+    companySizes: companySizes as string,
+    postedDate: postedDate as string,
+    page: parseInt(page as string) || 1,
+    limit: parseInt(limit as string) || 10,
+  });
 
   res.status(httpStatus.OK).json(
     response({
@@ -155,26 +158,29 @@ const searchJobs = asyncHandler(async (req: Request, res: Response) => {
     experienceLevel,
     minSalary,
     maxSalary,
+    salaryRanges,
+    companySizes,
+    postedDate,
     page,
     limit,
   } = req.query;
 
-  const pageNum = parseInt(page as string) || 1;
-  const limitNum = parseInt(limit as string) || 10;
-
-  const result = await jobService.searchJobs(
-    search as string,
-    category as string,
-    subcategory as string,
-    type as string,
-    experienceLevel as string,
-    location as string,
-    locationType as string,
-    minSalary ? parseInt(minSalary as string) : undefined,
-    maxSalary ? parseInt(maxSalary as string) : undefined,
-    pageNum,
-    limitNum,
-  );
+  const result = await jobService.searchJobs({
+    searchTerm: search as string,
+    category: category as string,
+    subcategory: subcategory as string,
+    type: type as string,
+    experienceLevel: experienceLevel as string,
+    location: location as string,
+    locationType: locationType as string,
+    minSalary: minSalary ? parseInt(minSalary as string) : undefined,
+    maxSalary: maxSalary ? parseInt(maxSalary as string) : undefined,
+    salaryRanges: salaryRanges as string,
+    companySizes: companySizes as string,
+    postedDate: postedDate as string,
+    page: parseInt(page as string) || 1,
+    limit: parseInt(limit as string) || 10,
+  });
 
   res.status(httpStatus.OK).json(
     response({
