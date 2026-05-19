@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Header from "@/src/components/common/Header";
-import Footer from "@/src/components/common/Footer";
 import { useAuth } from "@/src/hooks/useAuth";
 import JobSeekerSidebar from "./JobSeekerSidebar";
 import gsap from "gsap";
@@ -23,7 +22,7 @@ const JobSeekerLayout = ({ children }: JobSeekerLayoutProps) => {
       gsap.fromTo(
         ".page-content",
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }
+        { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
       );
     }, containerRef);
 
@@ -51,7 +50,7 @@ const JobSeekerLayout = ({ children }: JobSeekerLayoutProps) => {
         <div
           className={cn(
             "lg:hidden fixed inset-0 bg-[#234C6A]/50 backdrop-blur-sm z-40 transition-opacity duration-300",
-            isMobileSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
+            isMobileSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible",
           )}
           onClick={() => setIsMobileSidebarOpen(false)}
         />
@@ -60,7 +59,7 @@ const JobSeekerLayout = ({ children }: JobSeekerLayoutProps) => {
         <div
           className={cn(
             "lg:hidden fixed left-0 top-0 h-full z-50 transition-transform duration-300",
-            isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
           <JobSeekerSidebar />
@@ -85,13 +84,9 @@ const JobSeekerLayout = ({ children }: JobSeekerLayoutProps) => {
           </div>
 
           {/* Page Content */}
-          <div className="page-content p-4 md:p-6 lg:p-8">
-            {children}
-          </div>
+          <div className="page-content p-4 md:p-6 lg:p-8">{children}</div>
         </main>
       </div>
-
-      <Footer />
     </div>
   );
 };

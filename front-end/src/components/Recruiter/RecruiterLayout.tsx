@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Header from "@/src/components/common/Header";
-import Footer from "@/src/components/common/Footer";
 import { useAuth } from "@/src/hooks/useAuth";
 import RecruiterSidebar from "./RecruiterSidebar";
 import gsap from "gsap";
@@ -88,8 +87,6 @@ const RecruiterLayout = ({ children }: RecruiterLayoutProps) => {
           <div className="page-content p-4 md:p-6 lg:p-8">{children}</div>
         </main>
       </div>
-
-      <Footer />
     </div>
   );
 };
