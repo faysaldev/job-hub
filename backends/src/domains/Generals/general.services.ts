@@ -17,7 +17,11 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 const getHeaderStats = async (userId: string) => {
   const [unreadNotificationsCount, savedJobsCount] = await Promise.all([
-    Notification.countDocuments({ receiver: userId, isRead: false, isDeleted: false }),
+    Notification.countDocuments({
+      receiver: userId,
+      isRead: false,
+      isDeleted: false,
+    }),
     SavedJob.countDocuments({ userId }),
   ]);
 
@@ -174,6 +178,11 @@ const getAppliedJobIds = async (userId: string) => {
   return applications.map((app) => app.job_id.toString());
 };
 
+const getSavedJobIds = async (userId: string) => {
+  const savedJobs = await SavedJob.find({ userId }).select("jobId").lean();
+  return savedJobs.map((savedJob) => savedJob.jobId.toString());
+};
+
 const submitContactForm = async (contactData: Partial<IContact>) => {
   const contact = new Contact(contactData);
   return await contact.save();
@@ -239,7 +248,7 @@ const getRecruiterDashboardStats = async (recruiterId: string) => {
   };
 };
 
-const generalService = {
+export default {
   getHeaderStats,
   getCategoryStats,
   getSubcategoryStats,
@@ -248,6 +257,5 @@ const generalService = {
   getAppliedJobIds,
   submitContactForm,
   getRecruiterDashboardStats,
+  getSavedJobIds,
 };
-
-export default generalService;

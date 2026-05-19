@@ -44,6 +44,7 @@ import {
   useGetAppliedJobIdsQuery,
   useGetCategoryStatsQuery,
   useGetHeaderStatsQuery,
+  useGetSavedJobIdsQuery,
 } from "@/src/redux/features/generals/generalsApi";
 
 // ============================================================================
@@ -345,11 +346,18 @@ const Header = () => {
   const { data: appliedJobIds } = useGetAppliedJobIdsQuery(undefined, {
     skip: !user,
   });
+  const { data: savedJobIds } = useGetSavedJobIdsQuery(undefined, {
+    skip: !user,
+  });
+
+  console.log("savedJobIds", savedJobIds);
+  console.log("appliedJobIds", appliedJobIds);
 
   // Computed values from API
   const notificationCount = headerStats?.unreadNotificationsCount || 0;
   const savedJobsCount = headerStats?.savedJobsCount || 0;
   const appliedCount = appliedJobIds?.length || 0;
+  const savedCount = savedJobIds?.length || 0;
 
   const userStats = useMemo(
     () => [
@@ -898,7 +906,7 @@ const Header = () => {
 
         {/* Mobile Menu Button */}
         <button
-        className="relative z-10 rounded-2xl p-2.5 text-[#234C6A] transition-all hover:bg-[#234C6A]/10 lg:hidden"
+          className="relative z-10 rounded-2xl p-2.5 text-[#234C6A] transition-all hover:bg-[#234C6A]/10 lg:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <div className="w-6 h-5 flex flex-col justify-center items-center">

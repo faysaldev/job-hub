@@ -32,6 +32,9 @@ router.get(
   generalController.getAppliedJobIds,
 );
 
+// Get saved job IDs
+router.get("/saved-job-ids", authMiddleware, generalController.getSavedJobIds);
+
 // Submit contact form
 router.post(
   "/contact",
