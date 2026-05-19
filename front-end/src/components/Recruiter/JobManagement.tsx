@@ -1,16 +1,5 @@
-import { useState, useEffect } from "react";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
-import { Textarea } from "@/src/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/src/components/ui/dialog";
 import { toast } from "@/src/hooks/use-toast";
 import {
   Plus,
@@ -20,42 +9,22 @@ import {
   MapPin,
   Briefcase,
   DollarSign,
+  AlertCircle,
+  ArrowUpRight,
+  Loader2,
+  Search,
+  Users,
 } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
-import { Job } from "@/src/types";
 import {
   useGetJobsByAuthorQuery,
   useDeleteJobMutation,
   useUpdateJobMutation,
-  useCreateJobMutation,
 } from "@/src/redux/features/jobs/jobsApi";
-
-// Define a new type that matches the component's usage instead of extending
-interface JobWithRecruiter {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  type: string;
-  salary: string;
-  posted: string;
-  description: string;
-  skills: string[];
-  status: "active" | "closed";
-  responsibilities?: string[];
-  requirements?: string[];
-  benefits?: string[];
-  recruiterId: string;
-  companyName: string;
-  experience: string;
-  salaryMin: number;
-  salaryMax: number;
-  deadline: string;
-  postedDate: string;
-}
+import { useRouter } from "next/navigation";
 
 const JobManagement = ({ userId }: { userId: string }) => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const router = useRouter();
 
   const {
     data: jobsData,
@@ -66,51 +35,6 @@ const JobManagement = ({ userId }: { userId: string }) => {
 
   const [deleteJobMutation] = useDeleteJobMutation();
   const [updateJobMutation] = useUpdateJobMutation();
-  const [createJobMutation] = useCreateJobMutation();
-
-  const handleCreateJob = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-
-    const salaryRange = formData.get("salary") as string;
-    const [min, max] = salaryRange
-      .split("-")
-      .map((s) => parseInt(s.trim().replace(/\D/g, "")));
-
-    const jobData: Partial<Job> = {
-      title: formData.get("title") as string,
-      type: formData.get("type") as string,
-      location: formData.get("location") as string,
-      experienceLevel: formData.get("experience") as string,
-      salaryMin: min || 0,
-      salaryMax: max || 0,
-      description: formData.get("description") as string,
-      skills: (formData.get("skills") as string)
-        .split(",")
-        .map((s) => s.trim()),
-      applicationDeadline: formData.get("deadline") as string,
-      // Default fields for now
-      category: "engineering",
-      subcategory: "software",
-      locationType: "onsite",
-      salaryPeriod: "yearly",
-      positions: 1,
-      requirements: [],
-      responsibilities: [],
-      benefits: [],
-    };
-
-    try {
-      await createJobMutation(jobData).unwrap();
-      setIsCreateDialogOpen(false);
-      toast({ title: "Job posted successfully!" });
-    } catch (error) {
-      toast({
-        title: "Failed to post job",
-        variant: "destructive",
-      });
-    }
-  };
 
   const deleteJob = async (jobId: string) => {
     try {
@@ -142,246 +66,183 @@ const JobManagement = ({ userId }: { userId: string }) => {
     }
   };
 
+  const jobs = jobsData?.data ?? [];
+  const activeCount = jobs.filter((job: any) => job.isActive !== false).length;
+  const closedCount = jobs.length - activeCount;
+
+  if (jobsLoading) {
+    return (
+      <div className="grid gap-4">
+        {[1, 2, 3].map((item) => (
+          <Card
+            key={item}
+            className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-6"
+          >
+            <div className="flex animate-pulse gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-[#E3E3E3]" />
+              <div className="flex-1 space-y-3">
+                <div className="h-5 w-2/5 rounded-full bg-[#E3E3E3]" />
+                <div className="h-4 w-4/5 rounded-full bg-[#E3E3E3]" />
+                <div className="h-4 w-3/5 rounded-full bg-[#E3E3E3]" />
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (jobsIsError) {
+    return (
+      <Card className="rounded-3xl border border-red-100 bg-red-50 p-8 text-center">
+        <AlertCircle className="mx-auto mb-3 h-10 w-10 text-red-500" />
+        <h3 className="text-lg font-black text-red-700">
+          Could not load job postings
+        </h3>
+        <p className="mt-2 text-sm font-medium text-red-600">
+          {(jobsError as any)?.data?.message ||
+            "Please refresh the page and try again."}
+        </p>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-[#234C6A]">
-            Your Job Postings
-          </h2>
-          <p className="text-[#234C6A]/70 mt-1">
-            Manage all your active and closed job listings
-          </p>
-        </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {[
+          { label: "Total Jobs", value: jobs.length, icon: Briefcase },
+          { label: "Active", value: activeCount, icon: Search },
+          { label: "Closed", value: closedCount, icon: Users },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-5"
+          >
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A]/10 text-[#234C6A]">
+              <item.icon className="h-5 w-5" />
+            </div>
+            <p className="text-3xl font-black text-[#234C6A]">{item.value}</p>
+            <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#456882]">
+              {item.label}
+            </p>
+          </div>
+        ))}
       </div>
 
-      {!jobsData?.data || jobsData.data.length === 0 ? (
-        <Card className="p-12 text-center border-[#456882]/30 bg-white">
-          <div className="mx-auto bg-[#234C6A]/10 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-            <Briefcase className="h-8 w-8 text-[#234C6A]" />
+      {!jobs.length ? (
+        <Card className="rounded-3xl border border-dashed border-[#234C6A]/20 bg-[#F8FAFC] p-12 text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-[#234C6A]/10 text-[#234C6A]">
+            <Briefcase className="h-8 w-8" />
           </div>
-          <h3 className="text-xl font-semibold text-[#234C6A] mb-2">
+          <h3 className="text-xl font-black text-[#234C6A]">
             No job postings yet
           </h3>
-          <p className="text-[#234C6A]/70 mb-4">
-            Create your first job posting to start receiving applications!
+          <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[#456882]">
+            Create your first role with the full premium job builder and start
+            receiving applications.
           </p>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white">
-                Create Job
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-[#456882]/30 rounded-xl">
-              <DialogHeader>
-                <DialogTitle className="text-[#234C6A]">
-                  Create New Job Posting
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreateJob} className="space-y-4">
-                <div>
-                  <Label htmlFor="title" className="text-[#234C6A]">
-                    Job Title
-                  </Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    required
-                    placeholder="Senior Software Engineer"
-                    className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="type" className="text-[#234C6A]">
-                    Job Type
-                  </Label>
-                  <select
-                    id="type"
-                    name="type"
-                    required
-                    className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A] focus:border-[#234C6A]"
-                  >
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Internship">Internship</option>
-                    <option value="Freelance">Freelance</option>
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="location" className="text-[#234C6A]">
-                    Location
-                  </Label>
-                  <Input
-                    id="location"
-                    name="location"
-                    required
-                    placeholder="Remote / San Francisco, CA"
-                    className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="experience" className="text-[#234C6A]">
-                    Experience Level
-                  </Label>
-                  <select
-                    id="experience"
-                    name="experience"
-                    required
-                    className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A] focus:border-[#234C6A]"
-                  >
-                    <option value="Entry Level">Entry Level</option>
-                    <option value="Mid Level">Mid Level</option>
-                    <option value="Senior Level">Senior Level</option>
-                    <option value="Lead/Principal">Lead/Principal</option>
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="salary" className="text-[#234C6A]">
-                    Salary Range
-                  </Label>
-                  <Input
-                    id="salary"
-                    name="salary"
-                    required
-                    placeholder="$80,000 - $120,000"
-                    className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="skills" className="text-[#234C6A]">
-                    Required Skills (comma-separated)
-                  </Label>
-                  <Input
-                    id="skills"
-                    name="skills"
-                    required
-                    placeholder="React, TypeScript, Node.js"
-                    className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="deadline" className="text-[#234C6A]">
-                    Application Deadline
-                  </Label>
-                  <Input
-                    id="deadline"
-                    name="deadline"
-                    type="date"
-                    required
-                    className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description" className="text-[#234C6A]">
-                    Job Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    required
-                    rows={6}
-                    placeholder="Describe the role, responsibilities, requirements..."
-                    className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
-                >
-                  Post Job
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <Button
+            className="mt-6 h-12 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-7 font-black text-white shadow-lg shadow-[#234C6A]/20 hover:from-[#1c405a] hover:to-[#3b5a71]"
+            onClick={() => router.push("/recruiter/create-job")}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Job
+            <ArrowUpRight className="ml-2 h-4 w-4" />
+          </Button>
         </Card>
       ) : (
         <div className="space-y-4">
-          {jobsData?.data?.map((job: any) => {
+          {jobs.map((job: any) => {
             const status = job.isActive !== false ? "active" : "closed";
+            const deadline = job.applicationDeadline
+              ? new Date(job.applicationDeadline).toLocaleDateString()
+              : "Not set";
+            const salaryMin = Number(job.salaryMin || 0).toLocaleString();
+            const salaryMax = Number(job.salaryMax || 0).toLocaleString();
+
             return (
               <Card
                 key={job._id}
-                className="p-6 border-[#456882]/30 bg-white hover:shadow-lg transition-shadow"
+                className="group overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#234C6A]/25 hover:shadow-xl hover:shadow-[#234C6A]/10"
               >
-                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-[#234C6A] hover:text-[#456882] transition-colors">
+                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-3 flex flex-wrap items-center gap-3">
+                      <h3 className="text-xl font-black tracking-tight text-[#234C6A] transition-colors group-hover:text-[#456882]">
                         {job.title}
                       </h3>
                       <Badge
                         variant={status === "active" ? "default" : "secondary"}
-                        className={`${
+                        className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-widest ${
                           status === "active"
-                            ? "bg-[#234C6A]/10 text-[#234C6A] border-[#234C6A]/30"
-                            : "bg-[#456882]/10 text-[#456882] border-[#456882]/30"
+                            ? "border-emerald-100 bg-emerald-50 text-emerald-700"
+                            : "border-[#456882]/20 bg-[#456882]/10 text-[#456882]"
                         }`}
                       >
                         {status}
                       </Badge>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-[#234C6A]/70 mb-4">
-                      <div className="flex items-center gap-1">
-                        <Briefcase className="h-4 w-4" />
-                        <span>{job.type}</span>
+                    <div className="mb-5 grid grid-cols-1 gap-3 text-sm font-semibold text-[#456882] md:grid-cols-2 xl:grid-cols-4">
+                      <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
+                        <Briefcase className="h-4 w-4 text-[#234C6A]" />
+                        <span>{job.type || "Job type"}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        <span>{job.location}</span>
+                      <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
+                        <MapPin className="h-4 w-4 text-[#234C6A]" />
+                        <span>{job.location || "Location"}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="h-4 w-4" />
+                      <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
+                        <DollarSign className="h-4 w-4 text-[#234C6A]" />
                         <span>
-                          {job.salaryMin} - {job.salaryMax} {job.salaryPeriod}
+                          {salaryMin} - {salaryMax} {job.salaryPeriod}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          Deadline:{" "}
-                          {new Date(
-                            job.applicationDeadline,
-                          ).toLocaleDateString()}
-                        </span>
+                      <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
+                        <Calendar className="h-4 w-4 text-[#234C6A]" />
+                        <span>Deadline: {deadline}</span>
                       </div>
                     </div>
 
-                    <p className="text-[#234C6A]/90 mb-4 line-clamp-2">
-                      {job.description}
+                    <p className="mb-5 line-clamp-2 text-sm font-medium leading-6 text-[#456882]">
+                      {job.description || "No description provided."}
                     </p>
 
-                    <div className="flex flex-wrap gap-2">
-                      {job.skills?.map((skill: string, index: number) => (
-                        <Badge
-                          key={index}
-                          variant="secondary"
-                          className="bg-[#234C6A]/10 text-[#234C6A] hover:bg-[#234C6A]/20"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
+                    {!!job.skills?.length && (
+                      <div className="flex flex-wrap gap-2">
+                        {job.skills
+                          ?.slice(0, 8)
+                          .map((skill: string, index: number) => (
+                            <Badge
+                              key={`${skill}-${index}`}
+                              variant="secondary"
+                              className="rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-3 py-1 font-black text-[#234C6A] hover:bg-[#234C6A]/10"
+                            >
+                              {skill}
+                            </Badge>
+                          ))}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex flex-col gap-2">
+                  <div className="flex gap-2 xl:flex-col">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/10 flex items-center gap-2"
+                      className="h-10 rounded-2xl border-[#234C6A]/20 px-4 font-black text-[#234C6A] hover:bg-[#234C6A]/5"
                       onClick={() => toggleJobStatus(job._id, status)}
                     >
-                      <Edit3 className="h-4 w-4" />
+                      <Edit3 className="mr-2 h-4 w-4" />
                       {status === "active" ? "Close" : "Reopen"}
                     </Button>
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="flex items-center gap-2"
+                      className="h-10 rounded-2xl px-4 font-black"
                       onClick={() => deleteJob(job._id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="mr-2 h-4 w-4" />
                       Delete
                     </Button>
                   </div>
