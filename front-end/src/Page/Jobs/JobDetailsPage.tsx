@@ -149,9 +149,6 @@ const JobDetailsPage = () => {
       /* ignore */
     }
   };
-
-  console.log(savedJobIds);
-  console.log("job", job);
   return (
     <div className="min-h-screen flex flex-col jobhub-page-bg">
       <Header />
@@ -237,7 +234,9 @@ const JobDetailsPage = () => {
               <Button
                 variant="outline"
                 className={`rounded-xl border-white/25 bg-white/10 text-white hover:bg-white/15 ${
-                  savedJobIds?.includes(job._id) ? "opacity-75 cursor-not-allowed" : ""
+                  savedJobIds?.includes(job._id)
+                    ? "opacity-75 cursor-not-allowed"
+                    : ""
                 }`}
                 onClick={handleSave}
                 disabled={isSaving || savedJobIds?.includes(job._id)}
