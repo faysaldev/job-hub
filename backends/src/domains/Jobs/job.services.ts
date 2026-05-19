@@ -16,7 +16,6 @@ const getAllJobs = async (filters: any = {}) => {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
     if (cachedResult) {
-      console.log("Cache hit for getAllJobs");
       return JSON.parse(cachedResult);
     }
   } catch (error) {
@@ -45,7 +44,6 @@ const getJobById = async (jobId: string) => {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
     if (cachedResult) {
-      console.log("Cache hit for getJobById");
       return JSON.parse(cachedResult);
     }
   } catch (error) {
@@ -88,7 +86,6 @@ const clearJobCache = async () => {
     const keys = [...keys1, ...keys2];
     if (keys.length > 0) {
       await redis.del(...keys);
-      console.log(`Cleared ${keys.length} cache entries`);
     }
   } catch (error) {
     console.log("Error clearing Redis cache:", error);
@@ -213,21 +210,28 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
   if (subcategory) filterConditions.push({ subcategory });
 
   if (type) {
-    const types = type.split(",").map((t) => t.trim()).filter(Boolean);
+    const types = type
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
     if (types.length > 0) {
       filterConditions.push({ type: { $in: types } });
     }
   }
 
   if (experienceLevel) {
-    const levels = experienceLevel.split(",").map((l) => l.trim()).filter(Boolean);
+    const levels = experienceLevel
+      .split(",")
+      .map((l) => l.trim())
+      .filter(Boolean);
     if (levels.length > 0) {
       filterConditions.push({ experienceLevel: { $in: levels } });
     }
   }
 
   if (locationType) filterConditions.push({ locationType });
-  if (location) filterConditions.push({ location: { $regex: location, $options: "i" } });
+  if (location)
+    filterConditions.push({ location: { $regex: location, $options: "i" } });
 
   if (minSalary !== undefined || maxSalary !== undefined) {
     const salaryCond: any = {};
@@ -267,7 +271,10 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
   }
 
   if (companySizes) {
-    const sizes = companySizes.split(",").map((s) => s.trim()).filter(Boolean);
+    const sizes = companySizes
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (sizes.length > 0) {
       const Company = mongoose.model("Company");
       const companies = await Company.find({ companySize: { $in: sizes } })
