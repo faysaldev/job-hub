@@ -20,7 +20,6 @@ import {
   Search,
 } from "lucide-react";
 import { useDeleteConversationMutation } from "@/src/redux/features/conversations/conversationsApi";
-import { useDeleteMessageMutation } from "@/src/redux/features/messages/messagesApi";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -110,7 +109,6 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
   const [isSending, setIsSending] = useState(false);
 
   const [deleteConversation] = useDeleteConversationMutation();
-  const [deleteMessageRest] = useDeleteMessageMutation();
 
   // ── Derived ────────────────────────────────────────────────────────────────
   const selectedConv = conversations.find((c) => c._id === selectedConvId);
@@ -390,38 +388,48 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 h-full">
+    <div className="grid h-full grid-cols-1 gap-0 lg:grid-cols-[360px_1fr]">
       {/* ── Conversations Sidebar ────────────────────────────────────── */}
-      <div className="lg:col-span-1 border-r border-gray-100 flex flex-col overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 bg-white space-y-2">
-          <h3 className="font-bold text-[#234C6A] flex items-center gap-2 text-xs">
-            <MessageSquare className="h-4 w-4 text-[#456882]" />
-            Recruiter Chats
-          </h3>
+      <div className="flex flex-col overflow-hidden border-r border-[#234C6A]/10 bg-white">
+        <div className="space-y-3 border-b border-[#E3E3E3]/70 bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 px-5 py-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
+              Inbox
+            </p>
+            <h3 className="flex items-center gap-2 font-black text-[#234C6A]">
+              <MessageSquare className="h-5 w-5" />
+              Recruiter Chats
+            </h3>
+          </div>
           <div className="relative flex items-center">
-            <Search className="absolute left-3 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+            <Search className="pointer-events-none absolute left-4 h-4 w-4 text-[#456882]" />
             <input
               type="text"
               placeholder="Type the name and hit enter"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full pl-8 pr-4 py-1.5 bg-gray-50 border border-gray-100 rounded-xl text-xs outline-none focus:bg-white focus:border-[#234C6A]/20 transition-all text-[#234C6A] placeholder-gray-400 font-semibold"
+              className="h-11 w-full rounded-2xl border border-transparent bg-white/80 pl-11 pr-4 text-sm font-semibold text-[#234C6A] outline-none transition-all placeholder:text-[#456882]/55 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 space-y-1.5 custom-scrollbar">
+        <div className="custom-scrollbar flex-1 space-y-2 overflow-y-auto p-3">
           {isLoadingConvs ? (
             [1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="h-16 w-full animate-pulse bg-gray-50 rounded-2xl"
+                className="h-20 w-full animate-pulse rounded-2xl bg-[#F4F7F8]"
               />
             ))
           ) : conversations.length === 0 ? (
-            <div className="text-center py-10">
-              <p className="text-xs text-[#456882]">No conversations yet</p>
+            <div className="py-12 text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-3xl bg-[#234C6A]/10">
+                <MessageSquare className="h-7 w-7 text-[#234C6A]/45" />
+              </div>
+              <p className="text-sm font-semibold text-[#456882]">
+                No conversations yet
+              </p>
             </div>
           ) : (
             conversations.map((conv) => {
@@ -432,15 +440,15 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                 <button
                   key={conv._id}
                   onClick={() => selectConversation(conv._id)}
-                  className={`w-full p-3 rounded-2xl text-left transition-all duration-200 ${
+                  className={`w-full rounded-3xl p-3 text-left transition-all duration-200 ${
                     isSelected
-                      ? "bg-[#234C6A] text-white shadow-md"
-                      : "hover:bg-gray-50 border border-transparent hover:border-gray-100"
+                      ? "bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/15"
+                      : "border border-transparent hover:border-[#234C6A]/10 hover:bg-[#F8FAFC]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 border ${isSelected ? "border-white/20" : "border-gray-100"}`}
+                      className={`h-11 w-11 flex-shrink-0 overflow-hidden rounded-2xl border ${isSelected ? "border-white/20" : "border-[#234C6A]/10"}`}
                     >
                       {other?.image ? (
                         <img
@@ -449,7 +457,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-[#234C6A]/10 flex items-center justify-center">
+                        <div className="flex h-full w-full items-center justify-center bg-[#234C6A]/10">
                           <User className="h-5 w-5 text-[#234C6A]" />
                         </div>
                       )}
@@ -457,24 +465,24 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-0.5">
                         <h4
-                          className={`text-xs font-bold truncate ${isSelected ? "text-white" : "text-[#234C6A]"}`}
+                          className={`truncate text-sm font-black ${isSelected ? "text-white" : "text-[#234C6A]"}`}
                         >
                           {other?.name}
                         </h4>
                         <span
-                          className={`text-[9px] flex-shrink-0 ml-1 ${isSelected ? "text-white/60" : "text-[#456882]/60"}`}
+                          className={`ml-1 flex-shrink-0 text-[10px] font-bold ${isSelected ? "text-white/60" : "text-[#456882]/60"}`}
                         >
                           {formatTime(conv.updatedAt)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
                         <p
-                          className={`text-[10px] truncate ${isSelected ? "text-white/80" : "text-[#456882]"}`}
+                          className={`truncate text-xs font-semibold ${isSelected ? "text-white/80" : "text-[#456882]"}`}
                         >
                           {conv.role}
                         </p>
                         <Badge
-                          className={`${isSelected ? "bg-white/20 text-white" : "bg-[#234C6A]/5 text-[#234C6A]"} text-[8px] px-1.5 py-0 border-none capitalize h-3.5 flex-shrink-0`}
+                          className={`${isSelected ? "bg-white/20 text-white" : "bg-[#234C6A]/5 text-[#234C6A]"} h-4 flex-shrink-0 rounded-full border-none px-2 py-0 text-[9px] font-black capitalize`}
                         >
                           {conv.status?.replace(/_/g, " ")}
                         </Badge>
@@ -489,13 +497,13 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
       </div>
 
       {/* ── Chat Window ──────────────────────────────────────────────── */}
-      <div className="lg:col-span-2 flex flex-col overflow-hidden">
+      <div className="flex flex-col overflow-hidden bg-[#F8FAFC]">
         {selectedConv && otherParticipant ? (
           <>
             {/* Header */}
-            <div className="px-5 py-3 border-b border-gray-100 bg-white flex items-center justify-between flex-shrink-0">
+            <div className="flex flex-shrink-0 items-center justify-between border-b border-[#E3E3E3]/70 bg-white px-5 py-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
+                <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC]">
                   {otherParticipant.image ? (
                     <img
                       src={otherParticipant.image}
@@ -503,23 +511,23 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#234C6A]/5 flex items-center justify-center">
+                    <div className="flex h-full w-full items-center justify-center bg-[#234C6A]/5">
                       <User className="h-4 w-4 text-[#234C6A]" />
                     </div>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#234C6A]">
+                  <h3 className="text-base font-black text-[#234C6A]">
                     {otherParticipant.name}
                   </h3>
                   <div className="flex items-center gap-2">
                     {selectedConv.role && (
-                      <Badge className="bg-blue-50 text-blue-600 border-none text-[9px] px-1.5 py-0 h-4">
+                      <Badge className="h-5 rounded-full border-none bg-[#234C6A]/5 px-2 py-0 text-[10px] font-black text-[#234C6A]">
                         {selectedConv.role}
                       </Badge>
                     )}
                     {selectedConv.status && (
-                      <Badge className="bg-gray-50 text-gray-500 border-none text-[9px] px-1.5 py-0 h-4 capitalize">
+                      <Badge className="h-5 rounded-full border-none bg-[#E3E3E3]/70 px-2 py-0 text-[10px] font-black capitalize text-[#456882]">
                         {selectedConv.status.replace(/_/g, " ")}
                       </Badge>
                     )}
@@ -529,7 +537,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
 
               <button
                 onClick={handleDeleteConversation}
-                className="p-2 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                className="rounded-2xl p-2 text-red-400 transition-all hover:bg-red-50 hover:text-red-600"
                 title="Delete conversation"
               >
                 <Trash2 className="h-4 w-4" />
@@ -538,11 +546,11 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
 
             {/* Load-more button */}
             {pagination?.hasNext && (
-              <div className="flex justify-center py-2 bg-gray-50/50 border-b border-gray-100 flex-shrink-0">
+              <div className="flex flex-shrink-0 justify-center border-b border-[#E3E3E3]/70 bg-white/70 py-2">
                 <button
                   onClick={loadMoreMessages}
                   disabled={isLoadingMore}
-                  className="flex items-center gap-1.5 text-xs text-[#234C6A] font-semibold hover:bg-[#234C6A]/5 px-4 py-1.5 rounded-full transition-all"
+                  className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-black text-[#234C6A] transition-all hover:bg-[#234C6A]/5"
                 >
                   {isLoadingMore ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -558,7 +566,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
             <div
               ref={chatContainerRef}
               onScroll={handleScroll}
-              className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-gray-50/30 to-white custom-scrollbar"
+              className="custom-scrollbar flex-1 space-y-4 overflow-y-auto bg-gradient-to-b from-[#F8FAFC] to-white p-5"
             >
               {isLoadingMsgs ? (
                 <div className="flex justify-center items-center h-full">
@@ -566,7 +574,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full py-10">
-                  <div className="w-14 h-14 bg-[#234C6A]/5 rounded-2xl flex items-center justify-center mb-3">
+                  <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-[#234C6A]/5">
                     <MessageSquare className="h-7 w-7 text-[#234C6A]/30" />
                   </div>
                   <p className="text-xs text-[#456882] font-medium">
@@ -588,7 +596,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                       <div key={msg._id}>
                         {showDate && (
                           <div className="flex justify-center my-3">
-                            <span className="text-[10px] bg-gray-100 text-gray-400 font-semibold px-3 py-1 rounded-full">
+                            <span className="rounded-full bg-[#E3E3E3]/70 px-3 py-1 text-[10px] font-black text-[#456882]">
                               {formatDate(msg.createdAt)}
                             </span>
                           </div>
@@ -598,11 +606,11 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                           className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
                         >
                           <div
-                            className={`max-w-[78%] relative ${
+                            className={`relative max-w-[78%] ${
                               isMe
-                                ? "bg-[#234C6A] text-white rounded-2xl rounded-tr-sm"
-                                : "bg-white text-[#234C6A] rounded-2xl rounded-tl-sm shadow-sm border border-gray-100"
-                            } px-4 py-2.5`}
+                                ? "rounded-3xl rounded-tr-md bg-[#234C6A] text-white"
+                                : "rounded-3xl rounded-tl-md border border-[#234C6A]/10 bg-white text-[#234C6A] shadow-sm"
+                            } px-4 py-3`}
                           >
                             {isEditing ? (
                               <div className="flex items-center gap-2 min-w-[180px]">
@@ -649,9 +657,8 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                               </div>
                             )}
 
-                            {/* Hover actions */}
                             {!isEditing && isMe && (
-                              <div className="absolute -top-7 right-0 hidden group-hover:flex items-center gap-1 bg-white border border-gray-100 shadow-lg rounded-xl px-1.5 py-1">
+                              <div className="absolute -top-8 right-0 hidden items-center gap-1 rounded-2xl border border-[#234C6A]/10 bg-white px-1.5 py-1 shadow-lg group-hover:flex">
                                 <button
                                   onClick={() => startEdit(msg)}
                                   className="p-1 text-[#456882] hover:text-[#234C6A] hover:bg-gray-50 rounded-lg transition-all"
@@ -677,18 +684,18 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-white border-t border-gray-100 flex-shrink-0">
-              <div className="flex gap-2 bg-gray-50 p-1.5 rounded-2xl border border-gray-100 shadow-inner">
+            <div className="flex-shrink-0 border-t border-[#E3E3E3]/70 bg-white p-4">
+              <div className="flex gap-2 rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-2 shadow-inner">
                 <Input
                   ref={messageInputRef}
                   placeholder="Type a message..."
                   onKeyDown={handleKeyPress}
-                  className="border-none bg-transparent focus-visible:ring-0 text-sm h-10 text-[#234C6A]"
+                  className="h-11 border-none bg-transparent text-sm text-[#234C6A] focus-visible:ring-0"
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={isSending}
-                  className="bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-xl h-10 w-10 p-0 flex-shrink-0"
+                  className="h-11 w-11 flex-shrink-0 rounded-2xl bg-[#234C6A] p-0 text-white hover:bg-[#1c405a]"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -696,12 +703,12 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gray-50/10">
-            <div className="bg-[#234C6A]/5 w-16 h-16 rounded-3xl flex items-center justify-center mb-4">
+          <div className="flex flex-1 flex-col items-center justify-center bg-[#F8FAFC] p-8 text-center">
+            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#234C6A]/5">
               <MessageSquare className="h-8 w-8 text-[#234C6A]/40" />
             </div>
-            <h3 className="text-lg font-bold text-[#234C6A]">Your Messages</h3>
-            <p className="text-xs text-[#456882] max-w-[200px] mt-1">
+            <h3 className="text-xl font-black text-[#234C6A]">Your Messages</h3>
+            <p className="mt-2 max-w-[240px] text-sm text-[#456882]">
               Select a conversation from the left to start chatting
             </p>
           </div>

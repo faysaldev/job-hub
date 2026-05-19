@@ -134,7 +134,6 @@ const InterviewsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
   const [showScheduler, setShowScheduler] = useState(false);
-  const isFetchingMessages = isLoadingMore;
 
   const fmtTime = (d: string) =>
     new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -161,7 +160,6 @@ const InterviewsPage = () => {
   useEffect(() => {
     const id = searchParams.get("conversation");
     setSelectedConvId(id);
-    console.log(id);
     if (!id) {
       setSelectedCandidate(null);
     } else if (conversations.length > 0) {
@@ -428,58 +426,87 @@ const InterviewsPage = () => {
 
   return (
     <RecruiterLayout>
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white shadow-lg">
-              <Calendar className="h-7 w-7" />
-            </div>
+      <div className="mx-auto max-w-7xl space-y-8">
+        <section className="relative overflow-hidden rounded-3xl bg-[#234C6A] p-7 text-white shadow-2xl shadow-[#234C6A]/20 md:p-9">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <h1 className="text-2xl font-bold text-[#234C6A]">
-                Interview Hub
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
+                <Calendar className="h-4 w-4" />
+                <span>Recruiter Interview Hub</span>
+              </div>
+              <h1 className="text-3xl font-black tracking-tight md:text-5xl">
+                Coordinate candidates with confidence.
               </h1>
-              <p className="text-[#456882]">
-                Coordinate and schedule with your top candidates
+              <p className="mt-3 max-w-2xl text-[16px] font-medium leading-7 text-white/75">
+                Chat with applicants, schedule interviews, and move strong
+                candidates through your hiring pipeline.
               </p>
             </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:w-[520px]">
+              {[
+                { icon: MessageSquare, label: "Candidate Chats" },
+                { icon: Calendar, label: "Schedule Fast" },
+                { icon: CheckCircle, label: "Hire Flow" },
+              ].map(({ icon: Icon, label }) => (
+                <div
+                  key={label}
+                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
+                >
+                  <Icon className="mr-1 inline h-3 w-3" />
+                  {label}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
           {/* Candidates List */}
-          <Card className="p-4 border-none bg-white shadow-xl rounded-3xl lg:col-span-1 h-[750px] flex flex-col space-y-4">
-            <div className="px-2 space-y-4 flex-shrink-0">
+          <Card className="flex h-[760px] flex-col space-y-4 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-4 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
+            <div className="flex-shrink-0 space-y-4 rounded-3xl bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-[#234C6A] flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-[#456882]" />
-                  Recent Chats
-                </h3>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
+                    Pipeline Inbox
+                  </p>
+                  <h3 className="flex items-center gap-2 font-black text-[#234C6A]">
+                    <MessageSquare className="h-5 w-5" />
+                    Recent Chats
+                  </h3>
+                </div>
               </div>
               <div className="relative flex items-center">
-                <Search className="absolute left-3.5 h-4 w-4 text-gray-400 pointer-events-none" />
+                <Search className="pointer-events-none absolute left-4 h-4 w-4 text-[#456882]" />
                 <input
                   type="text"
                   placeholder="Type the name and hit enter"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-2xl text-xs outline-none focus:bg-white focus:border-[#234C6A]/20 transition-all text-[#234C6A] placeholder-gray-400 font-semibold"
+                  className="h-11 w-full rounded-2xl border border-transparent bg-white/80 pl-11 pr-4 text-sm font-semibold text-[#234C6A] outline-none transition-all placeholder:text-[#456882]/55 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
                 />
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+            <div className="custom-scrollbar flex-1 space-y-2 overflow-y-auto pr-1">
               {isLoadingConvs ? (
                 [1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-20 w-full animate-pulse bg-gray-50 rounded-2xl"
+                    className="h-20 w-full animate-pulse rounded-2xl bg-[#F4F7F8]"
                   />
                 ))
               ) : conversations.length === 0 ? (
-                <div className="text-center py-10">
-                  <p className="text-sm text-[#456882]">No conversations yet</p>
+                <div className="py-12 text-center">
+                  <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-3xl bg-[#234C6A]/10">
+                    <MessageSquare className="h-7 w-7 text-[#234C6A]/45" />
+                  </div>
+                  <p className="text-sm font-semibold text-[#456882]">
+                    No conversations yet
+                  </p>
                 </div>
               ) : (
                 conversations.map((conv: ConvItem) => {
@@ -489,15 +516,15 @@ const InterviewsPage = () => {
                     <button
                       key={conv._id}
                       onClick={() => selectConv(conv)}
-                      className={`w-full p-4 rounded-2xl text-left transition-all duration-300 ${
+                      className={`w-full rounded-3xl p-4 text-left transition-all duration-300 ${
                         isSelected
-                          ? "bg-[#234C6A] text-white shadow-lg scale-[1.02]"
-                          : "hover:bg-gray-50 border border-transparent hover:border-gray-100"
+                          ? "scale-[1.01] bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/15"
+                          : "border border-transparent hover:border-[#234C6A]/10 hover:bg-[#F8FAFC]"
                       }`}
                     >
                       <div className="flex items-center gap-4">
                         <div
-                          className={`w-12 h-12 rounded-2xl overflow-hidden border-2 ${isSelected ? "border-white/20" : "border-gray-100"}`}
+                          className={`h-12 w-12 overflow-hidden rounded-2xl border ${isSelected ? "border-white/20" : "border-[#234C6A]/10"}`}
                         >
                           {other?.image ? (
                             <img
@@ -506,7 +533,7 @@ const InterviewsPage = () => {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-[#234C6A]/10 flex items-center justify-center text-[#234C6A]">
+                            <div className="flex h-full w-full items-center justify-center bg-[#234C6A]/10 text-[#234C6A]">
                               <User className="h-6 w-6" />
                             </div>
                           )}
@@ -514,7 +541,7 @@ const InterviewsPage = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-center mb-1">
                             <h4
-                              className={`font-bold truncate ${isSelected ? "text-white" : "text-[#234C6A]"}`}
+                              className={`truncate font-black ${isSelected ? "text-white" : "text-[#234C6A]"}`}
                             >
                               {other?.name}
                             </h4>
@@ -526,12 +553,12 @@ const InterviewsPage = () => {
                           </div>
                           <div className="flex items-center justify-between gap-2">
                             <p
-                              className={`text-xs truncate font-medium ${isSelected ? "text-white/80" : "text-[#456882]"}`}
+                              className={`truncate text-xs font-semibold ${isSelected ? "text-white/80" : "text-[#456882]"}`}
                             >
                               {conv.role}
                             </p>
                             <Badge
-                              className={`${isSelected ? "bg-white/20 text-white" : "bg-[#234C6A]/5 text-[#234C6A]"} text-[9px] px-1.5 py-0 border-none capitalize h-4`}
+                              className={`${isSelected ? "bg-white/20 text-white" : "bg-[#234C6A]/5 text-[#234C6A]"} h-4 rounded-full border-none px-2 py-0 text-[9px] font-black capitalize`}
                             >
                               {conv.status?.replace(/_/g, " ")}
                             </Badge>
@@ -546,13 +573,13 @@ const InterviewsPage = () => {
           </Card>
 
           {/* Chat Window */}
-          <Card className="lg:col-span-2 border-none bg-white shadow-xl rounded-3xl h-[750px] flex flex-col overflow-hidden relative">
+          <Card className="relative flex h-[760px] flex-col overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
             {selectedCandidate ? (
               <>
                 {/* Chat Header */}
-                <div className="p-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between">
+                <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E3E3E3]/70 bg-white/95 p-5 backdrop-blur-md">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                    <div className="h-12 w-12 overflow-hidden rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] shadow-sm">
                       {selectedCandidate.avatar ? (
                         <img
                           src={selectedCandidate.avatar}
@@ -560,24 +587,24 @@ const InterviewsPage = () => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-[#234C6A]/5 flex items-center justify-center text-[#234C6A]">
+                        <div className="flex h-full w-full items-center justify-center bg-[#234C6A]/5 text-[#234C6A]">
                           <User className="h-6 w-6" />
                         </div>
                       )}
                     </div>
                     <div>
-                      <h3 className="font-bold text-[#234C6A] leading-tight">
+                      <h3 className="font-black leading-tight text-[#234C6A]">
                         {selectedCandidate.name}
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge
                           variant="outline"
-                          className="bg-blue-50 text-blue-600 border-blue-100 text-[10px] px-2 py-0"
+                          className="rounded-full border-[#234C6A]/10 bg-[#234C6A]/5 px-2 py-0 text-[10px] font-black text-[#234C6A]"
                         >
                           {selectedCandidate.jobTitle}
                         </Badge>
                         {selectedCandidate.interviewStatus === "scheduled" && (
-                          <Badge className="bg-green-500 text-white text-[10px] px-2 py-0">
+                          <Badge className="rounded-full bg-emerald-500 px-2 py-0 text-[10px] font-black text-white">
                             Scheduled
                           </Badge>
                         )}
@@ -589,7 +616,7 @@ const InterviewsPage = () => {
                     {selectedCandidate.interviewStatus === "pending" && (
                       <Button
                         onClick={() => setShowScheduler(!showScheduler)}
-                        className={`${showScheduler ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-[#234C6A] hover:bg-[#234C6A]/90 text-white"} rounded-xl shadow-lg transition-all duration-300`}
+                        className={`${showScheduler ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-[#234C6A] hover:bg-[#1c405a] text-white"} rounded-2xl font-black shadow-lg transition-all duration-300`}
                       >
                         {showScheduler ? (
                           <>
@@ -609,7 +636,7 @@ const InterviewsPage = () => {
                       <Button
                         onClick={handleHireCandidate}
                         disabled={isHiring}
-                        className="bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg shadow-green-100/50"
+                        className="rounded-2xl bg-emerald-600 font-black text-white shadow-lg shadow-emerald-100/50 hover:bg-emerald-700"
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         {isHiring ? "Hiring..." : "Hire Candidate"}
@@ -621,7 +648,7 @@ const InterviewsPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="rounded-xl hover:bg-gray-50"
+                          className="rounded-2xl hover:bg-[#234C6A]/5"
                         >
                           <MoreVertical className="h-5 w-5 text-[#456882]" />
                         </Button>
@@ -650,7 +677,7 @@ const InterviewsPage = () => {
                       : "-translate-y-full opacity-0 pointer-events-none"
                   }`}
                 >
-                  <div className="mx-6 p-8 bg-white/95 backdrop-blur-2xl rounded-b-[40px] shadow-[0_20px_50px_rgba(35,76,106,0.15)] border-x border-b border-gray-100/50">
+                  <div className="mx-6 rounded-b-[40px] border-x border-b border-[#234C6A]/10 bg-white/95 p-8 shadow-[0_20px_50px_rgba(35,76,106,0.15)] backdrop-blur-2xl">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-xs font-bold text-[#234C6A] ml-1 uppercase tracking-wider opacity-60">
@@ -660,7 +687,7 @@ const InterviewsPage = () => {
                         <Input
                           ref={dateRef}
                           type="date"
-                          className="rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white h-12 transition-all"
+                          className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] transition-all focus:bg-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -671,7 +698,7 @@ const InterviewsPage = () => {
                         <div className="relative group">
                           <select
                             ref={typeRef}
-                            className="w-full h-12 rounded-2xl border border-gray-100 bg-gray-50/50 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#234C6A]/10 appearance-none transition-all group-hover:bg-white"
+                            className="h-12 w-full appearance-none rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] px-4 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-[#234C6A]/10 group-hover:bg-white"
                           >
                             <option value="video">Video Call</option>
                             <option value="audio">Audio Call</option>
@@ -691,7 +718,7 @@ const InterviewsPage = () => {
                         <Input
                           ref={startTimeRef}
                           type="time"
-                          className="rounded-2xl border-gray-100 bg-gray-50/50 h-12"
+                          className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC]"
                         />
                       </div>
                       <div className="space-y-2">
@@ -702,7 +729,7 @@ const InterviewsPage = () => {
                         <Input
                           ref={endTimeRef}
                           type="time"
-                          className="rounded-2xl border-gray-100 bg-gray-50/50 h-12"
+                          className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC]"
                         />
                       </div>
                     </div>
@@ -715,7 +742,7 @@ const InterviewsPage = () => {
                       <Input
                         ref={meetLinkRef}
                         placeholder="Paste Google Meet / Zoom link or office address..."
-                        className="rounded-2xl border-gray-100 bg-gray-50/50 h-12 focus:bg-white"
+                        className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] focus:bg-white"
                       />
                     </div>
 
@@ -723,11 +750,11 @@ const InterviewsPage = () => {
                       <Button
                         onClick={handleScheduleInterview}
                         disabled={isScheduling}
-                        className="flex-1 h-14 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:opacity-90 text-white rounded-[20px] font-bold shadow-xl shadow-blue-200/50 transition-all active:scale-[0.98]"
+                        className="h-14 flex-1 rounded-[20px] bg-gradient-to-r from-[#234C6A] to-[#456882] font-black text-white shadow-xl shadow-[#234C6A]/15 transition-all hover:from-[#1c405a] hover:to-[#3b5a71] active:scale-[0.98]"
                       >
                         {isScheduling ? "Confirming..." : "Confirm Schedule"}
                       </Button>
-                      <div className="w-14 h-14 bg-blue-50 rounded-[20px] flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors cursor-help group relative">
+                      <div className="group relative flex h-14 w-14 cursor-help items-center justify-center rounded-[20px] bg-[#234C6A]/5 text-[#234C6A] transition-colors hover:bg-[#234C6A]/10">
                         <Info className="h-6 w-6" />
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-[#234C6A] text-white text-[10px] rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity text-center shadow-xl">
                           Candidate will be notified instantly via email and
@@ -740,11 +767,11 @@ const InterviewsPage = () => {
 
                 {/* Messages Area */}
                 {pagination?.hasNext && (
-                  <div className="flex justify-center py-2 border-b border-gray-100 bg-gray-50/50 flex-shrink-0">
+                  <div className="flex flex-shrink-0 justify-center border-b border-[#E3E3E3]/70 bg-white/70 py-2">
                     <button
                       onClick={loadMore}
                       disabled={isLoadingMore}
-                      className="flex items-center gap-1.5 text-xs text-[#234C6A] font-semibold hover:bg-[#234C6A]/5 px-4 py-1.5 rounded-full transition-all"
+                      className="flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-black text-[#234C6A] transition-all hover:bg-[#234C6A]/5"
                     >
                       {isLoadingMore ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -758,18 +785,18 @@ const InterviewsPage = () => {
                 <div
                   ref={chatContainerRef}
                   onScroll={handleScroll}
-                  className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/30 custom-scrollbar"
+                  className="custom-scrollbar flex-1 space-y-4 overflow-y-auto bg-gradient-to-b from-[#F8FAFC] to-white p-6"
                 >
                   {isLoadingMsgs ? (
-                    <div className="flex justify-center items-center h-full">
+                    <div className="flex h-full items-center justify-center">
                       <Loader2 className="h-6 w-6 text-[#234C6A] animate-spin" />
                     </div>
                   ) : allMessages.length === 0 ? (
-                    <div className="text-center py-20">
-                      <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MessageSquare className="h-8 w-8 text-gray-300" />
+                    <div className="py-20 text-center">
+                      <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#234C6A]/5">
+                        <MessageSquare className="h-9 w-9 text-[#234C6A]/35" />
                       </div>
-                      <p className="text-[#456882] font-medium">
+                      <p className="font-semibold text-[#456882]">
                         No messages yet. Start the conversation!
                       </p>
                     </div>
@@ -784,7 +811,7 @@ const InterviewsPage = () => {
                           className={`flex ${isMe ? "justify-end" : "justify-start"} group`}
                         >
                           <div
-                            className={`max-w-[85%] relative ${isMe ? "bg-[#234C6A] text-white rounded-2xl rounded-tr-sm" : "bg-white text-[#234C6A] rounded-2xl rounded-tl-sm shadow-sm border border-gray-100"} p-3 px-4`}
+                            className={`relative max-w-[85%] ${isMe ? "rounded-3xl rounded-tr-md bg-[#234C6A] text-white" : "rounded-3xl rounded-tl-md border border-[#234C6A]/10 bg-white text-[#234C6A] shadow-sm"} p-3 px-4`}
                           >
                             {isEditing ? (
                               <div className="flex items-center gap-2 min-w-[180px]">
@@ -831,7 +858,7 @@ const InterviewsPage = () => {
                               </div>
                             )}
                             {!isEditing && isMe && (
-                              <div className="absolute -top-7 right-0 hidden group-hover:flex items-center gap-1 bg-white border border-gray-100 shadow-lg rounded-xl px-1.5 py-1">
+                              <div className="absolute -top-8 right-0 hidden items-center gap-1 rounded-2xl border border-[#234C6A]/10 bg-white px-1.5 py-1 shadow-lg group-hover:flex">
                                 <button
                                   onClick={() => {
                                     setEditingMsgId(msg._id);
@@ -862,19 +889,19 @@ const InterviewsPage = () => {
                 </div>
 
                 {/* Input Area */}
-                <div className="p-6 bg-white border-t border-gray-100">
-                  <div className="flex gap-3 bg-gray-50 p-2 rounded-[24px] border border-gray-100 shadow-inner">
+                <div className="border-t border-[#E3E3E3]/70 bg-white p-6">
+                  <div className="flex gap-3 rounded-[24px] border border-[#234C6A]/10 bg-[#F8FAFC] p-2 shadow-inner">
                     <Input
                       ref={messageInputRef}
                       placeholder="Type your message..."
                       onKeyPress={(e) =>
                         e.key === "Enter" && handleSendMessage()
                       }
-                      className="border-none bg-transparent focus-visible:ring-0 text-[#234C6A]"
+                      className="border-none bg-transparent text-[#234C6A] focus-visible:ring-0"
                     />
                     <Button
                       onClick={handleSendMessage}
-                      className="bg-[#234C6A] hover:bg-[#234C6A]/90 text-white rounded-full w-12 h-12 flex-shrink-0 shadow-lg"
+                      className="h-12 w-12 flex-shrink-0 rounded-2xl bg-[#234C6A] text-white shadow-lg hover:bg-[#1c405a]"
                     >
                       <Send className="h-5 w-5" />
                     </Button>
@@ -882,11 +909,11 @@ const InterviewsPage = () => {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                <div className="bg-[#234C6A]/5 w-24 h-24 rounded-[40px] flex items-center justify-center mb-6">
+              <div className="flex flex-1 flex-col items-center justify-center bg-[#F8FAFC] p-12 text-center">
+                <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-[40px] bg-[#234C6A]/5">
                   <MessageSquare className="h-12 w-12 text-[#234C6A]" />
                 </div>
-                <h3 className="text-2xl font-bold text-[#234C6A] mb-2">
+                <h3 className="mb-2 text-2xl font-black text-[#234C6A]">
                   Select a Conversation
                 </h3>
                 <p className="text-[#456882] max-w-sm">
