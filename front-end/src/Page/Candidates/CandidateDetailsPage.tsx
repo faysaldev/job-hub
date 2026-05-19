@@ -57,6 +57,24 @@ function formatDate(dateStr: string) {
   });
 }
 
+function formatEduYear(yearStr: string) {
+  if (!yearStr) return "";
+  const parseAndFormat = (str: string) => {
+    const trimmed = str.trim();
+    if (!trimmed) return "";
+    const date = new Date(trimmed);
+    if (isNaN(date.getTime())) return trimmed;
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (trimmed.length <= 4) return trimmed;
+    return `${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+  };
+
+  if (yearStr.includes(" - ")) {
+    return yearStr.split(" - ").map(parseAndFormat).join(" - ");
+  }
+  return parseAndFormat(yearStr);
+}
+
 function SectionHeading({
   icon: Icon,
   title,
@@ -463,7 +481,7 @@ export default function CandidateDetailsPage() {
                           {edu.school}
                         </p>
                         <p className="mt-1 text-xs font-bold text-[#456882]/65">
-                          {edu.year}
+                          {formatEduYear(edu.year)}
                         </p>
                       </div>
                     ))}
