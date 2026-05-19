@@ -99,7 +99,7 @@ function CandidateCard({ candidate }: { candidate: any }) {
   return (
     <Card className="group relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#234C6A]/25 hover:shadow-2xl hover:shadow-[#234C6A]/10">
       <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-[#234C6A] to-[#456882] transition-transform duration-300 group-hover:scale-x-100" />
-      <div className="p-8">
+      <div className="p-6 pb-0">
         <div className="flex flex-col items-start gap-6 md:flex-row">
           <div className="relative shrink-0">
             <div className="h-24 w-24 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-[#234C6A]/5 p-1 shadow-sm transition-transform duration-300 group-hover:scale-105">
@@ -185,7 +185,7 @@ function CandidateCard({ candidate }: { candidate: any }) {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col justify-end gap-3 border-t border-[#E3E3E3]/70 pt-5 sm:flex-row sm:items-center">
+        <div className="mt-6 flex flex-col justify-end gap-3 border-t border-[#E3E3E3]/70 pt-3 sm:flex-row sm:items-center">
           <Link href={`/candidates/${candidate._id}`}>
             <Button
               variant="outline"
@@ -195,9 +195,6 @@ function CandidateCard({ candidate }: { candidate: any }) {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-          <Button className="h-11 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-8 font-black text-white shadow-lg shadow-[#234C6A]/15 transition-all hover:from-[#1c405a] hover:to-[#3b5a71] active:scale-[0.99]">
-            Hire Now
-          </Button>
         </div>
       </div>
     </Card>
@@ -332,7 +329,7 @@ export default function CandidatesListingPage() {
       <main className="container mx-auto flex-1 px-6 py-14" ref={containerRef}>
         <div className="flex flex-col gap-8 lg:flex-row">
           <aside className="shrink-0 space-y-6 lg:w-80">
-            <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
+            <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-xl shadow-[#234C6A]/8 backdrop-blur pt-0">
               <div className="border-b border-[#E3E3E3]/70 bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -399,43 +396,6 @@ export default function CandidatesListingPage() {
           </aside>
 
           <div className="flex-1">
-            <Card className="mb-6 rounded-3xl border border-[#234C6A]/10 bg-white/95 p-5 shadow-sm backdrop-blur">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
-                    Candidate Directory
-                  </p>
-                  <h2 className="mt-1 text-2xl font-black tracking-tight text-[#234C6A]">
-                    {isLoading ? (
-                      "Loading talent..."
-                    ) : (
-                      <>
-                        {sortedSeekers.length}{" "}
-                        <span className="text-base font-semibold text-[#456882]">
-                          candidates found
-                        </span>
-                      </>
-                    )}
-                  </h2>
-                  <p className="mt-1 text-sm font-medium text-[#456882]">
-                    Verified professionals across roles, locations, and work
-                    preferences
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 rounded-2xl border border-[#234C6A]/10 bg-[#F4F7F8] px-4 py-3">
-                  <Users className="h-4 w-4 text-[#456882]" />
-                  <select
-                    className="cursor-pointer border-none bg-transparent text-sm font-black text-[#234C6A] outline-none focus:ring-0"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                  >
-                    <option value="newest">Newest</option>
-                    <option value="job-type">Job Type</option>
-                  </select>
-                </div>
-              </div>
-            </Card>
-
             {isLoading ? (
               <div className="space-y-5">
                 {[1, 2, 3].map((i) => (

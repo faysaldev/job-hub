@@ -20,15 +20,10 @@ import {
   BookOpen,
   CheckCircle,
   Clock,
-  ArrowRight,
   Mail,
-  Shield,
-  Sparkles,
   CalendarDays,
 } from "lucide-react";
 import { useGetSeekerByIdQuery } from "@/src/redux/features/seeker/seekerApi";
-import Header from "@/src/components/common/Header";
-import Footer from "@/src/components/common/Footer";
 
 const SOCIAL_CONFIG = [
   {
@@ -99,10 +94,11 @@ export default function CandidateDetailsPage() {
   } = useGetSeekerByIdQuery(params?.id as string);
   const seeker = response?.data;
 
+  console.log(" seeker", seeker);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col jobhub-page-bg">
-        <Header />
         <div className="flex flex-1 items-center justify-center px-6">
           <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-10 text-center shadow-2xl shadow-[#234C6A]/10">
             <div className="mx-auto mb-5 h-14 w-14 animate-spin rounded-full border-4 border-[#234C6A]/15 border-t-[#234C6A]" />
@@ -121,7 +117,6 @@ export default function CandidateDetailsPage() {
   if (error || !seeker) {
     return (
       <div className="flex min-h-screen flex-col jobhub-page-bg">
-        <Header />
         <div className="flex flex-1 items-center justify-center p-6 text-center">
           <Card className="max-w-md rounded-3xl border border-[#234C6A]/10 bg-white/95 p-10 shadow-2xl shadow-[#234C6A]/10">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-red-50">
@@ -150,13 +145,9 @@ export default function CandidateDetailsPage() {
     link: seeker.socialProfiles?.[s.key],
   })).filter((s) => s.link);
 
-  const firstName = seeker.userId?.name?.split(" ")[0] || "this candidate";
-
   return (
     <div className="min-h-screen flex flex-col jobhub-page-bg">
-      <Header />
-
-      <section className="relative overflow-hidden bg-[#234C6A] pt-28 pb-28 md:pt-36 md:pb-32">
+      <section className="relative overflow-hidden bg-[#234C6A] pt-28 pb-28 md:pt-20 md:pb-24">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
           <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/20 to-transparent" />
@@ -175,10 +166,6 @@ export default function CandidateDetailsPage() {
 
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
-                <Sparkles className="h-4 w-4" />
-                <span>Candidate Profile</span>
-              </div>
               <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
                 {seeker.userId?.name || "Anonymous Candidate"}
               </h1>
@@ -226,7 +213,7 @@ export default function CandidateDetailsPage() {
       <main className="container mx-auto flex-1 px-6 pb-20">
         <div className="relative z-20 -mt-16 grid grid-cols-1 gap-8 lg:grid-cols-[360px_1fr]">
           <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-            <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur-xl">
+            <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur-xl pt-0">
               <div className="bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-8 text-center">
                 <div className="relative mx-auto mb-5 inline-block">
                   <div className="mx-auto h-36 w-36 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white p-1 shadow-xl">
@@ -242,7 +229,10 @@ export default function CandidateDetailsPage() {
                     />
                   </div>
                   <div className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-white bg-emerald-500 shadow-lg">
-                    <CheckCircle className="h-5 w-5 text-white" strokeWidth={3} />
+                    <CheckCircle
+                      className="h-5 w-5 text-white"
+                      strokeWidth={3}
+                    />
                   </div>
                 </div>
 
@@ -293,13 +283,28 @@ export default function CandidateDetailsPage() {
                 )}
 
                 <div className="space-y-3 border-t border-[#E3E3E3]/70 pt-5">
-                  <Button className="h-12 w-full rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] font-black text-white shadow-lg shadow-[#234C6A]/15 hover:from-[#1c405a] hover:to-[#3b5a71] active:scale-[0.99]">
-                    Hire Candidate
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
                   <Button
                     variant="outline"
                     className="h-11 w-full rounded-2xl border-[#234C6A]/20 font-black text-[#234C6A] hover:bg-[#234C6A]/5"
+                    onClick={() => {
+                      const email = seeker.userId?.email;
+                      if (email) {
+                        const name = seeker.userId?.name || "Candidate";
+                        const designation = seeker.designation || "professional";
+                        const skills = seeker.skills?.slice(0, 3).join(", ") || "development";
+                        const subject = encodeURIComponent(`Exciting Career Opportunity at JobHub - ${designation}`);
+                        const body = encodeURIComponent(
+                          `Hello ${name},\n\n` +
+                          `I hope you are doing well.\n\n` +
+                          `I was reviewing your profile on JobHub and was highly impressed by your background as a ${designation}, particularly your expertise in ${skills}.\n\n` +
+                          `We are currently looking for talented individuals with your skillset and I would love to schedule a quick chat to discuss how your experience aligns with our goals. Are you available for a brief conversation this week?\n\n` +
+                          `Looking forward to hearing from you!\n\n` +
+                          `Best regards,\n` +
+                          `Recruiter`
+                        );
+                        window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+                      }
+                    }}
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Send Message
@@ -502,33 +507,9 @@ export default function CandidateDetailsPage() {
                 </Card>
               )}
             </div>
-
-            <Card className="relative overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white shadow-xl shadow-[#234C6A]/20">
-              <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[4rem] bg-white/10" />
-              <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-white/85">
-                    <Shield className="h-4 w-4" />
-                    Recruiter Action
-                  </div>
-                  <h3 className="text-2xl font-black">
-                    Ready to hire {firstName}?
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-white/75">
-                    Schedule an interview or send a direct job offer today.
-                  </p>
-                </div>
-                <Button className="h-12 rounded-2xl bg-white px-7 font-black text-[#234C6A] hover:bg-[#E3E3E3]">
-                  Book Interview
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </Card>
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
