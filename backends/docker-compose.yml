@@ -1,40 +1,41 @@
-version: "3.9"
+version: "3.8"
 
 services:
   app:
     build:
       context: .
-      target: development
-    container_name: node_app
+      target: production
+    container_name: job_hub_backend
+    restart: always
     ports:
-      - "${PORT}:${PORT}"
+      - "3001:3001"
     env_file:
       - .env
-
     environment:
-      CHOKIDAR_USEPOLLING: "true"
-    volumes:
-      - .:/app
-      - /app/node_modules
-
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+      - BACKEND_IP=0.0.0.0
     depends_on:
-      - mongo
+      - redis
     networks:
       - app_network
 
-  mongo:
-    image: mongo:6
-    container_name: mongodb
+  redis:
+    image: redis:7-alpine
+    container_name: job_hub_redis
     restart: always
     ports:
-      - "27018:27017" # Expose MongoDB port to the host
+      - "6379:6379"
     volumes:
-      - mongo-data:/data/db
+      - redis_data:/data
     networks:
       - app_network
 
 volumes:
-  mongo-data:
+  redis_data:
 
 networks:
   app_network:

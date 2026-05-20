@@ -1,66 +1,42 @@
-# Stage 1: Build Stage (Development and Compilation)
-FROM node:20-alpine AS build
-
-# Set working directory
+# Base Stage (installs pnpm and sets up workspace)
+FROM node:20-alpine AS base
+RUN npm install -g pnpm
 WORKDIR /app
 
-# Copy package files for dependency installation
-COPY package*.json ./
-COPY tsconfig.json ./
+# Dependencies Stage (installs all dependencies including devDependencies)
+FROM base AS dependencies
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
-# Install all dependencies (including dev dependencies like nodemon)
-RUN npm install
-
-# Copy the source code into the container
+# Build Stage (compiles typescript code)
+FROM base AS build
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
+RUN pnpm run build
 
-# Compile the TypeScript code (for production)
-RUN npm run build
+# Production Dependencies Stage (installs only production dependencies)
+FROM base AS prod-dependencies
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
-# Stage 2: Production Stage
+# Production Stage (minimal image runner)
 FROM node:20-alpine AS production
-
-# Set working directory
 WORKDIR /app
+COPY --from=prod-dependencies /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package.json ./
 
-# Copy only the necessary files from the build stage
-COPY --from=build /app/dist /app/dist
-COPY --from=build /app/package*.json /app/
-COPY --from=build /app/tsconfig.json /app/
+ENV NODE_ENV=production
+ENV PORT=3001
 
-# Install only production dependencies
-RUN npm install --omit=dev
+EXPOSE 3001
 
-# Clean up the npm cache to reduce image size
-RUN npm cache clean --force
+CMD ["node", "dist/index.js"]
 
-# Expose the application port
-EXPOSE 9900
-
-# Set default command for production
-CMD ["npm", "start"]
-
-# Stage 3: Development Stage
-FROM node:20-alpine AS development
-
-# Set working directory
-WORKDIR /app
-
-# Copy package files for development dependencies
-COPY package*.json ./
-COPY tsconfig.json ./
-
-# Install all dependencies (including dev dependencies like nodemon)
-RUN npm install
-
-# Copy the source code into the container
+# Development Stage (for local development auto-reload)
+FROM base AS development
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-
-# Install nodemon globally for watching file changes
-RUN npm install -g nodemon
-
-# Expose the application port
-EXPOSE 9900
-
-# Set the command to run in development (with nodemon)
-CMD ["npm", "run", "dev"]
+ENV PORT=3001
+EXPOSE 3001
+CMD ["pnpm", "run", "dev"]
