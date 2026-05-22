@@ -369,10 +369,13 @@ export interface JobFilters {
   subcategory?: string;
   location?: string;
   remote?: boolean;
-  type?: JobType | JobType[];
-  experienceLevel?: ExperienceLevel | ExperienceLevel[];
+  type?: JobType | JobType[] | string;
+  experienceLevel?: ExperienceLevel | ExperienceLevel[] | string;
   salaryMin?: number;
   salaryMax?: number;
+  salaryRanges?: string;
+  companySizes?: string;
+  postedDate?: string;
   skills?: string[];
   postedWithin?: "24h" | "7d" | "30d" | "90d";
   sortBy?: "relevance" | "newest" | "salary_high" | "salary_low";

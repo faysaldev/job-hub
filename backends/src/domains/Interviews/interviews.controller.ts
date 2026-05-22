@@ -39,9 +39,6 @@ const getMyInterviews = asyncHandler(
   async (req: ProtectedRequest, res: Response) => {
     const userId = req.user?._id;
     const { role } = req.query; // "interviewer" or "interviewee"
-
-    console.log(userId, role);
-
     const interviews = await interviewService.getInterviewsForUser(
       userId as string,
       (role as "interviewer" | "interviewee") || "interviewer",

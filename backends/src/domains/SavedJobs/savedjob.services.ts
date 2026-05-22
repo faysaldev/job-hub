@@ -33,7 +33,6 @@ const getUserSavedJobs = async (userId: string) => {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
     if (cachedResult) {
-      console.log("Cache hit for getUserSavedJobs");
       return JSON.parse(cachedResult);
     }
   } catch (error) {
@@ -84,7 +83,6 @@ const clearUserSavedJobsCache = async (userId: string) => {
   try {
     const cacheKey = `userSavedJobs:${userId}`;
     await redis.del(cacheKey);
-    console.log(`Cleared cache for user saved jobs: ${userId}`);
   } catch (error) {
     console.log("Error clearing user saved jobs cache:", error);
   }

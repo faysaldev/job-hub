@@ -38,11 +38,12 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
         <h3 className="text-xl font-bold text-[#234C6A]">Career Logistics</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6">
         {/* Total Experience */}
         <div className="space-y-3">
           <label className="text-sm font-black text-[#456882] uppercase tracking-wider flex items-center gap-2">
-            <Briefcase className="h-4 w-4" /> Total Experience
+            <Briefcase className="h-4 w-4" />
+            Experience
           </label>
           {editing ? (
             <Input
@@ -242,7 +243,7 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
   const twitter = watch("socialProfiles.twitter");
 
   return (
-    <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
+    <Card className="p-6 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 bg-[#234C6A]/10 rounded-xl">
           <Github className="h-5 w-5 text-[#234C6A]" />
@@ -250,11 +251,13 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
         <h3 className="text-xl font-bold text-[#234C6A]">Online Presence</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-2">
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <Linkedin className="h-4 w-4 text-[#0A66C2]" />
-            <span className="text-xs font-black text-[#456882] uppercase">LinkedIn</span>
+            <span className="text-xs font-black text-[#456882] uppercase">
+              LinkedIn
+            </span>
           </div>
           {editing ? (
             <Input
@@ -271,10 +274,12 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
           )}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <Github className="h-4 w-4 text-[#181717]" />
-            <span className="text-xs font-black text-[#456882] uppercase">GitHub</span>
+            <span className="text-xs font-black text-[#456882] uppercase">
+              GitHub
+            </span>
           </div>
           {editing ? (
             <Input
@@ -291,10 +296,13 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
           )}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <Twitter className="h-4 w-4 text-[#1DA1F2]" />
-            <span className="text-xs font-black text-[#456882] uppercase">Twitter / X</span>
+            <span className="text-xs font-black text-[#456882] uppercase">
+              {" "}
+              X
+            </span>
           </div>
           {editing ? (
             <Input

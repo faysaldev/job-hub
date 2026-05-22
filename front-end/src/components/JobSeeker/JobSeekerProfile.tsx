@@ -4,8 +4,15 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { User, Save, X, Loader2, Sparkles } from "lucide-react";
+import {
+  User,
+  Save,
+  X,
+  Loader2,
+  Sparkles,
+  ShieldCheck,
+  Edit3,
+} from "lucide-react";
 import {
   useGetSeekerProfileQuery,
   useCreateSeekerProfileMutation,
@@ -38,24 +45,33 @@ const BioSection = memo(
   ({ editing, bio }: { editing: boolean; bio: string }) => {
     const { register } = useFormContext<ProfileFormValues>();
     return (
-      <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-[#234C6A]/10 rounded-xl">
-            <User className="h-5 w-5 text-[#234C6A]" />
+      <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-sm backdrop-blur pt-0">
+        <div className="border-b border-[#E3E3E3]/70 bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/15">
+              <User className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
+                Summary
+              </p>
+              <h3 className="text-xl font-black text-[#234C6A]">About Me</h3>
+            </div>
           </div>
-          <h3 className="text-xl font-bold text-[#234C6A]">About Me</h3>
         </div>
-        {editing ? (
-          <textarea
-            {...register("bio")}
-            placeholder="Write a brief professional summary..."
-            className="w-full min-h-[150px] p-4 border border-[#456882]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#234C6A] bg-gray-50"
-          />
-        ) : (
-          <p className="text-[#234C6A]/90 leading-relaxed text-lg">
-            {bio || "No bio added yet. Tell us about your journey!"}
-          </p>
-        )}
+        <div className="p-5 md:p-6">
+          {editing ? (
+            <textarea
+              {...register("bio")}
+              placeholder="Write a brief professional summary..."
+              className="min-h-[170px] w-full resize-none rounded-2xl border border-transparent bg-[#F4F7F8] p-4 text-[#234C6A] outline-none placeholder:text-[#456882]/55 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
+            />
+          ) : (
+            <p className="min-h-[110px] text-base font-medium leading-8 text-[#456882]">
+              {bio || "No bio added yet. Tell us about your journey!"}
+            </p>
+          )}
+        </div>
       </Card>
     );
   },
@@ -96,26 +112,61 @@ const calculateProfileStrength = (data: any, user: any) => {
 };
 
 const ProfileStrengthIndicator = ({ strength }: { strength: number }) => {
+  const checklist = [
+    { label: "Core details", done: strength > 0 },
+    { label: "Profile depth", done: strength >= 50 },
+    { label: "Recruiter ready", done: strength >= 85 },
+  ];
+
   return (
-    <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white rounded-2xl shadow-xl">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-yellow-400" />
-          <h4 className="font-bold">Profile Strength</h4>
+    <Card className="overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white shadow-xl shadow-[#234C6A]/20">
+      <div className="relative p-6">
+        <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[3rem] bg-white/10" />
+        <div className="relative z-10">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-white/65">
+                  Completion
+                </p>
+                <h4 className="font-black">Profile Strength</h4>
+              </div>
+            </div>
+            <span className="text-3xl font-black">{strength}%</span>
+          </div>
+
+          <div className="h-3 w-full overflow-hidden rounded-full bg-white/20">
+            <div
+              className="h-full rounded-full bg-white transition-all duration-1000"
+              style={{ width: `${strength}%` }}
+            />
+          </div>
+          <p className="mt-3 text-sm font-medium leading-6 text-white/75">
+            {strength < 100
+              ? "Complete your profile to stand out to top recruiters."
+              : "Perfect. Your profile is fully optimized."}
+          </p>
+
+          <div className="mt-5 space-y-2">
+            {checklist.map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-2 rounded-2xl bg-white/10 px-3 py-2 text-sm font-bold text-white/85"
+              >
+                {item.done ? (
+                  <ShieldCheck className="h-4 w-4" />
+                ) : (
+                  <div className="h-4 w-4 rounded-full border border-white/40" />
+                )}
+                {item.label}
+              </div>
+            ))}
+          </div>
         </div>
-        <span className="text-2xl font-black">{strength}%</span>
       </div>
-      <div className="w-full bg-white/20 h-3 rounded-full overflow-hidden">
-        <div
-          className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full transition-all duration-1000"
-          style={{ width: `${strength}%` }}
-        />
-      </div>
-      <p className="text-xs mt-3 text-blue-100/80 font-medium">
-        {strength < 100
-          ? "Complete your profile to stand out to top recruiters!"
-          : "Perfect! Your profile is fully optimized."}
-      </p>
     </Card>
   );
 };
@@ -176,7 +227,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
     // mode: "onChange" intentionally omitted — validate on submit only for perf
   });
 
-  const { handleSubmit, reset, watch } = methods;
+  const { handleSubmit, reset } = methods;
 
   // Populate form once data arrives
   useEffect(() => {
@@ -322,40 +373,47 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
 
   if (isFetching) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-10 w-10 animate-spin text-[#234C6A] mb-4" />
-        <p className="text-[#456882] font-medium">Loading your profile...</p>
+      <div className="flex flex-col items-center justify-center rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] py-20">
+        <Loader2 className="mb-4 h-10 w-10 animate-spin text-[#234C6A]" />
+        <p className="font-semibold text-[#456882]">Loading your profile...</p>
       </div>
     );
   }
 
   return (
     <FormProvider {...methods}>
-      <div className="space-y-8">
-        {/* Toolbar */}
-        <div className="flex justify-between items-start">
-          <h2 className="text-2xl font-bold text-[#234C6A]">
-            Your Professional Profile
-          </h2>
+      <div className="space-y-7">
+        <div className="flex flex-col gap-4 rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
+              Profile Control
+            </p>
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-[#234C6A]">
+              Your Professional Profile
+            </h2>
+            <p className="mt-1 text-sm font-medium text-[#456882]">
+              Keep the details aligned, complete, and recruiter-ready.
+            </p>
+          </div>
           {editing ? (
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Button
                 variant="outline"
                 onClick={toggleEdit}
-                className="border-[#456882] text-[#234C6A] hover:bg-[#456882]/10"
+                className="h-11 rounded-2xl border-[#234C6A]/20 px-5 font-black text-[#234C6A] hover:bg-[#234C6A]/5"
                 disabled={isSaving}
               >
-                <X className="h-4 w-4 mr-2" /> Cancel
+                <X className="mr-2 h-4 w-4" /> Cancel
               </Button>
               <Button
                 onClick={handleSubmit(onSubmit)}
-                className="bg-[#234C6A] hover:bg-[#456882]"
+                className="h-11 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-5 font-black text-white shadow-lg shadow-[#234C6A]/15 hover:from-[#1c405a] hover:to-[#3b5a71]"
                 disabled={isSaving}
               >
                 {isSaving ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="mr-2 h-4 w-4" />
                 )}
                 Save Changes
               </Button>
@@ -363,15 +421,16 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
           ) : (
             <Button
               onClick={toggleEdit}
-              className="bg-gradient-to-r from-[#234C6A] to-[#456882] text-white shadow-lg hover:shadow-xl rounded-xl px-6"
+              className="h-11 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-6 font-black text-white shadow-lg shadow-[#234C6A]/15 hover:from-[#1c405a] hover:to-[#3b5a71]"
             >
+              <Edit3 className="mr-2 h-4 w-4" />
               Edit Profile
             </Button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          <div className="lg:col-span-2 space-y-8">
+        <div className="grid grid-cols-1 items-start gap-7 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="space-y-7">
             <ProfileHeader
               editing={editing}
               control={methods.control}
@@ -385,22 +444,24 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
             <BioSection editing={editing} bio={profileData?.aboutMe || ""} />
           </div>
 
-          <div className="space-y-8">
+          <aside className="space-y-7 xl:sticky xl:top-24">
             <ProfileStrengthIndicator
               strength={calculateProfileStrength(profileData, currentUser)}
             />
             <SocialLinksSection editing={editing} />
-          </div>
+          </aside>
         </div>
 
-        <SkillsSection
-          editing={editing}
-          profileSkills={profileData?.skills || []}
-        />
-        <ProjectsSection editing={editing} />
-        <ExperienceSection editing={editing} />
-        <EducationSection editing={editing} />
-        <ResumePortfolioSection editing={editing} profileData={profileData} />
+        <div className="space-y-7">
+          <SkillsSection
+            editing={editing}
+            profileSkills={profileData?.skills || []}
+          />
+          <ProjectsSection editing={editing} />
+          <ExperienceSection editing={editing} />
+          <EducationSection editing={editing} />
+          <ResumePortfolioSection editing={editing} profileData={profileData} />
+        </div>
       </div>
     </FormProvider>
   );

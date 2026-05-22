@@ -59,14 +59,18 @@ export const updateJobValidation = z.object({
 
 export const searchJobsValidation = z.object({
   search: z.string().optional(),
+  q: z.string().optional(),
   category: z.string().optional(),
   subcategory: z.string().optional(),
-  type: jobTypeSchema.optional(),
+  type: z.string().optional(),
   location: z.string().optional(),
   locationType: locationTypeSchema.optional(),
-  experienceLevel: experienceLevelSchema.optional(),
+  experienceLevel: z.string().optional(),
   minSalary: z.string().transform((val) => parseInt(val)).pipe(z.number().min(0)).optional(),
   maxSalary: z.string().transform((val) => parseInt(val)).pipe(z.number().min(0)).optional(),
+  salaryRanges: z.string().optional(),
+  companySizes: z.string().optional(),
+  postedDate: z.string().optional(),
   page: z.string().transform((val) => parseInt(val)).pipe(z.number().min(1)).default(1),
   limit: z.string().transform((val) => parseInt(val)).pipe(z.number().min(1).max(100)).default(10),
 }).refine((data) => {

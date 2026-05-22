@@ -1,5 +1,5 @@
 import connectionToDb from "./config/db";
-import { PORT } from "./config/ENV";
+import { PORT, BACKEND_IP } from "./config/ENV";
 import setUpSocketIO from "./config/socketio";
 import app from "./server";
 import dotenv from "dotenv";
@@ -17,7 +17,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO on the same server/port
 setUpSocketIO(server);
 
-const backendIp = "localhost";
+const backendIp = BACKEND_IP || "0.0.0.0";
 const port = PORT || 3000;
 
 server.listen(Number(port), backendIp, () => {

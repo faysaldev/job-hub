@@ -47,7 +47,6 @@ const verifyEmail = async (email: string, code: number) => {
     "name email image password phoneNumber role isEmailVerified oneTimeCode",
   );
   if (!user) throw new Error("User not found");
-  console.log(user.oneTimeCode, code, "oneTimeCode");
   if (user.oneTimeCode !== code) throw new Error("Invalid verification code");
 
   user.isEmailVerified = true;

@@ -5,19 +5,21 @@ import { asyncHandler } from "../../lib/errorsHandle";
 import { ProtectedRequest } from "../../types/protected-request";
 import generalService from "./general.services";
 
-const getHeaderStats = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = req.user?._id;
-  const stats = await generalService.getHeaderStats(userId as string);
+const getHeaderStats = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const userId = req.user?._id;
+    const stats = await generalService.getHeaderStats(userId as string);
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Header stats retrieved successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: stats,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Header stats retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: stats,
+      }),
+    );
+  },
+);
 
 const getCategoryStats = asyncHandler(async (req: Request, res: Response) => {
   const stats = await generalService.getCategoryStats();
@@ -28,22 +30,24 @@ const getCategoryStats = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: stats,
-    })
+    }),
   );
 });
 
-const getSubcategoryStats = asyncHandler(async (req: Request, res: Response) => {
-  const stats = await generalService.getSubcategoryStats();
+const getSubcategoryStats = asyncHandler(
+  async (req: Request, res: Response) => {
+    const stats = await generalService.getSubcategoryStats();
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Subcategory stats retrieved successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: stats,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Subcategory stats retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: stats,
+      }),
+    );
+  },
+);
 
 const getTopJobs = asyncHandler(async (req: Request, res: Response) => {
   const jobs = await generalService.getTopJobs();
@@ -54,37 +58,59 @@ const getTopJobs = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.OK,
       data: jobs,
-    })
+    }),
   );
 });
 
-const getSeekerDashboardStats = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = req.user?._id;
-  const stats = await generalService.getSeekerDashboardStats(userId as string);
+const getSeekerDashboardStats = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const userId = req.user?._id;
+    const stats = await generalService.getSeekerDashboardStats(
+      userId as string,
+    );
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Seeker dashboard stats retrieved successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: stats,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Seeker dashboard stats retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: stats,
+      }),
+    );
+  },
+);
 
-const getAppliedJobIds = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = req.user?._id;
-  const jobIds = await generalService.getAppliedJobIds(userId as string);
+const getAppliedJobIds = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const userId = req.user?._id;
+    const jobIds = await generalService.getAppliedJobIds(userId as string);
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Applied job IDs retrieved successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: jobIds,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Applied job IDs retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: jobIds,
+      }),
+    );
+  },
+);
+
+const getSavedJobIds = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const userId = req.user?._id;
+    const jobIds = await generalService.getSavedJobIds(userId as string);
+
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Saved job IDs retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: jobIds,
+      }),
+    );
+  },
+);
 
 const submitContactForm = asyncHandler(async (req: Request, res: Response) => {
   const contactData = req.body;
@@ -96,23 +122,27 @@ const submitContactForm = asyncHandler(async (req: Request, res: Response) => {
       status: "OK",
       statusCode: httpStatus.CREATED,
       data: contact,
-    })
+    }),
   );
 });
 
-const getRecruiterDashboardStats = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const recruiterId = req.user?._id;
-  const stats = await generalService.getRecruiterDashboardStats(recruiterId as string);
+const getRecruiterDashboardStats = asyncHandler(
+  async (req: ProtectedRequest, res: Response) => {
+    const recruiterId = req.user?._id;
+    const stats = await generalService.getRecruiterDashboardStats(
+      recruiterId as string,
+    );
 
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Recruiter dashboard stats retrieved successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: stats,
-    })
-  );
-});
+    res.status(httpStatus.OK).json(
+      response({
+        message: "Recruiter dashboard stats retrieved successfully",
+        status: "OK",
+        statusCode: httpStatus.OK,
+        data: stats,
+      }),
+    );
+  },
+);
 
 const generalController = {
   getHeaderStats,
@@ -123,6 +153,7 @@ const generalController = {
   getAppliedJobIds,
   submitContactForm,
   getRecruiterDashboardStats,
+  getSavedJobIds,
 };
 
 export default generalController;

@@ -64,83 +64,70 @@ export default function TermsOfServicePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#E3E3E3] via-white to-[#E3E3E3]">
+    <div className="min-h-screen flex flex-col jobhub-page-bg">
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-24 overflow-hidden bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882]">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse delay-1000" />
+      <section className="relative overflow-hidden bg-[#234C6A] pt-32 pb-28 md:pt-40 md:pb-32">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="absolute left-8 top-28 hidden h-28 w-64 rotate-[-8deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
+          <div className="absolute bottom-14 right-10 hidden h-32 w-72 rotate-[7deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
         </div>
 
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="hero-content max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white/90 text-sm mb-8 border border-white/20">
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="hero-content mx-auto max-w-5xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
               <Scale className="h-4 w-4" />
               <span>Legal Agreement</span>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Terms of Service
+            <h1 className="mx-auto max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+              Terms of Service for the JobHub platform.
             </h1>
 
-            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+            <p className="mx-auto mt-5 max-w-2xl text-lg font-medium leading-8 text-white/75">
               Please read these terms carefully before using JobHub. By accessing our platform, you agree to be bound by these terms.
             </p>
 
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-white/70">
-              <span className="flex items-center gap-2">
+            <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <span className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black uppercase tracking-wide text-white/90 backdrop-blur-sm">
                 <Clock className="h-4 w-4" />
                 Last Updated: January 15, 2026
               </span>
-              <span className="flex items-center gap-2">
+              <span className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black uppercase tracking-wide text-white/90 backdrop-blur-sm">
                 <FileText className="h-4 w-4" />
                 Version 3.0
               </span>
-              <span className="flex items-center gap-2">
+              <span className="flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-black uppercase tracking-wide text-white/90 backdrop-blur-sm">
                 <Gavel className="h-4 w-4" />
                 California Law
               </span>
             </div>
           </div>
         </div>
-
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path
-              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              fill="white"
-            />
-          </svg>
-        </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-16 bg-gradient-to-b from-white to-[#E3E3E3]/30">
-        <div className="container mx-auto px-4">
+      <section className="py-14 md:py-20">
+        <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            {/* Table of Contents Sidebar */}
             <aside className="lg:col-span-1">
-              <Card className="sticky top-28 p-6 border border-white/40 bg-white/70 backdrop-blur-xl shadow-xl rounded-2xl overflow-hidden group">
-                <div className="absolute top-0 left-0 w-1 h-full bg-[#234C6A]/10 group-hover:bg-[#234C6A]/20 transition-colors" />
-                <h3 className="font-bold text-[#234C6A] mb-6 flex items-center gap-2 px-2">
-                  <FileText className="h-5 w-5" />
-                  Table of Contents
-                </h3>
+              <Card className="sticky top-28 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-5 shadow-xl shadow-[#234C6A]/8 backdrop-blur-xl">
+                <div className="mb-5 flex items-center gap-3 rounded-2xl bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#234C6A] text-white">
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-[#234C6A]">Contents</h3>
+                    <p className="text-xs font-semibold text-[#456882]">Jump to a section</p>
+                  </div>
+                </div>
                 <nav className="space-y-1">
                   {sections.map((section) => (
                     <button
                       key={section.id}
                       onClick={() => scrollToSection(section.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 relative group/item ${
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-black transition-all duration-300 relative group/item ${
                         activeSection === section.id
                           ? "bg-[#234C6A] text-white shadow-md translate-x-1"
                           : "text-[#456882] hover:bg-[#234C6A]/5 hover:text-[#234C6A] hover:translate-x-1"
@@ -163,19 +150,17 @@ export default function TermsOfServicePage() {
                     </button>
                   ))}
                 </nav>
-                {/* Quick Info Card */}
-                <div className="mt-6 p-4 bg-[#E3E3E3]/50 rounded-xl">
-                  <h4 className="font-semibold text-[#234C6A] text-sm mb-2">Quick Summary</h4>
-                  <p className="text-xs text-[#456882]">
+                <div className="mt-6 rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-4">
+                  <h4 className="mb-2 text-sm font-black text-[#234C6A]">Quick Summary</h4>
+                  <p className="text-xs leading-5 text-[#456882]">
                     By using JobHub, you agree to our terms, including our content policies and limitation of liability.
                   </p>
                 </div>
               </Card>
             </aside>
 
-            {/* Terms Content */}
             <main className="lg:col-span-3 terms-content">
-              <Card className="p-8 md:p-12 border border-white/40 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl space-y-12">
+              <Card className="space-y-12 rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-2xl shadow-[#234C6A]/10 backdrop-blur md:p-10">
                 {/* Important Notice */}
                 <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl mb-10">
                   <div className="flex gap-3">
@@ -216,7 +201,7 @@ export default function TermsOfServicePage() {
                 {/* Use License */}
                 <section id="license" className="mb-12">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white">
+                    <div className="w-12 h-12 rounded-xl bg-[#234C6A] flex items-center justify-center text-white">
                       <FileText className="h-6 w-6" />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-[#234C6A]">
@@ -273,7 +258,7 @@ export default function TermsOfServicePage() {
                 {/* User Accounts */}
                 <section id="accounts" className="mb-12">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white">
+                    <div className="w-12 h-12 rounded-xl bg-[#234C6A] flex items-center justify-center text-white">
                       <UserCheck className="h-6 w-6" />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-[#234C6A]">
@@ -315,7 +300,7 @@ export default function TermsOfServicePage() {
                 {/* Prohibited Uses */}
                 <section id="prohibited" className="mb-12">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-500 flex items-center justify-center text-white">
+                    <div className="w-12 h-12 rounded-xl bg-[#234C6A] flex items-center justify-center text-white">
                       <ShieldAlert className="h-6 w-6" />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-[#234C6A]">
@@ -352,7 +337,7 @@ export default function TermsOfServicePage() {
                 {/* Content Guidelines */}
                 <section id="content" className="mb-12">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white">
+                    <div className="w-12 h-12 rounded-xl bg-[#234C6A] flex items-center justify-center text-white">
                       <FileWarning className="h-6 w-6" />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-[#234C6A]">
@@ -395,7 +380,7 @@ export default function TermsOfServicePage() {
                 {/* Limitation of Liability */}
                 <section id="liability" className="mb-12">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center text-white">
+                    <div className="w-12 h-12 rounded-xl bg-[#234C6A] flex items-center justify-center text-white">
                       <Scale className="h-6 w-6" />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-[#234C6A]">
@@ -433,7 +418,7 @@ export default function TermsOfServicePage() {
                 {/* Governing Law */}
                 <section id="governing" className="mb-12">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center text-white">
+                    <div className="w-12 h-12 rounded-xl bg-[#234C6A] flex items-center justify-center text-white">
                       <Gavel className="h-6 w-6" />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold text-[#234C6A]">

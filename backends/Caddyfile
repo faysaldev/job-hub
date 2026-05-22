@@ -1,0 +1,15 @@
+# Caddyfile configuration for Job-Hub Backend
+# Replace your-domain.com with your actual domain or subdomain
+
+api.your-domain.com {
+    # Reverse proxy all requests (including websockets/socket.io) to the Node app
+    reverse_proxy localhost:3001
+
+    # Enable compression
+    encode gzip zstd
+
+    # Optional: Log configurations
+    log {
+        output file /var/log/caddy/api_access.log
+    }
+}

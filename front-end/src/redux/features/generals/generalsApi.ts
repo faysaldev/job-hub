@@ -113,6 +113,16 @@ const generalsApi = baseApi.injectEndpoints({
       providesTags: ["applications"],
     }),
 
+    // GET /generals/saved-job-ids - Get IDs of jobs user has saved
+    getSavedJobIds: builder.query<string[], void>({
+      query: () => ({
+        url: "/generals/saved-job-ids",
+        method: "GET",
+      }),
+      transformResponse: (response: ApiResponse<string[]>) => response.data,
+      providesTags: ["savedJobs"],
+    }),
+
     // POST /generals/contact - Submit contact form
     submitContactForm: builder.mutation<any, ContactFormData>({
       query: (body) => ({
@@ -144,4 +154,5 @@ export const {
   useGetAppliedJobIdsQuery,
   useSubmitContactFormMutation,
   useGetRecruiterDashboardStatsQuery,
+  useGetSavedJobIdsQuery,
 } = generalsApi;

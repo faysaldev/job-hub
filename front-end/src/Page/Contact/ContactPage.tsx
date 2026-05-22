@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect, useRef } from "react";
 import { Card } from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/input";
@@ -14,10 +15,10 @@ import {
   Clock,
   Globe,
   Headphones,
-  CheckCircle,
-  ArrowRight,
-  Building2,
-  Sparkles,
+  ArrowUpRight,
+  Shield,
+  Users,
+  Loader2,
 } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
 import Header from "@/src/components/common/Header";
@@ -46,33 +47,33 @@ export default function ContactPage() {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".hero-content",
-        { opacity: 0, y: 50 },
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out" },
+        { opacity: 0, y: 36 },
+        { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" },
       );
 
       gsap.fromTo(
         ".contact-card",
-        { opacity: 0, y: 30 },
+        { opacity: 0, y: 28 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.6,
-          stagger: 0.1,
+          duration: 0.55,
+          stagger: 0.08,
           ease: "power2.out",
-          delay: 0.3,
+          delay: 0.25,
         },
       );
 
       gsap.fromTo(
         ".form-container",
-        { opacity: 0, x: 30 },
-        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out", delay: 0.4 },
+        { opacity: 0, y: 34 },
+        { opacity: 1, y: 0, duration: 0.75, ease: "power3.out", delay: 0.35 },
       );
 
       gsap.fromTo(
         ".info-container",
-        { opacity: 0, x: -30 },
-        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out", delay: 0.4 },
+        { opacity: 0, y: 34 },
+        { opacity: 1, y: 0, duration: 0.75, ease: "power3.out", delay: 0.45 },
       );
     });
 
@@ -100,7 +101,6 @@ export default function ContactPage() {
           "Thank you for reaching out. Our team will respond within 24 hours.",
       });
 
-      // Clear the form
       if (fullNameRef.current) fullNameRef.current.value = "";
       if (emailRef.current) emailRef.current.value = "";
       if (subjectRef.current) subjectRef.current.value = "";
@@ -120,36 +120,36 @@ export default function ContactPage() {
 
   const contactMethods = [
     {
-      icon: <Mail className="h-6 w-6" />,
+      icon: <Mail className="h-5 w-5" />,
       title: "Email Us",
-      description: "Our team is here to help",
+      description: "Candidate, recruiter, and platform questions",
       primary: "support@jobhub.com",
       secondary: "enterprise@jobhub.com",
-      color: "from-blue-500 to-cyan-500",
+      color: "bg-[#234C6A]",
     },
     {
-      icon: <Phone className="h-6 w-6" />,
+      icon: <Phone className="h-5 w-5" />,
       title: "Call Us",
       description: "Mon-Fri from 8am to 6pm PST",
       primary: "+1 (555) 123-4567",
       secondary: "+1 (555) 987-6543",
-      color: "from-green-500 to-emerald-500",
+      color: "bg-[#456882]",
     },
     {
-      icon: <MapPin className="h-6 w-6" />,
+      icon: <MapPin className="h-5 w-5" />,
       title: "Visit Us",
-      description: "Come say hello at our HQ",
+      description: "Meet the JobHub team at our HQ",
       primary: "123 Business Avenue",
       secondary: "San Francisco, CA 94107",
-      color: "from-purple-500 to-violet-500",
+      color: "bg-[#234C6A]",
     },
     {
-      icon: <MessageSquare className="h-6 w-6" />,
+      icon: <MessageSquare className="h-5 w-5" />,
       title: "Live Chat",
-      description: "Available 24/7",
+      description: "Fast guidance for urgent account issues",
       primary: "Start a conversation",
       secondary: "Average response: 2 min",
-      color: "from-[#234C6A] to-[#456882]",
+      color: "bg-[#456882]",
     },
   ];
 
@@ -161,156 +161,142 @@ export default function ContactPage() {
     { value: "press", label: "Press & Media" },
   ];
 
-  const faqs = [
+  const offices = [
     {
-      question: "How quickly will I receive a response?",
-      answer:
-        "Our team typically responds within 24 hours during business days.",
+      city: "San Francisco",
+      address: "123 Business Avenue, CA 94107",
+      type: "Headquarters",
     },
     {
-      question: "Do you offer enterprise solutions?",
-      answer: "Yes! Contact our sales team for custom enterprise packages.",
+      city: "New York",
+      address: "456 Tech Plaza, NY 10001",
+      type: "East Coast Office",
     },
     {
-      question: "Where are your offices located?",
-      answer:
-        "Our headquarters is in San Francisco, with offices in New York, London, and Singapore.",
+      city: "London",
+      address: "789 Innovation Hub, EC2A 4NE",
+      type: "European Office",
+    },
+    {
+      city: "Singapore",
+      address: "321 Marina Bay, 018983",
+      type: "Asia Pacific Office",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#E3E3E3] via-white to-[#E3E3E3]">
+    <div className="min-h-screen flex flex-col jobhub-page-bg">
       <Header />
 
-      {/* Hero Section */}
       <section
         ref={heroRef}
-        className="relative pt-32 pb-24 md:pt-40 md:pb-32 overflow-hidden bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882]"
+        className="relative overflow-hidden bg-[#234C6A] pb-24 pt-28 md:pb-28 md:pt-32"
       >
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
         </div>
 
-        {/* Grid pattern */}
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="hero-content grid items-end gap-8 lg:grid-cols-[1fr_auto]">
+            <div>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
+                <Headphones className="h-4 w-4" />
+                <span>JobHub Support Desk</span>
+              </div>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="hero-content max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-white/90 text-sm mb-8 border border-white/20">
-              <Headphones className="h-4 w-4" />
-              <span>We are Here to Help</span>
+              <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+                Talk to the right JobHub team.
+              </h1>
+              <p className="mt-5 max-w-2xl text-lg font-medium leading-8 text-white/75">
+                Send one focused message and we will route it to candidate
+                support, recruiter success, sales, or partnerships.
+              </p>
             </div>
 
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              Get in Touch
-              <span className="block mt-2 bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
-                We Would Love to Hear From You
-              </span>
-            </h1>
-
-            <p className="text-xl md:text-2xl text-white/80 mb-10 max-w-2xl mx-auto">
-              Have questions about our platform? Need help with your account?
-              Our dedicated team is ready to assist you.
-            </p>
-
-            <div className="flex flex-wrap justify-center gap-6 text-white/90">
+            <div className="grid min-w-[260px] gap-3 sm:grid-cols-3 lg:grid-cols-1">
               {[
-                { icon: <Clock className="h-5 w-5" />, text: "24/7 Support" },
-                { icon: <Globe className="h-5 w-5" />, text: "Global Team" },
-                {
-                  icon: <CheckCircle className="h-5 w-5" />,
-                  text: "Fast Response",
-                },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  {item.icon}
-                  <span>{item.text}</span>
+                { icon: Clock, label: "24h Response" },
+                { icon: Shield, label: "Verified Support" },
+                { icon: Users, label: "For Hiring Teams" },
+              ].map(({ icon: Icon, label }) => (
+                <div
+                  key={label}
+                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-[10px] font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
+                >
+                  <Icon className="mr-2 inline h-4 w-4" />
+                  {label}
                 </div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Bottom wave */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg
-            viewBox="0 0 1440 120"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full"
-          >
-            <path
-              d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              fill="white"
-            />
-          </svg>
-        </div>
       </section>
 
-      {/* Contact Cards */}
-      <section className="py-16 -mt-10 relative z-10">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {contactMethods.map((method, index) => (
+      <main className="relative z-20 -mt-12 flex-1 pb-16">
+        <div className="container mx-auto px-6">
+          <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+            {contactMethods.map((method) => (
               <Card
-                key={index}
-                className="contact-card p-6 border border-[#234C6A]/5 bg-white/80 backdrop-blur-md shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer relative overflow-hidden rounded-2xl"
+                key={method.title}
+                className="contact-card group overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-5 shadow-xl shadow-[#234C6A]/8 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#234C6A]/25"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-[#234C6A]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative">
+                <div className="flex items-start gap-3">
                   <div
-                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${method.color} flex items-center justify-center text-white mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg shadow-[#234C6A]/15 ${method.color}`}
                   >
                     {method.icon}
                   </div>
-                  <h3 className="text-lg font-bold text-[#234C6A] mb-1 group-hover:text-[#456882] transition-colors">
-                    {method.title}
-                  </h3>
-                  <p className="text-sm text-[#456882] mb-3">
-                    {method.description}
+                  <div className="min-w-0">
+                    <h3 className="font-black text-[#234C6A]">
+                      {method.title}
+                    </h3>
+                    <p className="mt-1 text-xs font-medium leading-5 text-[#456882]">
+                      {method.description}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 rounded-2xl bg-[#F8FAFC] p-3">
+                  <p className="truncate text-sm font-black text-[#234C6A]">
+                    {method.primary}
                   </p>
-                  <p className="text-[#234C6A] font-semibold">{method.primary}</p>
-                  <p className="text-[#456882] text-sm">{method.secondary}</p>
+                  <p className="mt-0.5 truncate text-xs font-medium text-[#456882]">
+                    {method.secondary}
+                  </p>
                 </div>
               </Card>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* Main Content */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            {/* Contact Form */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.15fr_0.85fr]">
             <div ref={formRef} className="form-container">
-              <div className="mb-8">
-                <span className="inline-block px-4 py-1 bg-[#234C6A]/10 text-[#234C6A] rounded-full text-sm font-semibold mb-4">
-                  Send a Message
-                </span>
-                <h2 className="text-3xl md:text-4xl font-bold text-[#234C6A] mb-4">
-                  How Can We Help?
-                </h2>
-                <p className="text-[#456882]">
-                  Fill out the form below and we will get back to you as soon as
-                  possible.
-                </p>
-              </div>
+              <Card className="relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur-xl pt-0">
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+                <div className="border-b border-[#E3E3E3]/70 bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5 md:p-6">
+                  <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
+                        Send a message
+                      </p>
+                      <h2 className="mt-2 text-2xl font-black text-[#234C6A]">
+                        Tell us how we can help
+                      </h2>
+                      <p className="mt-1 text-sm font-medium text-[#456882]">
+                        The fastest path to the right support specialist.
+                      </p>
+                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/20">
+                      <Send className="h-6 w-6" />
+                    </div>
+                  </div>
+                </div>
 
-              <Card className="p-8 border border-white/40 bg-white/60 backdrop-blur-xl shadow-2xl rounded-3xl">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} className="space-y-5 p-5 md:p-6">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label
                         htmlFor="name"
-                        className="text-[#234C6A] font-semibold"
+                        className="text-sm font-black text-[#234C6A]"
                       >
                         Full Name *
                       </Label>
@@ -319,14 +305,14 @@ export default function ContactPage() {
                         name="name"
                         placeholder="John Doe"
                         ref={fullNameRef}
-                        className="border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] bg-white h-12 rounded-xl"
+                        className="h-12 rounded-2xl border-transparent bg-[#F4F7F8] text-[#234C6A] placeholder:text-[#456882]/55 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
                         required
                       />
                     </div>
                     <div className="space-y-2">
                       <Label
                         htmlFor="email"
-                        className="text-[#234C6A] font-semibold"
+                        className="text-sm font-black text-[#234C6A]"
                       >
                         Email Address *
                       </Label>
@@ -336,7 +322,46 @@ export default function ContactPage() {
                         type="email"
                         placeholder="john@example.com"
                         ref={emailRef}
-                        className="border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] bg-white h-12 rounded-xl"
+                        className="h-12 rounded-2xl border-transparent bg-[#F4F7F8] text-[#234C6A] placeholder:text-[#456882]/55 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="department"
+                        className="text-sm font-black text-[#234C6A]"
+                      >
+                        Department
+                      </Label>
+                      <select
+                        id="department"
+                        name="department"
+                        ref={departmentRef}
+                        className="h-12 w-full rounded-2xl border border-transparent bg-[#F4F7F8] px-4 font-semibold text-[#234C6A] outline-none transition focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
+                      >
+                        {departments.map((dept) => (
+                          <option key={dept.value} value={dept.value}>
+                            {dept.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="subject"
+                        className="text-sm font-black text-[#234C6A]"
+                      >
+                        Subject *
+                      </Label>
+                      <Input
+                        id="subject"
+                        name="subject"
+                        placeholder="How can we help you?"
+                        ref={subjectRef}
+                        className="h-12 rounded-2xl border-transparent bg-[#F4F7F8] text-[#234C6A] placeholder:text-[#456882]/55 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
                         required
                       />
                     </div>
@@ -344,46 +369,8 @@ export default function ContactPage() {
 
                   <div className="space-y-2">
                     <Label
-                      htmlFor="department"
-                      className="text-[#234C6A] font-semibold"
-                    >
-                      Department
-                    </Label>
-                    <select
-                      id="department"
-                      name="department"
-                      ref={departmentRef}
-                      className="w-full h-12 px-4 border border-[#234C6A]/20 rounded-xl bg-white text-[#234C6A] focus:border-[#234C6A] focus:ring-1 focus:ring-[#234C6A] focus:outline-none"
-                    >
-                      {departments.map((dept) => (
-                        <option key={dept.value} value={dept.value}>
-                          {dept.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="subject"
-                      className="text-[#234C6A] font-semibold"
-                    >
-                      Subject *
-                    </Label>
-                    <Input
-                      id="subject"
-                      name="subject"
-                      placeholder="How can we help you?"
-                      ref={subjectRef}
-                      className="border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] bg-white h-12 rounded-xl"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label
                       htmlFor="message"
-                      className="text-[#234C6A] font-semibold"
+                      className="text-sm font-black text-[#234C6A]"
                     >
                       Message *
                     </Label>
@@ -392,8 +379,9 @@ export default function ContactPage() {
                       name="message"
                       placeholder="Tell us more about your inquiry..."
                       ref={messageRef}
-                      rows={6}
-                      className="border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] bg-white rounded-xl resize-none"
+                      rows={7}
+                      maxLength={1500}
+                      className="resize-none rounded-2xl border-transparent bg-[#F4F7F8] text-[#234C6A] placeholder:text-[#456882]/55 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
                       required
                     />
                   </div>
@@ -401,36 +389,17 @@ export default function ContactPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white h-14 rounded-xl text-lg font-semibold group"
+                    className="h-14 w-full rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] text-base font-black text-white shadow-lg shadow-[#234C6A]/20 transition-all hover:from-[#1c405a] hover:to-[#3b5a71] active:scale-[0.99]"
                   >
                     {isSubmitting ? (
-                      <span className="flex items-center">
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
+                      <span className="flex items-center justify-center">
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         Sending...
                       </span>
                     ) : (
                       <span className="flex items-center justify-center">
                         Send Message
-                        <Send className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        <Send className="ml-2 h-5 w-5" />
                       </span>
                     )}
                   </Button>
@@ -438,165 +407,73 @@ export default function ContactPage() {
               </Card>
             </div>
 
-            {/* Right Column - Info */}
-            <div ref={infoRef} className="info-container space-y-8">
-              {/* Office Locations */}
-              <div>
-                <span className="inline-block px-4 py-1 bg-[#234C6A]/10 text-[#234C6A] rounded-full text-sm font-semibold mb-4">
-                  Our Offices
-                </span>
-                <h2 className="text-3xl md:text-4xl font-bold text-[#234C6A] mb-6">
-                  Global Presence
-                </h2>
-
-                <div className="space-y-4">
-                  {[
-                    {
-                      city: "San Francisco",
-                      address: "123 Business Avenue, CA 94107",
-                      type: "Headquarters",
-                    },
-                    {
-                      city: "New York",
-                      address: "456 Tech Plaza, NY 10001",
-                      type: "East Coast Office",
-                    },
-                    {
-                      city: "London",
-                      address: "789 Innovation Hub, EC2A 4NE",
-                      type: "European Office",
-                    },
-                    {
-                      city: "Singapore",
-                      address: "321 Marina Bay, 018983",
-                      type: "Asia Pacific Office",
-                    },
-                  ].map((office, index) => (
-                    <Card
-                      key={index}
-                      className="p-5 border border-transparent bg-white/50 backdrop-blur-sm hover:bg-white hover:border-[#234C6A]/10 hover:shadow-xl transition-all duration-500 group rounded-2xl cursor-pointer"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-md">
-                          <Building2 className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-bold text-[#234C6A] group-hover:text-[#456882] transition-colors">
-                              {office.city}
-                            </h4>
-                            <span className="text-xs px-2 py-0.5 bg-[#234C6A]/10 text-[#234C6A] rounded-full font-medium">
-                              {office.type}
-                            </span>
-                          </div>
-                          <p className="text-[#456882] text-sm">
-                            {office.address}
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* FAQs */}
-              <div className="pt-8">
-                <h3 className="text-xl font-bold text-[#234C6A] mb-6 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  Frequently Asked Questions
-                </h3>
-                <div className="space-y-4">
-                  {faqs.map((faq, index) => (
-                    <Card
-                      key={index}
-                      className="p-5 border-none bg-[#E3E3E3]/50"
-                    >
-                      <h4 className="font-semibold text-[#234C6A] mb-2">
-                        {faq.question}
-                      </h4>
-                      <p className="text-[#456882] text-sm">{faq.answer}</p>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Support CTA */}
-              <Card className="p-6 border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Headphones className="h-6 w-6" />
+            <aside ref={infoRef} className="info-container space-y-6">
+              <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 pt-0 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
+                <div className="bg-[#234C6A] p-5 text-white">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                      <Headphones className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black">
+                        Need a faster answer?
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-white/75">
+                        Use live chat for urgent account, application, or
+                        recruiter workflow issues.
+                      </p>
+                      <Button className="mt-4 rounded-2xl bg-white px-5 font-black text-[#234C6A] hover:bg-[#E3E3E3]">
+                        Start Live Chat
+                        <ArrowUpRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-lg mb-2">
-                      Need Immediate Help?
-                    </h4>
-                    <p className="text-white/80 text-sm mb-4">
-                      Our support team is available 24/7 to assist you with any
-                      urgent inquiries.
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 p-5 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-4">
+                    <Clock className="mb-3 h-5 w-5 text-[#234C6A]" />
+                    <p className="font-black text-[#234C6A]">Business Hours</p>
+                    <p className="mt-1 text-sm leading-6 text-[#456882]">
+                      Mon-Fri, 8am-6pm PST
                     </p>
-                    <Button
-                      variant="outline"
-                      className="border-white text-white hover:bg-white/10 group"
-                    >
-                      Start Live Chat
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
+                  </div>
+                  <div className="rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-4">
+                    <MapPin className="mb-3 h-5 w-5 text-[#234C6A]" />
+                    <p className="font-black text-[#234C6A]">Headquarters</p>
+                    <p className="mt-1 text-sm leading-6 text-[#456882]">
+                      123 Business Avenue, San Francisco
+                    </p>
                   </div>
                 </div>
               </Card>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Map Section */}
-      <section className="py-20 bg-[#E3E3E3]">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <span className="inline-block px-4 py-1 bg-[#234C6A]/10 text-[#234C6A] rounded-full text-sm font-semibold mb-4">
-              Find Us
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#234C6A] mb-4">
-              Visit Our Headquarters
-            </h2>
-            <p className="text-[#456882] max-w-2xl mx-auto">
-              We would love to meet you in person. Schedule a visit to our San
-              Francisco office.
-            </p>
-          </div>
-
-          <Card className="border-none overflow-hidden shadow-2xl">
-            <div className="aspect-video bg-gradient-to-br from-[#234C6A] to-[#456882] relative">
-              {/* Map placeholder with styled design */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white p-8">
-                  <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-6">
-                    <MapPin className="h-10 w-10" />
-                  </div>
-                  <h3 className="text-3xl font-bold mb-2">
-                    JobHub Headquarters
-                  </h3>
-                  <p className="text-xl text-white/80 mb-2">
-                    123 Business Avenue
-                  </p>
-                  <p className="text-lg text-white/70 mb-6">
-                    San Francisco, CA 94107
-                  </p>
-                  <Button className="bg-white text-[#234C6A] hover:bg-[#E3E3E3]">
-                    Get Directions
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/90 p-6 shadow-sm backdrop-blur">
+                <h3 className="mb-4 flex items-center gap-2 text-xl font-black text-[#234C6A]">
+                  <Globe className="h-5 w-5" />
+                  Office Network
+                </h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {offices.map((office) => (
+                    <div
+                      key={office.city}
+                      className="rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-4"
+                    >
+                      <p className="font-black text-[#234C6A]">{office.city}</p>
+                      <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[#456882]">
+                        {office.type}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-[#456882]">
+                        {office.address}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              </div>
-
-              {/* Decorative elements */}
-              <div className="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full" />
-              <div className="absolute bottom-10 right-10 w-48 h-48 border border-white/10 rounded-full" />
-              <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-white/5 rounded-full blur-xl" />
-            </div>
-          </Card>
+              </Card>
+            </aside>
+          </div>
         </div>
-      </section>
+      </main>
 
       <Footer />
     </div>
