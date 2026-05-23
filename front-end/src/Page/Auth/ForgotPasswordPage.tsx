@@ -284,15 +284,15 @@ const ForgotPasswordPage = () => {
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-md">
+        <div className="flex-1 flex items-center justify-center p-6 md:p-10 lg:p-16 xl:p-20">
+          <div className="w-full max-w-[480px] md:max-w-[520px] lg:max-w-[550px] transition-all duration-300">
             {/* Desktop Back Link */}
             <div className="hidden lg:block mb-8">
               <Link
                 href="/auth"
-                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors"
+                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors text-sm font-medium group"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back to Sign In
               </Link>
             </div>
@@ -305,7 +305,7 @@ const ForgotPasswordPage = () => {
                     className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
                       step >= s.number
                         ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white"
-                        : "bg-white text-[#456882]"
+                        : "bg-white text-[#456882] border border-[#E3E3E3]"
                     }`}
                   >
                     {step > s.number ? (
@@ -340,24 +340,25 @@ const ForgotPasswordPage = () => {
             </div>
 
             {/* Card */}
-            <Card className="forgot-card p-8 bg-white border-none shadow-2xl rounded-2xl">
+            <Card className="forgot-card p-6 sm:p-10 border border-white/50 bg-white/75 backdrop-blur-xl shadow-[0_20px_50px_rgba(35,76,106,0.12)] rounded-[32px] relative overflow-hidden transition-all duration-300">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
               {step === 1 && (
                 <form onSubmit={handleSendOtp} className="space-y-6">
                   <div className="space-y-2">
                     <Label
                       htmlFor="forgot-email"
-                      className="text-[#234C6A] font-semibold"
+                      className="text-[#234C6A] font-semibold text-sm tracking-wide"
                     >
                       Email Address
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]/80" />
                       <Input
                         id="forgot-email"
                         type="email"
                         placeholder="Enter your email address"
                         ref={emailRef}
-                        className="pl-10 h-12 border-[#234C6A]/20 focus:border-[#234C6A] focus:ring-[#234C6A] rounded-xl"
+                        className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#234C6A] focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl placeholder:text-[#456882]/50 text-[#234C6A]"
                         required
                       />
                     </div>
@@ -365,7 +366,7 @@ const ForgotPasswordPage = () => {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold"
+                    className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/95 hover:to-[#456882]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
                     disabled={isForgotLoading}
                   >
                     {isForgotLoading ? (
@@ -392,7 +393,7 @@ const ForgotPasswordPage = () => {
                         Sending Code...
                       </span>
                     ) : (
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center justify-center gap-2">
                         Send Verification Code
                         <Sparkles className="h-4 w-4" />
                       </span>
@@ -400,7 +401,7 @@ const ForgotPasswordPage = () => {
                   </Button>
 
                   {/* Security notice */}
-                  <div className="flex items-start gap-3 p-4 bg-[#E3E3E3]/50 rounded-xl">
+                  <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
                     <ShieldCheck className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-[#456882]">
                       For your security, we will send a 6-digit verification
@@ -414,7 +415,7 @@ const ForgotPasswordPage = () => {
                 <div className="space-y-8">
                   {/* OTP Section */}
                   <div className="space-y-4">
-                    <Label className="text-[#234C6A] font-semibold text-center block">
+                    <Label className="text-[#234C6A] font-semibold text-center block text-sm tracking-wide">
                       Verification Code
                     </Label>
                     <div className="flex justify-center gap-2 sm:gap-3">
@@ -432,11 +433,11 @@ const ForgotPasswordPage = () => {
                             handleOtpChange(index, e.target.value)
                           }
                           onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className={`w-10 h-12 sm:w-12 sm:h-14 text-xl sm:text-2xl font-bold text-center rounded-xl transition-all duration-300 ${
+                          className={`w-10 h-12 sm:w-12 sm:h-14 text-xl sm:text-2xl font-bold text-center rounded-xl transition-all duration-300 cursor-pointer ${
                             digit
-                              ? "border-2 border-[#234C6A] bg-[#234C6A]/5 text-[#234C6A]"
-                              : "border-2 border-[#234C6A]/20 bg-[#E3E3E3]/30"
-                          } focus:outline-none focus:ring-2 focus:ring-[#234C6A]`}
+                              ? "border-2 border-[#234C6A] bg-[#234C6A]/5 text-[#234C6A] shadow-inner"
+                              : "border border-slate-200/80 bg-white/60 text-[#234C6A]"
+                          } focus:outline-none focus:ring-4 focus:ring-[#234C6A]/10 focus:border-[#234C6A]`}
                         />
                       ))}
                     </div>
@@ -455,7 +456,7 @@ const ForgotPasswordPage = () => {
                           disabled={isForgotLoading}
                           variant="ghost"
                           size="sm"
-                          className="text-[#234C6A] hover:bg-[#234C6A]/10 h-8"
+                          className="text-[#234C6A] hover:bg-[#234C6A]/10 h-8 cursor-pointer"
                         >
                           <RefreshCw
                             className={`h-3 w-3 mr-2 ${isForgotLoading ? "animate-spin" : ""}`}
@@ -467,7 +468,7 @@ const ForgotPasswordPage = () => {
                   </div>
 
                   {/* Password Section */}
-                  <div className="pt-6 border-t border-[#E3E3E3]">
+                  <div className="pt-6 border-t border-[#E3E3E3]/60">
                     <ResetPassword
                       onSubmit={handleResetPassword}
                       loading={isResetLoading}
@@ -477,10 +478,10 @@ const ForgotPasswordPage = () => {
               )}
 
               {/* Back button */}
-              <div className="mt-6 pt-6 border-t border-[#E3E3E3]">
+              <div className="mt-6 pt-6 border-t border-[#E3E3E3]/60">
                 <Button
                   variant="ghost"
-                  className="w-full text-[#234C6A] hover:bg-[#234C6A]/10 font-medium"
+                  className="w-full text-[#234C6A] hover:bg-[#234C6A]/10 font-semibold h-12 rounded-xl cursor-pointer"
                   onClick={() => {
                     if (step > 1) {
                       setStep(step - 1);

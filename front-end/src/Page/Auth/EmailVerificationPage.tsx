@@ -253,15 +253,15 @@ const EmailVerificationPage = () => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-md">
+        <div className="flex-1 flex items-center justify-center p-6 md:p-10 lg:p-16 xl:p-20">
+          <div className="w-full max-w-[480px] md:max-w-[520px] lg:max-w-[550px] transition-all duration-300">
             {/* Desktop Back Link */}
             <div className="hidden lg:block mb-8">
               <Link
                 href="/auth"
-                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors"
+                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors text-sm font-medium group"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back to Sign In
               </Link>
             </div>
@@ -307,7 +307,8 @@ const EmailVerificationPage = () => {
             </div>
 
             {/* Card */}
-            <Card className="verify-card p-8 bg-white border-none shadow-2xl rounded-2xl">
+            <Card className="verify-card p-6 sm:p-10 border border-white/50 bg-white/75 backdrop-blur-xl shadow-[0_20px_50px_rgba(35,76,106,0.12)] rounded-[32px] relative overflow-hidden transition-all duration-300">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
               {isVerified ? (
                 <div className="text-center py-6">
                   {/* Confetti icons */}
@@ -340,7 +341,7 @@ const EmailVerificationPage = () => {
                         // This is handled by useEffect auto-redirect, but as fallback:
                         router.push("/job-seeker");
                       }}
-                      className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl font-semibold group"
+                      className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/95 hover:to-[#456882]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
                     >
                       Go to Dashboard
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -357,7 +358,7 @@ const EmailVerificationPage = () => {
                 <>
                   {/* Instructions */}
                   <div className="space-y-4 mb-8">
-                    <div className="flex items-start gap-4 p-4 bg-[#E3E3E3]/50 rounded-xl">
+                    <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
                       <div className="w-8 h-8 rounded-full bg-[#234C6A] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         1
                       </div>
@@ -371,7 +372,7 @@ const EmailVerificationPage = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-4 p-4 bg-[#E3E3E3]/50 rounded-xl">
+                    <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
                       <div className="w-8 h-8 rounded-full bg-[#234C6A] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         2
                       </div>
@@ -401,7 +402,7 @@ const EmailVerificationPage = () => {
                       <Button
                         onClick={handleResendEmail}
                         disabled={isResending}
-                        className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl px-8"
+                        className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/95 hover:to-[#456882]/95 text-white rounded-xl px-8 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                       >
                         {isResending ? (
                           <span className="flex items-center gap-2">
@@ -437,10 +438,10 @@ const EmailVerificationPage = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className={`grid ${code ? 'grid-cols-2' : 'grid-cols-1'} gap-3 pt-6 border-t border-[#E3E3E3]`}>
+                  <div className={`grid ${code ? 'grid-cols-2' : 'grid-cols-1'} gap-3 pt-6 border-t border-[#E3E3E3]/60`}>
                     <Button
                       variant="outline"
-                      className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10 h-12 rounded-xl"
+                      className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10 h-12 rounded-xl cursor-pointer"
                       onClick={() => router.push("/auth")}
                     >
                       <ArrowLeft className="h-4 w-4 mr-2" />
@@ -449,7 +450,7 @@ const EmailVerificationPage = () => {
                     
                     {code && (
                       <Button
-                        className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white h-12 rounded-xl"
+                        className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/95 hover:to-[#456882]/95 text-white h-12 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                         onClick={() => handleVerify()}
                         disabled={isVerifying}
                       >
