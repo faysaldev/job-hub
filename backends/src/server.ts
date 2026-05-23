@@ -5,12 +5,33 @@ import logRequestResponse from "./middlewares/logger.middleware";
 import compression from "compression";
 import { globalErrorHandler, notFoundHandler } from "./lib/errorsHandle";
 
+import { FRONTEND_URL } from "./config/ENV";
+
 const app = express();
+
+// Set up allowed origins for CORS
+const allowedOrigins = FRONTEND_URL
+  ? FRONTEND_URL.split(",").map((url) => url.trim())
+  : ["http://localhost:3000", "https://job-hubs.vercel.app"];
+
+// Add production Vercel URL to allowed origins if not already present
+if (!allowedOrigins.includes("https://job-hubs.vercel.app")) {
+  allowedOrigins.push("https://job-hubs.vercel.app");
+}
 
 // Enable CORS for all routes
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, postman)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
     optionsSuccessStatus: 200,
   })
