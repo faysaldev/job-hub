@@ -253,14 +253,14 @@ const AuthPage = () => {
           </Link>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-          <div className="w-full max-w-md">
+        <div className="flex-1 flex items-center justify-center p-6 md:p-10 lg:p-16 xl:p-20">
+          <div className="w-full max-w-[480px] md:max-w-[520px] lg:max-w-[550px] transition-all duration-300">
             <div className="hidden lg:block mb-8">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors text-sm"
+                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors text-sm font-medium group"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back to Home
               </Link>
             </div>
@@ -273,52 +273,52 @@ const AuthPage = () => {
               </p>
             </div>
 
-            <Card className="p-8 border border-white/40 bg-white/70 backdrop-blur-xl shadow-2xl rounded-3xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
-              <div className="text-center mb-6 hidden lg:block">
-                <h2 className="text-2xl font-bold text-[#234C6A] mb-1">
+            <Card className="p-6 sm:p-10 border border-white/50 bg-white/75 backdrop-blur-xl shadow-[0_20px_50px_rgba(35,76,106,0.12)] rounded-[32px] relative overflow-hidden transition-all duration-300">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+              <div className="text-center mb-8 hidden lg:block">
+                <h2 className="text-3xl font-extrabold text-[#234C6A] tracking-tight mb-2">
                   Welcome Back
                 </h2>
-                <p className="text-[#456882] text-sm">
+                <p className="text-[#456882] text-sm font-medium">
                   Sign in to continue to JobHub
                 </p>
               </div>
 
               <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid grid-cols-2 w-full h-12 bg-[#E3E3E3]/50 p-1 rounded-xl mb-8">
+                <TabsList className="grid grid-cols-2 w-full h-12 bg-[#E3E3E3]/40 p-1 rounded-2xl mb-8 border border-white/20 backdrop-blur-md">
                   <TabsTrigger
                     value="signin"
-                    className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white transition-all duration-300"
+                    className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 cursor-pointer"
                   >
                     Sign In
                   </TabsTrigger>
                   <TabsTrigger
                     value="signup"
-                    className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white transition-all duration-300"
+                    className="rounded-xl font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#234C6A] data-[state=active]:to-[#456882] data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 cursor-pointer"
                   >
                     Sign Up
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="signin" className="space-y-4">
+                <TabsContent value="signin" className="space-y-5">
                   <SignInForm loading={loading} handleSignIn={handleSignIn} />
-                  <div className="text-center">
+                  <div className="text-center mt-4">
                     <Link
                       href="/reset-password"
-                      className="text-[#234C6A] hover:text-[#456882] text-sm font-medium transition-colors"
+                      className="text-[#234C6A] hover:text-[#456882] text-sm font-semibold transition-colors"
                     >
                       Forgot your password?
                     </Link>
                   </div>
                 </TabsContent>
 
-                <TabsContent value="signup" className="space-y-4">
+                <TabsContent value="signup" className="space-y-5">
                   <SignUpForm loading={loading} handleSignUp={handleSignUp} />
                 </TabsContent>
               </Tabs>
 
-              <div className="mt-6 pt-5 border-t border-[#E3E3E3] flex items-center justify-center gap-2 text-sm text-[#456882]">
-                <CheckCircle className="h-4 w-4 text-green-500" />
+              <div className="mt-8 pt-6 border-t border-[#E3E3E3]/60 flex items-center justify-center gap-2 text-sm text-[#456882]/90 font-medium">
+                <CheckCircle className="h-4.5 w-4.5 text-green-500" />
                 <span>Trusted by 500,000+ professionals</span>
               </div>
             </Card>
