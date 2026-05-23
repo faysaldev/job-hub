@@ -5,6 +5,7 @@ import redis from "./redis";
 import messageServices from "../domains/Messages/message.services";
 import conversationService from "../domains/Conversations/conversations.services";
 import * as notificationService from "../domains/Notifications/notifications.service";
+import { FRONTEND_URL } from "./ENV";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -63,10 +64,26 @@ async function getReceiverRole(receiverId: string): Promise<string> {
 
 // ─── Main Setup ───────────────────────────────────────────────────────────────
 
+// Set up allowed origins for Socket.io CORS
+const allowedOrigins = FRONTEND_URL
+  ? FRONTEND_URL.split(",").map((url) => url.trim())
+  : ["http://localhost:3000", "https://job-hubs.vercel.app"];
+
+if (!allowedOrigins.includes("https://job-hubs.vercel.app")) {
+  allowedOrigins.push("https://job-hubs.vercel.app");
+}
+
 const setUpSocketIO = (server: Server) => {
   _io = new SocketIOServer(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || "*",
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+          callback(null, true);
+        } else {
+          callback(null, false);
+        }
+      },
       methods: ["GET", "POST"],
       credentials: true,
     },
