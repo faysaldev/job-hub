@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -73,16 +74,19 @@ const Footer = () => {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-2 text-xl font-black"
+              className="flex items-center gap-2.5 font-bold text-xl group z-10"
             >
-              <div className="rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] p-2.5 shadow-lg shadow-[#234C6A]/15">
-                <Briefcase className="h-6 w-6 text-white" />
-              </div>
-              <span className="bg-gradient-to-r from-[#234C6A] to-[#456882] bg-clip-text text-transparent">
-                JobHub
-              </span>
+              <Image
+                width={100}
+                height={100}
+                src={"/job-hub-logo-removebg-preview.png"}
+                alt="Logo"
+                priority
+                className="h-auto max-h-14 w-[150px] object-contain md:w-[175px]"
+              />
             </Link>
             <p className="max-w-sm text-sm font-medium leading-7 text-[#456882]">
               Connecting talented professionals with their dream careers. Join
