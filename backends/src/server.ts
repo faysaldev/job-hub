@@ -39,8 +39,9 @@ if (!allowedOrigins.includes("https://job-hubs.vercel.app")) {
 
 app.use(
   cors({
-    origin: true,
-    credentials: true,
+    origin: "*", // allow only this origin to access the API
+    methods: ["GET", "POST", "PUT", "DELETE"], // allow only these HTTP methods
+    allowedHeaders: ["Content-Type", "Authorization"], // allow only these headers
   }),
 );
 
