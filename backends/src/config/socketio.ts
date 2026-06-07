@@ -76,14 +76,7 @@ if (!allowedOrigins.includes("https://job-hubs.vercel.app")) {
 const setUpSocketIO = (server: Server) => {
   _io = new SocketIOServer(server, {
     cors: {
-      origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
-          callback(null, true);
-        } else {
-          callback(null, false);
-        }
-      },
+      origin: true,
       methods: ["GET", "POST"],
       credentials: true,
     },
