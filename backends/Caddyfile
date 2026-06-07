@@ -2,7 +2,7 @@
 # Replace your-domain.com with your actual domain or subdomain
 
 #let's increate certificates
-api.your-domain.com {
+43.205.126.40 {
     # Reverse proxy all requests (including websockets/socket.io) to the Node app
     reverse_proxy app:3001
 
