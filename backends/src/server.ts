@@ -20,21 +20,28 @@ if (!allowedOrigins.includes("https://job-hubs.vercel.app")) {
 }
 
 // Enable CORS for all routes
+// app.use(
+//   cors({
+//     origin: (origin, callback) => {
+//       // Allow requests with no origin (like mobile apps, curl, postman)
+//       if (!origin) return callback(null, true);
+
+//       if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+//         callback(null, true);
+//       } else {
+//         callback(null, false);
+//       }
+//     },
+//     credentials: true,
+//     optionsSuccessStatus: 200,
+//   })
+// );
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, postman)
-      if (!origin) return callback(null, true);
-      
-      if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
-        callback(null, true);
-      } else {
-        callback(null, false);
-      }
-    },
+    origin: true,
     credentials: true,
-    optionsSuccessStatus: 200,
-  })
+  }),
 );
 
 app.use(express.json());
