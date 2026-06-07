@@ -4,7 +4,7 @@
 #let's increate certificates
 api.your-domain.com {
     # Reverse proxy all requests (including websockets/socket.io) to the Node app
-    reverse_proxy localhost:3001
+    reverse_proxy app:3001
 
     # Enable compression
     encode gzip zstd
