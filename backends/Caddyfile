@@ -1,6 +1,7 @@
 # Caddyfile configuration for Job-Hub Backend
 # Replace your-domain.com with your actual domain or subdomain
 
+#let's increate certificates
 api.your-domain.com {
     # Reverse proxy all requests (including websockets/socket.io) to the Node app
     reverse_proxy localhost:3001
