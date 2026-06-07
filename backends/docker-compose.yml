@@ -30,21 +30,21 @@ services:
     networks:
       - app_network
 
-caddy:
-  image: caddy:2-alpine
-  container_name: job_hub_caddy
-  restart: always
-  ports:
-    - "80:80"
-    - "443:443"
-  volumes:
-    - ./Caddyfile:/etc/caddy/Caddyfile
-    - caddy_data:/data
-    - caddy_config:/config
-  depends_on:
-    - app
-  networks:
-    - app_network
+  caddy:
+    image: caddy:2-alpine
+    container_name: job_hub_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    networks:
+      - app_network
 
 volumes:
   redis_data:
