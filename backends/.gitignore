@@ -5,3 +5,5 @@
 *.dbdiagram
 
 /.claude
+
+dist
