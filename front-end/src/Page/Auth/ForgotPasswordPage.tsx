@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -224,11 +225,18 @@ const ForgotPasswordPage = () => {
 
         <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 mb-12">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2.5 border border-white/20">
-              <Briefcase className="h-7 w-7 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white">JobHub</span>
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 font-bold text-xl group z-10 mb-12"
+          >
+            <Image
+              width={100}
+              height={100}
+              src={"/job-hub-logo-removebg-preview.png"}
+              alt="Logo"
+              priority
+              className="h-auto max-h-14 w-[150px] object-contain md:w-[175px]"
+            />
           </Link>
 
           <div className="mb-12">
@@ -268,11 +276,19 @@ const ForgotPasswordPage = () => {
       <div className="w-full lg:w-1/2 flex flex-col">
         {/* Mobile Header */}
         <div className="lg:hidden p-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-xl p-2">
-              <Briefcase className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-[#234C6A]">JobHub</span>
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 font-bold text-xl group z-10"
+          >
+            <Image
+              width={100}
+              height={100}
+              src={"/job-hub-logo-removebg-preview.png"}
+              alt="Logo"
+              priority
+              className="h-auto max-h-14 w-[150px] object-contain md:w-[175px]"
+            />
           </Link>
           <Link
             href="/auth"
