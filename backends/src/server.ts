@@ -20,29 +20,23 @@ if (!allowedOrigins.includes("https://job-hubs.vercel.app")) {
 }
 
 // Enable CORS for all routes
-// app.use(
-//   cors({
-//     origin: (origin, callback) => {
-//       // Allow requests with no origin (like mobile apps, curl, postman)
-//       if (!origin) return callback(null, true);
-
-//       if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
-//         callback(null, true);
-//       } else {
-//         callback(null, false);
-//       }
-//     },
-//     credentials: true,
-//     optionsSuccessStatus: 200,
-//   })
-// );
-
 app.use(
   cors({
-    origin: "*", // allow only this origin to access the API
-    methods: ["GET", "POST", "PUT", "DELETE"], // allow only these HTTP methods
-    allowedHeaders: ["Content-Type", "Authorization"], // allow only these headers
-  }),
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, postman)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+    optionsSuccessStatus: 200,
+  })
 );
 
 app.use(express.json());
