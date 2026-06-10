@@ -1,27 +1,31 @@
 # ─────────────────────────────────────────────────────────────
 # Caddyfile — Job-Hub Backend
-# Server IP : 43.205.126.40
-# Frontend  : https://job-hubs.vercel.app
+# Server IP  : 43.205.126.40
+# Public Host: https://43.205.126.40.sslip.io  (free TLS via sslip.io)
+# Frontend   : https://job-hubs.vercel.app
 #
-# NOTE: Caddy cannot obtain TLS certificates for bare IP addresses.
-#       We run on plain HTTP (port 80).
-#       The Node app itself handles all CORS — do NOT add CORS
-#       headers here or they will be duplicated and break preflight.
+# sslip.io is a free DNS service: 43.205.126.40.sslip.io resolves
+# to 43.205.126.40. Caddy gets a Let's Encrypt cert automatically.
+# This gives us HTTPS without a real domain — fixing mixed-content
+# errors when the Vercel frontend (HTTPS) calls this backend.
+#
+# CORS is handled entirely in Node.js — do NOT add CORS headers
+# here or they will be duplicated and break preflight requests.
 # ─────────────────────────────────────────────────────────────
 
-:80 {
-    # ── Reverse proxy everything to the Node app ──────────────
-    # Caddy automatically upgrades WebSocket connections
-    # (Socket.IO polling + websocket transports both work)
+43.205.126.40.sslip.io {
+    # ── Reverse proxy all traffic to the Node app ─────────────
+    # Caddy automatically handles WebSocket upgrade (Socket.IO
+    # websocket + polling transports both work transparently).
     reverse_proxy app:3001 {
-        # Pass the real client IP to the app
-        header_up X-Real-IP {remote_host}
-        header_up X-Forwarded-For {remote_host}
+        # Forward real client IP to the Node app
+        header_up X-Real-IP        {remote_host}
+        header_up X-Forwarded-For  {remote_host}
         header_up X-Forwarded-Proto {scheme}
 
-        # Keep websocket connections alive
+        # Keep WebSocket / long-poll connections alive
         transport http {
-            keepalive 30s
+            keepalive          30s
             keepalive_idle_conns 10
         }
     }
@@ -38,4 +42,9 @@
         }
         format json
     }
+}
+
+# ── Redirect bare HTTP → HTTPS ────────────────────────────────
+:80 {
+    redir https://43.205.126.40.sslip.io{uri} permanent
 }
