@@ -22,7 +22,7 @@ interface SignUpFormProps {
 
 const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [userType, setUserType] = useState("jobseeker");
+  const [userType, setUserType] = useState("seeker");
 
   return (
     <form onSubmit={handleSignUp} className="space-y-4">
@@ -119,15 +119,15 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => setUserType("jobseeker")}
+            onClick={() => setUserType("seeker")}
             className={`flex items-center justify-center gap-3 p-2 md:p-4 rounded-2xl border-2 transition-all duration-500 group/btn relative overflow-hidden cursor-pointer ${
-              userType === "jobseeker"
+              userType === "seeker"
                 ? "border-[#234C6A] bg-[#234C6A]/5 text-[#234C6A] shadow-md shadow-[#234C6A]/5"
                 : "border-slate-200/60 bg-white/60 text-[#456882] hover:border-[#234C6A]/30 hover:bg-white"
             }`}
           >
             <div
-              className={`p-2 rounded-lg transition-colors ${userType === "jobseeker" ? "bg-[#234C6A] text-white" : "bg-[#456882]/10"}`}
+              className={`p-2 rounded-lg transition-colors ${userType === "seeker" ? "bg-[#234C6A] text-white" : "bg-[#456882]/10"}`}
             >
               <Search className="h-4 w-4" />
             </div>
