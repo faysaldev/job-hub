@@ -90,7 +90,7 @@ const SkillsSection = memo(({ editing, profileSkills }: SkillsSectionProps) => {
             <Button
               type="button"
               onClick={addSkill}
-              className="bg-[#234C6A] hover:bg-[#456882] h-12 px-6 rounded-xl"
+              className="h-12 rounded-2xl bg-[#234C6A] px-6 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
             >
               <Plus className="h-5 w-5 mr-1" /> Add
             </Button>

@@ -153,7 +153,7 @@ export const ProjectsSection = memo(({ editing }: { editing: boolean }) => {
             onClick={() =>
               append({ project_name: "", description: "", live_url: "" })
             }
-            className="bg-[#234C6A] hover:bg-[#456882] rounded-xl"
+            className="h-11 rounded-2xl bg-[#234C6A] px-5 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Project
           </Button>

@@ -400,14 +400,14 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               <Button
                 variant="outline"
                 onClick={toggleEdit}
-                className="h-11 rounded-2xl border-[#234C6A]/20 px-5 font-black text-[#234C6A] hover:bg-[#234C6A]/5"
+                className="h-11 rounded-2xl border-[#234C6A]/20 px-5 font-black text-[#234C6A] transition-all hover:-translate-y-0.5 hover:bg-[#234C6A]/5"
                 disabled={isSaving}
               >
                 <X className="mr-2 h-4 w-4" /> Cancel
               </Button>
               <Button
                 onClick={handleSubmit(onSubmit)}
-                className="h-11 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-5 font-black text-white shadow-lg shadow-[#234C6A]/15 hover:from-[#1c405a] hover:to-[#3b5a71]"
+                className="h-11 rounded-2xl bg-[#234C6A] px-5 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
                 disabled={isSaving}
               >
                 {isSaving ? (
@@ -421,7 +421,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
           ) : (
             <Button
               onClick={toggleEdit}
-              className="h-11 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-6 font-black text-white shadow-lg shadow-[#234C6A]/15 hover:from-[#1c405a] hover:to-[#3b5a71]"
+              className="h-11 rounded-2xl bg-[#234C6A] px-6 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
             >
               <Edit3 className="mr-2 h-4 w-4" />
               Edit Profile
