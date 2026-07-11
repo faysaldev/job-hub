@@ -8,10 +8,8 @@ import { Input } from "@/src/components/ui/input";
 import { User, Mail, Phone, MapPin, Camera } from "lucide-react";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import Select from "react-select";
 import { cn } from "@/src/lib/utils";
 import { ProfileFormValues } from "@/src/types";
-import { useCityOptions } from "@/src/hooks/useCityOptions";
 
 interface ProfileHeaderProps {
   editing: boolean;
@@ -34,7 +32,6 @@ const ProfileHeader = memo(
     onImageChange,
   }: ProfileHeaderProps) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const cityOptions = useCityOptions();
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -156,32 +153,11 @@ const ProfileHeader = memo(
                   <MapPin className="h-4 w-4 text-[#234C6A]" />
                 </div>
                 {editing ? (
-                  <div className="min-w-[200px]">
-                    <Controller
-                      control={control}
-                      name="location"
-                      render={({ field: { value, onChange } }) => (
-                        <Select
-                          className="text-sm"
-                          placeholder="Search City..."
-                          isClearable
-                          options={cityOptions}
-                          value={value ? { value, label: value } : null}
-                          onChange={(opt) =>
-                            onChange(opt ? (opt as any).value : "")
-                          }
-                          styles={{
-                            control: (base) => ({
-                              ...base,
-                              borderColor: "#4568824d",
-                              borderRadius: "0.75rem",
-                              minHeight: "32px",
-                            }),
-                          }}
-                        />
-                      )}
-                    />
-                  </div>
+                  <Input
+                    {...register("location")}
+                    placeholder="City, Country"
+                    className="h-8 max-w-[200px] text-sm border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A] bg-gray-50"
+                  />
                 ) : (
                   <span>{profileData?.userLocation || "Location not set"}</span>
                 )}

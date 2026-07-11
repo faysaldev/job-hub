@@ -22,6 +22,7 @@ import {
   Clock,
   Mail,
   CalendarDays,
+  FileText,
 } from "lucide-react";
 import { useGetSeekerByIdQuery } from "@/src/redux/features/seeker/seekerApi";
 import { formatDate, formatEduYear } from "@/src/utils/helper";
@@ -86,6 +87,7 @@ export default function CandidateDetailsPage() {
     error,
   } = useGetSeekerByIdQuery(params?.id as string);
   const seeker = response?.data;
+  console.log("seeker", seeker);
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col jobhub-page-bg">
@@ -272,42 +274,21 @@ export default function CandidateDetailsPage() {
                   </Badge>
                 )}
 
-                <div className="space-y-3 border-t border-[#E3E3E3]/70 pt-5">
-                  <Button
-                    variant="outline"
-                    className="h-11 w-full rounded-2xl border-[#234C6A]/20 font-black text-[#234C6A] hover:bg-[#234C6A]/5"
-                    onClick={() => {
-                      const email = seeker.userId?.email;
-                      if (email) {
-                        const name = seeker.userId?.name || "Candidate";
-                        const designation =
-                          seeker.designation || "professional";
-                        const skills =
-                          seeker.skills?.slice(0, 3).join(", ") ||
-                          "development";
-                        const subject = encodeURIComponent(
-                          `Exciting Career Opportunity at JobHub - ${designation}`,
-                        );
-                        const body = encodeURIComponent(
-                          `Hello ${name},\n\n` +
-                            `I hope you are doing well.\n\n` +
-                            `I was reviewing your profile on JobHub and was highly impressed by your background as a ${designation}, particularly your expertise in ${skills}.\n\n` +
-                            `We are currently looking for talented individuals with your skillset and I would love to schedule a quick chat to discuss how your experience aligns with our goals. Are you available for a brief conversation this week?\n\n` +
-                            `Looking forward to hearing from you!\n\n` +
-                            `Best regards,\n` +
-                            `Recruiter`,
-                        );
-                        window.open(
-                          `mailto:${email}?subject=${subject}&body=${body}`,
-                          "_blank",
-                        );
-                      }
-                    }}
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Send Message
-                  </Button>
-                </div>
+                {(seeker.resume?.resumeLink || (typeof seeker.resume === "string" && seeker.resume)) && (
+                  <div className="space-y-3 border-t border-[#E3E3E3]/70 pt-5">
+                    <a
+                      href={seeker.resume?.resumeLink || seeker.resume}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full"
+                    >
+                      <Button className="h-11 w-full rounded-2xl bg-[#234C6A] hover:bg-[#234C6A]/90 font-black text-white transition duration-300 flex items-center justify-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        View Resume
+                      </Button>
+                    </a>
+                  </div>
+                )}
               </div>
             </Card>
 
@@ -440,71 +421,75 @@ export default function CandidateDetailsPage() {
               </Card>
             )}
 
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              {seeker.educations?.length > 0 && (
-                <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
-                  <SectionHeading
-                    icon={Award}
-                    title="Education"
-                    eyebrow="Credentials"
-                  />
-                  <div className="mt-6 space-y-3">
-                    {seeker.educations.map((edu: any, i: number) => (
+            {seeker.recentProjects?.length > 0 && (
+              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
+                <SectionHeading
+                  icon={BookOpen}
+                  title="Recent Projects"
+                  eyebrow="Portfolio work"
+                />
+                <div className="mt-7 space-y-6">
+                  {seeker.recentProjects.map((project: any, i: number) => {
+                    const projectName = project.projectName || project.project_name;
+                    const projectLink = project.link || project.live_url;
+                    return (
                       <div
                         key={i}
-                        className="rounded-2xl border border-[#234C6A]/8 bg-[#F8FAFC] p-4 transition hover:bg-[#234C6A]/5"
+                        className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-6 transition hover:shadow-md"
                       >
-                        <p className="font-black text-[#234C6A]">
-                          {edu.degree}
-                        </p>
-                        <p className="mt-1 text-sm font-semibold text-[#456882]">
-                          {edu.school}
-                        </p>
-                        <p className="mt-1 text-xs font-bold text-[#456882]/65">
-                          {formatEduYear(edu.year)}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
-
-              {seeker.recentProjects?.length > 0 && (
-                <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
-                  <SectionHeading
-                    icon={BookOpen}
-                    title="Recent Projects"
-                    eyebrow="Portfolio work"
-                  />
-                  <div className="mt-6 space-y-3">
-                    {seeker.recentProjects.map((project: any, i: number) => (
-                      <button
-                        key={i}
-                        type="button"
-                        className="group w-full rounded-2xl border border-[#234C6A]/8 bg-[#F8FAFC] p-4 text-left transition hover:bg-[#234C6A]/5 hover:shadow-sm"
-                        onClick={() =>
-                          project.link && window.open(project.link, "_blank")
-                        }
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="font-black text-[#234C6A]">
-                            {project.projectName}
-                          </p>
-                          {project.link && (
-                            <ExternalLink className="h-4 w-4 shrink-0 text-[#456882]/45 transition group-hover:text-[#234C6A]" />
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <h3 className="text-lg font-black text-[#234C6A]">
+                            {projectName}
+                          </h3>
+                          {projectLink && (
+                            <a
+                              href={projectLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-sm font-bold text-[#234C6A] hover:underline"
+                            >
+                              Visit Project
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
                           )}
                         </div>
                         {project.description && (
-                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#456882]">
+                          <div className="mt-4 text-sm leading-relaxed text-[#456882] whitespace-pre-line">
                             {project.description}
-                          </p>
+                          </div>
                         )}
-                      </button>
-                    ))}
-                  </div>
-                </Card>
-              )}
-            </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+
+            {seeker.educations?.length > 0 && (
+              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
+                <SectionHeading
+                  icon={Award}
+                  title="Education"
+                  eyebrow="Credentials"
+                />
+                <div className="mt-6 space-y-3">
+                  {seeker.educations.map((edu: any, i: number) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl border border-[#234C6A]/8 bg-[#F8FAFC] p-4 transition hover:bg-[#234C6A]/5"
+                    >
+                      <p className="font-black text-[#234C6A]">{edu.degree}</p>
+                      <p className="mt-1 text-sm font-semibold text-[#456882]">
+                        {edu.school}
+                      </p>
+                      <p className="mt-1 text-xs font-bold text-[#456882]/65">
+                        {formatEduYear(edu.year)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       </main>

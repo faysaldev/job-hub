@@ -29,7 +29,7 @@ const ResumePortfolioSection = memo(
         </div>
 
         {editing ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-bold text-[#234C6A]">
                 Resume URL (Google Drive/Dropbox)
@@ -52,7 +52,7 @@ const ResumePortfolioSection = memo(
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
             <Button
               variant="outline"
               onClick={() =>

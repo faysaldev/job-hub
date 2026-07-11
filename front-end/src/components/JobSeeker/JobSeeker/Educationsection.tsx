@@ -217,7 +217,7 @@ const AddEducationForm = memo(({ onAdd }: { onAdd: (edu: any) => void }) => {
           <Button
             type="button"
             onClick={handleAdd}
-            className="bg-amber-500 hover:bg-amber-600 rounded-xl px-8"
+            className="h-12 rounded-2xl bg-[#234C6A] px-8 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Education
           </Button>

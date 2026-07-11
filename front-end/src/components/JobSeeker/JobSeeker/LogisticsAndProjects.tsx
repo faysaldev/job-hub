@@ -38,7 +38,7 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
         <h3 className="text-xl font-bold text-[#234C6A]">Career Logistics</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
         {/* Total Experience */}
         <div className="space-y-3">
           <label className="text-sm font-black text-[#456882] uppercase tracking-wider flex items-center gap-2">
@@ -153,7 +153,7 @@ export const ProjectsSection = memo(({ editing }: { editing: boolean }) => {
             onClick={() =>
               append({ project_name: "", description: "", live_url: "" })
             }
-            className="bg-[#234C6A] hover:bg-[#456882] rounded-xl"
+            className="h-11 rounded-2xl bg-[#234C6A] px-5 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Project
           </Button>
@@ -251,7 +251,7 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
         <h3 className="text-xl font-bold text-[#234C6A]">Online Presence</h3>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-5">
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <Linkedin className="h-4 w-4 text-[#0A66C2]" />

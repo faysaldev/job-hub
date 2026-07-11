@@ -400,14 +400,14 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               <Button
                 variant="outline"
                 onClick={toggleEdit}
-                className="h-11 rounded-2xl border-[#234C6A]/20 px-5 font-black text-[#234C6A] hover:bg-[#234C6A]/5"
+                className="h-11 rounded-2xl border-[#234C6A]/20 px-5 font-black text-[#234C6A] transition-all hover:-translate-y-0.5 hover:bg-[#234C6A]/5"
                 disabled={isSaving}
               >
                 <X className="mr-2 h-4 w-4" /> Cancel
               </Button>
               <Button
                 onClick={handleSubmit(onSubmit)}
-                className="h-11 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-5 font-black text-white shadow-lg shadow-[#234C6A]/15 hover:from-[#1c405a] hover:to-[#3b5a71]"
+                className="h-11 rounded-2xl bg-[#234C6A] px-5 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
                 disabled={isSaving}
               >
                 {isSaving ? (
@@ -421,7 +421,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
           ) : (
             <Button
               onClick={toggleEdit}
-              className="h-11 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-6 font-black text-white shadow-lg shadow-[#234C6A]/15 hover:from-[#1c405a] hover:to-[#3b5a71]"
+              className="h-11 rounded-2xl bg-[#234C6A] px-6 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
             >
               <Edit3 className="mr-2 h-4 w-4" />
               Edit Profile
@@ -429,38 +429,38 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-7 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="space-y-7">
-            <ProfileHeader
-              editing={editing}
-              control={methods.control}
-              register={methods.register}
-              currentUser={currentUser}
-              profileData={profileData}
-              imagePreview={imageState.preview}
-              onImageChange={handleImageChange}
-            />
-            <LogisticsSection editing={editing} />
+        <ProfileHeader
+          editing={editing}
+          control={methods.control}
+          register={methods.register}
+          currentUser={currentUser}
+          profileData={profileData}
+          imagePreview={imageState.preview}
+          onImageChange={handleImageChange}
+        />
+
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+          {/* Left Column: Timeline, Projects, Bio, Skills */}
+          <div className="space-y-8">
             <BioSection editing={editing} bio={profileData?.aboutMe || ""} />
+            <SkillsSection
+              editing={editing}
+              profileSkills={profileData?.skills || []}
+            />
+            <ProjectsSection editing={editing} />
+            <ExperienceSection editing={editing} />
+            <EducationSection editing={editing} />
           </div>
 
-          <aside className="space-y-7 xl:sticky xl:top-24">
+          {/* Right Column (Sidebar): Stats, Logistics, Presence, Documents */}
+          <aside className="space-y-8 lg:sticky lg:top-24">
             <ProfileStrengthIndicator
               strength={calculateProfileStrength(profileData, currentUser)}
             />
+            <LogisticsSection editing={editing} />
             <SocialLinksSection editing={editing} />
+            <ResumePortfolioSection editing={editing} profileData={profileData} />
           </aside>
-        </div>
-
-        <div className="space-y-7">
-          <SkillsSection
-            editing={editing}
-            profileSkills={profileData?.skills || []}
-          />
-          <ProjectsSection editing={editing} />
-          <ExperienceSection editing={editing} />
-          <EducationSection editing={editing} />
-          <ResumePortfolioSection editing={editing} profileData={profileData} />
         </div>
       </div>
     </FormProvider>
