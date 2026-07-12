@@ -32,19 +32,16 @@ const navItems: NavItem[] = [
     href: "/job-seeker/applications",
     icon: Briefcase,
     label: "My Applications",
-    badge: 12,
   },
   {
     href: "/job-seeker/interviews",
     icon: Calendar,
     label: "Interviews",
-    badge: 3,
   },
   {
     href: "/job-seeker/messages",
     icon: MessageSquare,
     label: "Messages",
-    badge: 5,
   },
   {
     href: "/job-seeker/profile",
