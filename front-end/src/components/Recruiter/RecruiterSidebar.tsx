@@ -34,7 +34,6 @@ const navItems: NavItem[] = [
     href: "/recruiter/jobs",
     icon: Briefcase,
     label: "Job Listings",
-    badge: 24,
   },
   {
     href: "/recruiter/create-job",
@@ -45,13 +44,11 @@ const navItems: NavItem[] = [
     href: "/recruiter/applicants",
     icon: Users,
     label: "Applicants",
-    badge: 28,
   },
   {
     href: "/recruiter/interviews",
     icon: MessageSquare,
     label: "Interviews Hub",
-    badge: 5,
   },
   {
     href: "/recruiter/interview-schedule",
