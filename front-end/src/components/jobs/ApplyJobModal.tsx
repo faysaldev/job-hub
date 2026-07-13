@@ -25,9 +25,7 @@ import {
 import { useApplyToJobMutation } from "@/src/redux/features/applications/applicationsApi";
 import {
   useGetSeekerProfileQuery,
-  useUpdateSeekerProfileMutation,
 } from "@/src/redux/features/seeker/seekerApi";
-import { Checkbox } from "@/src/components/ui/checkbox";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -58,21 +56,17 @@ export default function ApplyJobModal({
   const isSaved = savedJobIds?.includes(jobId);
   const [coverLetter, setCoverLetter] = useState("");
   const [resumeUrl, setResumeUrl] = useState("");
-  const [shouldUpdateProfile, setShouldUpdateProfile] = useState(false);
   const [showBoostSection, setShowBoostSection] = useState(false);
   const [paidAmount, setPaidAmount] = useState<string>("");
 
   // API Queries and Mutations
   const { data: profileResponse } = useGetSeekerProfileQuery();
-  const [updateSeekerProfile] = useUpdateSeekerProfileMutation();
   const [applyToJob, { isLoading }] = useApplyToJobMutation();
 
   const router = useRouter();
   const profile = (profileResponse as any)?.data;
   const currentResumeUrl = profile?.resume?.resumeLink || profile?.resume || "";
   const currentResumeName = profile?.resume?.resumeName || "My_Resume.pdf";
-
-  const [isEditingResume, setIsEditingResume] = useState(false);
 
   // Initialize resume URL from profile
   useEffect(() => {
@@ -94,20 +88,12 @@ export default function ApplyJobModal({
       return;
     }
 
-    try {
-      // Get current resume URL from nested structure
-      const currentResumeUrl =
-        profile?.resume?.resumeLink || profile?.resume || "";
+    if (coverLetter.length > 1300) {
+      toast.error("Cover letter must not exceed 1300 characters");
+      return;
+    }
 
-      // Update profile if requested and changed
-      if (shouldUpdateProfile && resumeUrl !== currentResumeUrl) {
-        await updateSeekerProfile({
-          resume: {
-            resumeName: "My Resume",
-            resumeLink: resumeUrl,
-          },
-        } as any).unwrap();
-      }
+    try {
       const res = (await applyToJob({
         job_id: jobId,
         cover_letter: coverLetter,
@@ -167,7 +153,7 @@ export default function ApplyJobModal({
         <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
         {isApplied ? "Already Applied" : "Apply Now"}
       </Button>
-      <DialogContent className="sm:max-w-[550px] bg-white rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
+      <DialogContent className="w-[95vw] sm:max-w-[620px] md:max-w-[680px] bg-white rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
         <form onSubmit={handleApply} className="relative">
           {/* Top Section - Blurred when boosting */}
           <div
@@ -179,21 +165,21 @@ export default function ApplyJobModal({
           >
             <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white">
               <DialogHeader>
-                <DialogTitle className="text-2xl font-black tracking-tight flex items-center justify-between gap-4">
-                  <span>Apply for {jobTitle}</span>
+                <DialogTitle className="text-2xl font-black tracking-tight flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <span className="break-words max-w-full">Apply for {jobTitle}</span>
                   {isSaved && (
-                    <span className="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-black uppercase tracking-wider text-white">
+                    <span className="w-fit flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-black uppercase tracking-wider text-white">
                       ★ Saved
                     </span>
                   )}
                 </DialogTitle>
-                <DialogDescription className="text-blue-100/80 font-medium">
+                <DialogDescription className="text-blue-100/80 font-medium break-words">
                   at {companyName}
                 </DialogDescription>
               </DialogHeader>
             </div>
 
-            <div className="p-8 pb-0 space-y-6">
+            <div className="p-8 pb-0 space-y-6 max-h-[45vh] overflow-y-auto">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-sm font-black text-[#234C6A] flex items-center gap-2 uppercase tracking-widest">
@@ -201,74 +187,37 @@ export default function ApplyJobModal({
                     Resume
                   </Label>
 
-                  {resumeUrl === currentResumeUrl &&
-                  currentResumeUrl &&
-                  !isEditingResume ? (
-                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl border border-green-100 group/resume">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                  {currentResumeUrl ? (
+                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl border border-green-100 group/resume w-full min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 w-full">
+                        <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
                           <FileText className="h-5 w-5 text-green-600" />
                         </div>
-                        <div>
-                          <p className="text-sm font-black text-green-900 line-clamp-1">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-black text-green-900 truncate">
                             {currentResumeName}
                           </p>
-                          <p className="text-[10px] font-bold text-green-700/70 uppercase tracking-wider">
+                          <p className="text-[10px] font-bold text-green-700/70 uppercase tracking-wider truncate">
                             Current resume on file
                           </p>
                         </div>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsEditingResume(true)}
-                        className="text-green-700 hover:text-green-800 hover:bg-green-100 rounded-lg text-xs font-black"
-                      >
-                        Change
-                      </Button>
                     </div>
                   ) : (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <Input
-                        id="resume"
-                        placeholder="Paste your latest resume URL"
-                        value={resumeUrl}
-                        onChange={(e) => setResumeUrl(e.target.value)}
-                        className="rounded-2xl border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]/10 h-14 font-medium"
-                        required
-                      />
-                      {currentResumeUrl && (
-                        <Button
-                          type="button"
-                          variant="link"
-                          onClick={() => {
-                            setResumeUrl(currentResumeUrl);
-                            setIsEditingResume(false);
-                          }}
-                          className="text-[10px] text-[#234C6A] h-auto p-0 font-black uppercase tracking-widest"
-                        >
-                          Cancel and use current resume
-                        </Button>
-                      )}
-                    </div>
-                  )}
-
-                  {resumeUrl && currentResumeUrl !== resumeUrl && (
-                    <div className="flex items-center gap-2 px-1 mt-1 animate-in fade-in duration-500">
-                      <Checkbox
-                        id="updateProfile"
-                        checked={shouldUpdateProfile}
-                        onCheckedChange={(checked) =>
-                          setShouldUpdateProfile(!!checked)
-                        }
-                      />
-                      <label
-                        htmlFor="updateProfile"
-                        className="text-[10px] text-[#456882] font-black uppercase tracking-widest cursor-pointer"
-                      >
-                        Update profile with this resume
-                      </label>
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-2xl border border-red-100 animate-in fade-in duration-300 w-full min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 w-full">
+                        <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                          <FileText className="h-5 w-5 text-red-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-black text-red-900 truncate">
+                            No Resume Uploaded
+                          </p>
+                          <p className="text-[10px] font-bold text-red-700/70 uppercase tracking-wider truncate">
+                            Please upload a resume in your profile first
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -283,22 +232,31 @@ export default function ApplyJobModal({
                   </Label>
                   <Textarea
                     id="coverLetter"
-                    placeholder="Why are you a great fit? (Min 150 chars)"
+                    placeholder="Why are you a great fit? (Min 150 chars, Max 1300 chars)"
                     value={coverLetter}
                     onChange={(e) => setCoverLetter(e.target.value)}
-                    className="min-h-[180px] rounded-2xl border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]/10 p-5 leading-relaxed font-medium"
+                    maxLength={1300}
+                    className="min-h-[180px] max-h-[220px] overflow-y-auto rounded-2xl border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]/10 p-5 leading-relaxed font-medium"
                     required
                   />
                   <div className="flex justify-between items-center px-1">
                     <span
-                      className={`text-[10px] font-black uppercase tracking-widest ${coverLetter.length < 150 ? "text-red-500" : "text-emerald-500"}`}
+                      className={`text-[10px] font-black uppercase tracking-widest ${
+                        coverLetter.length < 150
+                          ? "text-red-500"
+                          : coverLetter.length > 1300
+                            ? "text-red-500"
+                            : "text-emerald-500"
+                      }`}
                     >
                       {coverLetter.length < 150
                         ? `${150 - coverLetter.length} more needed`
-                        : "Requirement met"}
+                        : coverLetter.length > 1300
+                          ? "Limit exceeded"
+                          : "Requirement met"}
                     </span>
                     <p className="text-[10px] font-black text-[#456882] uppercase tracking-widest">
-                      {coverLetter.length} / 150 min
+                      {coverLetter.length} / 1300 max
                     </p>
                   </div>
                 </div>
@@ -448,8 +406,8 @@ export default function ApplyJobModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading}
-                className="rounded-2xl h-14 px-10 bg-[#234C6A] text-white hover:bg-[#1a3a52] font-black text-sm shadow-xl shadow-blue-900/10 min-w-[180px] transition-all active:scale-95"
+                disabled={isLoading || coverLetter.length < 150 || coverLetter.length > 1300 || !resumeUrl}
+                className="rounded-2xl h-14 px-10 bg-[#234C6A] text-white hover:bg-[#1a3a52] font-black text-sm shadow-xl shadow-blue-900/10 min-w-[180px] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
