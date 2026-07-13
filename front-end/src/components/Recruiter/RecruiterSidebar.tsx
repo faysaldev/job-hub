@@ -48,7 +48,7 @@ const navItems: NavItem[] = [
   {
     href: "/recruiter/interviews",
     icon: MessageSquare,
-    label: "Interviews Hub",
+    label: "Messages",
   },
   {
     href: "/recruiter/interview-schedule",

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useSocket } from "@/src/hooks/useSocket";
-import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
@@ -397,6 +396,29 @@ const InterviewsPage = () => {
 
       toast.success("Interview scheduled successfully");
       setShowScheduler(false);
+
+      // Dynamically update states
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === selectedConvId ? { ...c, status: "interview" } : c
+        )
+      );
+      setSelectedCandidate((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "interview",
+              interviewStatus: "scheduled",
+              rawConversation: {
+                ...prev.rawConversation,
+                status: "interview",
+              },
+            }
+          : null
+      );
+      if (socket) {
+        socket.emit("conversations:get", { search: searchInput });
+      }
     } catch (error) {
       toast.error("Failed to schedule interview");
     }
@@ -413,6 +435,28 @@ const InterviewsPage = () => {
         applicantId: selectedCandidate.id,
       }).unwrap();
       toast.success(`${selectedCandidate.name} has been hired!`);
+
+      // Dynamically update states
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === selectedConvId ? { ...c, status: "hired" } : c
+        )
+      );
+      setSelectedCandidate((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "hired",
+              rawConversation: {
+                ...prev.rawConversation,
+                status: "hired",
+              },
+            }
+          : null
+      );
+      if (socket) {
+        socket.emit("conversations:get", { search: searchInput });
+      }
     } catch (error) {
       toast.error("Failed to hire candidate");
     }
@@ -465,7 +509,7 @@ const InterviewsPage = () => {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
           {/* Candidates List */}
-          <Card className="flex h-[760px] flex-col space-y-4 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-4 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
+          <div className="flex h-[760px] flex-col space-y-4 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-4 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
             <div className="flex-shrink-0 space-y-4 rounded-3xl bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -570,10 +614,10 @@ const InterviewsPage = () => {
                 })
               )}
             </div>
-          </Card>
+          </div>
 
           {/* Chat Window */}
-          <Card className="relative flex h-[760px] flex-col overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
+          <div className="relative flex h-[760px] flex-col overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
             {selectedCandidate ? (
               <>
                 {/* Chat Header */}
@@ -891,13 +935,14 @@ const InterviewsPage = () => {
                 {/* Input Area */}
                 <div className="border-t border-[#E3E3E3]/70 bg-white p-6">
                   <div className="flex gap-3 rounded-[24px] border border-[#234C6A]/10 bg-[#F8FAFC] p-2 shadow-inner">
-                    <Input
+                    <input
                       ref={messageInputRef}
+                      type="text"
                       placeholder="Type your message..."
                       onKeyPress={(e) =>
                         e.key === "Enter" && handleSendMessage()
                       }
-                      className="border-none bg-transparent text-[#234C6A] focus-visible:ring-0"
+                      className="h-12 flex-1 border-none bg-transparent px-3 text-sm text-[#234C6A] placeholder:text-[#456882]/50 outline-none focus:outline-none focus:ring-0 shadow-none"
                     />
                     <Button
                       onClick={handleSendMessage}
@@ -922,7 +967,7 @@ const InterviewsPage = () => {
                 </p>
               </div>
             )}
-          </Card>
+          </div>
         </div>
       </div>
     </RecruiterLayout>

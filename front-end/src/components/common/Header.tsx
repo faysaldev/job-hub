@@ -824,8 +824,16 @@ const Header = () => {
                   )}
                 >
                   <div className="relative">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] text-sm font-bold text-white shadow-md">
-                      {user.name.charAt(0)}
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] text-sm font-bold text-white shadow-md overflow-hidden">
+                      {user.image ? (
+                        <img
+                          src={user.image}
+                          alt={user.name}
+                          className="h-full w-full object-cover rounded-2xl"
+                        />
+                      ) : (
+                        user.name.charAt(0)
+                      )}
                     </div>
                     <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                   </div>
@@ -851,8 +859,16 @@ const Header = () => {
                 >
                   <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-white/30 bg-white/20 text-xl font-bold text-white">
-                        {user.name.charAt(0)}
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-white/30 bg-white/20 text-xl font-bold text-white overflow-hidden">
+                        {user.image ? (
+                          <img
+                            src={user.image}
+                            alt={user.name}
+                            className="h-full w-full object-cover rounded-2xl"
+                          />
+                        ) : (
+                          user.name.charAt(0)
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-white truncate">
@@ -1000,8 +1016,16 @@ const Header = () => {
           <div className="flex-shrink-0 border-b border-[#234C6A]/10 bg-gradient-to-br from-[#E3E3E3]/50 to-white p-4">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] text-xl font-bold text-white shadow-lg">
-                  {user.name.charAt(0)}
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] text-xl font-bold text-white shadow-lg overflow-hidden">
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name}
+                      className="h-full w-full object-cover rounded-2xl"
+                    />
+                  ) : (
+                    user.name.charAt(0)
+                  )}
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
               </div>

@@ -21,7 +21,6 @@ import {
   Shield,
 } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
-import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { cn } from "@/src/lib/utils";
 import gsap from "gsap";
@@ -71,7 +70,15 @@ const NotificationsPage = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.emit("notifications:get", { page: currentPage, limit });
+    const fetchNotifs = () => {
+      setIsLoading(true);
+      socket.emit("notifications:get", { page: currentPage, limit });
+    };
+
+    fetchNotifs();
+
+    // Re-fetch on connect/reconnect in case the socket was not ready initially
+    socket.on("connect", fetchNotifs);
 
     socket.on(
       "notifications:loaded",
@@ -124,26 +131,27 @@ const NotificationsPage = () => {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     });
 
-    socket.on("socket:error", ({ message }: { message: string }) =>
-      toast.error(message),
-    );
+    socket.on("socket:error", ({ message }: { message: string }) => {
+      toast.error(message);
+      setIsLoading(false);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.warn("[Socket] connection error:", err.message);
+      setIsLoading(false);
+    });
 
     return () => {
+      socket.off("connect", fetchNotifs);
       socket.off("notifications:loaded");
       socket.off("notification:new");
       socket.off("notification:updated");
       socket.off("notification:deleted");
       socket.off("notifications:allRead");
       socket.off("socket:error");
+      socket.off("connect_error");
     };
   }, [socket, currentPage]);
-
-  // Re-fetch when page changes
-  useEffect(() => {
-    if (!socket) return;
-    setIsLoading(true);
-    socket.emit("notifications:get", { page: currentPage, limit });
-  }, [currentPage, socket]);
 
   // ── GSAP animations ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -206,25 +214,8 @@ const NotificationsPage = () => {
     return Bell;
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center jobhub-page-bg">
-        <div className="rounded-3xl border border-[#234C6A]/10 bg-white/90 p-10 text-center shadow-xl">
-          <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-[#234C6A]" />
-          <p className="text-sm font-black uppercase tracking-widest text-[#234C6A]">
-            Loading Notifications...
-          </p>
-          <p className="mt-2 text-sm text-[#456882]">
-            Syncing your real-time activity center
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div ref={containerRef} className="min-h-screen jobhub-page-bg pt-10 pb-10">
+    <div ref={containerRef} className="min-h-screen jobhub-page-bg pt-10 pb-0">
       <div className="container max-w-5xl mx-auto px-4">
         {/* Header */}
         <div className="notif-header mb-10">
@@ -268,36 +259,8 @@ const NotificationsPage = () => {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {[
-            { label: "Total", value: meta.total, icon: Inbox },
-            { label: "Unread", value: unreadCount, icon: Sparkles },
-            { label: "Updates", value: "Real-time", icon: Bell },
-          ].map((stat, i) => (
-            <Card
-              key={i}
-              className="rounded-3xl border border-[#234C6A]/10 bg-white/90 p-6 shadow-sm backdrop-blur"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#234C6A]/10">
-                  <stat.icon className="h-6 w-6 text-[#234C6A]" />
-                </div>
-                <div>
-                  <p className="text-sm font-black uppercase tracking-widest text-[#456882]">
-                    {stat.label}
-                  </p>
-                  <p className="text-2xl font-black text-[#234C6A]">
-                    {stat.value}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
         {/* List */}
-        <Card className="overflow-hidden rounded-[2rem] border border-[#234C6A]/10 bg-white/90 shadow-xl shadow-[#234C6A]/10 backdrop-blur">
+        <div className="overflow-hidden rounded-[2rem] border border-[#234C6A]/10 bg-white/90 shadow-xl shadow-[#234C6A]/10 backdrop-blur">
           <div className="flex items-center justify-between border-b border-[#E3E3E3] bg-[#F8FAFC] p-6 md:p-8">
             <h2 className="flex items-center gap-3 text-xl font-black text-[#234C6A]">
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A]/10">
@@ -313,7 +276,17 @@ const NotificationsPage = () => {
           </div>
 
           <div className="divide-y divide-[#E3E3E3]/70">
-            {notifications.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-20">
+                <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-[#234C6A]" />
+                <p className="text-sm font-black uppercase tracking-widest text-[#234C6A]">
+                  Loading Notifications...
+                </p>
+                <p className="mt-2 text-sm text-[#456882]">
+                  Syncing your real-time activity center
+                </p>
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="text-center py-32">
                 <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-3xl bg-[#234C6A]/10">
                   <BellOff className="h-12 w-12 text-[#234C6A]/35" />
@@ -374,7 +347,13 @@ const NotificationsPage = () => {
                               : "font-black text-[#234C6A]",
                           )}
                         >
-                          {n.title}
+                          {n.link ? (
+                            <Link href={n.link} className="hover:underline">
+                              {n.title}
+                            </Link>
+                          ) : (
+                            n.title
+                          )}
                         </h3>
                         <span className="flex shrink-0 items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#456882]/70">
                           <Clock className="h-3.5 w-3.5" />
@@ -382,16 +361,8 @@ const NotificationsPage = () => {
                         </span>
                       </div>
 
+                      {/* Actions */}
                       <div className="flex flex-wrap items-center gap-4 mt-4">
-                        <Link href={n.link || "#"}>
-                          <Button
-                            size="sm"
-                            className="h-10 rounded-xl bg-[#234C6A] px-6 text-xs font-black text-white shadow-lg transition-all hover:bg-[#1c405a] active:scale-95"
-                          >
-                            View Activity
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </Button>
-                        </Link>
 
                         <div className="flex items-center gap-2">
                           <Button
@@ -402,7 +373,7 @@ const NotificationsPage = () => {
                             className={cn(
                               "h-10 w-10 rounded-xl transition-all",
                               n.isRead
-                                ? "text-[#456882]/35"
+                                ? "text-[#456882]/35 cursor-not-allowed"
                                 : "text-[#234C6A] hover:bg-[#234C6A]/10",
                             )}
                             title={n.isRead ? "Already read" : "Mark as read"}
@@ -455,7 +426,7 @@ const NotificationsPage = () => {
               </Button>
             </div>
           )}
-        </Card>
+        </div>
       </div>
     </div>
   );

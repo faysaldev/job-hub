@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectToken } from "@/src/redux/features/auth/authSlice";
-import { initSocket, getSocket, disconnectSocket } from "@/src/lib/socket";
+import { initSocket, getSocket } from "@/src/lib/socket";
 import type { Socket } from "socket.io-client";
 
 /**
@@ -15,16 +15,16 @@ import type { Socket } from "socket.io-client";
  */
 export function useSocket(): Socket | null {
   const token = useSelector(selectToken);
-  const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setSocket(null);
+      return;
+    }
     const s = initSocket(token);
-    socketRef.current = s;
-    return () => {
-      // Do not disconnect on every unmount; socket is shared app-wide.
-    };
+    setSocket(s);
   }, [token]);
 
-  return socketRef.current ?? getSocket();
+  return socket ?? getSocket();
 }
