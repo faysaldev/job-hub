@@ -891,13 +891,14 @@ const InterviewsPage = () => {
                 {/* Input Area */}
                 <div className="border-t border-[#E3E3E3]/70 bg-white p-6">
                   <div className="flex gap-3 rounded-[24px] border border-[#234C6A]/10 bg-[#F8FAFC] p-2 shadow-inner">
-                    <Input
+                    <input
                       ref={messageInputRef}
+                      type="text"
                       placeholder="Type your message..."
                       onKeyPress={(e) =>
                         e.key === "Enter" && handleSendMessage()
                       }
-                      className="border-none bg-transparent text-[#234C6A] focus-visible:ring-0"
+                      className="h-12 flex-1 border-none bg-transparent px-3 text-sm text-[#234C6A] placeholder:text-[#456882]/50 outline-none focus:outline-none focus:ring-0 shadow-none"
                     />
                     <Button
                       onClick={handleSendMessage}
