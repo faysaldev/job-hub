@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback, KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSocket } from "@/src/hooks/useSocket";
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
 import {
   User,
@@ -684,11 +683,12 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
             {/* Input */}
             <div className="flex-shrink-0 border-t border-[#E3E3E3]/70 bg-white p-4">
               <div className="flex gap-2 rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-2 shadow-inner">
-                <Input
+                <input
                   ref={messageInputRef}
+                  type="text"
                   placeholder="Type a message..."
                   onKeyDown={handleKeyPress}
-                  className="h-11 border-none bg-transparent text-sm text-[#234C6A] focus-visible:ring-0"
+                  className="h-11 flex-1 border-none bg-transparent px-3 text-sm text-[#234C6A] placeholder:text-[#456882]/50 outline-none focus:outline-none focus:ring-0 shadow-none"
                 />
                 <Button
                   onClick={handleSendMessage}
