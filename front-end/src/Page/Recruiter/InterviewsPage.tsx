@@ -396,6 +396,29 @@ const InterviewsPage = () => {
 
       toast.success("Interview scheduled successfully");
       setShowScheduler(false);
+
+      // Dynamically update states
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === selectedConvId ? { ...c, status: "interview" } : c
+        )
+      );
+      setSelectedCandidate((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "interview",
+              interviewStatus: "scheduled",
+              rawConversation: {
+                ...prev.rawConversation,
+                status: "interview",
+              },
+            }
+          : null
+      );
+      if (socket) {
+        socket.emit("conversations:get", { search: searchInput });
+      }
     } catch (error) {
       toast.error("Failed to schedule interview");
     }
@@ -412,6 +435,28 @@ const InterviewsPage = () => {
         applicantId: selectedCandidate.id,
       }).unwrap();
       toast.success(`${selectedCandidate.name} has been hired!`);
+
+      // Dynamically update states
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === selectedConvId ? { ...c, status: "hired" } : c
+        )
+      );
+      setSelectedCandidate((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "hired",
+              rawConversation: {
+                ...prev.rawConversation,
+                status: "hired",
+              },
+            }
+          : null
+      );
+      if (socket) {
+        socket.emit("conversations:get", { search: searchInput });
+      }
     } catch (error) {
       toast.error("Failed to hire candidate");
     }
