@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback, KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/src/hooks/useAuth";
 import { useSocket } from "@/src/hooks/useSocket";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -60,7 +59,6 @@ interface Pagination {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const JobSeekerMessages = ({ userId }: { userId: string }) => {
-  const { user } = useAuth();
   const socket = useSocket();
   const router = useRouter();
   const searchParams = useSearchParams();

@@ -34,15 +34,16 @@ const navItems: NavItem[] = [
     label: "My Applications",
   },
   {
-    href: "/job-seeker/interviews",
-    icon: Calendar,
-    label: "Interviews",
-  },
-  {
     href: "/job-seeker/messages",
     icon: MessageSquare,
     label: "Messages",
   },
+  {
+    href: "/job-seeker/interviews",
+    icon: Calendar,
+    label: "Interviews",
+  },
+
   {
     href: "/job-seeker/profile",
     icon: User,
