@@ -13,7 +13,7 @@ const SOCKET_URL =
   process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 export function initSocket(token: string): Socket {
-  if (socket && socket.connected) return socket;
+  if (socket) return socket;
 
   const cleanToken = token.replace(/['"]+/g, "");
 
