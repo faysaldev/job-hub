@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useSocket } from "@/src/hooks/useSocket";
-import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Badge } from "@/src/components/ui/badge";
@@ -465,7 +464,7 @@ const InterviewsPage = () => {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
           {/* Candidates List */}
-          <Card className="flex h-[760px] flex-col space-y-4 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-4 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
+          <div className="flex h-[760px] flex-col space-y-4 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-4 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
             <div className="flex-shrink-0 space-y-4 rounded-3xl bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -570,10 +569,10 @@ const InterviewsPage = () => {
                 })
               )}
             </div>
-          </Card>
+          </div>
 
           {/* Chat Window */}
-          <Card className="relative flex h-[760px] flex-col overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
+          <div className="relative flex h-[760px] flex-col overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
             {selectedCandidate ? (
               <>
                 {/* Chat Header */}
@@ -923,7 +922,7 @@ const InterviewsPage = () => {
                 </p>
               </div>
             )}
-          </Card>
+          </div>
         </div>
       </div>
     </RecruiterLayout>
