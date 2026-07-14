@@ -2,6 +2,29 @@
 
 JobHub is a comprehensive job recruitment platform built using a microservices architecture. The platform connects job seekers with employers through a modern, efficient, and scalable system.
 
+### 🌐 Live Platform
+**Link:** [https://job-hubs.vercel.app/](https://job-hubs.vercel.app/)
+
+![JobHub Demo](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExOW11MzhwcG14cW00amE4czBwbHhxdXM1eTg5MHMwOW9yZXN2b3Z4MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kChY7vFiZq1BVRn8Yk/giphy.gif)
+
+---
+
+## 🔑 Demo Access / Credentials
+
+You can log in with the following credentials, or register your own account:
+
+* **Seeker Accounts**:
+  * **Email**: `seeker@gmail.com` *(you can also use `seeker2@gmail.com` through `seeker4@gmail.com`)*
+  * **Password**: `seeker@123!`
+* **Recruiter Accounts**:
+  * **Email**: `recruiter@gmail.com` *(you can also use `recruiter2@gmail.com` through `recruiter6@gmail.com`)*
+  * **Password**: `Recruiter@123`
+* **Admin Access**:
+  * **Email**: `faysaladmin@gmail.com`
+  * **Password**: `Password123@`
+
+---
+
 ## Architecture Overview
 
 JobHub is designed as a microservices-based application consisting of:
