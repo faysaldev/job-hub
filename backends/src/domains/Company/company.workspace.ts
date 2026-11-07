@@ -11,6 +11,7 @@ import { companyForActor } from "./company.access";
 import User from "../User/user.model";
 import Job from "../Jobs/job.model";
 import jobService from "../Jobs/job.services";
+import { requireTeamSeat, withCompanyQuotaLock } from "../Billing/billing.entitlements";
 
 const ok = (res: Response, data: unknown, message = "OK") => res.status(200).json(response({ message, status: "OK", statusCode: 200, data: data as object }));
 const email = (v: string) => v.toLowerCase().trim();
@@ -39,11 +40,17 @@ const invite = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const user = await User.findOne({ email: address, role: "recruiter", isDeleted: { $ne: true }, isEmailVerified: true });
   if (user && await Company.exists({ userId: user._id })) throw new AppError("A company owner cannot join another workspace", 409);
   if (user && await CompanyMember.exists({ userId: user._id, status: "active" })) throw new AppError("Account already belongs to a team", 409);
-  if (await CompanyMember.exists({ companyId: company._id, email: address, status: "active" }))
-    throw new AppError("This teammate is already active", 409);
-  const record = await CompanyMember.findOneAndUpdate({ companyId: company._id, email: address },
-    { $set: { role: req.body.role, status: "invited", invitedBy: req.user!._id, invitedAt: new Date() },
-      $unset: { userId: "", joinedAt: "" } }, { upsert: true, new: true, runValidators: true });
+  const record = await withCompanyQuotaLock(String(company._id), async session => {
+    const current = await CompanyMember.findOne({ companyId: company._id, email: address }).session(session);
+    if (current?.status === "active") throw new AppError("This teammate is already active", 409);
+    // Re-sending an invitation occupies the same reserved seat; new invitations require an available slot.
+    if (current?.status !== "invited") await requireTeamSeat(String(company._id), session);
+    return CompanyMember.findOneAndUpdate({ companyId: company._id, email: address },
+      { $set: { role: req.body.role, status: "invited", invitedBy: req.user!._id, invitedAt: new Date() },
+        $unset: { userId: "", joinedAt: "" } },
+      { upsert: true, new: true, runValidators: true, session });
+  });
+  if (!record) throw new AppError("Invitation could not be saved", 409);
   const portal = `${(process.env.FRONTEND_URL || "http://localhost:3000").split(",")[0].replace(/\/$/, "")}/recruiter/team`;
   try { await sendEmail(address, `Invitation to join ${company.companyName || "JobHub"}`, `Sign in as a recruiter to accept your invitation: ${portal}`); }
   catch (error) { console.error("Team invitation email unavailable", error); }

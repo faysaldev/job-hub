@@ -28,6 +28,7 @@ export interface IJob extends Document {
   positions: number;
   isActive: boolean;
   isDeleted: boolean;
+  sponsoredUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -124,6 +125,7 @@ const jobSchema = new Schema<IJob>(
     },
     isActive: { type: Boolean, default: true },
     isDeleted: { type: Boolean, default: false },
+    sponsoredUntil: { type: Date },
   },
   {
     timestamps: true,
@@ -147,6 +149,8 @@ jobSchema.index({ isActive: 1, isDeleted: 1, createdAt: -1 });
 jobSchema.index({ isActive: 1, isDeleted: 1, applicationDeadline: 1, createdAt: -1 });
 jobSchema.index({ author: 1, isActive: 1, isDeleted: 1, applicationDeadline: 1 });
 jobSchema.index({ category: 1, type: 1, locationType: 1 });
+jobSchema.index({ sponsoredUntil: -1, createdAt: -1 });
+jobSchema.virtual("isSponsored").get(function () { return !!this.sponsoredUntil && this.sponsoredUntil.getTime() > Date.now(); });
 
 // Create the model based on the schema
 const Job = mongoose.model<IJob>("Job", jobSchema);

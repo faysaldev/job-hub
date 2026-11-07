@@ -7,6 +7,7 @@ import { escapeRegex, assertId } from "../../lib/query";
 import { companyForActor, jobForActor } from "../Company/company.access";
 import { validateCompleteJob } from "./job.validation";
 import { AppError } from "../../lib/errors";
+import { requireJobSlot, withCompanyQuotaLock } from "../Billing/billing.entitlements";
 
 // Get all jobs with optional filters and Redis caching
 const getAllJobs = async (filters: any = {}) => {
@@ -121,7 +122,7 @@ const getWorkspaceJobs = async (actorId: string, options: { status?: string; pag
   if (options.status && ["draft", "scheduled", "published", "closed"].includes(options.status)) query.status = options.status;
   else if (options.status) throw new AppError("Invalid job status", 400);
   const [jobs, total] = await Promise.all([
-    Job.find(query).select("title status isActive publishAt applicationDeadline location type createdAt author companyId positions")
+    Job.find(query).select("title status isActive publishAt applicationDeadline location type createdAt author companyId positions sponsoredUntil")
       .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
     Job.countDocuments(query),
   ]);
@@ -142,34 +143,48 @@ const createJob = async (data: Partial<IJob>, actorId: string) => {
   const record = { ...data, status, author: company.userId, companyId: company._id, createdBy: actorId,
     isActive: status === "published", ...(status === "published" ? { publishedAt: new Date() } : {}) };
   validateLifecycle(record);
-  const saved = await Job.create(record);
+  let saved: IJob;
+  if (["published", "scheduled"].includes(status)) {
+    saved = await withCompanyQuotaLock(String(company._id), async (session) => {
+      await requireJobSlot(company, session);
+      const docs = await Job.create([record], { session });
+      return docs[0];
+    });
+  } else saved = await Job.create(record);
   await clearJobCache();
   return saved;
 };
 const updateJob = async (id: string, updateData: Partial<IJob>, actorId: string) => {
-  const { job } = await jobForActor(id, actorId, "jobs");
-  const next = { ...job.toObject(), ...updateData } as Record<string, any>;
-  if (updateData.isActive !== undefined && updateData.status === undefined) {
-    next.status = updateData.isActive ? "published" : "closed";
-  }
-  // Only the explicit state transition changes publication; scheduled jobs remain hidden.
-  next.isActive = next.status === "published";
-  if (next.status === "published" && job.status !== "published") next.publishedAt = new Date();
-  validateLifecycle(next);
-  const update = { ...updateData, status: next.status, isActive: next.isActive,
-    ...(next.publishedAt ? { publishedAt: next.publishedAt } : {}),
-    ...(updateData.publishAt === null ? { publishAt: undefined } : {}) };
-  const updated = await Job.findOneAndUpdate({ _id: job._id, isDeleted: { $ne: true } },
-    { $set: Object.fromEntries(Object.entries(update).filter(([k, v]) =>
-      !["author", "companyId", "createdBy", "isDeleted", "_id"].includes(k) && v !== undefined)) },
-    { new: true, runValidators: true });
+  const { company, job } = await jobForActor(id, actorId, "jobs");
+  const updated = await withCompanyQuotaLock(String(company._id), async session => {
+    const current = await Job.findOne({ _id: job._id, isDeleted: { $ne: true } }).session(session);
+    if (!current) throw new AppError("Job not found", 404);
+    const next = { ...current.toObject(), ...updateData } as Record<string, any>;
+    if (updateData.isActive !== undefined && updateData.status === undefined)
+      next.status = updateData.isActive ? "published" : "closed";
+    next.isActive = next.status === "published";
+    if (next.status === "published" && current.status !== "published") next.publishedAt = new Date();
+    validateLifecycle(next);
+    const priorCounted = ["published", "scheduled"].includes(current.status) ||
+      (!current.status && current.isActive);
+    const willCount = ["published", "scheduled"].includes(next.status);
+    if (!priorCounted && willCount) await requireJobSlot(company, session);
+    const update = { ...updateData, status: next.status, isActive: next.isActive,
+      ...(next.publishedAt ? { publishedAt: next.publishedAt } : {}) };
+    const safe = Object.fromEntries(Object.entries(update).filter(([k, v]) =>
+      !["author", "companyId", "createdBy", "isDeleted", "_id", "sponsoredUntil"].includes(k) && v !== undefined));
+    return Job.findOneAndUpdate({ _id: current._id, isDeleted: { $ne: true } },
+      { $set: safe, ...(updateData.publishAt === null ? { $unset: { publishAt: "" } } : {}) },
+      { new: true, runValidators: true, session });
+  });
   if (updated) await clearJobCache();
   return updated;
 };
 const deleteJob = async (id: string, actorId: string) => {
-  const { job } = await jobForActor(id, actorId, "jobs");
-  const result = await Job.findOneAndUpdate({ _id: job._id, isDeleted: { $ne: true } },
-    { $set: { isDeleted: true, isActive: false, status: "closed" } }, { new: true });
+  const { company, job } = await jobForActor(id, actorId, "jobs");
+  const result = await withCompanyQuotaLock(String(company._id), session =>
+    Job.findOneAndUpdate({ _id: job._id, isDeleted: { $ne: true } },
+      { $set: { isDeleted: true, isActive: false, status: "closed" } }, { new: true, session }));
   if (result) await clearJobCache();
   return result;
 };
@@ -244,8 +259,9 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
     if (cached) {
       const result = JSON.parse(cached);
       // An expiring job must never be returned merely because Redis still has it.
-      if (Array.isArray(result.jobs) && result.jobs.every((job: { applicationDeadline?: string }) =>
-        job.applicationDeadline && new Date(job.applicationDeadline).getTime() >= Date.now())) {
+      if (Array.isArray(result.jobs) && result.jobs.every((job: { applicationDeadline?: string; isSponsored?: boolean; sponsoredUntil?: string }) =>
+        job.applicationDeadline && new Date(job.applicationDeadline).getTime() >= Date.now() &&
+        (!job.isSponsored || (job.sponsoredUntil && new Date(job.sponsoredUntil).getTime() > Date.now())))) {
         return result;
       }
     }
@@ -349,15 +365,21 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
 
   // Execute concurrently
   const [jobs, total] = await Promise.all([
-    Job.find(filter)
-      .select(
-        "_id author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive positions",
-      )
-      .populate("company", "companyName companyLogo companySize")
-      .sort({ createdAt: -1 })
-      .skip((safePage - 1) * safeLimit)
-      .limit(safeLimit)
-      .lean({ virtuals: true }),
+    Job.aggregate([
+      { $match: filter },
+      // Sponsored placement is explicitly labelled and computed from time, not a stale flag.
+      { $addFields: { isSponsored: { $gt: ["$sponsoredUntil", new Date()] } } },
+      { $sort: { isSponsored: -1, createdAt: -1, _id: -1 } },
+      { $skip: (safePage - 1) * safeLimit }, { $limit: safeLimit },
+      { $project: { _id: 1, author: 1, title: 1, category: 1, subcategory: 1,
+        type: 1, location: 1, locationType: 1, salaryMin: 1, salaryMax: 1,
+        salaryPeriod: 1, experienceLevel: 1, description: 1, skills: 1,
+        applicationDeadline: 1, createdAt: 1, isActive: 1, positions: 1,
+        isSponsored: 1, sponsoredUntil: 1 } },
+      { $lookup: { from: "companies", localField: "author", foreignField: "userId",
+        as: "company", pipeline: [{ $project: { companyName: 1, companyLogo: 1, companySize: 1 } }] } },
+      { $unwind: { path: "$company", preserveNullAndEmptyArrays: true } },
+    ]),
     Job.countDocuments(filter),
   ]);
 
@@ -374,7 +396,8 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
   };
 
   try {
-    const earliestDeadline = Math.min(...jobs.map((job) => new Date(job.applicationDeadline).getTime()));
+    const earliestDeadline = Math.min(...jobs.map((job) => Math.min(new Date(job.applicationDeadline).getTime(),
+      job.isSponsored && job.sponsoredUntil ? new Date(job.sponsoredUntil).getTime() : Infinity)));
     const remaining = Number.isFinite(earliestDeadline) ? Math.floor((earliestDeadline - Date.now()) / 1000) : 60;
     // Bound cache lifetime by the nearest expiring result; a zero lifetime is not cached.
     if (remaining > 0) await redis.setex(cacheKey, Math.min(60, remaining), JSON.stringify(result));

@@ -15,7 +15,12 @@
     "phase4:preflight": "node scripts/phase4-preflight.cjs",
     "phase4:indexes": "node scripts/phase4-build-indexes.cjs",
     "phase4:static-check": "node scripts/phase4-static-check.cjs",
-    "phase4:scheduler": "node dist/scripts/phase4-scheduler.js"
+    "phase4:scheduler": "node dist/scripts/phase4-scheduler.js",
+    "phase5:static-check": "node scripts/phase5-static-check.cjs",
+    "phase5:seed": "node scripts/phase5-seed-plans.cjs",
+    "phase5:indexes": "node scripts/phase5-indexes.cjs",
+    "phase5:reconcile": "node scripts/phase5-reconcile.cjs",
+    "phase5:replay": "node scripts/phase5-replay-webhook.cjs"
   },
   "keywords": [],
   "author": "Faysal Mridha",

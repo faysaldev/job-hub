@@ -6,6 +6,7 @@ import { response } from "../../lib/response";
 import { ProtectedRequest } from "../../types/protected-request";
 import Application from "../Applications/application.model";
 import { assertId } from "../../lib/query";
+import { processStripeEvent } from "../Billing/billing.webhook";
 
 const client = (): Stripe => {
   if (!process.env.STRIPE_SECRET_KEY) throw new AppError("Payments temporarily unavailable", 503);
@@ -75,25 +76,7 @@ const webhook = asyncHandler(async (req: Request, res: Response) => {
   let event: Stripe.Event;
   try { event = client().webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET); }
   catch { throw new AppError("Invalid Stripe signature", 400); }
-  if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    if (session.payment_status === "paid" && session.metadata?.type === "application_boost") {
-      // Never use the current global price for old checkouts. Verify the price
-      // snapshotted on that application when Stripe checkout was created.
-      if (session.currency !== "usd" || !Number.isSafeInteger(session.amount_total)) {
-        throw new AppError("Payment currency or amount mismatch", 400);
-      }
-      const appId = session.metadata?.application_id;
-      const userId = session.metadata?.user_id;
-      if (appId && userId) {
-        // Atomic and idempotent: duplicated events cannot multiply the paid amount.
-        await Application.updateOne({ _id: assertId(appId), applicant: assertId(userId),
-          stripeCheckoutSessionId: session.id, boostPriceCents: session.amount_total,
-          boostPaymentStatus: "pending" },
-          { $set: { boostPaymentStatus: "paid", paid_amount: session.amount_total / 100 } });
-      }
-    }
-  }
+  await processStripeEvent(event);
   res.status(200).json({ received: true });
 });
 export default { createCheckoutSession, getPaymentDetails, webhook };

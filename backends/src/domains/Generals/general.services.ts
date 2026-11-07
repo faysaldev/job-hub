@@ -93,6 +93,7 @@ const getSubcategoryStats = async () => {
 
 /** Homepage cards use one bounded indexed read; do not aggregate all applications per visit. */
 const getDiscoveryJobs = async () => Job.find({
+  status: { $in: ["published", null] },
   isActive: true,
   isDeleted: { $ne: true },
   applicationDeadline: { $gte: new Date() },

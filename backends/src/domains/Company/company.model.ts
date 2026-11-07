@@ -1,6 +1,7 @@
 import mongoose, { Document } from "mongoose";
 
 export interface ICompany extends Document {
+  _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   companyLogo?: string;
   careersSlug?: string;
@@ -16,6 +17,7 @@ export interface ICompany extends Document {
   description?: string;
   createdAt: Date;
   updatedAt: Date;
+  billingQuotaRevision?: number;
 }
 
 const companySchema = new mongoose.Schema(
@@ -27,6 +29,7 @@ const companySchema = new mongoose.Schema(
       unique: true,
     },
     companyLogo: { type: String },
+    billingQuotaRevision: { type: Number, default: 0, select: false },
     careersSlug: { type: String, trim: true, lowercase: true, minlength: 3, maxlength: 60, match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/ },
     careersHeadline: { type: String, trim: true, maxlength: 140 },
     careersDescription: { type: String, trim: true, maxlength: 3000 },
