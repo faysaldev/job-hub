@@ -14,10 +14,6 @@ export const metadata: Metadata = {
     "jobhub recruiter",
     "company page",
   ],
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 export default function RecruiterCompanyPage() {

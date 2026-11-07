@@ -19,6 +19,6 @@ export default function Footer() {
         <ul className="space-y-3">{section.links.map((link) => <li key={link.href}><Link className="text-sm text-[#66798a] hover:text-[#163b5c] hover:underline" href={link.href}>{link.label}</Link></li>)}</ul>
       </div>)}
     </div>
-    <div className="border-t border-[#e1e8ef]"><div className="jh-container flex flex-wrap justify-between gap-3 py-5 text-xs text-[#66798a]"><span>© {new Date().getFullYear()} JobHub</span><span>Connecting job seekers and hiring teams</span></div></div>
+    <div className="border-t border-[#e1e8ef]"><div className="jh-container flex flex-wrap justify-between gap-3 py-5 text-xs text-[#516c83]"><span>© {new Date().getFullYear()} JobHub</span><span>Connecting job seekers and hiring teams</span></div></div>
   </footer>;
 }

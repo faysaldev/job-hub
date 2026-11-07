@@ -205,7 +205,7 @@ export const activatePromotion = async (promotionId: string) => {
       if (!job) throw new AppError("Paid sponsorship job is no longer open; refund or reactivate the job before fulfillment", 409);
       const startsAt = new Date();
       const endsAt = new Date(startsAt.getTime() + promotion.durationDays*86400_000);
-      if (job.applicationDeadline.getTime() < endsAt)
+      if (job.applicationDeadline.getTime() < endsAt.getTime())
         throw new AppError("The job deadline no longer covers the paid promotion. Extend the deadline or refund the payment.", 409);
       await JobPromotion.updateOne({ _id: promotion._id, status: "pending" },
         { $set: { status: "active", startsAt, endsAt } }, { session });
@@ -223,9 +223,11 @@ export const activatePromotion = async (promotionId: string) => {
 export const fulfillPromotionCheckout = async (session: Stripe.Checkout.Session) => {
   if (session.mode !== "payment" || session.payment_status !== "paid" || session.currency !== "usd") return;
   const id = session.metadata?.promotion_id;
+  const companyId = session.metadata?.company_id;
+  const jobId = session.metadata?.job_id;
   if (!id || !mongoose.Types.ObjectId.isValid(id) ||
-    !mongoose.Types.ObjectId.isValid(session.metadata?.company_id) ||
-    !mongoose.Types.ObjectId.isValid(session.metadata?.job_id)) return;
+    !companyId || !mongoose.Types.ObjectId.isValid(companyId) ||
+    !jobId || !mongoose.Types.ObjectId.isValid(jobId)) return;
   // Recover even if the API crashed after creating Checkout but before persisting
   // the session ID. The signed event's server-authored metadata identifies the order.
   const promo = await JobPromotion.findOneAndUpdate({ _id: id, status: "pending",

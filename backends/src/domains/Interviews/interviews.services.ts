@@ -38,7 +38,7 @@ const scheduleInterview = async (data: Partial<IInterview>, actor: string) => {
     }
   }
   try { await createNotification({ title: `Interview scheduled for ${job.title}`, link: "/job-seeker/interviews",
-    sender: actor, receiver: application.applicant });
+    sender: actor, receiver: String(application.applicant) });
     if (assignee !== actor) await createNotification({ title: `You are assigned an interview for ${job.title}`,
       link: "/recruiter/interviews", sender: actor, receiver: assignee }); }
   catch (error) { console.error("Failed to send interview notice", error); }

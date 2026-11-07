@@ -2,7 +2,7 @@ interface ResponseData {
   statusCode: number;
   status: string;
   message: string;
-  data?: object;
+  data?: any;
   type?: any;
   token?: string;
 }

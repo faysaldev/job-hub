@@ -28,6 +28,7 @@ test("private administrator metadata is not indexable", async ({ page }) => {
 
 test("page supports keyboard navigation with a visible focus target", async ({ page }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("main").first()).toBeVisible();
   await page.keyboard.press("Tab");
   const focused = page.locator(":focus");
   await expect(focused).toHaveCount(1);

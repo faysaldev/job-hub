@@ -14,7 +14,6 @@ export const metadata: Metadata = {
     "candidate interviews",
     "jobhub recruiter",
   ],
-  robots: { index: false, follow: false },
 };
 
 export default function RecruiterInterviewsPage() {

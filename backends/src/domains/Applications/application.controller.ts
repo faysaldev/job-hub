@@ -7,7 +7,7 @@ import { createNotification } from "../Notifications/notifications.service";
 import { addActivityLogService } from "../Seeker/seeker.services";
 import { createBoostSession } from "../Stripe/stripe.controller";
 
-const success = (res: Response, message: string, data: object, code = 200) => res.status(code).json(
+const success = (res: Response, message: string, data: any, code = 200) => res.status(code).json(
   response({ message, status: "OK", statusCode: code, data }));
 const createApplication = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const { application, job } = await service.createApplication({ ...req.body, applicant: req.user!._id });

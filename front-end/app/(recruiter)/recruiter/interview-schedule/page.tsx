@@ -13,10 +13,6 @@ export const metadata: Metadata = {
     "candidate sessions",
     "JobHub recruiter dashboard",
   ],
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 export default function RecruiterInterviewSchedulePage() {
