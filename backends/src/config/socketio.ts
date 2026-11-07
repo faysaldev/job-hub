@@ -57,7 +57,11 @@ const setUpSocketIO = (server: Server) => {
   // Opt in to horizontal fanout only after a real shared Redis deployment is configured.
   // The adapter broadcasts rooms across instances; disconnect errors do not stop HTTP.
   if (process.env.SOCKET_REDIS_ADAPTER === "true") {
-    const pub = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : new Redis({
+    const rawUrl = process.env.REDIS_URL;
+    const redisUrl = rawUrl?.startsWith("redis://") && rawUrl.includes("upstash.io")
+      ? rawUrl.replace(/^redis:\/\//, "rediss://")
+      : rawUrl;
+    const pub = redisUrl ? new Redis(redisUrl) : new Redis({
       host: process.env.REDIS_HOST || "localhost",
       port: Number(process.env.REDIS_PORT || 6379),
       password: process.env.REDIS_PASSWORD || undefined,
