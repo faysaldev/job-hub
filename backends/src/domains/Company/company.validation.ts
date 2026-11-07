@@ -7,7 +7,11 @@ export const createCompanyValidation = z.object({
   companyLocation: z.string().optional(),
   website: z.string().url("Invalid URL format").optional().or(z.literal("")),
   description: z.string().optional(),
-  companyLogo: z.string().optional(),
+  companyLogo: z.string().max(2048).refine((value) => {
+    if (!value) return true;
+    try { const url = new URL(value); return url.protocol === "https:" && !!url.hostname; }
+    catch { return false; }
+  }, "Logo must have an HTTPS URL").optional(),
 });
 
 export const updateCompanyValidation = z.object({
@@ -17,7 +21,11 @@ export const updateCompanyValidation = z.object({
   companyLocation: z.string().optional(),
   website: z.string().url("Invalid URL format").optional().or(z.literal("")),
   description: z.string().optional(),
-  companyLogo: z.string().optional(),
+  companyLogo: z.string().max(2048).refine((value) => {
+    if (!value) return true;
+    try { const url = new URL(value); return url.protocol === "https:" && !!url.hostname; }
+    catch { return false; }
+  }, "Logo must have an HTTPS URL").optional(),
 });
 
 export type CreateCompanyInput = z.infer<typeof createCompanyValidation>;

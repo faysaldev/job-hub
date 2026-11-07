@@ -7,10 +7,6 @@ import {
   updateCompany,
 } from "./company.controller";
 import { authMiddleware, requireRoles } from "../../middlewares/auth.middleware";
-import {
-  cloudinaryFileUploadMiddleware,
-  processCloudinarySingleUpload,
-} from "../../middlewares/fileUpload.middleware";
 import validate from "../../middlewares/validation.middleware";
 import companyValidator from "./company.validation";
 

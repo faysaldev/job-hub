@@ -136,6 +136,8 @@ jobSchema.virtual("company", {
 
 jobSchema.index({ author: 1, isDeleted: 1, createdAt: -1 });
 jobSchema.index({ isActive: 1, isDeleted: 1, createdAt: -1 });
+jobSchema.index({ isActive: 1, isDeleted: 1, applicationDeadline: 1, createdAt: -1 });
+jobSchema.index({ author: 1, isActive: 1, isDeleted: 1, applicationDeadline: 1 });
 jobSchema.index({ category: 1, type: 1, locationType: 1 });
 
 // Create the model based on the schema

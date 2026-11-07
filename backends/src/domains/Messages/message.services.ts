@@ -3,19 +3,25 @@ import Conversation from "../Conversations/conversations.model";
 import { AppError } from "../../lib/errors";
 import { assertId } from "../../lib/query";
 import conversationService from "../Conversations/conversations.services";
+import { validateMessageAttachments, linkMessageAttachments } from "../Asset/asset.services";
 
 const contentCheck = (value: unknown) => {
   if (typeof value !== "string" || !value.trim() || value.length > 4000) throw new AppError("Message must contain 1-4000 characters", 400);
   return value.trim();
 };
-const createMessageService = async (data: { conversationId: string; senderId: string; receiverId: string; content: string }) => {
+const createMessageService = async (data: { conversationId: string; senderId: string; receiverId: string; content?: string; attachments?: string[] }) => {
   assertId(data.receiverId, "receiver ID");
   const conversation = await conversationService.ensureParticipant(data.conversationId, data.senderId);
   if (data.receiverId === data.senderId || !conversation.participants.some((id) => id.toString() === data.receiverId)) {
     throw new AppError("Receiver must be the other participant", 403);
   }
+  const attachments = await validateMessageAttachments(data.attachments || [], data.senderId, data.conversationId);
+  const content = typeof data.content === "string" ? data.content.trim() : "";
+  if ((!content && !attachments.length) || content.length > 4000) throw new AppError("Message or attachment required", 400);
+  // Bind files before publishing the message; other users cannot access unreferenced uploads.
+  await linkMessageAttachments(data.attachments || [], data.senderId, data.conversationId);
   const message = await Message.create({ conversationId: conversation._id, senderId: data.senderId,
-    receiverId: data.receiverId, content: contentCheck(data.content) });
+    receiverId: data.receiverId, content, attachments });
   await Conversation.updateOne({ _id: conversation._id }, {
     $set: { lastMessage: message._id }, $pull: { hiddenFor: { $in: [data.senderId, data.receiverId] } }
   });

@@ -46,8 +46,7 @@ const userSchema = new Schema<IAMUser>(
     },
     image: {
       type: String,
-      default:
-        "https://res.cloudinary.com/diypckqa0/image/upload/v1777412082/assets/1777412079878-file.png",
+      default: "",
     },
     password: {
       type: String,

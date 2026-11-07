@@ -6,6 +6,7 @@ export interface IMessage extends Document {
   senderId: Types.ObjectId;
   receiverId: Types.ObjectId;
   content: string;
+  attachments?: Array<{ assetId: Types.ObjectId; name: string; mimeType: string; size: number }>;
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -28,11 +29,14 @@ const messageSchema = new Schema<IMessage>(
       ref: "User",
       required: true,
     },
-    content: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    content: { type: String, required: false, default: "", trim: true, maxlength: 4000 },
+    attachments: [{
+      assetId: { type: Schema.Types.ObjectId, ref: "Asset", required: true },
+      name: { type: String, required: true },
+      mimeType: { type: String, required: true },
+      size: { type: Number, required: true },
+      _id: false,
+    }],
     isRead: {
       type: Boolean,
       default: false,
@@ -42,7 +46,8 @@ const messageSchema = new Schema<IMessage>(
 );
 
 // Add indexes for better query performance
-messageSchema.index({ conversationId: 1, createdAt: -1 }); // For fetching messages in a conversation
+messageSchema.index({ conversationId: 1, createdAt: -1 });
+messageSchema.index({ "attachments.assetId": 1 }); // For fetching messages in a conversation
 const Message = mongoose.model<IMessage>("Message", messageSchema);
 
 export default Message;

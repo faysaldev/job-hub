@@ -38,6 +38,9 @@ const companySchema = new mongoose.Schema(
   },
 );
 
+companySchema.index({ createdAt: -1 });
+companySchema.index({ companySize: 1, createdAt: -1 });
+companySchema.index({ industries: 1, createdAt: -1 });
 companySchema.virtual("jobs", {
   ref: "Job",
   localField: "userId",

@@ -7,9 +7,10 @@ import messageServices from "../domains/Messages/message.services";
 import conversationService from "../domains/Conversations/conversations.services";
 import * as notifications from "../domains/Notifications/notifications.service";
 import { AppError } from "../lib/errors";
+import { createAdapter } from "@socket.io/redis-adapter";
+import Redis from "ioredis";
 
 interface AuthSocket extends Socket { userId?: string; userName?: string; token?: string; }
-const ONLINE_KEY = "online:users";
 const cacheVersion = async (id: string) => {
   try { return (await redis.get(`messages:${id}:version`)) || "1"; }
   catch { return `${Date.now()}`; }
@@ -19,11 +20,16 @@ const invalidateMessages = async (id: string) => {
 };
 let io: SocketIOServer;
 export const getIO = (): SocketIOServer => io;
+// Socket.IO's adapter is the authoritative presence source. Redis single-socket
+// hashes are incorrect for users with multiple tabs/servers (the last disconnect
+// could erase another tab's presence). fetchSockets works across Redis adapter nodes.
 export const isUserOnline = async (id: string) => {
-  try { return !!(await redis.hget(ONLINE_KEY, id)); } catch { return false; }
+  try { return Boolean(io && (await io.in(`user:${id}`).fetchSockets()).length); }
+  catch { return false; }
 };
 export const getSocketIdForUser = async (id: string) => {
-  try { return await redis.hget(ONLINE_KEY, id); } catch { return null; }
+  try { return io && (await io.in(`user:${id}`).fetchSockets())[0]?.id || null; }
+  catch { return null; }
 };
 const safeBounds = (input: unknown, max: number, fallback: number) => {
   const count = Number(input ?? fallback);
@@ -42,9 +48,26 @@ const setUpSocketIO = (server: Server) => {
     cors: { origin: [...allowedOrigins], credentials: true, methods: ["GET", "POST"] },
     allowRequest: (req, callback) => callback(null, isAllowedOrigin(req.headers.origin)),
     transports: ["websocket", "polling"],
-    connectionStateRecovery: { maxDisconnectionDuration: 2 * 60 * 1000, skipMiddlewares: false },
+    // Redis Pub/Sub adapter cannot replay missed packets; use client REST resync after reconnect.
+    ...(process.env.SOCKET_REDIS_ADAPTER !== "true" ? {
+      connectionStateRecovery: { maxDisconnectionDuration: 2 * 60 * 1000, skipMiddlewares: false },
+    } : {}),
     maxHttpBufferSize: 64 * 1024,
   });
+  // Opt in to horizontal fanout only after a real shared Redis deployment is configured.
+  // The adapter broadcasts rooms across instances; disconnect errors do not stop HTTP.
+  if (process.env.SOCKET_REDIS_ADAPTER === "true") {
+    const pub = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : new Redis({
+      host: process.env.REDIS_HOST || "localhost",
+      port: Number(process.env.REDIS_PORT || 6379),
+      password: process.env.REDIS_PASSWORD || undefined,
+      db: Number(process.env.REDIS_DB || 0),
+    });
+    const sub = pub.duplicate();
+    pub.on("error", () => undefined);
+    sub.on("error", () => undefined);
+    io.adapter(createAdapter(pub, sub));
+  }
   io.use(async (socket: AuthSocket, next) => {
     try {
       const token = socket.handshake.auth?.token;
@@ -64,10 +87,8 @@ const setUpSocketIO = (server: Server) => {
       try { await verifyAccess(socket.token!); next(); }
       catch { socket.emit("socket:error", { message: "Session expired. Please sign in again." }); socket.disconnect(true); }
     });
-    try {
-      await redis.hset(ONLINE_KEY, userId, socket.id);
-      await redis.del(`user:lastSeen:${userId}`);
-    } catch { /* preserve realtime use if Redis unavailable */ }
+    try { await redis.del(`user:lastSeen:${userId}`); }
+    catch { /* presence is independent of Redis storage */ }
 
     socket.on("conversations:get", async (data?: { search?: string }) => {
       try {
@@ -110,7 +131,7 @@ const setUpSocketIO = (server: Server) => {
         socket.emit("messages:loaded", payload);
       } catch (error) { onError(socket, error); }
     });
-    socket.on("message:send", async (data?: { conversationId: string; receiverId: string; content: string }) => {
+    socket.on("message:send", async (data?: { conversationId: string; receiverId: string; content?: string; attachments?: string[] }) => {
       try {
         if (!data) throw new AppError("Missing message", 400);
         const message = await messageServices.createMessageService({ ...data, senderId: userId });
@@ -188,13 +209,12 @@ const setUpSocketIO = (server: Server) => {
       } catch (error) { onError(socket, error); }
     });
     socket.on("disconnect", async () => {
-      // Do not mark a user offline if another tab has replaced this socket.
       try {
-        if (await redis.hget(ONLINE_KEY, userId) === socket.id) {
-          await redis.hdel(ONLINE_KEY, userId);
+        // A different browser tab or server instance may still be connected.
+        if (!(await isUserOnline(userId))) {
           await redis.set(`user:lastSeen:${userId}`, String(Date.now()), "EX", 86400);
         }
-      } catch { /* transient cache failure */ }
+      } catch { /* transient presence/cache failure */ }
     });
   });
   return io;

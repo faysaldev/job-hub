@@ -42,6 +42,7 @@ const applicationSchema = new Schema(
 
 applicationSchema.index({ job_id: 1, applicant: 1 }, { unique: true });
 applicationSchema.index({ applicant: 1, createdAt: -1 });
+applicationSchema.index({ resume_url: 1, isWithdrawn: 1, job_id: 1 });
 applicationSchema.index({ job_id: 1, status: 1, createdAt: -1 });
 applicationSchema.index({ stripeCheckoutSessionId: 1 }, { sparse: true });
 const Application = mongoose.model("Application", applicationSchema);

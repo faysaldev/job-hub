@@ -16,7 +16,12 @@ const educationSchema = z.object({
 
 const resumeSchema = z.object({
   resumeName: z.string().optional(),
-  resumeLink: z.string().optional(),
+  resumeLink: z.string().max(2048).refine((value) => {
+    if (!value) return true;
+    if (/^asset:[a-f0-9]{24}$/i.test(value)) return true;
+    try { const url = new URL(value); return url.protocol === "https:" && !!url.hostname; }
+    catch { return false; }
+  }, "Resume must be a secure HTTPS link or a private uploaded file").optional(),
 });
 
 const projectSchema = z.object({

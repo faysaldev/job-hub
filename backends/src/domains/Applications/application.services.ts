@@ -4,9 +4,11 @@ import conversationService from "../Conversations/conversations.services";
 import { createNotification } from "../Notifications/notifications.service";
 import { AppError } from "../../lib/errors";
 import { assertId, paging } from "../../lib/query";
+import { assertOwnedResume } from "../Asset/asset.services";
 
 const createApplication = async (data: { cover_letter?: string; resume_url: string; applicant: string; job_id: string }) => {
   assertId(data.job_id, "job ID");
+  await assertOwnedResume(data.resume_url, data.applicant);
   const job = await Job.findOne({ _id: data.job_id, isActive: true, isDeleted: { $ne: true },
     applicationDeadline: { $gte: new Date() } }).select("title author");
   if (!job) throw new AppError("Job is not accepting applications", 404);

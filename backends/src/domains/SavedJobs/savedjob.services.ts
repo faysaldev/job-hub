@@ -29,13 +29,18 @@ const saveJob = async (userId: string, jobId: string) => {
 
 // Get all saved jobs for a user
 const getUserSavedJobs = async (userId: string) => {
-  const cacheKey = `userSavedJobs:${userId}`;
+  let version = "1";
+  try { version = (await redis.get("jobhub:search:version")) || version; } catch { /* DB remains source of truth */ }
+  const cacheKey = `userSavedJobs:${userId}:v${version}`;
 
   try {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
     if (cachedResult) {
-      return JSON.parse(cachedResult);
+      const rows = JSON.parse(cachedResult);
+      if (Array.isArray(rows) && rows.every((item: { jobId?: { isActive?: boolean; isDeleted?: boolean; applicationDeadline?: string } }) =>
+        item.jobId?.isActive !== false && item.jobId?.isDeleted !== true &&
+        (!item.jobId?.applicationDeadline || new Date(item.jobId.applicationDeadline).getTime() >= Date.now()))) return rows;
     }
   } catch (error) {
     console.log("Error fetching from Redis cache:", error);
@@ -53,7 +58,7 @@ const getUserSavedJobs = async (userId: string) => {
 
   try {
     // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
-    await redis.setex(cacheKey, 300, JSON.stringify(savedJobs));
+    await redis.setex(cacheKey, 60, JSON.stringify(savedJobs));
   } catch (error) {
     console.log("Error storing to Redis cache:", error);
     // Continue anyway even if caching fails
@@ -83,8 +88,8 @@ const isJobSavedByUser = async (userId: string, jobId: string) => {
 // Clear user's saved jobs cache
 const clearUserSavedJobsCache = async (userId: string) => {
   try {
-    const cacheKey = `userSavedJobs:${userId}`;
-    await redis.del(cacheKey);
+    const version = (await redis.get("jobhub:search:version")) || "1";
+    await redis.del(`userSavedJobs:${userId}:v${version}`);
   } catch (error) {
     console.log("Error clearing user saved jobs cache:", error);
   }

@@ -122,4 +122,7 @@ const seekerSchema = new mongoose.Schema(
   },
 );
 
+seekerSchema.index({ createdAt: -1 });
+seekerSchema.index({ experienceLevel: 1, createdAt: -1 });
+seekerSchema.index({ availability: 1, createdAt: -1 });
 export default mongoose.model<ISeeker>("Seeker", seekerSchema);

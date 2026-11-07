@@ -1,6 +1,7 @@
 import { AppError } from "../../lib/errors";
 import { revokeAllSessions } from "../Auth/auth.token.services";
 import User from "./user.model";
+import { assertOwnedPublicImage } from "../Asset/asset.services";
 import Job from "../Jobs/job.model";
 import jobService from "../Jobs/job.services";
 import { updateProfileValidation } from "./user.validation";
@@ -10,6 +11,7 @@ const userDetails = async (userId: string) => User.findOne({ _id: userId, isDele
   .select("email name phoneNumber role image isEmailVerified").lean();
 const updateUser = async (userId: string, data: unknown) => {
   const parsed = updateProfileValidation.parse(data);
+  if (parsed.image) await assertOwnedPublicImage(parsed.image, userId, "avatar");
   const user = await User.findOneAndUpdate({ _id: userId, isDeleted: { $ne: true } },
     { $set: parsed }, { new: true, runValidators: true });
   if (!user) throw new AppError("User not found", 404);

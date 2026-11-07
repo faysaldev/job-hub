@@ -1,14 +1,15 @@
 import { Types } from "mongoose";
-import User from "../User/user.model";
 import Seeker, { ISeeker } from "./seeker.model";
 import ActivityLog from "./activity.model";
 import { assertId, escapeRegex, paging } from "../../lib/query";
+import { assertOwnedResume } from "../Asset/asset.services";
 
 export const createSeekerService = async (
   seekerData: Partial<ISeeker>,
 ): Promise<ISeeker> => {
   const existing = await Seeker.exists({ userId: seekerData.userId });
   if (existing) throw new Error("Seeker profile already exists");
+  if (seekerData.resume?.resumeLink) await assertOwnedResume(seekerData.resume.resumeLink, String(seekerData.userId));
   const seeker = new Seeker(seekerData);
   return await seeker.save();
 };
@@ -32,89 +33,46 @@ export const getSeekerByUserIdService = async (
   );
 };
 
+/** Stable count + page over only active, verified candidate accounts. */
 export const getAllSeekersService = async (query: any = {}) => {
-  const {
-    search,
-    skills,
-    location,
-    experienceLevel,
-    jobType,
-    availability,
-    totalExperience,
-    page = 1,
-    limit = 10,
-  } = query;
-
+  const { search, skills, location, experienceLevel, jobType, availability, totalExperience } = query;
   const filters: any = {};
-
-  if (search) {
-    // Find matching users by name first to include in search
-    const matchingUsers = await User.find({
-      name: { $regex: escapeRegex(search), $options: "i" },
-    }).select("_id");
-    const userIds = matchingUsers.map((u: any) => u._id);
-
-    filters.$or = [
-      { designation: { $regex: escapeRegex(search), $options: "i" } },
-      { aboutMe: { $regex: escapeRegex(search), $options: "i" } },
-      { skills: { $in: [new RegExp(escapeRegex(search), "i")] } },
-      { userId: { $in: userIds } },
-    ];
-  }
-
   if (skills) {
-    const skillsArray = Array.isArray(skills)
-      ? skills
-      : skills.split(",").map((s: string) => s.trim());
-    filters.skills = { $all: skillsArray };
+    const names = Array.isArray(skills) ? skills : String(skills).split(",").slice(0, 20).map((item) => item.trim());
+    filters.skills = { $all: names };
   }
-
-  if (location) {
-    filters.userLocation = { $regex: escapeRegex(location), $options: "i" };
-  }
-
-  if (experienceLevel) {
-    filters.experienceLevel = experienceLevel;
-  }
-
-  if (jobType) {
-    filters.jobType = jobType;
-  }
-
-  if (availability) {
-    filters.availability = availability;
-  }
-
-  if (totalExperience) {
-    filters.totalExperience = { $regex: escapeRegex(totalExperience), $options: "i" };
-  }
-
-  const bounds = paging({ page, limit });
+  if (location) filters.userLocation = new RegExp(escapeRegex(location), "i");
+  if (experienceLevel) filters.experienceLevel = experienceLevel;
+  if (jobType) filters.jobType = jobType;
+  if (availability) filters.availability = availability;
+  if (totalExperience) filters.totalExperience = new RegExp(escapeRegex(totalExperience), "i");
+  const bounds = paging(query);
   const skip = (bounds.page - 1) * bounds.limit;
-
-  const [seekers, total] = await Promise.all([
-    Seeker.find(filters)
-      .select(
-        "userId userLocation designation aboutMe skills portfolio experienceLevel availability jobType totalExperience",
-      )
-      .populate({ path: "userId", select: "name image role",
-        match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "seeker" } })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(bounds.limit)
-      .lean(),
-    Seeker.countDocuments(filters),
-  ]);
-
-  return {
-    seekers: seekers.filter((seeker) => !!seeker.userId),
-    pagination: {
-      total,
-      page: bounds.page,
-      limit: bounds.limit,
-      totalPages: Math.ceil(total / bounds.limit),
-    },
-  };
+  const pipeline: any[] = [
+    { $match: filters },
+    { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "candidate", pipeline: [
+      { $match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "seeker" } },
+      { $project: { name: 1, image: 1, role: 1 } },
+    ] } },
+    { $unwind: "$candidate" },
+  ];
+  if (search) {
+    const pattern = new RegExp(escapeRegex(search), "i");
+    pipeline.push({ $match: { $or: [
+      { designation: pattern }, { aboutMe: pattern }, { skills: pattern }, { "candidate.name": pattern },
+    ] } });
+  }
+  pipeline.push({ $sort: { createdAt: -1 } }, { $facet: {
+    rows: [ { $skip: skip }, { $limit: bounds.limit },
+      { $project: { userId: "$candidate", userLocation: 1, designation: 1, aboutMe: 1, skills: 1,
+        portfolio: 1, experienceLevel: 1, availability: 1, jobType: 1, totalExperience: 1 } } ],
+    meta: [{ $count: "total" }],
+  } });
+  const result = await Seeker.aggregate(pipeline);
+  const total = result[0]?.meta?.[0]?.total || 0;
+  return { seekers: result[0]?.rows || [], pagination: {
+    total, page: bounds.page, limit: bounds.limit, totalPages: Math.ceil(total / bounds.limit),
+  } };
 };
 
 export const updateSeekerService = async (
@@ -132,6 +90,7 @@ export const updateSeekerByUserIdService = async (
   userId: string,
   seekerData: Partial<ISeeker>,
 ): Promise<ISeeker | null> => {
+  if (seekerData.resume?.resumeLink) await assertOwnedResume(seekerData.resume.resumeLink, userId);
   return await Seeker.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
     { $set: seekerData },

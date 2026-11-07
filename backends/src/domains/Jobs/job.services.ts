@@ -17,18 +17,22 @@ const getAllJobs = async (filters: any = {}) => {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
     if (cachedResult) {
-      return JSON.parse(cachedResult);
+      const rows = JSON.parse(cachedResult);
+      if (Array.isArray(rows) && rows.every((job: { applicationDeadline: string }) =>
+        new Date(job.applicationDeadline).getTime() >= Date.now())) return rows;
     }
   } catch (error) {
     console.log("Error fetching from Redis cache:", error);
     // Continue with database query if cache fails
   }
 
-  const jobs = await Job.find({ ...filters, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }).sort({ createdAt: -1 }).limit(50);
+  const jobs = await Job.find({ ...filters, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }).sort({ createdAt: -1 }).limit(50).lean();
 
   try {
     // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
-    await redis.setex(cacheKey, 300, JSON.stringify(jobs));
+    const minDeadline = Math.min(...jobs.map(job => new Date(job.applicationDeadline).getTime()));
+    const seconds = Number.isFinite(minDeadline) ? Math.floor((minDeadline - Date.now()) / 1000) : 60;
+    if (seconds > 0) await redis.setex(cacheKey, Math.min(60, seconds), JSON.stringify(jobs));
   } catch (error) {
     console.log("Error storing to Redis cache:", error);
     // Continue anyway even if caching fails
@@ -41,14 +45,15 @@ const getAllJobs = async (filters: any = {}) => {
 const getJobById = async (jobId: string, requesterId?: string) => {
   assertId(jobId);
   if (requesterId) return Job.findOne({ _id: jobId, $or: [{ isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }, { author: requesterId, isDeleted: { $ne: true } }] }).populate("author", "name image").populate("company", "companyName companyLogo");
-  const cacheKey = `job:${jobId}`;
+  const cacheKey = `job:${jobId}:v${await currentSearchVersion()}`;
 
   try {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
     if (cachedResult) {
       const cachedJob = JSON.parse(cachedResult);
-      if (cachedJob?.applicationDeadline && new Date(cachedJob.applicationDeadline).getTime() >= Date.now()) return cachedJob;
+      if (cachedJob?.isActive === true && cachedJob?.isDeleted !== true && cachedJob?.applicationDeadline &&
+          new Date(cachedJob.applicationDeadline).getTime() >= Date.now()) return cachedJob;
     }
   } catch (error) {
     console.log("Error fetching from Redis cache:", error);
@@ -62,7 +67,8 @@ const getJobById = async (jobId: string, requesterId?: string) => {
   if (job) {
     try {
       // Store the result in Redis with an expiration time (600 seconds = 10 minutes)
-      await redis.setex(cacheKey, 600, JSON.stringify(job));
+      const seconds = Math.floor((new Date(job.applicationDeadline).getTime() - Date.now()) / 1000);
+      if (seconds > 0) await redis.setex(cacheKey, Math.min(180, seconds), JSON.stringify(job));
     } catch (error) {
       console.log("Error storing to Redis cache:", error);
       // Continue anyway even if caching fails
@@ -89,7 +95,7 @@ const currentSearchVersion = async () => {
 const clearJobCache = async (jobId?: string) => {
   try {
     await redis.incr("jobhub:search:version");
-    if (jobId) await redis.del(`job:${jobId}`);
+    // Versioned keys self-expire: never SCAN/KEYS the entire Redis database.
   } catch { /* cache TTL also limits stale results */ }
 };
 
