@@ -14,7 +14,7 @@ const notify = async (to: string, from: string, title: string) => {
 const createApplication = async (data: { cover_letter?: string; resume_url: string; applicant: string; job_id: string }) => {
   assertId(data.job_id, "job ID");
   await assertOwnedResume(data.resume_url, data.applicant);
-  const job = await Job.findOne({ _id: data.job_id, status: { $in: ["published", null] }, isActive: true,
+  const job = await Job.findOne({ _id: data.job_id, status: { $in: ["published", null] }, isActive: true, "moderation.status": { $ne: "blocked" },
     isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }).select("title author companyId");
   if (!job) throw new AppError("Job is not accepting applications", 404);
   if (job.author.toString() === data.applicant) throw new AppError("Cannot apply to your own job", 403);

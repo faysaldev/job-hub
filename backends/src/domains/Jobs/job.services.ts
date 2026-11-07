@@ -30,7 +30,7 @@ const getAllJobs = async (filters: any = {}) => {
     // Continue with database query if cache fails
   }
 
-  const jobs = await Job.find({ ...filters, status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }).sort({ createdAt: -1 }).limit(50).lean();
+  const jobs = await Job.find({ ...filters, status: { $in: ["published", null] }, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }).sort({ createdAt: -1 }).limit(50).lean();
 
   try {
     // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
@@ -62,7 +62,7 @@ const getJobById = async (jobId: string, requesterId?: string) => {
     const cachedResult = await redis.get(cacheKey);
     if (cachedResult) {
       const cachedJob = JSON.parse(cachedResult);
-      if (cachedJob?.isActive === true && cachedJob?.isDeleted !== true && cachedJob?.applicationDeadline &&
+      if (cachedJob?.isActive === true && cachedJob?.moderation?.status !== "blocked" && cachedJob?.isDeleted !== true && cachedJob?.applicationDeadline &&
           new Date(cachedJob.applicationDeadline).getTime() >= Date.now()) return cachedJob;
     }
   } catch (error) {
@@ -70,7 +70,7 @@ const getJobById = async (jobId: string, requesterId?: string) => {
     // Continue with database query if cache fails
   }
 
-  const job = await Job.findOne({ _id: jobId, status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
+  const job = await Job.findOne({ _id: jobId, status: { $in: ["published", null] }, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
     .populate("author", "name image")
     .populate("company", "companyName companyLogo");
 
@@ -162,7 +162,9 @@ const updateJob = async (id: string, updateData: Partial<IJob>, actorId: string)
     const next = { ...current.toObject(), ...updateData } as Record<string, any>;
     if (updateData.isActive !== undefined && updateData.status === undefined)
       next.status = updateData.isActive ? "published" : "closed";
-    next.isActive = next.status === "published";
+    if (current.moderation?.status === "blocked" && ["published", "scheduled"].includes(next.status))
+      throw new AppError("This job is blocked by platform moderation", 403);
+    next.isActive = next.status === "published" && current.moderation?.status !== "blocked";
     if (next.status === "published" && current.status !== "published") next.publishedAt = new Date();
     validateLifecycle(next);
     const priorCounted = ["published", "scheduled"].includes(current.status) ||
@@ -172,7 +174,7 @@ const updateJob = async (id: string, updateData: Partial<IJob>, actorId: string)
     const update = { ...updateData, status: next.status, isActive: next.isActive,
       ...(next.publishedAt ? { publishedAt: next.publishedAt } : {}) };
     const safe = Object.fromEntries(Object.entries(update).filter(([k, v]) =>
-      !["author", "companyId", "createdBy", "isDeleted", "_id", "sponsoredUntil"].includes(k) && v !== undefined));
+      !["author", "companyId", "createdBy", "isDeleted", "_id", "sponsoredUntil", "moderation"].includes(k) && v !== undefined));
     return Job.findOneAndUpdate({ _id: current._id, isDeleted: { $ne: true } },
       { $set: safe, ...(updateData.publishAt === null ? { $unset: { publishAt: "" } } : {}) },
       { new: true, runValidators: true, session });
@@ -191,7 +193,7 @@ const deleteJob = async (id: string, actorId: string) => {
 /** Must be invoked by a scheduler (see Phase 4 release guide); not on read requests. */
 const publishDueJobs = async () => {
   const now = new Date();
-  const result = await Job.updateMany({ status: "scheduled", publishAt: { $lte: now }, applicationDeadline: { $gt: now }, isDeleted: { $ne: true } },
+  const result = await Job.updateMany({ status: "scheduled", publishAt: { $lte: now }, applicationDeadline: { $gt: now }, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true } },
     { $set: { status: "published", isActive: true, publishedAt: now } });
   if (result.modifiedCount) await clearJobCache();
   return result.modifiedCount;
@@ -270,7 +272,7 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
   }
 
   // Build Query Conditions
-  const filterConditions: any[] = [{ status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }];
+  const filterConditions: any[] = [{ status: { $in: ["published", null] }, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }];
 
   if (searchTerm) {
     const searchRegex = { $regex: escapeRegex(searchTerm), $options: "i" };

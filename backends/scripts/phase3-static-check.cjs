@@ -11,7 +11,7 @@ const tests = [
   ["Upload signed, immutable, bounded TTL", () => get("src/domains/Asset/asset.storage.ts").includes('IfNoneMatch: "*"') && get("src/domains/Asset/asset.storage.ts").includes("expiresIn: 90")],
   ["Upload confirmed by R2 object size, MIME and magic", () => ["await head(", "firstBytes(", "matchesSignature(", "ContentLength", "ContentType"].every((t) => get("src/domains/Asset/asset.services.ts").includes(t))],
   ["Private read endpoint requires auth", () => get("src/domains/Asset/asset.route.ts").includes("router.use(authMiddleware)") && get("src/domains/Asset/asset.route.ts").includes('router.get("/:id/access"')],
-  ["Resume authorization checks job ownership", () => get("src/domains/Asset/asset.services.ts").includes("Application.distinct") && get("src/domains/Asset/asset.services.ts").includes("author: actorId")],
+  ["Resume authorization checks company membership", () => get("src/domains/Asset/asset.services.ts").includes("Application.distinct") && get("src/domains/Asset/asset.services.ts").includes("companyForActor(actorId, \"applications\")") && get("src/domains/Asset/asset.services.ts").includes("membership.company.userId")],
   ["Message authorization checks membership and reference", () => get("src/domains/Asset/asset.services.ts").includes("Conversation.exists") && get("src/domains/Asset/asset.services.ts").includes('"attachments.assetId"')],
   ["Optional Socket.IO Redis adapter with verified session", () => get("src/config/socketio.ts").includes("SOCKET_REDIS_ADAPTER") && get("src/config/socketio.ts").includes("verifyAccess")],
   ["Migrations require opt-in", () => get("scripts/phase3-migrate-media.cjs").includes('PHASE3_MIGRATION_APPROVED !== "yes"')],

@@ -117,7 +117,8 @@ export const getAssetAccess = async (assetId: string, actorId: string, role: str
   const asset = await Asset.findOne({ _id: assertId(assetId, "asset ID"), status: "ready" }).select("+bucket +key");
   if (!asset) throw new AppError("File not found", 404);
   if (asset.visibility === "public") return { url: publicAssetUrl(asset.key), expiresIn: null };
-  let permitted = asset.owner.toString() === actorId || role === "admin";
+  // Even platform administrators do not receive blanket access to private candidate files.
+  let permitted = asset.owner.toString() === actorId;
   if (!permitted && asset.kind === "resume") {
     // One indexed application lookup + one job ownership lookup, not a potentially huge distinct list.
     const jobIds = await Application.distinct("job_id", { resume_url: assetReference(assetId), isWithdrawn: { $ne: true } });

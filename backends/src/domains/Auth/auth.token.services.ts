@@ -50,10 +50,10 @@ export const verifyClaims = (token: string, type: "access" | "refresh"): Claims 
 export const verifyAccess = async (token: string) => {
   const claims = verifyClaims(token, "access");
   const [user, session] = await Promise.all([
-    User.findById(claims.userId).select("_id name email image role phoneNumber isDeleted isEmailVerified").lean(),
+    User.findById(claims.userId).select("_id name email image role phoneNumber isDeleted suspendedAt isEmailVerified").lean(),
     AuthSession.exists({ _id: claims.sid, userId: claims.userId, expiresAt: { $gt: new Date() }, revokedAt: { $exists: false } }),
   ]);
-  if (!user || !session || user.isDeleted || !user.isEmailVerified || user.role !== claims.role) {
+  if (!user || !session || user.isDeleted || user.suspendedAt || !user.isEmailVerified || user.role !== claims.role) {
     throw new AppError("Session expired or revoked", 401);
   }
   return { _id: user._id.toString(), name: user.name, email: user.email, image: user.image,
@@ -78,7 +78,7 @@ export const issueSession = async (user: IAMUser) => {
 export const rotateSession = async (oldRefresh: string) => {
   const claims = verifyClaims(oldRefresh, "refresh");
   const user = await User.findById(claims.userId).select("+password");
-  if (!user || user.isDeleted || !user.isEmailVerified) throw new AppError("Session expired or revoked", 401);
+  if (!user || user.isDeleted || user.suspendedAt || !user.isEmailVerified) throw new AppError("Session expired or revoked", 401);
   const newRefresh = sign(user, claims.sid, "refresh");
   const rotated = await AuthSession.findOneAndUpdate({ _id: claims.sid, userId: user._id,
     refreshHash: hash(oldRefresh), expiresAt: { $gt: new Date() }, revokedAt: { $exists: false } },

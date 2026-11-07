@@ -87,18 +87,17 @@ const requestVerification = asyncHandler(async (req: ProtectedRequest, res: Resp
   ok(res, { verification: updated?.verification }, "Verification requested");
 });
 const reviewVerification = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const company = await Company.findByIdAndUpdate(assertId(req.params.id, "company ID"),
-    { $set: { "verification.status": req.body.status, "verification.reviewedAt": new Date(),
-      "verification.reviewedBy": req.user!._id, "verification.reason": req.body.reason || "" } }, { new: true });
-  if (!company) throw new AppError("Company not found", 404);
-  ok(res, { verification: company.verification }, "Verification reviewed");
+  const { reviewCompanyVerification } = await import("../Operations/operations.services");
+  const result = await reviewCompanyVerification(assertId(req.params.id, "company ID"),
+    req.user!._id, req.body.status, req.body.reason || "", req.res?.locals?.requestId);
+  ok(res, result, "Verification reviewed");
 });
 const careersPage = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const company = await Company.findOne({ careersSlug: req.params.slug.toLowerCase(), careersEnabled: { $ne: false } })
     .select("companyName companyLogo careersSlug careersHeadline careersDescription companyLocation website verification.status userId").lean();
   if (!company) throw new AppError("Careers page not found", 404);
   const jobs = await Job.find({ $or: [{ companyId: company._id }, { author: company.userId }],
-    status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
+    status: { $in: ["published", null] }, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
     .select("title type location locationType salaryMin salaryMax salaryPeriod applicationDeadline experienceLevel createdAt")
     .sort({ createdAt: -1 }).limit(50).lean();
   ok(res, { company, jobs });

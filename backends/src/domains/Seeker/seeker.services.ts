@@ -20,7 +20,7 @@ export const getSeekerService = async (id: string): Promise<ISeeker | null> => {
   const seeker = await Seeker.findOne({ _id: id, "privacy.profileVisibility": "public" })
     .select("-resume -profileStrength -preferences")
     .populate({ path: "userId", select: "name image role",
-      match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "seeker" } });
+      match: { isDeleted: { $ne: true }, suspendedAt: { $exists: false }, isEmailVerified: true, role: "seeker" } });
   return seeker?.userId ? seeker : null;
 };
 
@@ -51,7 +51,7 @@ export const getAllSeekersService = async (query: any = {}) => {
   const pipeline: any[] = [
     { $match: filters },
     { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "candidate", pipeline: [
-      { $match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "seeker" } },
+      { $match: { isDeleted: { $ne: true }, suspendedAt: { $exists: false }, isEmailVerified: true, role: "seeker" } },
       { $project: { name: 1, image: 1, role: 1 } },
     ] } },
     { $unwind: "$candidate" },

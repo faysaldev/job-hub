@@ -40,7 +40,7 @@ const getCategoryStats = async () => {
   }
 
   const stats = await Job.aggregate([
-    { $match: { isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } } },
+    { $match: { isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } } },
     {
       $group: {
         _id: "$category",
@@ -70,7 +70,7 @@ const getSubcategoryStats = async () => {
   }
 
   const stats = await Job.aggregate([
-    { $match: { isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } } },
+    { $match: { isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } } },
     {
       $group: {
         _id: "$subcategory",
@@ -120,7 +120,7 @@ const getTopJobs = async () => {
 
   if (topJobIds.length > 0) {
     const ids = topJobIds.map((item) => item._id);
-    jobs = await Job.find({ _id: { $in: ids }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
+    jobs = await Job.find({ _id: { $in: ids }, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
       .populate({
         path: "company",
         select: "companyLogo companyName",
@@ -133,7 +133,7 @@ const getTopJobs = async () => {
 
   // If no applications or fewer than 6, fallback to latest jobs
   if (!jobs || jobs.length < 6) {
-    jobs = await Job.find({ isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
+    jobs = await Job.find({ isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
       .sort({ createdAt: -1 })
       .limit(10)
       .populate({
@@ -217,7 +217,7 @@ const getRecruiterDashboardStats = async (recruiterId: string) => {
     previousApplicantsCount,
     salaryStats,
   ] = await Promise.all([
-    Job.countDocuments({ author: recruiterId, isActive: true, isDeleted: { $ne: true },
+    Job.countDocuments({ author: recruiterId, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true },
       applicationDeadline: { $gte: now } }),
     Job.countDocuments({ author: recruiterId, isDeleted: { $ne: true }, createdAt: { $gte: thirtyDaysAgo } }),
     Job.countDocuments({ author: recruiterId, isDeleted: { $ne: true },

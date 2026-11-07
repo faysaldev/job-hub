@@ -37,7 +37,7 @@ const register = async (input: { name: string; email: string; password: string; 
 const verifyEmail = async (emailInput: string, code: number) => {
   const email = emailKey(emailInput);
   const user = await User.findOne({ email }).select("+password +verificationCodeHash");
-  if (!user || user.isDeleted) throw new AppError("Invalid or expired verification code", 400);
+  if (!user || user.isDeleted || user.suspendedAt) throw new AppError("Invalid or expired verification code", 400);
   if (user.isEmailVerified) throw new AppError("Email already verified", 409);
   if (user.verificationAttempts >= 5 || !user.verificationExpiresAt || user.verificationExpiresAt < new Date() ||
       !codeMatches(user.verificationCodeHash, codeHash("verification", email, code))) {
@@ -57,7 +57,7 @@ const verifyEmail = async (emailInput: string, code: number) => {
 
 const loginUser = async (emailInput: string, password: string) => {
   const user = await User.findOne({ email: emailKey(emailInput) }).select("+password");
-  if (!user || user.isDeleted || !(await user.isPasswordMatch(password))) {
+  if (!user || user.isDeleted || user.suspendedAt || !(await user.isPasswordMatch(password))) {
     throw new AppError("Invalid credentials", 401);
   }
   if (!user.isEmailVerified) throw new AppError("Please verify your email", 403);
@@ -67,7 +67,7 @@ const loginUser = async (emailInput: string, password: string) => {
 const forgotPassword = async (emailInput: string) => {
   const email = emailKey(emailInput);
   const user = await User.findOne({ email });
-  if (user && !user.isDeleted && user.isEmailVerified) {
+  if (user && !user.isDeleted && !user.suspendedAt && user.isEmailVerified) {
     const code = newCode();
     user.resetCodeHash = codeHash("reset", email, code);
     user.resetExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -87,6 +87,7 @@ const resetPassword = async (emailInput: string, code: string, newPassword: stri
     if (user) { user.resetAttempts += 1; await user.save(); }
     throw new AppError("Invalid or expired reset code", 400);
   }
+  if (user.suspendedAt) throw new AppError("Account temporarily unavailable", 403);
   user.password = newPassword;
   user.resetCodeHash = undefined;
   user.resetExpiresAt = undefined;
@@ -100,7 +101,7 @@ const resetPassword = async (emailInput: string, code: string, newPassword: stri
 const resendVerificationEmail = async (emailInput: string) => {
   const email = emailKey(emailInput);
   const user = await User.findOne({ email });
-  if (user && !user.isDeleted && !user.isEmailVerified) {
+  if (user && !user.isDeleted && !user.suspendedAt && !user.isEmailVerified) {
     const code = newCode();
     user.verificationCodeHash = codeHash("verification", email, code);
     user.verificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);

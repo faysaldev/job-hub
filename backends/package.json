@@ -20,7 +20,17 @@
     "phase5:seed": "node scripts/phase5-seed-plans.cjs",
     "phase5:indexes": "node scripts/phase5-indexes.cjs",
     "phase5:reconcile": "node scripts/phase5-reconcile.cjs",
-    "phase5:replay": "node scripts/phase5-replay-webhook.cjs"
+    "phase5:replay": "node scripts/phase5-replay-webhook.cjs",
+    "phase6:static-check": "node --test tests/phase6-static.test.cjs",
+    "phase6:api-smoke": "node --test tests/phase6-staging.test.cjs",
+    "phase6:indexes": "node scripts/phase6-indexes.cjs",
+    "phase6:backup": "node scripts/phase6-backup.cjs",
+    "typecheck": "tsc --noEmit",
+    "phase6:restore-drill": "node scripts/phase6-restore-drill.cjs",
+    "phase6:performance": "node scripts/phase6-performance.cjs",
+    "phase6:regression": "node scripts/phase6-regression.cjs",
+    "phase6:source-audit": "node scripts/phase6-source-audit.cjs",
+    "phase6:unit-check": "node --test tests/phase6-validation.test.cjs"
   },
   "keywords": [],
   "author": "Faysal Mridha",

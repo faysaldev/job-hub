@@ -22,6 +22,9 @@ export interface IAMUser extends Document {
   isResetPassword: boolean;
   fcmToken: string;
   isDeleted: boolean;
+  suspendedAt?: Date;
+  suspensionReason?: string;
+  suspendedBy?: Types.ObjectId;
   isPasswordMatch(password: string): Promise<boolean>; // Add this method to IAMUser interface
 }
 
@@ -83,6 +86,9 @@ const userSchema = new Schema<IAMUser>(
     isResetPassword: { type: Boolean, default: false },
     fcmToken: { type: String, default: null },
     isDeleted: { type: Boolean, default: false },
+    suspendedAt: { type: Date },
+    suspensionReason: { type: String, maxlength: 1000 },
+    suspendedBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true },
 );
@@ -107,11 +113,12 @@ userSchema.virtual("seeker", {
 });
 
 userSchema.set("toJSON", { virtuals: true, transform(_doc, ret: Record<string, any>) {
-  for (const key of ["password", "oneTimeCode", "verificationCodeHash", "resetCodeHash", "verificationExpiresAt", "resetExpiresAt", "verificationAttempts", "resetAttempts", "fcmToken", "isDeleted"]) delete ret[key];
+  for (const key of ["password", "oneTimeCode", "verificationCodeHash", "resetCodeHash", "verificationExpiresAt", "resetExpiresAt", "verificationAttempts", "resetAttempts", "fcmToken", "isDeleted", "suspendedAt", "suspensionReason", "suspendedBy"]) delete ret[key];
   return ret;
 } });
 userSchema.set("toObject", { virtuals: true });
 
+userSchema.index({ suspendedAt: 1 });
 const User = mongoose.model<IAMUser>("User", userSchema);
 
 export default User;

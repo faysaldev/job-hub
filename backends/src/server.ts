@@ -6,6 +6,8 @@ import compression from "compression";
 import { globalErrorHandler, notFoundHandler } from "./lib/errorsHandle";
 import { corsOptions } from "./config/cors";
 import stripeController from "./domains/Stripe/stripe.controller";
+import mongoose from "mongoose";
+import redis from "./config/redis";
 
 const app = express();
 app.disable("x-powered-by");
@@ -24,6 +26,17 @@ app.use(express.urlencoded({ extended: true, limit: "250kb" }));
 app.use(compression());
 app.use(logRequestResponse);
 app.get("/", (_req: Request, res: Response) => res.json({ service: "JobHub API", status: "ok" }));
+// Kubernetes/Cloud Run-compatible probes; never reveal DB URIs or credentials.
+app.get("/healthz", (_req: Request, res: Response) => res.json({ status: "alive" }));
+app.get("/readyz", async (_req: Request, res: Response) => {
+  let databaseReady = mongoose.connection.readyState === 1;
+  if (databaseReady) {
+    try { await mongoose.connection.db?.admin().ping(); }
+    catch { databaseReady = false; }
+  }
+  res.status(databaseReady ? 200 : 503).json({ status: databaseReady ? "ready" : "unavailable",
+    dependencies: { database: databaseReady ? "ready" : "unavailable", cache: redis.status === "ready" ? "ready" : "degraded" } });
+});
 app.use("/api/v1", routes);
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
