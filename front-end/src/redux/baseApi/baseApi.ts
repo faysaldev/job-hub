@@ -38,6 +38,6 @@ const withRefresh: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>
 export const baseApi = createApi({
   reducerPath: "baseApi", baseQuery: withRefresh,
   tagTypes: ["user", "jobs", "applications", "jobSeekerProfile", "recruiterProfile", "company",
-    "messages", "conversations", "notifications", "savedJobs", "Asset", "analytics", "activities", "billing", "billingPlans"],
+    "messages", "conversations", "notifications", "savedJobs", "Asset", "analytics", "activities", "billing", "billingPlans", "operations"],
   endpoints: () => ({}),
 });

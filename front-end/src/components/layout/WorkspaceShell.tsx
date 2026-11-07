@@ -13,6 +13,7 @@ type WorkspaceRole = "recruiter" | "seeker";
 const recruiterLinks = [
   { href: "/recruiter", label: "Overview", icon: LayoutDashboard },
   { href: "/recruiter/jobs", label: "Job listings", icon: BriefcaseBusiness },
+  { href: "/recruiter/analytics", label: "Analytics", icon: LayoutDashboard },
   { href: "/recruiter/create-job", label: "Create job", icon: Plus },
   { href: "/recruiter/applicants", label: "ATS pipeline", icon: Users },
   { href: "/recruiter/team", label: "Team access", icon: Users },

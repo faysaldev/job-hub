@@ -66,7 +66,7 @@ export default function AdminPlanManager() {
   const plans = data?.data.plans || [];
   return <div className="min-h-screen bg-[#f6f8fb] text-slate-800"><header className="border-b border-[#d9e3ea] bg-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
     <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-[#163B5C]"><Layers size={20}/>JobHub <span className="text-sm font-normal text-slate-500">/ Platform admin</span></Link>
-    <button onClick={logout} className={button}>Sign out</button></div></header>
+    <div className="flex items-center gap-2"><Link href="/admin" className={button}>Operations</Link><button onClick={logout} className={button}>Sign out</button></div></div></header>
     <main className="mx-auto max-w-7xl space-y-6 px-5 py-9">
       <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-wider text-[#516C83]">Subscription catalog</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#163B5C]">Plan management</h1>

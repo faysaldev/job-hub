@@ -30,6 +30,7 @@ import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 import { useSaveJobMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
 import { toast } from "sonner";
 import ApplyJobModal from "@/src/components/jobs/ApplyJobModal";
+import ReportJobButton from "@/src/components/jobs/ReportJobButton";
 import gsap from "gsap";
 import { selectSavedJobIds } from "@/src/redux/features/generals/generalsSlice";
 import { useSelector } from "react-redux";
@@ -265,6 +266,7 @@ const JobDetailsPage = () => {
               </Button>
             </div>
           </div>
+          <ReportJobButton jobId={job._id} />
         </div>
       </div>
 
