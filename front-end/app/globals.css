@@ -4,22 +4,22 @@
 /* JobHub UI kit v2. Product-facing and workspace surfaces share these tokens. */
 :root {
   color-scheme: light;
-  --jh-primary: #163b5c;
-  --jh-primary-hover: #0c2c48;
-  --jh-secondary: #516c83;
-  --jh-ink: #162839;
-  --jh-muted: #66798a;
-  --jh-border: #e1e8ef;
-  --jh-canvas: #f6f8fb;
+  --jh-primary: #000000;
+  --jh-primary-hover: #1f2937;
+  --jh-secondary: #596d7e;
+  --jh-ink: #111827;
+  --jh-muted: #596d7e;
+  --jh-border: #e5e7eb;
+  --jh-canvas: #f4f6f8;
   --jh-panel: #ffffff;
-  --jh-soft: #edf3f8;
-  --jh-focus: #2563a9;
+  --jh-soft: #f3f4f6;
+  --jh-focus: #000000;
   /* Retain aliases used by existing components during incremental modernization. */
   --color-primary: var(--jh-primary);
   --color-primary-dark: var(--jh-primary-hover);
-  --color-primary-light: #325e7f;
+  --color-primary-light: #374151;
   --color-secondary: var(--jh-secondary);
-  --color-secondary-light: #6f879a;
+  --color-secondary-light: #6b7280;
   --color-surface: var(--jh-border);
   --color-surface-light: var(--jh-canvas);
   --color-bg: var(--jh-panel);
@@ -27,12 +27,12 @@
   --secondary: var(--jh-secondary);
   --third: var(--jh-border);
   --radius-sm: .375rem;
-  --radius-md: .625rem;
-  --radius-lg: .875rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.125rem;
-  --shadow-card: 0 1px 3px rgba(21, 46, 70, .035);
-  --shadow-elevated: 0 12px 30px -15px rgba(21, 46, 70, .18);
+  --radius-md: .5rem;
+  --radius-lg: .625rem;
+  --radius-xl: .75rem;
+  --radius-2xl: 1rem;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, .04);
+  --shadow-elevated: 0 12px 30px -15px rgba(0, 0, 0, .12);
   --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
 }
 @theme inline {
@@ -68,11 +68,12 @@ img, svg { max-width: 100%; }
 
 /* Shared public shell and navigation. */
 .jh-public { background: var(--jh-canvas); min-height: 100vh; }
-.jh-container { width: min(100% - 2rem, 1200px); margin-inline: auto; }
-.jh-site-header { position: sticky; top: 0; z-index: 45; height: 72px; border-bottom: 1px solid var(--jh-border); background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
-.jh-header-inner { height: 100%; display: flex; align-items: center; gap: 30px; }
-.jh-logo { display: inline-flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 750; letter-spacing: -.04em; color: var(--jh-ink); white-space: nowrap; }
-.jh-logo-mark { width: 35px; height: 35px; background: var(--jh-primary); border-radius: 10px; display: grid; place-items: center; color: white; }
+.jh-container { width: min(100% - 2rem, 1280px); margin-inline: auto; }
+.jh-site-header { position: sticky; top: 0; z-index: 45; height: 62px; border-bottom: 1px solid #1f2937; background: #000000; color: #ffffff; }
+.jh-header-inner { height: 100%; display: flex; align-items: center; gap: 20px; }
+.jh-logo { display: inline-flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; letter-spacing: -.03em; color: #ffffff; white-space: nowrap; text-decoration: none; }
+.jh-logo:hover { color: #f3f4f6; }
+.jh-logo-mark { width: 30px; height: 30px; background: #111827; border: 1px solid #374151; border-radius: 7px; display: grid; place-items: center; color: white; }
 .text-\[\#66798a\] { color: #596d7e; }
 .text-\[\#7895ad\] { color: #516c83; }
 .jh-nav { display: flex; align-items: center; gap: 4px; }
@@ -80,20 +81,22 @@ img, svg { max-width: 100%; }
 @media (min-width: 1024px) {
   .jh-nav.lg\:flex { display: flex; }
 }
-.jh-nav-link { display: inline-flex; align-items: center; gap: 8px; padding: 10px 13px; border-radius: 9px; font-size: 14px; color: #4b6174; font-weight: 560; transition: background-color .18s, color .18s; }
-.jh-nav-link:hover, .jh-nav-link[data-active="true"] { background: var(--jh-soft); color: var(--jh-primary); }
-.jh-button { display: inline-flex; gap: 8px; align-items: center; justify-content: center; min-height: 40px; border: 1px solid transparent; border-radius: 10px; background: var(--jh-primary); padding: 9px 16px; font-size: 14px; font-weight: 650; color: white; transition: background-color .2s; }
-.jh-button:hover { background: var(--jh-primary-hover); }
-.jh-button--outline { background: white; color: var(--jh-primary); border-color: var(--jh-border); }
-.jh-button--outline:hover { background: var(--jh-soft); }
-.jh-button--ghost { background: transparent; color: var(--jh-primary); }
-.jh-button--ghost:hover { background: var(--jh-soft); }
-.jh-icon-button { display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--jh-border); border-radius: 10px; background: white; color: var(--jh-primary); }
-.jh-mobile-panel { border-top: 1px solid var(--jh-border); background: white; box-shadow: 0 20px 30px rgba(12,37,60,.08); }
-.jh-mobile-panel .jh-nav-link { display: flex; width: 100%; }
-.jh-footer { border-top: 1px solid var(--jh-border); background: white; }
-.jh-panel { border: 1px solid var(--jh-border); border-radius: 14px; background: white; box-shadow: var(--shadow-card); }
-.jh-kicker { font-size: 11px; line-height: 1.5; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--jh-secondary); }
+.jh-nav-link { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 9999px; font-size: 12.5px; color: #9ca3af; font-weight: 500; transition: background-color .18s, color .18s; }
+.jh-nav-link:hover { color: #ffffff; background: rgba(255,255,255,0.08); }
+.jh-nav-link[data-active="true"] { background: #ffffff; color: #000000; font-weight: 600; }
+.jh-button { display: inline-flex; gap: 6px; align-items: center; justify-content: center; min-height: 34px; border: 1px solid transparent; border-radius: 8px; background: #000000; padding: 6px 14px; font-size: 12px; font-weight: 600; color: white; transition: background-color .2s; }
+.jh-button:hover { background: #262626; }
+.jh-button--outline { background: white; color: #111827; border-color: #e5e7eb; }
+.jh-button--outline:hover { background: #f9fafb; border-color: #d1d5db; }
+.jh-button--ghost { background: transparent; color: #ffffff; }
+.jh-button--ghost:hover { background: rgba(255,255,255,0.1); }
+.jh-icon-button { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1px solid #27272a; border-radius: 8px; background: #111827; color: #ffffff; }
+.jh-icon-button:hover { background: #1f2937; }
+.jh-mobile-panel { border-top: 1px solid #1f2937; background: #0a0a0a; color: white; box-shadow: 0 20px 30px rgba(0,0,0,.5); }
+.jh-mobile-panel .jh-nav-link { display: flex; width: 100%; border-radius: 8px; }
+.jh-footer { border-top: 1px solid #e5e7eb; background: white; }
+.jh-panel { border: 1px solid #e5e7eb; border-radius: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.035); }
+.jh-kicker { font-size: 11px; line-height: 1.5; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #596d7e; }
 
 /* Workspaces use the same surface, radius, typography and navigation geometry. */
 .jobhub-workspace { min-height: 100vh; background: var(--jh-canvas); }
@@ -140,6 +143,24 @@ img, svg { max-width: 100%; }
 .animate-fade-in { animation: fadeIn .3s ease-out both; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #c5d0da; border-radius: 20px; }
+
+/* Reference Design Tokens */
+.jh-badge-green { background: #dcfce7; color: #15803d; font-size: 10.5px; font-weight: 600; padding: 1.5px 7px; border-radius: 9999px; }
+.jh-badge-gray { background: #f3f4f6; color: #4b5563; font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 6px; }
+.jh-card-reference {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.jh-card-reference:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+  border-color: #d0d5dd;
+  transform: translateY(-1px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

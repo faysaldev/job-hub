@@ -10,6 +10,7 @@ import Footer from "@/src/components/common/Footer";
 import SearchSection from "@/src/components/jobs/SearchSection";
 import JobFilters from "@/src/components/jobs/JobFilters";
 import Pagination from "@/src/components/jobs/Pagination";
+import { CompanyBrandIcon } from "@/src/components/jobs/JobCard";
 import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import {
@@ -23,6 +24,10 @@ import {
   Building2,
   Loader2,
   ChevronRight,
+  ChevronDown,
+  Heart,
+  X,
+  MoreHorizontal,
 } from "lucide-react";
 import gsap from "gsap";
 import { useSearchJobsQuery } from "@/src/redux/features/jobs/jobsApi";
@@ -104,161 +109,131 @@ const LOCATION_COLORS: Record<string, string> = {
   onsite: "bg-white text-[#516C83] border-[#163B5C]/10",
 };
 
-// ─── Job Card ─────────────────────────────────────────────────────────────────
+// ─── Job Card (Reference Design) ─────────────────────────────────────────────
 
 const JobCard = memo(({ job }: { job: ApiJob }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
+  const [saved, setSaved] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   const handleClick = useCallback(() => {
     router.push(`/job/${job._id}`);
   }, [router, job._id]);
 
-  const deadlineDate = useMemo(
-    () =>
-      new Date(job.applicationDeadline).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-    [job.applicationDeadline],
-  );
+  if (dismissed) return null;
 
-  const isExpiringSoon = useMemo(() => {
-    const daysLeft = Math.ceil(
-      (new Date(job.applicationDeadline).getTime() - Date.now()) / 86400000,
-    );
-    return daysLeft <= 7 && daysLeft >= 0;
-  }, [job.applicationDeadline]);
+  const companyName = job.company?.companyName || "Premier Partner";
+  const seniority = job.experienceLevel || "Mid-Senior";
+  const employmentType =
+    job.locationType === "remote"
+      ? "Remote Job"
+      : job.type
+      ? job.type.replace("-", " ")
+      : "Full-Time";
+  const salaryText = formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod);
+  const locationText = (job.location || "Remote").toUpperCase();
+  const tags = job.skills?.length ? job.skills.slice(0, 3) : ["Design", "UX"];
 
   return (
-    <div
+    <article
       onClick={handleClick}
-      onKeyDown={(event) => { if (event.key === "Enter" && event.target === event.currentTarget) handleClick(); }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && event.target === event.currentTarget) handleClick();
+      }}
       role="link"
       tabIndex={0}
-      aria-label={`View ${job.title} at ${job.company?.companyName || "company"}`}
-      className="job-card-item group relative cursor-pointer overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10"
+      aria-label={`View ${job.title} at ${companyName}`}
+      className="job-card-item jh-card-reference group relative flex flex-col justify-between h-full bg-white border border-[#eaecf0] rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all cursor-pointer"
     >
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83] scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
-
-      <div className="p-5 sm:p-6">
-        <div className="flex gap-4 items-start">
-          <div className="flex-shrink-0">
-            {job.company?.companyLogo ? (
-              <img
-                src={job.company.companyLogo}
-                alt={job.company.companyName}
-                className="h-14 w-14 rounded-2xl border border-[#163B5C]/10 object-cover shadow-sm"
-              />
-            ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#163B5C] to-[#516C83] shadow-sm">
-                <Building2 className="h-7 w-7 text-white" />
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="truncate text-lg font-black tracking-tight text-[#163B5C] transition-colors group-hover:text-[#516C83]">
-                  {job.title}
-                </h3>
-                {job.isSponsored && <span className="mt-1 inline-flex rounded border border-[#bed2e4] bg-blue-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#214b6b]">Sponsored</span>}
-                <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#516C83]">
-                  <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
-                  {job.company?.companyName || "Unknown Company"}
-                </p>
-              </div>
-
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E1E8EF]/50 text-[#516C83] transition group-hover:bg-[#163B5C] group-hover:text-white">
-                <ChevronRight className="h-5 w-5" />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 mt-3">
-              <span
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold capitalize ${TYPE_COLORS[job.type] || "bg-white text-[#163B5C] border-[#163B5C]/10"}`}
-              >
-                <Briefcase className="h-3 w-3" />
-                {job.type.replace("-", " ")}
-              </span>
-              <span
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold capitalize ${LOCATION_COLORS[job.locationType] || "bg-white text-[#516C83] border-[#163B5C]/10"}`}
-              >
-                <MapPin className="h-3 w-3" />
-                {job.locationType}
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 text-xs font-bold text-[#163B5C]">
-                <DollarSign className="h-3 w-3" />
-                {formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#E1E8EF]/55 px-3 py-1 text-xs font-semibold text-[#516C83]">
-                <Users className="h-3 w-3" />
-                {job.positions} {job.positions === 1 ? "opening" : "openings"}
-              </span>
-            </div>
-
-            <div className="mt-3">
-              <p className="text-sm text-[#516C83] leading-relaxed inline">
-                {isExpanded ? job.description : truncate(job.description, 150)}
+      <div>
+        {/* Top Header: Logo, Title, Company, Action menu */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <CompanyBrandIcon companyName={companyName} logoUrl={job.company?.companyLogo} id={job._id} />
+            <div className="min-w-0 pt-0.5">
+              <h3 className="text-sm font-bold text-[#111827] group-hover:text-black transition-colors truncate">
+                {job.title}
+              </h3>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mt-0.5 truncate">
+                {companyName}
               </p>
-              {shouldTruncate(job.description, 150) && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsExpanded(!isExpanded);
-                  }}
-                  className="ml-2 text-[#163B5C] font-semibold hover:text-[#516C83] transition-colors text-xs underline-offset-4 hover:underline"
-                >
-                  {isExpanded ? "Show Less" : "See More"}
-                </button>
-              )}
             </div>
-
-            {/* Location text */}
-            <p className="mt-3 flex items-center gap-1 text-xs font-medium text-[#516C83]/80">
-              <MapPin className="h-3 w-3 flex-shrink-0" />
-              {job.location}
-            </p>
-
-            {/* Skills */}
-            {job.skills?.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {job.skills.slice(0, 4).map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-2.5 py-1 text-xs font-semibold text-[#163B5C]"
-                  >
-                    {skill}
-                  </span>
-                ))}
-                {job.skills.length > 4 && (
-                  <span className="rounded-full bg-[#E1E8EF]/70 px-2.5 py-1 text-xs font-semibold text-[#516C83]">
-                    +{job.skills.length - 4}
-                  </span>
-                )}
-              </div>
-            )}
           </div>
+          <button
+            type="button"
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Job options"
+            className="text-neutral-400 hover:text-neutral-600 p-0.5 shrink-0 transition-colors"
+          >
+            <MoreHorizontal size={16} />
+          </button>
         </div>
 
-        {/* Footer row */}
-        <div className="mt-5 flex flex-col gap-2 border-t border-[#E1E8EF]/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#516C83]/70">
-            <Clock className="h-3 w-3" />
-            Posted {timeAgo(job.createdAt)}
-          </span>
-          <span
-            className={`flex items-center gap-1 text-xs font-semibold ${isExpiringSoon ? "text-red-500" : "text-[#516C83]/70"}`}
-          >
-            <Clock className="h-3 w-3" />
-            Deadline: {deadlineDate}
-            {isExpiringSoon && " soon"}
-          </span>
+        {/* Location row */}
+        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mt-2 mb-2">
+          <MapPin size={11} className="shrink-0 text-neutral-400" />
+          <span className="truncate">{locationText}</span>
+        </div>
+
+        {/* 3-column metadata row */}
+        <div className="grid grid-cols-3 gap-1 py-1.5 text-[10.5px] border-y border-neutral-100 my-2">
+          <span className="font-semibold text-neutral-700 truncate">{seniority}</span>
+          <span className="font-semibold text-neutral-700 truncate text-center capitalize">{employmentType}</span>
+          <span className="font-bold text-neutral-900 truncate text-right">{salaryText}</span>
+        </div>
+
+        {/* Description snippet */}
+        <p className="text-[11.5px] text-[#596d7e] leading-relaxed line-clamp-2 my-2">
+          {job.description}
+        </p>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1.5 mb-2.5">
+          {tags.map((skill) => (
+            <span
+              key={skill}
+              className="bg-[#f3f4f6] text-neutral-600 rounded-md px-2 py-0.5 text-[10px] font-medium"
+            >
+              {skill}
+            </span>
+          ))}
+          {job.isSponsored && (
+            <span className="inline-flex items-center gap-1 bg-[#dcfce7] text-[#15803d] rounded-md px-2 py-0.5 text-[10px] font-semibold">
+              <Sparkles size={10} /> Sponsored
+            </span>
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Footer row: Posted date & Dismiss / Heart icons */}
+      <div className="flex items-center justify-between pt-2 border-t border-neutral-100 text-[10px]">
+        <span className="text-neutral-400 font-medium">{timeAgo(job.createdAt)}</span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDismissed(true);
+            }}
+            aria-label="Dismiss job"
+            className="text-neutral-400 hover:text-neutral-700 p-0.5 transition-colors"
+          >
+            <X size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSaved(!saved);
+            }}
+            aria-label={saved ? "Unsave job" : "Save job"}
+            className={`p-0.5 transition-colors ${saved ? "text-red-500 fill-red-500" : "text-neutral-400 hover:text-red-500"}`}
+          >
+            <Heart size={13} className={saved ? "fill-current text-red-500" : ""} />
+          </button>
+        </div>
+      </div>
+    </article>
   );
 });
 JobCard.displayName = "JobCard";
@@ -727,90 +702,55 @@ const Jobs = () => {
                     activeFilterCount={activeFilterCount}
                   />
 
-                  {/* Tips */}
-                  <Card className="overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] p-5 text-white shadow-xl shadow-[#163B5C]/15">
-                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15">
-                      <Sparkles className="h-5 w-5" />
+                  {/* Search Recommendations */}
+                  <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-black p-5 text-white shadow-sm">
+                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800">
+                      <Sparkles className="h-4 w-4 text-white" />
                     </div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <h3 className="font-black">Job Search Tips</h3>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-bold text-sm text-white">Search Recommendations</h3>
                     </div>
-                    <ul className="space-y-2 text-sm text-white/90">
+                    <ul className="space-y-2 text-xs text-neutral-300">
                       <li className="flex items-start gap-2">
-                        <Target className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                        Use specific keywords for better results
+                        <Target className="h-3.5 w-3.5 mt-0.5 shrink-0 text-neutral-400" />
+                        Use multi-keyword chips for refined precision
                       </li>
                       <li className="flex items-start gap-2">
-                        <Clock className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                        Apply early — fresh jobs get more attention
+                        <Clock className="h-3.5 w-3.5 mt-0.5 shrink-0 text-neutral-400" />
+                        Fresh postings receive fastest recruiter review
                       </li>
                     </ul>
-                  </Card>
+                  </div>
                 </div>
               </div>
 
               {/* Job Listings */}
               <div className="flex-1 job-listings">
-                {/* Results header */}
-                <Card className="mb-6 overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 p-5 shadow-sm backdrop-blur">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <h2 className="mb-1 text-2xl font-black tracking-tight text-[#163B5C]">
-                        {selectedCategory
-                          ? `${jobCategories.find((c) => c.id === selectedCategory)?.name ?? "Category"} Jobs`
-                          : "Available Positions"}
-                        {selectedSubcategory && selectedCategory && (
-                          <span className="ml-2 text-base font-semibold text-[#516C83]">
-                            /{" "}
-                            {
-                              jobCategories
-                                .find((c) => c.id === selectedCategory)
-                                ?.subcategories.find(
-                                  (s) => s.id === selectedSubcategory,
-                                )?.name
-                            }
-                          </span>
-                        )}
-                      </h2>
-                      <p aria-live="polite" className="text-sm font-medium text-[#516C83]">
-                        {isFetching ? (
-                          "Loading..."
-                        ) : (
-                          <>
-                            <span className="font-semibold text-[#163B5C]">
-                              {filteredJobs.length}
-                            </span>{" "}
-                            job{filteredJobs.length !== 1 ? "s" : ""} of{" "}
-                            <span className="font-semibold text-[#163B5C]">
-                              {paginationMeta.totalJobs}
-                            </span>{" "}
-                            total
-                            {activeFilterCount > 0 && (
-                              <span className="text-[#516C83]/70 ml-1">
-                                ({activeFilterCount} filter
-                                {activeFilterCount !== 1 ? "s" : ""})
-                              </span>
-                            )}
-                          </>
-                        )}
+                {/* Results header matching reference */}
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+                      {paginationMeta.totalJobs.toLocaleString()} Jobs Found
+                    </h1>
+                    {selectedCategory && (
+                      <p className="text-xs text-[#596d7e] mt-1">
+                        Category:{" "}
+                        <span className="font-semibold text-neutral-800">
+                          {jobCategories.find((c) => c.id === selectedCategory)?.name ?? selectedCategory}
+                        </span>
                       </p>
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      <Badge className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse inline-block" />
-                        {paginationMeta.totalJobs} Active
-                      </Badge>
-                      {selectedCategory && (
-                        <Badge className="rounded-full bg-[#163B5C]/10 text-[#163B5C] border border-[#163B5C]/10">
-                          {
-                            jobCategories.find((c) => c.id === selectedCategory)
-                              ?.name
-                          }
-                        </Badge>
-                      )}
-                    </div>
+                    )}
                   </div>
-                </Card>
+                  <div className="flex items-center gap-2 text-xs text-neutral-500">
+                    <span>Sort by:</span>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 font-semibold text-neutral-800 hover:text-black"
+                    >
+                      Newest Post <ChevronDown size={14} className="text-neutral-400" />
+                    </button>
+                  </div>
+                </div>
 
                 {/* Loading skeleton */}
                 {isFetching && <TableLoading rows={5} />}
@@ -819,9 +759,9 @@ const Jobs = () => {
                   <ErrorState description="Job listings could not be loaded. Check your connection and try again." onRetry={() => void refetch()} />
                 )}
 
-                {/* Jobs list */}
+                {/* Jobs list matching reference 2-3 column layout */}
                 {!isFetching && !isError && filteredJobs.length > 0 && (
-                  <div className="space-y-4">
+                  <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                     {filteredJobs.map((job) => (
                       <JobCard key={job._id} job={job} />
                     ))}

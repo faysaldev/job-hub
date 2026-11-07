@@ -1,129 +1,334 @@
-import { Card } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { Badge } from "@/src/components/ui/badge";
-import {
-  MapPin,
-  Briefcase,
-  Clock,
-  DollarSign,
-  Building2,
-  ArrowRight,
-  Bookmark,
-  Zap,
-} from "lucide-react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
+import { MapPin, MoreHorizontal, Heart, X, Sparkles } from "lucide-react";
 import { Job } from "@/src/types";
 
 interface JobCardProps {
   job: Job;
+  onSave?: (id: string | number) => void;
+  onDismiss?: (id: string | number) => void;
+  isSaved?: boolean;
 }
 
-const JobCard = ({ job }: JobCardProps) => {
-  const postedText = job.posted || job.postedAt || "";
-  const isNew = postedText.includes("day") && parseInt(postedText) <= 3;
-  const isRemote = job.location.toLowerCase().includes("remote");
+// ─── Branded Company Avatar Icon matching Reference Images ───────────────────
+
+export function CompanyBrandIcon({
+  companyName,
+  logoUrl,
+  id,
+  className = "h-10 w-10 sm:h-11 sm:w-11",
+}: {
+  companyName: string;
+  logoUrl?: string;
+  id?: string | number;
+  className?: string;
+}) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  // If company logo is provided and hasn't failed to load, display in pristine rounded container
+  if (logoUrl && !imgFailed) {
+    return (
+      <div
+        className={`${className} rounded-xl bg-white border border-[#eaecf0] p-1 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden`}
+      >
+        <img
+          src={logoUrl}
+          alt={companyName}
+          onError={() => setImgFailed(true)}
+          className="h-full w-full object-contain rounded-lg"
+        />
+      </div>
+    );
+  }
+
+  // Reference Brand Vector Motifs with crisp geometry & vivid branding
+  const lower = (companyName || "").toLowerCase();
+  let variant = 0;
+  if (lower.includes("unicorn") || lower.includes("magic")) {
+    variant = 0; // Emerald Dot Matrix
+  } else if (lower.includes("corporate") || lower.includes("business")) {
+    variant = 1; // Coral Flower
+  } else if (lower.includes("guy")) {
+    variant = 2; // Blue Nodes Trinity
+  } else if (lower.includes("sintra")) {
+    variant = 3; // Violet Sacred Rosette
+  } else if (lower.includes("moon")) {
+    variant = 4; // Navy Dark XI
+  } else if (lower.includes("behance")) {
+    variant = 5; // Royal Blue Bē
+  } else if (lower.includes("litit")) {
+    variant = 6; // Obsidian Emerald Hexagon
+  } else if (lower.includes("cow")) {
+    variant = 7; // Cyan Network Matrix
+  } else {
+    let hash = 0;
+    const key = companyName + (id || "");
+    for (let i = 0; i < key.length; i++) hash = key.charCodeAt(i) + ((hash << 5) - hash);
+    variant = Math.abs(hash) % 8;
+  }
+
+  switch (variant) {
+    case 0:
+      // Magic Unicorn - Emerald Dot Matrix
+      return (
+        <div
+          className={`${className} rounded-xl bg-[#20b26c] border border-emerald-600/20 flex items-center justify-center shrink-0 shadow-2xs text-white p-2`}
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full opacity-95">
+            <circle cx="5" cy="5" r="2.2" />
+            <circle cx="12" cy="5" r="2.2" />
+            <circle cx="19" cy="5" r="2.2" />
+            <circle cx="5" cy="12" r="2.2" />
+            <circle cx="12" cy="12" r="2.2" />
+            <circle cx="19" cy="12" r="2.2" />
+            <circle cx="5" cy="19" r="2.2" />
+            <circle cx="12" cy="19" r="2.2" />
+            <circle cx="19" cy="19" r="2.2" />
+          </svg>
+        </div>
+      );
+    case 1:
+      // Business Corporate Group - Coral Flower
+      return (
+        <div
+          className={`${className} rounded-xl bg-[#f95738] border border-orange-600/20 flex items-center justify-center shrink-0 shadow-2xs text-white p-2`}
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full opacity-95">
+            <path d="M12 2C10.5 4.5 10.5 7.5 12 10C13.5 7.5 13.5 4.5 12 2Z" />
+            <path d="M12 22C10.5 19.5 10.5 16.5 12 14C13.5 16.5 13.5 19.5 12 22Z" />
+            <path d="M2 12C4.5 10.5 7.5 10.5 10 12C7.5 13.5 4.5 13.5 2 12Z" />
+            <path d="M22 12C19.5 10.5 16.5 10.5 14 12C16.5 13.5 19.5 13.5 22 12Z" />
+            <circle cx="12" cy="12" r="2" />
+          </svg>
+        </div>
+      );
+    case 2:
+      // Guy - Blue Nodes Trinity
+      return (
+        <div
+          className={`${className} rounded-xl bg-[#2563eb] border border-blue-600/20 flex items-center justify-center shrink-0 shadow-2xs text-white p-2`}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-full h-full"
+          >
+            <circle cx="12" cy="6" r="2.5" fill="currentColor" />
+            <circle cx="6" cy="17" r="2.5" fill="currentColor" />
+            <circle cx="18" cy="17" r="2.5" fill="currentColor" />
+            <path d="M12 8.5L6.5 15M12 8.5L17.5 15M8.5 17H15.5" />
+          </svg>
+        </div>
+      );
+    case 3:
+      // Sintra Group - Violet Sacred Rosette
+      return (
+        <div
+          className={`${className} rounded-xl bg-[#6366f1] border border-indigo-600/20 flex items-center justify-center shrink-0 shadow-2xs text-white p-2`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
+            <circle cx="12" cy="12" r="3" fill="currentColor" />
+            <circle cx="12" cy="5" r="2.5" />
+            <circle cx="12" cy="19" r="2.5" />
+            <circle cx="5" cy="12" r="2.5" />
+            <circle cx="19" cy="12" r="2.5" />
+          </svg>
+        </div>
+      );
+    case 4:
+      // Moon Active - Navy Dark Stylized "XI"
+      return (
+        <div
+          className={`${className} rounded-xl bg-[#0f172a] border border-slate-700/50 flex items-center justify-center shrink-0 shadow-2xs text-[#38bdf8] p-1.5`}
+        >
+          <span className="font-black text-xs tracking-tighter">XI</span>
+        </div>
+      );
+    case 5:
+      // Behance - Royal Blue "Bē"
+      return (
+        <div
+          className={`${className} rounded-xl bg-[#0057ff] border border-blue-700/30 flex items-center justify-center shrink-0 shadow-2xs text-white p-1.5`}
+        >
+          <span className="font-extrabold text-xs tracking-tight">Bē</span>
+        </div>
+      );
+    case 6:
+      // Litit Group - Obsidian Emerald Hexagon
+      return (
+        <div
+          className={`${className} rounded-xl bg-[#111827] border border-neutral-700/50 flex items-center justify-center shrink-0 shadow-2xs text-[#10b981] p-2`}
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+            <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" fill="none" stroke="currentColor" strokeWidth="2.2" />
+            <polygon points="12,6 17,9.5 17,14.5 12,18 7,14.5 7,9.5" fill="currentColor" />
+          </svg>
+        </div>
+      );
+    default:
+      // Cow - Cyan Network Matrix
+      return (
+        <div
+          className={`${className} rounded-xl bg-[#0284c7] border border-sky-600/20 flex items-center justify-center shrink-0 shadow-2xs text-white p-2`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
+            <circle cx="7" cy="7" r="2.8" fill="currentColor" />
+            <circle cx="17" cy="7" r="2.8" fill="currentColor" />
+            <circle cx="12" cy="17" r="2.8" fill="currentColor" />
+            <line x1="7" y1="7" x2="17" y2="7" />
+            <line x1="7" y1="7" x2="12" y2="17" />
+            <line x1="17" y1="7" x2="12" y2="17" />
+          </svg>
+        </div>
+      );
+  }
+}
+
+function formatPostedDate(dateStr?: string): string {
+  if (!dateStr) return "Recently posted";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+function formatSalaryDisplay(job: Job): string {
+  if (job.salary) return job.salary;
+  if (job.salaryMin != null && job.salaryMax != null) {
+    const min = `$${job.salaryMin}`;
+    const period = job.salaryPeriod === "yearly" ? " PA" : job.salaryPeriod === "monthly" ? " PM" : "";
+    return `${min}${period}`;
+  }
+  return "Competitive";
+}
+
+const JobCard = ({ job, onSave, onDismiss, isSaved: initialSaved = false }: JobCardProps) => {
+  const [saved, setSaved] = useState(initialSaved);
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) return null;
+
+  const companyName = typeof job.company === "string" ? job.company : "Company";
+  const postedDate = formatPostedDate(job.postedAt || job.posted || (job as any).createdAt);
+  const seniority = job.experienceLevel || "Mid-Senior";
+  const employmentType = job.remote ? "Remote Job" : job.type || "Full-Time";
+  const salaryText = formatSalaryDisplay(job);
+  const locationText = (job.location || "Location not provided").toUpperCase();
+  const tags = (job.skills && job.skills.length > 0) ? job.skills.slice(0, 3) : ["Design", "UX"];
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSaved(!saved);
+    if (onSave) onSave(job.id);
+  };
+
+  const handleDismiss = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDismissed(true);
+    if (onDismiss) onDismiss(job.id);
+  };
 
   return (
-    <Link href={`/job/${job.id}`}>
-      <Card className="p-6 hover:shadow-xl transition-all duration-300 hover:border-[#163B5C]/30 border border-[#E1E8EF] bg-white rounded-xl group">
-        <div className="flex flex-col lg:flex-row lg:items-start gap-5">
-          {/* Company Logo Placeholder */}
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#163B5C]/10 to-[#516C83]/10 flex items-center justify-center flex-shrink-0 group-hover:from-[#163B5C]/20 group-hover:to-[#516C83]/20 transition-colors">
-            <Building2 className="h-7 w-7 text-[#163B5C]" />
-          </div>
-
-          <div className="flex-1 space-y-3">
-            {/* Header */}
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-xl font-semibold text-[#163B5C] group-hover:text-[#516C83] transition-colors">
-                    {job.title}
-                  </h3>
-                  {job.isSponsored && <Badge className="border border-blue-200 bg-blue-50 text-xs font-medium text-blue-800">Sponsored</Badge>}
-                  {isNew && (
-                    <Badge className="bg-green-100 text-green-700 border-none text-xs">
-                      <Zap className="h-3 w-3 mr-1" />
-                      New
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-[#516C83] font-medium">{job.company}</p>
-              </div>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-[#516C83] hover:text-[#163B5C] hover:bg-[#163B5C]/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Add to saved jobs logic here
-                }}
-              >
-                <Bookmark className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Meta Info */}
-            <div className="flex flex-wrap gap-4 text-sm text-[#516C83]">
-              <span className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4" />
-                {job.location}
-                {isRemote && (
-                  <Badge className="ml-1 bg-blue-100 text-blue-700 border-none text-xs py-0">
-                    Remote
-                  </Badge>
-                )}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Briefcase className="h-4 w-4" />
-                {job.type}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <DollarSign className="h-4 w-4" />
-                {job.salary}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" />
-                {postedText}
-              </span>
-            </div>
-
-            {/* Description */}
-            <p className="text-[#516C83] line-clamp-2 text-sm leading-relaxed">
-              {job.description}
-            </p>
-
-            {/* Skills & Action */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
-              <div className="flex flex-wrap gap-2">
-                {job.skills.slice(0, 4).map((skill, index) => (
-                  <Badge
-                    key={index}
-                    className="bg-[#163B5C]/10 text-[#163B5C] border-none hover:bg-[#163B5C]/20 transition-colors"
-                  >
-                    {skill}
-                  </Badge>
-                ))}
-                {job.skills.length > 4 && (
-                  <Badge className="bg-[#E1E8EF] text-[#516C83] border-none">
-                    +{job.skills.length - 4}
-                  </Badge>
-                )}
-              </div>
-
-              <Button
-                className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                View Details
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
+    <article className="jh-card-reference group relative flex flex-col justify-between h-full bg-white border border-[#eaecf0] rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md transition-all">
+      {/* Top Header: Logo, Title, Company, Action menu */}
+      <div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <CompanyBrandIcon companyName={companyName} logoUrl={job.companyLogo} id={job.id} />
+            <div className="min-w-0 pt-0.5">
+              <Link href={`/job/${job.id}`} className="block">
+                <h3 className="text-sm font-bold text-[#111827] group-hover:text-black transition-colors truncate">
+                  {job.title}
+                </h3>
+              </Link>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mt-0.5 truncate">
+                {companyName}
+              </p>
             </div>
           </div>
+          <button
+            type="button"
+            aria-label="Job options"
+            className="text-neutral-400 hover:text-neutral-600 p-0.5 shrink-0 transition-colors"
+          >
+            <MoreHorizontal size={16} />
+          </button>
         </div>
-      </Card>
-    </Link>
+
+        {/* Location row */}
+        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mt-2 mb-2">
+          <MapPin size={11} className="shrink-0 text-neutral-400" />
+          <span className="truncate">{locationText}</span>
+        </div>
+
+        {/* 3-column metadata row */}
+        <div className="grid grid-cols-3 gap-1 py-1.5 text-[10.5px] border-y border-neutral-100 my-2">
+          <span className="font-semibold text-neutral-700 truncate">{seniority}</span>
+          <span className="font-semibold text-neutral-700 truncate text-center capitalize">{employmentType}</span>
+          <span className="font-bold text-neutral-900 truncate text-right">{salaryText}</span>
+        </div>
+
+        {/* Description snippet */}
+        <p className="text-[11.5px] text-[#596d7e] leading-relaxed line-clamp-2 my-2">
+          {job.description}
+        </p>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1.5 mb-2.5">
+          {tags.map((tag, i) => (
+            <span
+              key={i}
+              className="bg-[#f3f4f6] text-neutral-600 rounded-md px-2 py-0.5 text-[10px] font-medium"
+            >
+              {tag}
+            </span>
+          ))}
+          {job.isSponsored && (
+            <span className="inline-flex items-center gap-1 bg-[#dcfce7] text-[#15803d] rounded-md px-2 py-0.5 text-[10px] font-semibold">
+              <Sparkles size={10} /> Sponsored
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Card Footer: Posted date & Dismiss / Heart icons */}
+      <div className="flex items-center justify-between pt-2 border-t border-neutral-100 text-[10px]">
+        <span className="text-neutral-400 font-medium">{postedDate}</span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={handleDismiss}
+            aria-label="Dismiss job"
+            className="text-neutral-400 hover:text-neutral-700 p-0.5 transition-colors"
+          >
+            <X size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            aria-label={saved ? "Unsave job" : "Save job"}
+            className={`p-0.5 transition-colors ${saved ? "text-red-500 fill-red-500" : "text-neutral-400 hover:text-red-500"}`}
+          >
+            <Heart size={13} className={saved ? "fill-current text-red-500" : ""} />
+          </button>
+        </div>
+      </div>
+    </article>
   );
 };
 

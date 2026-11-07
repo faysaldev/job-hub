@@ -1,8 +1,41 @@
 const steps = [
-  { number: "01", title: "Search", description: "Browse available listings, and narrow the results to your preferences." },
-  { number: "02", title: "Review", description: "Read the role, salary information, location and requirements before applying." },
-  { number: "03", title: "Apply and follow up", description: "Submit your application and track its status from your workspace." },
+  {
+    number: "01",
+    title: "Filter & Discover",
+    description: "Search across verified job openings using multi-keyword tags, location filters, and seniority tiers.",
+  },
+  {
+    number: "02",
+    title: "Review Compensation",
+    description: "Inspect transparent salary details, benefits, and team structures before submitting your profile.",
+  },
+  {
+    number: "03",
+    title: "Apply & Track Status",
+    description: "Submit applications with one click and track interview invitations directly inside your workspace.",
+  },
 ];
-export default function StepsSection() { return <section className="jh-container py-16 md:py-20"><div className="mb-9"><p className="jh-kicker mb-3">How it works</p><h2 className="text-3xl font-semibold tracking-tight text-[#162839] md:text-4xl">Three steps to your next role</h2></div>
-  <div className="grid gap-4 md:grid-cols-3">{steps.map(step => <div key={step.number} className="jh-panel p-7"><span className="text-sm font-bold text-[#516c83]">{step.number}</span><h3 className="mt-7 text-lg font-semibold text-[#162839]">{step.title}</h3><p className="mt-3 text-sm leading-6 text-[#66798a]">{step.description}</p></div>)}</div>
-</section>; }
+
+export default function StepsSection() {
+  return (
+    <section className="jh-container py-16 md:py-20">
+      <div className="mb-10">
+        <p className="jh-kicker mb-2">How It Works</p>
+        <h2 className="text-2xl font-bold tracking-tight text-[#111827] md:text-3xl">
+          Three Simple Steps To Your Next Role
+        </h2>
+      </div>
+      <div className="grid gap-5 md:grid-cols-3">
+        {steps.map((step) => (
+          <div key={step.number} className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm">
+            <span className="inline-block rounded-md bg-[#dcfce7] px-2.5 py-1 text-xs font-bold text-[#15803d]">
+              Step {step.number}
+            </span>
+            <h3 className="mt-5 text-sm font-bold text-[#111827]">{step.title}</h3>
+            <p className="mt-2 text-xs leading-relaxed text-[#596d7e]">{step.description}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}

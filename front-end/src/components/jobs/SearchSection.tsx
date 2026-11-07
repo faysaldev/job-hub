@@ -1,7 +1,7 @@
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Badge } from "@/src/components/ui/badge";
-import { Search, MapPin, Sparkles, TrendingUp } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Search, MapPin, Briefcase, DollarSign, ChevronDown, X } from "lucide-react";
 
 interface SearchSectionProps {
   searchTerm: string;
@@ -13,6 +13,11 @@ interface SearchSectionProps {
   onTrendingClick?: (term: string) => void;
 }
 
+const DEFAULT_CHIPS = ["Product Designer", "Artist", "Game Designer", "Designer"];
+const LOCATION_OPTIONS = ["All Countries", "United States", "Germany", "Estonia", "Remote"];
+const JOB_TYPES = ["Job Type", "Full Time", "Part Time", "Remote", "Contract"];
+const SALARY_RANGES = ["Salary Range", "$30k - $50k", "$50k - $80k", "$80k - $120k", "$120k+"];
+
 const SearchSection = ({
   searchTerm,
   locationTerm,
@@ -22,99 +27,180 @@ const SearchSection = ({
   onSearchKeyDown,
   onTrendingClick,
 }: SearchSectionProps) => {
-  const popularSearches = [
-    "Remote",
-    "Frontend",
-    "Backend",
-    "Full Stack",
-    "Design",
-  ];
+  const [chips, setChips] = useState<string[]>(DEFAULT_CHIPS);
+  const [selectedLocation, setSelectedLocation] = useState(locationTerm || "All Countries");
+  const [selectedType, setSelectedType] = useState("Job Type");
+  const [selectedSalary, setSelectedSalary] = useState("Salary Range");
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  const removeChip = (chipToRemove: string) => {
+    setChips(chips.filter((c) => c !== chipToRemove));
+  };
+
+  const addChip = (chipText: string) => {
+    const trimmed = chipText.trim();
+    if (trimmed && !chips.includes(trimmed)) {
+      setChips([...chips, trimmed]);
+      if (onTrendingClick) onTrendingClick(trimmed);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchTerm.trim()) {
+      addChip(searchTerm);
+      onSearchKeyDown(e);
+    } else {
+      onSearchKeyDown(e);
+    }
+  };
 
   return (
-    <section className="relative overflow-hidden bg-[#163B5C] py-20 md:py-24">
-      {/* Background texture */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/15 to-transparent" />
-        <div className="absolute left-8 top-20 hidden h-28 w-56 rotate-[-8deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
-        <div className="absolute bottom-16 right-10 hidden h-32 w-64 rotate-[8deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
-      </div>
-
-      <div className="container relative z-10 px-4 mx-auto">
-        <div className="mx-auto mb-8 max-w-4xl text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2">
-            <Sparkles className="h-4 w-4 text-white" />
-            <span className="text-sm font-bold text-white/90">
-              Explore current opportunities
-            </span>
-          </div>
-          <h1 className="mb-4 text-4xl font-black tracking-tight text-white md:text-6xl">
-            Search jobs that fit the way you work.
-          </h1>
-          <p className="mx-auto max-w-2xl text-lg leading-8 text-white/75">
-            Filter by title, location, category, job type, salary, and
-            experience while keeping the full backend-powered job flow intact.
-          </p>
-        </div>
-
-        <div className="max-w-4xl mx-auto">
-          <div className="rounded-3xl border border-white/20 bg-white/95 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl">
-            <div className="flex flex-col md:flex-row gap-3">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
-                <Input
-                  placeholder="Job title, keywords, or company"
-                  className="h-14 rounded-2xl border border-transparent bg-[#F4F7F8] pl-12 text-base text-[#163B5C] placeholder:text-[#516C83]/60 focus:border-[#163B5C]/15 focus:bg-white focus:ring-2 focus:ring-[#163B5C]/10"
-                  value={searchTerm}
-                  onChange={onSearchChange}
-                  onKeyDown={onSearchKeyDown}
-                />
-              </div>
-
-              <div className="flex-1 relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
-                <Input
-                  placeholder="City, state, or remote"
-                  className="h-14 rounded-2xl border border-transparent bg-[#F4F7F8] pl-12 text-base text-[#163B5C] placeholder:text-[#516C83]/60 focus:border-[#163B5C]/15 focus:bg-white focus:ring-2 focus:ring-[#163B5C]/10"
-                  value={locationTerm}
-                  onChange={onLocationChange}
-                  onKeyDown={onSearchKeyDown}
-                />
-              </div>
-
-              <Button
-                className="h-14 rounded-2xl bg-[#163B5C] px-8 text-base font-black text-white shadow-lg shadow-[#163B5C]/20 transition-all hover:bg-[#0C2C48]"
-                onClick={onSearch}
-              >
-                <Search className="h-5 w-5 mr-2" />
-                Search Jobs
-              </Button>
+    <section className="bg-[#f4f6f8] pt-5 pb-3">
+      <div className="jh-container">
+        {/* Sleek Floating Reference Search Bar */}
+        <div className="rounded-2xl border border-[#eaecf0] bg-white p-1 sm:p-1.5 shadow-2xs">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+            {/* Search Input with Removable Chips */}
+            <div className="flex flex-1 flex-wrap items-center gap-1.5 px-2 py-0.5 min-h-[34px]">
+              <Search className="h-3 w-3 text-neutral-400 shrink-0" aria-hidden="true" />
+              {chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="inline-flex items-center gap-1 rounded-md border border-neutral-200/70 bg-[#f4f5f7] px-2 py-0.5 text-[10px] font-medium text-neutral-700"
+                >
+                  {chip}
+                  <button
+                    type="button"
+                    onClick={() => removeChip(chip)}
+                    aria-label={`Remove ${chip}`}
+                    className="text-neutral-400 hover:text-black transition-colors"
+                  >
+                    <X size={10} />
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                placeholder={chips.length ? "Add keyword..." : "Search job title, skills..."}
+                value={searchTerm}
+                onChange={onSearchChange}
+                onKeyDown={handleKeyDown}
+                className="min-w-[80px] flex-1 bg-transparent text-[10.5px] text-[#111827] placeholder:text-neutral-400 focus:outline-none"
+              />
             </div>
-          </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-            <span className="flex items-center gap-2 text-sm font-semibold text-white/70">
-              <TrendingUp className="h-4 w-4" />
-              Trending:
-            </span>
-            {popularSearches.map((term, index) => (
-              <Badge
-                key={index}
-                className="cursor-pointer rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-white transition-colors hover:bg-white/20"
-                onClick={() => {
-                  if (onTrendingClick) {
-                    onTrendingClick(term);
-                  } else {
-                    const event = {
-                      target: { value: term },
-                    } as React.ChangeEvent<HTMLInputElement>;
-                    onSearchChange(event);
-                  }
-                }}
+            <div className="hidden h-4 w-px bg-neutral-200 lg:block mx-0.5" />
+
+            {/* Location Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setActiveDropdown(activeDropdown === "location" ? null : "location")}
+                className="flex w-full items-center justify-between gap-1 rounded-md px-1.5 py-1 text-[9px] sm:text-[9.5px] font-medium text-neutral-600 hover:text-black hover:bg-neutral-50 transition-colors lg:w-auto"
               >
-                {term}
-              </Badge>
-            ))}
+                <div className="flex items-center gap-1">
+                  <MapPin size={10} className="text-neutral-400 shrink-0" />
+                  <span>{selectedLocation}</span>
+                </div>
+                <ChevronDown size={9} className="text-neutral-400 shrink-0" />
+              </button>
+              {activeDropdown === "location" && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-32 rounded-lg border border-neutral-200/90 bg-white p-0.5 shadow-md">
+                  {LOCATION_OPTIONS.map((loc) => (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => {
+                        setSelectedLocation(loc);
+                        setActiveDropdown(null);
+                        const evt = { target: { value: loc === "All Countries" ? "" : loc } } as any;
+                        onLocationChange(evt);
+                      }}
+                      className="w-full text-left rounded-md px-2 py-0.5 text-[9px] font-medium text-neutral-700 hover:bg-neutral-100 hover:text-black transition-colors"
+                    >
+                      {loc}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="hidden h-4 w-px bg-neutral-200 lg:block mx-0.5" />
+
+            {/* Job Type Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setActiveDropdown(activeDropdown === "type" ? null : "type")}
+                className="flex w-full items-center justify-between gap-1 rounded-md px-1.5 py-1 text-[9px] sm:text-[9.5px] font-medium text-neutral-600 hover:text-black hover:bg-neutral-50 transition-colors lg:w-auto"
+              >
+                <div className="flex items-center gap-1">
+                  <Briefcase size={10} className="text-neutral-400 shrink-0" />
+                  <span>{selectedType}</span>
+                </div>
+                <ChevronDown size={9} className="text-neutral-400 shrink-0" />
+              </button>
+              {activeDropdown === "type" && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-30 rounded-lg border border-neutral-200/90 bg-white p-0.5 shadow-md">
+                  {JOB_TYPES.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => {
+                        setSelectedType(t);
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left rounded-md px-2 py-0.5 text-[9px] font-medium text-neutral-700 hover:bg-neutral-100 hover:text-black transition-colors"
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="hidden h-4 w-px bg-neutral-200 lg:block mx-0.5" />
+
+            {/* Salary Range Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setActiveDropdown(activeDropdown === "salary" ? null : "salary")}
+                className="flex w-full items-center justify-between gap-1 rounded-md px-1.5 py-1 text-[9px] sm:text-[9.5px] font-medium text-neutral-600 hover:text-black hover:bg-neutral-50 transition-colors lg:w-auto"
+              >
+                <div className="flex items-center gap-1">
+                  <DollarSign size={10} className="text-neutral-400 shrink-0" />
+                  <span>{selectedSalary}</span>
+                </div>
+                <ChevronDown size={9} className="text-neutral-400 shrink-0" />
+              </button>
+              {activeDropdown === "salary" && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-30 rounded-lg border border-neutral-200/90 bg-white p-0.5 shadow-md">
+                  {SALARY_RANGES.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSalary(s);
+                        setActiveDropdown(null);
+                      }}
+                      className="w-full text-left rounded-md px-2 py-0.5 text-[9px] font-medium text-neutral-700 hover:bg-neutral-100 hover:text-black transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* START SEARCHING Sleek Black Button matching reference */}
+            <button
+              type="button"
+              onClick={onSearch}
+              className="inline-flex h-[26px] items-center justify-center rounded-md bg-black px-2.5 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white hover:bg-neutral-800 transition-colors shadow-2xs shrink-0"
+            >
+              Start Searching
+            </button>
           </div>
         </div>
       </div>

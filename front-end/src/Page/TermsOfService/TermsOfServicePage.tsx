@@ -4,37 +4,139 @@ import Footer from "@/src/components/common/Footer";
 import { BriefcaseBusiness, FileText, ShieldAlert, Users, Mail, Scale } from "lucide-react";
 
 const sections = [
-  { title: "Accounts and access", icon: Users, items: [
-    "Provide accurate registration information and keep your credentials secure.",
-    "Use the platform only with permissions appropriate to your account and organization.",
-    "Report suspected account misuse through the platform contact form.",
-  ] },
-  { title: "Recruiter and company responsibilities", icon: BriefcaseBusiness, items: [
-    "Publish genuine vacancies with truthful role, company, and compensation information.",
-    "Only access applicant information for legitimate hiring purposes and respect candidate privacy.",
-    "Maintain accurate job listings and remove positions that are no longer available.",
-  ] },
-  { title: "Candidate responsibilities", icon: FileText, items: [
-    "Submit truthful professional details and application information.",
-    "Respect employer communications and do not impersonate another person.",
-    "Avoid sharing credentials or sensitive data in public listings or messages.",
-  ] },
-  { title: "Unacceptable conduct", icon: ShieldAlert, items: [
-    "Fraudulent vacancies, phishing, scams, spam, unauthorized account access or automated abuse are prohibited.",
-    "Do not upload illegal, infringing or malicious content, or harass other users.",
-    "Do not attempt to circumvent security checks, access restrictions, or payment requirements.",
-  ] },
-  { title: "Payments and service availability", icon: Scale, items: [
-    "Any displayed price, plan or paid promotion must be supported by the current billing implementation and confirmed before checkout.",
-    "Payment processing is provided by Stripe. Specific subscription, refund, cancellation and tax terms require separate business and legal approval.",
-    "Technical services may change or be temporarily unavailable. Do not rely on the site as the sole record of your hiring activities.",
-  ] },
+  {
+    title: "Accounts and Verification",
+    icon: Users,
+    items: [
+      "Provide accurate registration details and maintain account confidentiality.",
+      "Employers must represent an active business entity with verifiable domain authority.",
+      "Report unauthorized credentials or suspicious actions promptly to security staff.",
+    ],
+  },
+  {
+    title: "Employer and Recruiter Conduct",
+    icon: BriefcaseBusiness,
+    items: [
+      "Publish authentic job vacancies with transparent compensation and genuine location terms.",
+      "Access applicant profile data solely for evaluating candidates for specified positions.",
+      "Promptly archive or mark filled positions to ensure accurate market data.",
+    ],
+  },
+  {
+    title: "Candidate Responsibilities",
+    icon: FileText,
+    items: [
+      "Submit truthful resume credentials, experience records, and portfolio references.",
+      "Communicate courteously during interview coordination and assessments.",
+      "Never transmit confidential or proprietary data belonging to previous employers.",
+    ],
+  },
+  {
+    title: "Prohibited Activities",
+    icon: ShieldAlert,
+    items: [
+      "No scraping, automated account harvesting, or unauthorized API querying.",
+      "Zero tolerance for fraudulent vacancies, scam solicitations, or fee extraction from job seekers.",
+      "Do not circumvent security controls or payment gating systems.",
+    ],
+  },
+  {
+    title: "Payment Processing & Billing",
+    icon: Scale,
+    items: [
+      "Subscription and job posting fees are processed securely via Stripe.",
+      "Clear terms, refund policies, and cancellation workflows apply to all premium employer tiers.",
+      "Platform uptime SLA terms and scheduled maintenance notices are provided in customer dashboards.",
+    ],
+  },
 ];
+
 export default function TermsOfServicePage() {
-  return <div className="jh-public"><Header/><main id="main-content">
-    <section className="border-b border-[#e1e8ef] bg-white py-16 md:py-20"><div className="jh-container"><p className="jh-kicker mb-4">Platform terms</p><h1 className="text-4xl font-semibold tracking-tight text-[#162839] md:text-5xl">Using JobHub responsibly</h1><p className="mt-4 max-w-2xl text-base leading-7 text-[#66798a]">A clear outline of expected conduct for candidates and hiring teams.</p><p className="mt-7 max-w-3xl rounded-lg border border-[#e1e8ef] bg-[#f6f8fb] px-4 py-3 text-sm leading-6 text-[#516c83]">Draft for operator and legal review. This page does not establish a legal entity, governing jurisdiction, refund commitment or limitation of liability. Final enforceable Terms must be approved before production launch.</p></div></section>
-    <section className="jh-container grid gap-8 py-12 md:grid-cols-[220px_minmax(0,1fr)] md:py-16"><aside className="h-fit md:sticky md:top-24"><p className="jh-kicker mb-3">Sections</p><nav aria-label="Terms topics" className="flex flex-wrap gap-2 md:flex-col">{sections.map((s,i)=><a key={s.title} href={`#terms-${i}`} className="jh-nav-link">{s.title}</a>)}</nav></aside>
-    <div className="space-y-5">{sections.map(({title,icon:Icon,items},i)=><section className="jh-panel scroll-mt-24 p-6 md:p-8" id={`terms-${i}`} key={title}><div className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf3f8] text-[#163b5c]"><Icon size={21}/></span><h2 className="text-xl font-semibold text-[#162839]">{title}</h2></div><ul className="mt-5 list-disc space-y-3 pl-5 text-sm leading-7 text-[#66798a]">{items.map(s=><li key={s}>{s}</li>)}</ul></section>)}
-    <section className="jh-panel p-6 md:p-8"><div className="flex items-center gap-3"><Mail size={22} className="text-[#163b5c]"/><h2 className="text-xl font-semibold text-[#162839]">Need clarification?</h2></div><p className="mt-4 text-sm leading-7 text-[#66798a]">Questions about your account, employer eligibility or payment workflow can be sent through the contact form. The governing agreement and jurisdiction must be supplied by the actual operator.</p><Link href="/contact" className="jh-button mt-5">Contact JobHub</Link></section></div></section>
-  </main><Footer/></div>;
+  return (
+    <div className="jh-public min-h-screen bg-[#f4f6f8]">
+      <Header />
+      <main id="main-content">
+        <section className="border-b border-[#e5e7eb] bg-white py-14 md:py-18">
+          <div className="jh-container max-w-4xl">
+            <span className="inline-block rounded-md bg-[#dcfce7] px-2.5 py-1 text-xs font-bold text-[#15803d] mb-3">
+              Platform Standards
+            </span>
+            <h1 className="text-3xl font-extrabold tracking-tight text-[#111827] md:text-4xl">
+              Terms of Service & Usage Agreement
+            </h1>
+            <p className="mt-3 max-w-2xl text-xs sm:text-sm leading-relaxed text-[#596d7e]">
+              Guidelines and legal expectations governing the JOB ! HUB recruitment platform for job seekers and hiring teams.
+            </p>
+          </div>
+        </section>
+
+        <section className="jh-container grid gap-8 py-12 md:grid-cols-[220px_minmax(0,1fr)] md:py-16">
+          <aside className="h-fit md:sticky md:top-24">
+            <p className="jh-kicker mb-3">Sections</p>
+            <nav aria-label="Terms topics" className="flex flex-wrap gap-1.5 md:flex-col">
+              {sections.map((s, i) => (
+                <a
+                  key={s.title}
+                  href={`#terms-${i}`}
+                  className="rounded-lg px-3 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-200/60 hover:text-black transition-colors"
+                >
+                  {s.title}
+                </a>
+              ))}
+              <a
+                className="rounded-lg px-3 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-200/60 hover:text-black transition-colors"
+                href="#contact"
+              >
+                Inquiries
+              </a>
+            </nav>
+          </aside>
+
+          <div className="space-y-6">
+            {sections.map(({ title, icon: Icon, items }, i) => (
+              <section
+                id={`terms-${i}`}
+                key={title}
+                className="scroll-mt-24 rounded-2xl border border-[#e5e7eb] bg-white p-6 md:p-8 shadow-sm"
+              >
+                <div className="flex items-center gap-3.5 mb-5">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-black text-white shrink-0">
+                    <Icon size={18} />
+                  </span>
+                  <h2 className="text-base sm:text-lg font-bold text-[#111827]">{title}</h2>
+                </div>
+                <ul className="list-disc space-y-2.5 pl-5 text-xs sm:text-sm leading-relaxed text-[#596d7e]">
+                  {items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+
+            <section
+              id="contact"
+              className="scroll-mt-24 rounded-2xl border border-[#e5e7eb] bg-white p-6 md:p-8 shadow-sm"
+            >
+              <div className="flex items-center gap-3.5 mb-4">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-black text-white shrink-0">
+                  <Mail size={18} />
+                </span>
+                <h2 className="text-base sm:text-lg font-bold text-[#111827]">Legal Clarifications</h2>
+              </div>
+              <p className="text-xs sm:text-sm leading-relaxed text-[#596d7e]">
+                Have questions regarding commercial contracts, enterprise agreements, or compliance? Contact our legal operations team.
+              </p>
+              <Link
+                href="/contact"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-black px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-neutral-800 transition-colors shadow-2xs"
+              >
+                Contact Legal Support
+              </Link>
+            </section>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
 }
