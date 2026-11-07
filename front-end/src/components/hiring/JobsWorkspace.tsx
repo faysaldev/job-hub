@@ -5,6 +5,7 @@ import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { useGetWorkspaceJobsQuery, useCreateJobMutation, useUpdateJobMutation, useDeleteJobMutation } from "@/src/redux/features/jobs/jobsApi";
 import { toast } from "sonner";
 import type { Job } from "@/src/types";
+import SponsorJobButton from "@/src/components/billing/SponsorJobButton";
 const primary = "rounded-lg bg-[#163B5C] px-4 py-2 text-sm font-semibold text-white hover:bg-[#315c7b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 disabled:opacity-50";
 const secondary = "rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 disabled:opacity-50";
 export default function JobsWorkspace() {
@@ -45,12 +46,13 @@ export default function JobsWorkspace() {
       {isError && <div role="alert" className="p-5 text-sm text-red-700">Unable to load job listings. <button className="underline" onClick={()=>refetch()}>Retry</button></div>}
       {!isLoading && !isError && <div className="overflow-x-auto"><table className="w-full min-w-[690px] text-left text-sm">
         <thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Job</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">Publish date</th><th className="px-5 py-3">Deadline</th><th className="px-5 py-3 text-right">Actions</th></tr></thead>
-        <tbody>{jobs.map(job => <tr key={job._id} className="border-t border-slate-100"><td className="px-5 py-4"><p className="font-semibold text-[#163B5C]">{job.title}</p><p className="text-xs text-slate-500">{job.location || "Location not added"}</p></td>
+        <tbody>{jobs.map(job => <tr key={job._id} className="border-t border-slate-100"><td className="px-5 py-4"><p className="font-semibold text-[#163B5C]">{job.title}</p><p className="text-xs text-slate-500">{job.location || "Location not added"}{job.sponsoredUntil && new Date(job.sponsoredUntil).getTime() > Date.now() ? ` · Sponsored through ${new Date(job.sponsoredUntil).toLocaleDateString()}` : ""}</p></td>
           <td className="px-5 py-4"><span className="rounded-full bg-blue-50 px-3 py-1 text-xs capitalize text-blue-800">{job.status || (job.isActive ? "published" : "closed")}</span></td>
           <td className="px-5 py-4 text-slate-600">{job.publishAt ? new Date(job.publishAt).toLocaleString() : "—"}</td>
           <td className="px-5 py-4 text-slate-600">{job.applicationDeadline ? new Date(job.applicationDeadline).toLocaleDateString() : "—"}</td>
           <td className="px-5 py-4 text-right"><div className="flex flex-wrap justify-end gap-2">
             <Link className={secondary} href={`/recruiter/jobs/${job._id}/edit`}>Edit</Link>
+            {(job.status === "published" || (!job.status && job.isActive)) && <SponsorJobButton jobId={job._id} active={!job.sponsoredUntil || new Date(job.sponsoredUntil).getTime() < Date.now()}/>}
             {(job.status === "published" || (!job.status && job.isActive)) ? <button disabled={updating} className={secondary} onClick={()=>change(job._id,"closed")}>Close</button> :
               job.status === "closed" && <button disabled={updating} className={secondary} onClick={()=>change(job._id,"published")}>Reopen</button>}
             <button disabled={removing} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700 hover:bg-red-50" onClick={()=>del(job._id)}>Archive</button>

@@ -53,6 +53,8 @@ interface ApiJob {
   applicationDeadline: string;
   positions: number;
   isActive: boolean;
+  isSponsored?: boolean;
+  sponsoredUntil?: string;
   createdAt: string;
   company: {
     _id: string;
@@ -162,6 +164,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
                 <h3 className="truncate text-lg font-black tracking-tight text-[#163B5C] transition-colors group-hover:text-[#516C83]">
                   {job.title}
                 </h3>
+                {job.isSponsored && <span className="mt-1 inline-flex rounded border border-[#bed2e4] bg-blue-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#214b6b]">Sponsored</span>}
                 <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#516C83]">
                   <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
                   {job.company?.companyName || "Unknown Company"}

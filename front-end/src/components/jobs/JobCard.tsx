@@ -40,6 +40,7 @@ const JobCard = ({ job }: JobCardProps) => {
                   <h3 className="text-xl font-semibold text-[#163B5C] group-hover:text-[#516C83] transition-colors">
                     {job.title}
                   </h3>
+                  {job.isSponsored && <Badge className="border border-blue-200 bg-blue-50 text-xs font-medium text-blue-800">Sponsored</Badge>}
                   {isNew && (
                     <Badge className="bg-green-100 text-green-700 border-none text-xs">
                       <Zap className="h-3 w-3 mr-1" />

@@ -47,7 +47,7 @@ const jobsApi = baseApi.injectEndpoints({
       providesTags: [{ type: "jobs", id: "AUTHOR_LIST" }],
     }),
 
-    getWorkspaceJobs: builder.query<{ data: { jobs: Array<{ _id: string; title: string; status?: string; isActive: boolean; publishAt?: string; applicationDeadline?: string; location?: string; createdAt: string }>; pagination: { total: number; page: number; totalPages: number } } }, { status?: string; page?: number } | void>({
+    getWorkspaceJobs: builder.query<{ data: { jobs: Array<{ _id: string; title: string; status?: string; isActive: boolean; publishAt?: string; applicationDeadline?: string; location?: string; sponsoredUntil?: string; createdAt: string }>; pagination: { total: number; page: number; totalPages: number } } }, { status?: string; page?: number } | void>({
       query: (params) => ({ url: "/job/mine", params: params || {} }), providesTags: ["jobs"],
     }),
     // POST /job - Create new job (Recruiter)

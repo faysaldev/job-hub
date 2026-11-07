@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import { useState } from "react";
@@ -57,6 +58,7 @@ const navItems: NavItem[] = [
   },
   { href: "/recruiter/team", icon: Users, label: "Team" },
   { href: "/recruiter/careers", icon: Building2, label: "Careers page" },
+  { href: "/recruiter/billing", icon: CreditCard, label: "Plans & billing" },
   {
     href: "/recruiter/company",
     icon: Building2,

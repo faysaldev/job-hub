@@ -133,6 +133,8 @@ export interface Job {
   title: string;
   company: string;
   companyLogo?: string;
+  isSponsored?: boolean;
+  sponsoredUntil?: string;
   location: string;
   remote?: boolean;
   type: JobType | string;

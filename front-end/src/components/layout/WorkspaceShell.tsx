@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bell, BriefcaseBusiness, Building2, CalendarDays, FileText, LayoutDashboard, Menu, MessageSquare, Plus, UserRound, Users, X } from "lucide-react";
+import { Bell, BriefcaseBusiness, Building2, CalendarDays, FileText, LayoutDashboard, Menu, MessageSquare, Plus, UserRound, Users, CreditCard, X } from "lucide-react";
 import Header from "@/src/components/common/Header";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useAppSelector } from "@/src/redux/hooks";
@@ -20,6 +20,7 @@ const recruiterLinks = [
   { href: "/recruiter/messages", label: "Messages", icon: MessageSquare },
   { href: "/recruiter/interview-schedule", label: "Interviews", icon: CalendarDays },
   { href: "/recruiter/company", label: "Company profile", icon: Building2 },
+  { href: "/recruiter/billing", label: "Plans & billing", icon: CreditCard },
 ];
 const seekerLinks = [
   { href: "/job-seeker", label: "Overview", icon: LayoutDashboard },
