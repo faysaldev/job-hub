@@ -34,6 +34,21 @@ const getCategoryStats = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
+// Homepage discovery payload: replaces two client round-trips with one public read.
+// Existing /category-stats and /top-jobs endpoints remain for older clients.
+const getDiscovery = asyncHandler(async (_req: Request, res: Response) => {
+  const [categoryStats, topJobs] = await Promise.all([
+    generalService.getCategoryStats(),
+    generalService.getDiscoveryJobs(),
+  ]);
+  res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=30");
+  res.status(httpStatus.OK).json(response({
+    message: "Discovery content retrieved successfully",
+    status: "OK", statusCode: httpStatus.OK,
+    data: { categoryStats, topJobs },
+  }));
+});
+
 const getSubcategoryStats = asyncHandler(
   async (req: Request, res: Response) => {
     const stats = await generalService.getSubcategoryStats();
@@ -146,6 +161,7 @@ const getRecruiterDashboardStats = asyncHandler(
 
 const generalController = {
   getHeaderStats,
+  getDiscovery,
   getCategoryStats,
   getSubcategoryStats,
   getTopJobs,

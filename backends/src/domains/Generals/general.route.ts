@@ -10,6 +10,9 @@ const router = Router();
 // Get header stats (Saved jobs, Unread notifications)
 router.get("/header-stats", authMiddleware, generalController.getHeaderStats);
 
+// One public read for the home page (top jobs + category counts).
+router.get("/discovery", generalController.getDiscovery);
+
 // Get job category statistics
 router.get("/category-stats", generalController.getCategoryStats);
 

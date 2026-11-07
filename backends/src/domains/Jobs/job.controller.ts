@@ -136,59 +136,13 @@ const deleteJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   );
 });
 
-// Search jobs with advanced filters and pagination
-const searchJobs = asyncHandler(async (req: Request, res: Response) => {
-  const {
-    search,
-    category,
-    subcategory,
-    type,
-    location,
-    locationType,
-    experienceLevel,
-    minSalary,
-    maxSalary,
-    salaryRanges,
-    companySizes,
-    postedDate,
-    page,
-    limit,
-  } = req.query;
-
-  const result = await jobService.searchJobs({
-    searchTerm: search as string,
-    category: category as string,
-    subcategory: subcategory as string,
-    type: type as string,
-    experienceLevel: experienceLevel as string,
-    location: location as string,
-    locationType: locationType as string,
-    minSalary: minSalary ? parseInt(minSalary as string) : undefined,
-    maxSalary: maxSalary ? parseInt(maxSalary as string) : undefined,
-    salaryRanges: salaryRanges as string,
-    companySizes: companySizes as string,
-    postedDate: postedDate as string,
-    page: Number(page) || 1,
-    limit: Number(limit) || 10,
-  });
-
-  res.status(httpStatus.OK).json(
-    response({
-      message: "Search results retrieved successfully",
-      status: "OK",
-      statusCode: httpStatus.OK,
-      data: result,
-    }),
-  );
-});
-
 const jobController = {
   getAllJobs,
   getJobById,
   createJob,
   updateJob,
   deleteJob,
-  searchJobs,
+  searchJobs: getAllJobs,
   getJobsByAuthorId,
 };
 

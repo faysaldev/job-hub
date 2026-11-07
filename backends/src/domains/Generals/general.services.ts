@@ -91,6 +91,16 @@ const getSubcategoryStats = async () => {
   return stats;
 };
 
+/** Homepage cards use one bounded indexed read; do not aggregate all applications per visit. */
+const getDiscoveryJobs = async () => Job.find({
+  isActive: true,
+  isDeleted: { $ne: true },
+  applicationDeadline: { $gte: new Date() },
+}).sort({ createdAt: -1 }).limit(6)
+  .select("author title type location locationType salaryMin salaryMax salaryPeriod applicationDeadline createdAt")
+  .populate({ path: "company", select: "companyName companyLogo" })
+  .lean();
+
 const getTopJobs = async () => {
   // Find jobs with most applications
   const topJobIds = await Application.aggregate([
@@ -115,7 +125,7 @@ const getTopJobs = async () => {
         select: "companyLogo companyName",
       })
       .select(
-        "title type author createdAt salaryMin salaryMax location locationType",
+        "title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline",
       )
       .lean();
   }
@@ -130,7 +140,7 @@ const getTopJobs = async () => {
         select: "companyLogo companyName",
       })
       .select(
-        "title type author createdAt salaryMin salaryMax location locationType",
+        "title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline",
       )
       .lean();
   }
@@ -256,6 +266,7 @@ export default {
   getCategoryStats,
   getSubcategoryStats,
   getTopJobs,
+  getDiscoveryJobs,
   getSeekerDashboardStats,
   getAppliedJobIds,
   submitContactForm,

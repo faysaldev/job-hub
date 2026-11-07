@@ -15,7 +15,7 @@ router.get(
 router.get(
   "/search",
   validateQuery(jobValidator.searchJobsValidation),
-  jobController.searchJobs,
+  jobController.getAllJobs,
 ); // Search jobs
 router.get("/author/:authorId", optionalAuth, jobController.getJobsByAuthorId); // Get jobs by author ID
 router.get("/:jobId", optionalAuth, jobController.getJobById); // Get job by ID
