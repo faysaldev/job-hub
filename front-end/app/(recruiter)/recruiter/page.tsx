@@ -1,6 +1,4 @@
+import type { Metadata } from "next";
 import RecruiterPage from "@/src/Page/Recruiter/RecruiterPage";
-
-// Server component wrapper
-export default function JobsPage() {
-  return <RecruiterPage />;
-}
+export const metadata: Metadata = { title: "Recruiter overview", robots: { index: false, follow: false } };
+export default function RecruiterDashboardPage() { return <RecruiterPage />; }

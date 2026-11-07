@@ -116,13 +116,13 @@ const SkillAnalyzer = () => {
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <div className="bg-gradient-to-br from-[#456882] to-[#234C6A] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="bg-gradient-to-br from-[#516C83] to-[#163B5C] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Target className="h-8 w-8 text-white" />
           </div>
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#456882] to-[#234C6A] bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-[#516C83] to-[#163B5C] bg-clip-text text-transparent">
             Advanced Skill Analyzer
           </h2>
-          <p className="text-lg text-[#234C6A] max-w-2xl mx-auto">
+          <p className="text-lg text-[#163B5C] max-w-2xl mx-auto">
             Discover which skills are in demand, identify gaps in your skillset, and get personalized career recommendations
           </p>
         </div>
@@ -130,7 +130,7 @@ const SkillAnalyzer = () => {
         <div className="space-y-8">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#234C6A] mb-2">
+              <label className="block text-sm font-medium text-[#163B5C] mb-2">
                 Add Your Skills
               </label>
               <div className="flex gap-2">
@@ -139,11 +139,11 @@ const SkillAnalyzer = () => {
                   onChange={(e) => setInputSkill(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addSkill()}
                   placeholder="e.g., React, Python, Project Management, UI/UX Design"
-                  className="text-lg py-6 border-[#234C6A]/30"
+                  className="text-lg py-6 border-[#163B5C]/30"
                 />
                 <Button
                   onClick={addSkill}
-                  className="text-lg py-6 px-8 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
+                  className="text-lg py-6 px-8 bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white"
                   disabled={!inputSkill.trim()}
                 >
                   Add Skill
@@ -154,13 +154,13 @@ const SkillAnalyzer = () => {
             {skills.length > 0 && (
               <div className="pt-4">
                 <div className="flex justify-between items-center mb-3">
-                  <p className="text-sm font-medium text-[#234C6A]">
+                  <p className="text-sm font-medium text-[#163B5C]">
                     Your Skills ({skills.length})
                   </p>
                   {skills.length >= 3 && (
                     <Button
                       onClick={analyzeSkills}
-                      className="text-sm bg-gradient-to-r from-[#456882] to-[#234C6A] hover:from-[#456882]/90 hover:to-[#234C6A]/90 text-white"
+                      className="text-sm bg-gradient-to-r from-[#516C83] to-[#163B5C] hover:from-[#516C83]/90 hover:to-[#163B5C]/90 text-white"
                     >
                       Analyze Skills
                     </Button>
@@ -171,7 +171,7 @@ const SkillAnalyzer = () => {
                     <Badge
                       key={i}
                       variant="default"
-                      className="px-4 py-2 text-sm cursor-pointer bg-[#234C6A]/10 hover:bg-[#234C6A]/20 text-[#234C6A] flex items-center gap-2"
+                      className="px-4 py-2 text-sm cursor-pointer bg-[#163B5C]/10 hover:bg-[#163B5C]/20 text-[#163B5C] flex items-center gap-2"
                       onClick={() => removeSkill(skill)}
                     >
                       {skill}
@@ -184,8 +184,8 @@ const SkillAnalyzer = () => {
           </div>
 
           {skills.length > 0 && skills.length < 3 && (
-            <div className="text-center p-8 bg-[#E3E3E3]/50 rounded-xl">
-              <p className="text-lg text-[#234C6A]">
+            <div className="text-center p-8 bg-[#E1E8EF]/50 rounded-xl">
+              <p className="text-lg text-[#163B5C]">
                 Add at least {3 - skills.length} more skill{3 - skills.length > 1 ? 's' : ''} to get analysis
               </p>
             </div>
@@ -194,11 +194,11 @@ const SkillAnalyzer = () => {
           {analysis && (
             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
               {/* Market Demand Overview */}
-              <div className="bg-gradient-to-br from-[#456882]/5 to-[#234C6A]/5 rounded-xl p-6">
+              <div className="bg-gradient-to-br from-[#516C83]/5 to-[#163B5C]/5 rounded-xl p-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                   <div>
-                    <h3 className="text-2xl font-bold text-[#234C6A]">Market Demand Overview</h3>
-                    <p className="text-[#234C6A]">How your skills compare to current market needs</p>
+                    <h3 className="text-2xl font-bold text-[#163B5C]">Market Demand Overview</h3>
+                    <p className="text-[#163B5C]">How your skills compare to current market needs</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Flame className="h-5 w-5 text-amber-500" />
@@ -214,8 +214,8 @@ const SkillAnalyzer = () => {
                     </h4>
                     <div className="space-y-3">
                       {analysis.marketDemand.high.map((skill: string, i: number) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-[#E3E3E3] rounded-lg">
-                          <span className="font-medium text-[#234C6A]">{skill}</span>
+                        <div key={i} className="flex items-center justify-between p-3 bg-[#E1E8EF] rounded-lg">
+                          <span className="font-medium text-[#163B5C]">{skill}</span>
                           <span className="text-green-600 font-medium">High</span>
                         </div>
                       ))}
@@ -229,8 +229,8 @@ const SkillAnalyzer = () => {
                     </h4>
                     <div className="space-y-3">
                       {analysis.marketDemand.medium.map((skill: string, i: number) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-[#E3E3E3] rounded-lg">
-                          <span className="font-medium text-[#234C6A]">{skill}</span>
+                        <div key={i} className="flex items-center justify-between p-3 bg-[#E1E8EF] rounded-lg">
+                          <span className="font-medium text-[#163B5C]">{skill}</span>
                           <span className="text-blue-600 font-medium">Medium</span>
                         </div>
                       ))}
@@ -240,16 +240,16 @@ const SkillAnalyzer = () => {
               </div>
 
               {/* Skill Gap Analysis */}
-              <div className="bg-[#E3E3E3]/50 rounded-xl p-6">
-                <h3 className="text-2xl font-bold text-[#234C6A] mb-6">Skill Gap Analysis</h3>
+              <div className="bg-[#E1E8EF]/50 rounded-xl p-6">
+                <h3 className="text-2xl font-bold text-[#163B5C] mb-6">Skill Gap Analysis</h3>
 
                 <div className="mb-6">
                   <div className="flex justify-between mb-2">
-                    <span className="font-medium text-[#234C6A]">Skill Gap</span>
-                    <span className="font-bold text-[#234C6A]">{analysis.skillGap}%</span>
+                    <span className="font-medium text-[#163B5C]">Skill Gap</span>
+                    <span className="font-bold text-[#163B5C]">{analysis.skillGap}%</span>
                   </div>
-                  <Progress value={analysis.skillGap} className="h-3 bg-[#456882]/20" indicatorColor="bg-[#234C6A]" />
-                  <p className="text-sm text-[#234C6A] mt-2">
+                  <Progress value={analysis.skillGap} className="h-3 bg-[#516C83]/20" indicatorColor="bg-[#163B5C]" />
+                  <p className="text-sm text-[#163B5C] mt-2">
                     {analysis.skillGap > 20
                       ? "Consider learning new skills to stay competitive in the job market."
                       : "Your skills are well-aligned with market demands."}
@@ -257,24 +257,24 @@ const SkillAnalyzer = () => {
                 </div>
 
                 <div>
-                  <p className="font-medium text-[#234C6A] mb-4">Recommended Action: {analysis.recommendedPath}</p>
+                  <p className="font-medium text-[#163B5C] mb-4">Recommended Action: {analysis.recommendedPath}</p>
                 </div>
               </div>
 
               {/* Suggested Skills to Learn */}
-              <div className="bg-[#E3E3E3]/50 rounded-xl p-6">
-                <h3 className="text-2xl font-bold text-[#234C6A] mb-6 flex items-center gap-2">
-                  <Star className="h-6 w-6 text-[#456882]" />
+              <div className="bg-[#E1E8EF]/50 rounded-xl p-6">
+                <h3 className="text-2xl font-bold text-[#163B5C] mb-6 flex items-center gap-2">
+                  <Star className="h-6 w-6 text-[#516C83]" />
                   Skills to Learn Next
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {analysis.suggestedSkills.map((skill: any, i: number) => (
-                    <div key={i} className="p-4 bg-[#E3E3E3] rounded-lg">
+                    <div key={i} className="p-4 bg-[#E1E8EF] rounded-lg">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-semibold text-[#234C6A]">{skill.name}</h4>
+                          <h4 className="font-semibold text-[#163B5C]">{skill.name}</h4>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="bg-[#234C6A]/20 text-[#234C6A] border-[#234C6A]/30">
+                            <Badge variant="outline" className="bg-[#163B5C]/20 text-[#163B5C] border-[#163B5C]/30">
                               {skill.category}
                             </Badge>
                             <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/20">
@@ -283,12 +283,12 @@ const SkillAnalyzer = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold text-[#456882]">{skill.demand}%</div>
-                          <div className="text-xs text-[#234C6A]">Demand</div>
+                          <div className="text-lg font-bold text-[#516C83]">{skill.demand}%</div>
+                          <div className="text-xs text-[#163B5C]">Demand</div>
                         </div>
                       </div>
                       <div className="mt-3">
-                        <Progress value={skill.demand} className="h-2 bg-[#456882]/20" indicatorColor="bg-[#234C6A]" />
+                        <Progress value={skill.demand} className="h-2 bg-[#516C83]/20" indicatorColor="bg-[#163B5C]" />
                       </div>
                     </div>
                   ))}
@@ -296,37 +296,37 @@ const SkillAnalyzer = () => {
               </div>
 
               {/* Career Path Recommendations */}
-              <div className="bg-[#E3E3E3]/50 rounded-xl p-6">
-                <h3 className="text-2xl font-bold text-[#234C6A] mb-6">Career Path Recommendations</h3>
+              <div className="bg-[#E1E8EF]/50 rounded-xl p-6">
+                <h3 className="text-2xl font-bold text-[#163B5C] mb-6">Career Path Recommendations</h3>
                 <div className="space-y-4">
                   {analysis.careerPaths.map((path: any, i: number) => (
                     <div
                       key={i}
-                      className="p-5 bg-[#E3E3E3] rounded-lg transition-colors"
+                      className="p-5 bg-[#E1E8EF] rounded-lg transition-colors"
                     >
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                          <h4 className="font-semibold text-lg text-[#234C6A]">{path.title}</h4>
-                          <div className="flex flex-wrap gap-4 mt-2 text-sm text-[#234C6A]">
+                          <h4 className="font-semibold text-lg text-[#163B5C]">{path.title}</h4>
+                          <div className="flex flex-wrap gap-4 mt-2 text-sm text-[#163B5C]">
                             <span className="flex items-center gap-1">
-                              <BarChart3 className="h-4 w-4 text-[#234C6A]" />
+                              <BarChart3 className="h-4 w-4 text-[#163B5C]" />
                               Match: {path.match}%
                             </span>
                             <span className="flex items-center gap-1">
-                              <Award className="h-4 w-4 text-[#234C6A]" />
+                              <Award className="h-4 w-4 text-[#163B5C]" />
                               {path.salary}
                             </span>
                             <span className="flex items-center gap-1">
-                              <Users className="h-4 w-4 text-[#234C6A]" />
+                              <Users className="h-4 w-4 text-[#163B5C]" />
                               {path.jobCount} jobs
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="w-32">
-                            <Progress value={path.match} className="h-2 bg-[#456882]/20" indicatorColor="bg-[#234C6A]" />
+                            <Progress value={path.match} className="h-2 bg-[#516C83]/20" indicatorColor="bg-[#163B5C]" />
                           </div>
-                          <Button variant="outline" className="text-[#456882] border-[#456882]">
+                          <Button variant="outline" className="text-[#516C83] border-[#516C83]">
                             View Details
                           </Button>
                         </div>
@@ -338,35 +338,35 @@ const SkillAnalyzer = () => {
 
               {/* Recommended Learning Resources */}
               <div>
-                <h3 className="text-2xl font-bold text-[#234C6A] mb-6 flex items-center gap-2">
-                  <BookOpen className="h-6 w-6 text-[#234C6A]" />
+                <h3 className="text-2xl font-bold text-[#163B5C] mb-6 flex items-center gap-2">
+                  <BookOpen className="h-6 w-6 text-[#163B5C]" />
                   Recommended Learning Resources
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {analysis.learningResources.map((resource: any, i: number) => (
                     <div
                       key={i}
-                      className="p-5 bg-[#E3E3E3] rounded-lg transition-colors"
+                      className="p-5 bg-[#E1E8EF] rounded-lg transition-colors"
                     >
                       <div className="flex justify-between items-start mb-3">
-                        <h4 className="font-semibold text-[#234C6A]">{resource.name}</h4>
+                        <h4 className="font-semibold text-[#163B5C]">{resource.name}</h4>
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                          <span className="text-sm text-[#234C6A]">{resource.rating}</span>
+                          <span className="text-sm text-[#163B5C]">{resource.rating}</span>
                         </div>
                       </div>
 
-                      <div className="flex justify-between text-sm text-[#234C6A] mb-3">
+                      <div className="flex justify-between text-sm text-[#163B5C] mb-3">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4 text-[#234C6A]" />
+                          <Clock className="h-4 w-4 text-[#163B5C]" />
                           {resource.duration}
                         </span>
-                        <Badge variant="outline" className="border-[#234C6A]/30">{resource.platform}</Badge>
+                        <Badge variant="outline" className="border-[#163B5C]/30">{resource.platform}</Badge>
                       </div>
 
                       <div className="flex justify-between items-center mt-4">
-                        <span className="font-semibold text-[#234C6A]">{resource.price}</span>
-                        <Button variant="outline" size="sm" className="border-[#234C6A] text-[#234C6A]">
+                        <span className="font-semibold text-[#163B5C]">{resource.price}</span>
+                        <Button variant="outline" size="sm" className="border-[#163B5C] text-[#163B5C]">
                           Enroll Now
                         </Button>
                       </div>
@@ -382,11 +382,11 @@ const SkillAnalyzer = () => {
                     setAnalysis(null);
                   }}
                   variant="outline"
-                  className="text-lg py-6 flex-1 border-[#234C6A] text-[#234C6A]"
+                  className="text-lg py-6 flex-1 border-[#163B5C] text-[#163B5C]"
                 >
                   Start New Analysis
                 </Button>
-                <Button className="text-lg py-6 flex-1 bg-gradient-to-r from-[#456882] to-[#234C6A] hover:from-[#456882]/90 hover:to-[#234C6A]/90 text-white">
+                <Button className="text-lg py-6 flex-1 bg-gradient-to-r from-[#516C83] to-[#163B5C] hover:from-[#516C83]/90 hover:to-[#163B5C]/90 text-white">
                   Download Skills Report
                 </Button>
               </div>

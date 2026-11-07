@@ -149,24 +149,24 @@ const JobFilters = ({
     children: React.ReactNode;
     badge?: number;
   }) => (
-    <div className="border-b border-[#E3E3E3]/80 last:border-0">
+    <div className="border-b border-[#E1E8EF]/80 last:border-0">
       <button
         onClick={() => toggleSection(sectionId)}
-        className="flex w-full items-center justify-between rounded-xl px-2 py-4 text-left transition-colors hover:bg-[#234C6A]/5"
+        className="flex w-full items-center justify-between rounded-xl px-2 py-4 text-left transition-colors hover:bg-[#163B5C]/5"
       >
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-[#234C6A]" />
-          <span className="text-sm font-black text-[#234C6A]">{title}</span>
+          <Icon className="h-4 w-4 text-[#163B5C]" />
+          <span className="text-sm font-black text-[#163B5C]">{title}</span>
           {badge && badge > 0 && (
-            <Badge className="h-5 rounded-full border-none bg-[#234C6A] px-1.5 py-0 text-xs text-white">
+            <Badge className="h-5 rounded-full border-none bg-[#163B5C] px-1.5 py-0 text-xs text-white">
               {badge}
             </Badge>
           )}
         </div>
         {isSectionExpanded(sectionId) ? (
-          <ChevronUp className="h-4 w-4 text-[#456882]" />
+          <ChevronUp className="h-4 w-4 text-[#516C83]" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-[#456882]" />
+          <ChevronDown className="h-4 w-4 text-[#516C83]" />
         )}
       </button>
       {isSectionExpanded(sectionId) && (
@@ -183,17 +183,17 @@ const JobFilters = ({
     item: FilterOption;
     onChange: (id: string) => void;
   }) => (
-    <label className="group flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-[#234C6A]/5">
+    <label className="group flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-[#163B5C]/5">
       <Checkbox
         checked={item.checked}
         onCheckedChange={() => onChange(item.id)}
-        className="border-[#234C6A]/30 data-[state=checked]:bg-[#234C6A] data-[state=checked]:border-[#234C6A]"
+        className="border-[#163B5C]/30 data-[state=checked]:bg-[#163B5C] data-[state=checked]:border-[#163B5C]"
       />
-      <span className="flex-1 text-sm font-medium text-[#456882] transition-colors group-hover:text-[#234C6A]">
+      <span className="flex-1 text-sm font-medium text-[#516C83] transition-colors group-hover:text-[#163B5C]">
         {item.label}
       </span>
       {item.count !== undefined && (
-        <span className="rounded-full bg-[#E3E3E3]/60 px-2 py-0.5 text-xs font-semibold text-[#456882]/80">
+        <span className="rounded-full bg-[#E1E8EF]/60 px-2 py-0.5 text-xs font-semibold text-[#516C83]/80">
           {item.count}
         </span>
       )}
@@ -201,17 +201,17 @@ const JobFilters = ({
   );
 
   return (
-    <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/90 shadow-sm backdrop-blur pt-0">
-      <div className="border-b border-[#E3E3E3] bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5">
+    <Card className="overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 shadow-sm backdrop-blur pt-0">
+      <div className="border-b border-[#E1E8EF] bg-gradient-to-r from-[#163B5C]/8 to-[#516C83]/8 p-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#163B5C] to-[#516C83]">
               <Sliders className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h3 className="font-black text-[#234C6A]">Filters</h3>
+              <h3 className="font-black text-[#163B5C]">Filters</h3>
               {activeFilterCount > 0 && (
-                <p className="text-xs font-semibold text-[#456882]">
+                <p className="text-xs font-semibold text-[#516C83]">
                   {activeFilterCount} active
                 </p>
               )}
@@ -220,7 +220,7 @@ const JobFilters = ({
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-xl text-xs font-bold text-[#456882] hover:bg-[#234C6A]/10 hover:text-[#234C6A]"
+            className="rounded-xl text-xs font-bold text-[#516C83] hover:bg-[#163B5C]/10 hover:text-[#163B5C]"
             onClick={handleResetFilters}
           >
             <RotateCcw className="h-3 w-3 mr-1" />
@@ -231,13 +231,13 @@ const JobFilters = ({
 
       {/* Active Filters Tags */}
       {(selectedCategory || selectedSubcategory) && (
-        <div className="border-b border-[#E3E3E3] bg-[#234C6A]/5 p-4">
-          <p className="mb-2 text-xs font-black uppercase tracking-wide text-[#456882]">
+        <div className="border-b border-[#E1E8EF] bg-[#163B5C]/5 p-4">
+          <p className="mb-2 text-xs font-black uppercase tracking-wide text-[#516C83]">
             Active Filters
           </p>
           <div className="flex flex-wrap gap-2">
             {selectedCategory && (
-              <Badge className="flex items-center gap-1 rounded-full border-none bg-gradient-to-r from-[#234C6A] to-[#456882] pr-1 text-white">
+              <Badge className="flex items-center gap-1 rounded-full border-none bg-gradient-to-r from-[#163B5C] to-[#516C83] pr-1 text-white">
                 {getCategoryName(selectedCategory)}
                 {onClearCategory && (
                   <button
@@ -250,7 +250,7 @@ const JobFilters = ({
               </Badge>
             )}
             {selectedSubcategory && selectedCategory && (
-              <Badge className="flex items-center gap-1 rounded-full border-none bg-[#456882] pr-1 text-white">
+              <Badge className="flex items-center gap-1 rounded-full border-none bg-[#516C83] pr-1 text-white">
                 {getSubcategoryName(selectedCategory, selectedSubcategory)}
                 {onClearSubcategory && (
                   <button
@@ -372,12 +372,12 @@ const JobFilters = ({
         )}
       </div>
 
-      <div className="border-t border-[#E3E3E3] bg-[#F8FAFC] p-4">
-        <div className="rounded-2xl border border-[#234C6A]/10 bg-white p-4">
-          <p className="text-xs font-black uppercase tracking-wide text-[#234C6A]">
+      <div className="border-t border-[#E1E8EF] bg-[#F6F8FB] p-4">
+        <div className="rounded-2xl border border-[#163B5C]/10 bg-white p-4">
+          <p className="text-xs font-black uppercase tracking-wide text-[#163B5C]">
             Instant filters
           </p>
-          <p className="mt-1 text-xs leading-5 text-[#456882]">
+          <p className="mt-1 text-xs leading-5 text-[#516C83]">
             Results update as soon as you change filters or search terms.
           </p>
         </div>

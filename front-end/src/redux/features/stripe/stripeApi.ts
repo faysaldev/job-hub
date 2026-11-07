@@ -6,8 +6,8 @@ const stripeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // POST /stripe/create-checkout-session - Create checkout for application boost
     createCheckoutSession: builder.mutation<
-      { url: string },
-      { applicationId?: string; amount: number }
+      { data: { checkoutUrl: string; sessionId: string } },
+      { applicationId: string }
     >({
       query: (body) => ({
         url: "/stripe/create-checkout-session",

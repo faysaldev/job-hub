@@ -13,7 +13,7 @@ interface CacheEntry {
 }
 
 const cache: Record<string, CacheEntry> = {};
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const CACHE_DURATION = 2 * 60 * 1000; // two minutes
 
 const getHeaderStats = async (userId: string) => {
   const [unreadNotificationsCount, savedJobsCount] = await Promise.all([
@@ -40,7 +40,7 @@ const getCategoryStats = async () => {
   }
 
   const stats = await Job.aggregate([
-    { $match: { isActive: true } },
+    { $match: { isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } } },
     {
       $group: {
         _id: "$category",
@@ -70,7 +70,7 @@ const getSubcategoryStats = async () => {
   }
 
   const stats = await Job.aggregate([
-    { $match: { isActive: true } },
+    { $match: { isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } } },
     {
       $group: {
         _id: "$subcategory",
@@ -91,9 +91,21 @@ const getSubcategoryStats = async () => {
   return stats;
 };
 
+/** Homepage cards use one bounded indexed read; do not aggregate all applications per visit. */
+const getDiscoveryJobs = async () => Job.find({
+  status: { $in: ["published", null] },
+  isActive: true,
+  isDeleted: { $ne: true },
+  applicationDeadline: { $gte: new Date() },
+}).sort({ createdAt: -1 }).limit(6)
+  .select("author title type location locationType salaryMin salaryMax salaryPeriod applicationDeadline createdAt")
+  .populate({ path: "company", select: "companyName companyLogo" })
+  .lean();
+
 const getTopJobs = async () => {
   // Find jobs with most applications
   const topJobIds = await Application.aggregate([
+    { $match: { isWithdrawn: { $ne: true } } },
     {
       $group: {
         _id: "$job_id",
@@ -108,20 +120,20 @@ const getTopJobs = async () => {
 
   if (topJobIds.length > 0) {
     const ids = topJobIds.map((item) => item._id);
-    jobs = await Job.find({ _id: { $in: ids }, isActive: true })
+    jobs = await Job.find({ _id: { $in: ids }, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
       .populate({
         path: "company",
         select: "companyLogo companyName",
       })
       .select(
-        "title type author createdAt salaryMin salaryMax location locationType",
+        "title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline",
       )
       .lean();
   }
 
   // If no applications or fewer than 6, fallback to latest jobs
   if (!jobs || jobs.length < 6) {
-    jobs = await Job.find({ isActive: true })
+    jobs = await Job.find({ isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
       .sort({ createdAt: -1 })
       .limit(10)
       .populate({
@@ -129,7 +141,7 @@ const getTopJobs = async () => {
         select: "companyLogo companyName",
       })
       .select(
-        "title type author createdAt salaryMin salaryMax location locationType",
+        "title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline",
       )
       .lean();
   }
@@ -144,12 +156,12 @@ const getSeekerDashboardStats = async (userId: string) => {
   const [seeker, totalApplications, weeklyApplications, hiredApplications] =
     await Promise.all([
       Seeker.findOne({ userId }).select("profileStrength resume").lean(),
-      Application.countDocuments({ applicant: userId }),
+      Application.countDocuments({ applicant: userId, isWithdrawn: { $ne: true } }),
       Application.countDocuments({
-        applicant: userId,
+        applicant: userId, isWithdrawn: { $ne: true },
         createdAt: { $gte: startOfWeek },
       }),
-      Application.countDocuments({ applicant: userId, status: "hired" }),
+      Application.countDocuments({ applicant: userId, status: "hired", isWithdrawn: { $ne: true } }),
     ]);
 
   // Dynamic import or mongoose.model to avoid circular dependency if any
@@ -172,7 +184,7 @@ const getSeekerDashboardStats = async (userId: string) => {
 };
 
 const getAppliedJobIds = async (userId: string) => {
-  const applications = await Application.find({ applicant: userId })
+  const applications = await Application.find({ applicant: userId, isWithdrawn: { $ne: true } })
     .select("job_id")
     .lean();
   return applications.map((app) => app.job_id.toString());
@@ -193,29 +205,31 @@ const getRecruiterDashboardStats = async (recruiterId: string) => {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  const recruiterJobs = await Job.find({ author: recruiterId }).select("_id");
+  const recruiterJobs = await Job.find({ author: recruiterId, isDeleted: { $ne: true } }).select("_id");
   const jobIds = recruiterJobs.map((j) => j._id);
 
   const [
     activeJobsCount,
-    lastMonthJobsCount,
+    recentJobsCount,
+    previousJobsCount,
     totalApplicants,
-    lastMonthApplicants,
+    recentApplicantsCount,
+    previousApplicantsCount,
     salaryStats,
   ] = await Promise.all([
-    Job.countDocuments({ author: recruiterId, status: "active" }),
-    Job.countDocuments({
-      author: recruiterId,
-      status: "active",
-      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
-    }),
-    Application.countDocuments({ job_id: { $in: jobIds } }),
-    Application.countDocuments({
-      job_id: { $in: jobIds },
-      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
-    }),
+    Job.countDocuments({ author: recruiterId, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true },
+      applicationDeadline: { $gte: now } }),
+    Job.countDocuments({ author: recruiterId, isDeleted: { $ne: true }, createdAt: { $gte: thirtyDaysAgo } }),
+    Job.countDocuments({ author: recruiterId, isDeleted: { $ne: true },
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
+    Application.countDocuments({ job_id: { $in: jobIds }, isWithdrawn: { $ne: true } }),
+    Application.countDocuments({ job_id: { $in: jobIds }, isWithdrawn: { $ne: true },
+      createdAt: { $gte: thirtyDaysAgo } }),
+    Application.countDocuments({ job_id: { $in: jobIds }, isWithdrawn: { $ne: true },
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
     Job.aggregate([
-      { $match: { author: new mongoose.Types.ObjectId(recruiterId) } },
+      { $match: { author: new mongoose.Types.ObjectId(recruiterId), isDeleted: { $ne: true },
+        isActive: true, applicationDeadline: { $gte: now } } },
       {
         $group: {
           _id: null,
@@ -238,11 +252,11 @@ const getRecruiterDashboardStats = async (recruiterId: string) => {
   return {
     activeJobs: {
       total: activeJobsCount,
-      percentage: calculatePercentage(activeJobsCount, lastMonthJobsCount),
+      percentage: calculatePercentage(recentJobsCount, previousJobsCount),
     },
     applicants: {
       total: totalApplicants,
-      percentage: calculatePercentage(totalApplicants, lastMonthApplicants),
+      percentage: calculatePercentage(recentApplicantsCount, previousApplicantsCount),
     },
     avgSalary,
   };
@@ -253,6 +267,7 @@ export default {
   getCategoryStats,
   getSubcategoryStats,
   getTopJobs,
+  getDiscoveryJobs,
   getSeekerDashboardStats,
   getAppliedJobIds,
   submitContactForm,

@@ -30,6 +30,7 @@ import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 import { useSaveJobMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
 import { toast } from "sonner";
 import ApplyJobModal from "@/src/components/jobs/ApplyJobModal";
+import ReportJobButton from "@/src/components/jobs/ReportJobButton";
 import gsap from "gsap";
 import { selectSavedJobIds } from "@/src/redux/features/generals/generalsSlice";
 import { useSelector } from "react-redux";
@@ -95,10 +96,10 @@ const JobDetailsPage = () => {
       <div className="min-h-screen flex flex-col jobhub-page-bg">
         <Header />
         <div className="flex-1 flex items-center justify-center">
-          <div className="rounded-3xl border border-[#234C6A]/10 bg-white/90 p-10 text-center shadow-xl">
-            <div className="w-16 h-16 border-4 border-[#234C6A]/20 border-t-[#234C6A] rounded-full animate-spin mx-auto mb-4" />
-            <p className="font-bold text-[#234C6A]">Loading job details...</p>
-            <p className="mt-1 text-sm text-[#456882]">
+          <div className="rounded-3xl border border-[#163B5C]/10 bg-white/90 p-10 text-center shadow-xl">
+            <div className="w-16 h-16 border-4 border-[#163B5C]/20 border-t-[#163B5C] rounded-full animate-spin mx-auto mb-4" />
+            <p className="font-bold text-[#163B5C]">Loading job details...</p>
+            <p className="mt-1 text-sm text-[#516C83]">
               Preparing the role overview
             </p>
           </div>
@@ -154,7 +155,7 @@ const JobDetailsPage = () => {
       <Header />
 
       {/* Hero */}
-      <div className="relative overflow-hidden bg-[#234C6A] pt-10 pb-36">
+      <div className="relative overflow-hidden bg-[#163B5C] pt-10 pb-36">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/20 to-transparent" />
@@ -265,6 +266,7 @@ const JobDetailsPage = () => {
               </Button>
             </div>
           </div>
+          <ReportJobButton jobId={job._id} />
         </div>
       </div>
 
@@ -277,10 +279,10 @@ const JobDetailsPage = () => {
           {/* Left */}
           <div className="lg:col-span-2 space-y-5">
             {/* Skills */}
-            <Card className="jd-card rounded-3xl border border-[#234C6A]/10 bg-white/90 p-6 shadow-sm backdrop-blur">
-              <h3 className="mb-4 flex items-center gap-2 text-xl font-black text-[#234C6A]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#234C6A]/10">
-                  <Sparkles className="h-5 w-5 text-[#234C6A]" />
+            <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-6 shadow-sm backdrop-blur">
+              <h3 className="mb-4 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                  <Sparkles className="h-5 w-5 text-[#163B5C]" />
                 </span>
                 Required Skills
               </h3>
@@ -288,7 +290,7 @@ const JobDetailsPage = () => {
                 {job.skills.map((skill, i) => (
                   <Badge
                     key={i}
-                    className="rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-4 py-1.5 font-bold text-[#234C6A] transition-colors hover:bg-[#234C6A]/10"
+                    className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-4 py-1.5 font-bold text-[#163B5C] transition-colors hover:bg-[#163B5C]/10"
                   >
                     {skill}
                   </Badge>
@@ -297,24 +299,24 @@ const JobDetailsPage = () => {
             </Card>
 
             {/* Description */}
-            <Card className="jd-card rounded-3xl border border-[#234C6A]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
-              <h3 className="mb-4 flex items-center gap-2 text-xl font-black text-[#234C6A]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#234C6A]/10">
-                  <Briefcase className="h-5 w-5 text-[#234C6A]" />
+            <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
+              <h3 className="mb-4 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                  <Briefcase className="h-5 w-5 text-[#163B5C]" />
                 </span>
                 About This Role
               </h3>
-              <p className="whitespace-pre-line leading-8 text-[#456882]">
+              <p className="whitespace-pre-line leading-8 text-[#516C83]">
                 {job.description}
               </p>
             </Card>
 
             {/* Responsibilities */}
             {job.responsibilities && job.responsibilities.length > 0 && (
-              <Card className="jd-card rounded-3xl border border-[#234C6A]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
-                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#234C6A]">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#234C6A]/10">
-                    <CheckCircle className="h-5 w-5 text-[#234C6A]" />
+              <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
+                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                    <CheckCircle className="h-5 w-5 text-[#163B5C]" />
                   </span>
                   Responsibilities
                 </h3>
@@ -322,10 +324,10 @@ const JobDetailsPage = () => {
                   {job.responsibilities.map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-3 rounded-2xl bg-[#F8FAFC] p-4 text-[#456882]"
+                      className="flex items-start gap-3 rounded-2xl bg-[#F6F8FB] p-4 text-[#516C83]"
                     >
-                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#234C6A]/10">
-                        <CheckCircle className="h-3.5 w-3.5 text-[#234C6A]" />
+                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#163B5C]/10">
+                        <CheckCircle className="h-3.5 w-3.5 text-[#163B5C]" />
                       </div>
                       {item}
                     </li>
@@ -336,10 +338,10 @@ const JobDetailsPage = () => {
 
             {/* Requirements */}
             {job.requirements && job.requirements.length > 0 && (
-              <Card className="jd-card rounded-3xl border border-[#234C6A]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
-                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#234C6A]">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#234C6A]/10">
-                    <Award className="h-5 w-5 text-[#234C6A]" />
+              <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
+                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                    <Award className="h-5 w-5 text-[#163B5C]" />
                   </span>
                   Requirements
                 </h3>
@@ -347,10 +349,10 @@ const JobDetailsPage = () => {
                   {job.requirements.map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-3 rounded-2xl bg-[#F8FAFC] p-4 text-[#456882]"
+                      className="flex items-start gap-3 rounded-2xl bg-[#F6F8FB] p-4 text-[#516C83]"
                     >
-                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#234C6A]/10">
-                        <CheckCircle className="h-3.5 w-3.5 text-[#234C6A]" />
+                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#163B5C]/10">
+                        <CheckCircle className="h-3.5 w-3.5 text-[#163B5C]" />
                       </div>
                       {item}
                     </li>
@@ -361,10 +363,10 @@ const JobDetailsPage = () => {
 
             {/* Benefits */}
             {job.benefits && job.benefits.length > 0 && (
-              <Card className="jd-card rounded-3xl border border-[#234C6A]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
-                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#234C6A]">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#234C6A]/10">
-                    <Award className="h-5 w-5 text-[#234C6A]" />
+              <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
+                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                    <Award className="h-5 w-5 text-[#163B5C]" />
                   </span>
                   Benefits & Perks
                 </h3>
@@ -375,7 +377,7 @@ const JobDetailsPage = () => {
                       className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4"
                     >
                       <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
-                      <span className="text-sm font-semibold text-[#234C6A]">
+                      <span className="text-sm font-semibold text-[#163B5C]">
                         {b}
                       </span>
                     </div>
@@ -388,17 +390,17 @@ const JobDetailsPage = () => {
           {/* Right */}
           <div className="space-y-5">
             {/* Apply */}
-            <Card className="jd-card sticky top-24 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-xl shadow-[#234C6A]/10 backdrop-blur">
-              <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+            <Card className="jd-card sticky top-24 overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-xl shadow-[#163B5C]/10 backdrop-blur">
+              <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
               <div className="mb-5 mt-2 flex items-start gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#234C6A] text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#163B5C] text-white">
                   <Briefcase className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-[#234C6A]">
+                  <h3 className="text-xl font-black text-[#163B5C]">
                     Apply for this Position
                   </h3>
-                  <p className="mt-1 text-sm text-[#456882]">
+                  <p className="mt-1 text-sm text-[#516C83]">
                     Join {companyName} and be part of an amazing team.
                   </p>
                 </div>
@@ -409,11 +411,11 @@ const JobDetailsPage = () => {
                 companyName={companyName}
               />
               <div className="mt-4 text-center">
-                <span className="rounded-full bg-[#E3E3E3]/60 px-3 py-1.5 text-xs font-semibold text-[#456882]">
+                <span className="rounded-full bg-[#E1E8EF]/60 px-3 py-1.5 text-xs font-semibold text-[#516C83]">
                   LinkedIn Apply - Coming Soon
                 </span>
               </div>
-              <div className="mt-5 pt-5 border-t border-[#E3E3E3]/50 space-y-3">
+              <div className="mt-5 pt-5 border-t border-[#E1E8EF]/50 space-y-3">
                 {[
                   {
                     label: "Openings",
@@ -426,10 +428,10 @@ const JobDetailsPage = () => {
                 ].map((row) => (
                   <div
                     key={row.label}
-                    className="flex items-center justify-between rounded-2xl bg-[#F8FAFC] px-4 py-3 text-sm"
+                    className="flex items-center justify-between rounded-2xl bg-[#F6F8FB] px-4 py-3 text-sm"
                   >
-                    <span className="text-[#456882]">{row.label}</span>
-                    <span className="font-bold capitalize text-[#234C6A]">
+                    <span className="text-[#516C83]">{row.label}</span>
+                    <span className="font-bold capitalize text-[#163B5C]">
                       {row.value}
                     </span>
                   </div>
@@ -438,12 +440,12 @@ const JobDetailsPage = () => {
             </Card>
 
             {/* Company */}
-            <Card className="jd-card rounded-3xl border border-[#234C6A]/10 bg-white/90 p-6 shadow-sm backdrop-blur">
-              <h3 className="mb-4 text-lg font-black text-[#234C6A]">
+            <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-6 shadow-sm backdrop-blur">
+              <h3 className="mb-4 text-lg font-black text-[#163B5C]">
                 About {companyName}
               </h3>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882]">
+                <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#163B5C] to-[#516C83]">
                   {companyLogo ? (
                     <img
                       src={companyLogo}
@@ -455,27 +457,27 @@ const JobDetailsPage = () => {
                   )}
                 </div>
                 <div>
-                  <p className="font-black text-[#234C6A]">{companyName}</p>
-                  <p className="text-sm text-[#456882]">Technology Company</p>
+                  <p className="font-black text-[#163B5C]">{companyName}</p>
+                  <p className="text-sm text-[#516C83]">Technology Company</p>
                 </div>
               </div>
-              <div className="mb-5 space-y-2 text-sm text-[#456882]">
-                <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-4 py-3">
-                  <Shield className="h-4 w-4 text-[#234C6A]" /> Verified
+              <div className="mb-5 space-y-2 text-sm text-[#516C83]">
+                <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
+                  <Shield className="h-4 w-4 text-[#163B5C]" /> Verified
                   employer
                 </div>
-                <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-4 py-3">
-                  <Globe className="h-4 w-4 text-[#234C6A]" /> www.
+                <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
+                  <Globe className="h-4 w-4 text-[#163B5C]" /> www.
                   {companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.com
                 </div>
-                <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-4 py-3">
-                  <MapPin className="h-4 w-4 text-[#234C6A]" /> {job.location}
+                <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
+                  <MapPin className="h-4 w-4 text-[#163B5C]" /> {job.location}
                 </div>
               </div>
               {companyId && (
                 <Link
                   href={`/company/${companyId}`}
-                  className="flex items-center gap-1.5 text-sm font-bold text-[#234C6A] hover:underline"
+                  className="flex items-center gap-1.5 text-sm font-bold text-[#163B5C] hover:underline"
                 >
                   <Clock className="h-4 w-4" /> View Company Profile
                 </Link>
@@ -483,7 +485,7 @@ const JobDetailsPage = () => {
             </Card>
 
             {/* Similar Jobs */}
-            <Card className="jd-card rounded-3xl border-none bg-gradient-to-br from-[#234C6A] to-[#456882] p-6 text-white shadow-xl shadow-[#234C6A]/15">
+            <Card className="jd-card rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] p-6 text-white shadow-xl shadow-[#163B5C]/15">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                 <Sparkles className="h-6 w-6" />
               </div>
@@ -492,7 +494,7 @@ const JobDetailsPage = () => {
                 Explore similar positions that match your profile.
               </p>
               <Link href="/job">
-                <Button className="w-full rounded-xl bg-white font-black text-[#234C6A] hover:bg-white/90">
+                <Button className="w-full rounded-xl bg-white font-black text-[#163B5C] hover:bg-white/90">
                   Browse Similar Jobs
                 </Button>
               </Link>

@@ -10,7 +10,7 @@ const userApi = baseApi.injectEndpoints({
 
     // PATCH /users/update — update profile (supports image upload)
     updateProfile: builder.mutation({
-      query: (formData: FormData) => ({
+      query: (formData: FormData | Record<string, string>) => ({
         url: "/users/update",
         method: "PATCH",
         body: formData,

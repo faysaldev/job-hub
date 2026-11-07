@@ -10,6 +10,7 @@ import {
   AuthUser,
 } from "@/src/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/src/redux/hooks";
+import { baseApi } from "@/src/redux/baseApi/baseApi";
 
 interface UseAuthReturn {
   user: AuthUser | null;
@@ -34,12 +35,20 @@ export const useAuth = (): UseAuthReturn => {
   const router = useRouter();
 
   const handleLogout = useCallback(() => {
+    // Fire the revocation request before clearing the access token.
+    if (token) {
+      void fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3001"}/api/v1/auth/logout`, {
+        method: "POST", credentials: "include", keepalive: true,
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
     dispatch(logout());
+    dispatch(baseApi.util.resetApiState());
     // Clear any localStorage residuals for backwards compatibility
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     router.push("/auth");
-  }, [dispatch, router]);
+  }, [dispatch, router, token]);
 
   /**
    * Returns false and redirects if the user does not have one of the allowed roles.

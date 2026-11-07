@@ -4,6 +4,7 @@ export interface IConversation extends Document {
   _id: Types.ObjectId;
   participants: [Types.ObjectId, Types.ObjectId]; // Exactly 2 participants for one-to-one chat
   lastMessage?: Types.ObjectId;
+  hiddenFor?: Types.ObjectId[];
   status?: "applied" | "under_review" | "interview" | "rejected" | "hired";
   role?: string;
   job_id?: Types.ObjectId;
@@ -24,6 +25,7 @@ const conversationSchema = new Schema<IConversation>(
         message: "One-to-one conversation must have exactly 2 participants.",
       },
     },
+    hiddenFor: [{ type: Schema.Types.ObjectId, ref: "User" }],
     lastMessage: {
       type: Schema.Types.ObjectId,
       ref: "Message",
@@ -48,6 +50,7 @@ const conversationSchema = new Schema<IConversation>(
 conversationSchema.index({ participants: 1 });
 conversationSchema.index({ "participants.0": 1, "participants.1": 1 }); // For one-to-one conversations
 conversationSchema.index({ updatedAt: -1 });
+conversationSchema.index({ participants: 1, updatedAt: -1 });
 
 const Conversation = mongoose.model<IConversation>(
   "Conversation",

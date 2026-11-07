@@ -31,7 +31,7 @@ const SearchSection = ({
   ];
 
   return (
-    <section className="relative overflow-hidden bg-[#234C6A] py-20 md:py-24">
+    <section className="relative overflow-hidden bg-[#163B5C] py-20 md:py-24">
       {/* Background texture */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
@@ -45,7 +45,7 @@ const SearchSection = ({
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2">
             <Sparkles className="h-4 w-4 text-white" />
             <span className="text-sm font-bold text-white/90">
-              Curated roles from verified employers
+              Explore current opportunities
             </span>
           </div>
           <h1 className="mb-4 text-4xl font-black tracking-tight text-white md:text-6xl">
@@ -61,10 +61,10 @@ const SearchSection = ({
           <div className="rounded-3xl border border-white/20 bg-white/95 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl">
             <div className="flex flex-col md:flex-row gap-3">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
                 <Input
                   placeholder="Job title, keywords, or company"
-                  className="h-14 rounded-2xl border border-transparent bg-[#F4F7F8] pl-12 text-base text-[#234C6A] placeholder:text-[#456882]/60 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
+                  className="h-14 rounded-2xl border border-transparent bg-[#F4F7F8] pl-12 text-base text-[#163B5C] placeholder:text-[#516C83]/60 focus:border-[#163B5C]/15 focus:bg-white focus:ring-2 focus:ring-[#163B5C]/10"
                   value={searchTerm}
                   onChange={onSearchChange}
                   onKeyDown={onSearchKeyDown}
@@ -72,10 +72,10 @@ const SearchSection = ({
               </div>
 
               <div className="flex-1 relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
                 <Input
                   placeholder="City, state, or remote"
-                  className="h-14 rounded-2xl border border-transparent bg-[#F4F7F8] pl-12 text-base text-[#234C6A] placeholder:text-[#456882]/60 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
+                  className="h-14 rounded-2xl border border-transparent bg-[#F4F7F8] pl-12 text-base text-[#163B5C] placeholder:text-[#516C83]/60 focus:border-[#163B5C]/15 focus:bg-white focus:ring-2 focus:ring-[#163B5C]/10"
                   value={locationTerm}
                   onChange={onLocationChange}
                   onKeyDown={onSearchKeyDown}
@@ -83,7 +83,7 @@ const SearchSection = ({
               </div>
 
               <Button
-                className="h-14 rounded-2xl bg-[#234C6A] px-8 text-base font-black text-white shadow-lg shadow-[#234C6A]/20 transition-all hover:bg-[#1c405a]"
+                className="h-14 rounded-2xl bg-[#163B5C] px-8 text-base font-black text-white shadow-lg shadow-[#163B5C]/20 transition-all hover:bg-[#0C2C48]"
                 onClick={onSearch}
               >
                 <Search className="h-5 w-5 mr-2" />

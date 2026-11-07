@@ -39,6 +39,10 @@ export const interviewsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["applications"],
     }),
+    saveInterviewScorecard: builder.mutation<{ data: Interview }, { interviewId: string; overall: number; recommendation: "strong_yes" | "yes" | "no" | "strong_no"; criteria: { label: string; score: number }[]; feedback?: string }>({
+      query: ({ interviewId, ...body }) => ({ url: `/interviews/${interviewId}/scorecard`, method: "PATCH", body }),
+      invalidatesTags: ["applications"],
+    }),
     // POST /interviews/hire - Hire a candidate
     hireCandidate: builder.mutation<
       { success: boolean },
@@ -67,6 +71,7 @@ export const interviewsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useSaveInterviewScorecardMutation,
   useScheduleInterviewMutation,
   useGetMyInterviewsQuery,
   useUpdateInterviewStatusMutation,

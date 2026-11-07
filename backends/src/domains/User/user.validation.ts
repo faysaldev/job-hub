@@ -1,26 +1,14 @@
 import { z } from "zod";
-
-const passwordSchema = z
-  .string()
-  .min(8, "Password must be at least 8 characters")
-  .regex(/[a-zA-Z]/, "Password must contain at least one letter")
-  .regex(/\d/, "Password must contain at least one number");
-
+import { passwordSchema } from "../Auth/auth.validation";
+export const updateProfileValidation = z.object({
+  name: z.string().trim().min(3).max(100).optional(),
+  phoneNumber: z.string().trim().min(10).max(24).optional(),
+  image: z.url().max(2048).optional(),
+}).strict();
 export const changePasswordValidation = z.object({
-  oldPassword: z.string().min(1, "Old password is required"),
+  oldPassword: z.string().min(1).optional(),
+  currentPassword: z.string().min(1).optional(),
   newPassword: passwordSchema,
-});
-
-export const deleteProfileValidation = z.object({
-  password: z.string().min(1, "Password is required"),
-});
-
-export type ChangePasswordInput = z.infer<typeof changePasswordValidation>;
-export type DeleteProfileInput = z.infer<typeof deleteProfileValidation>;
-
-const userValidator = {
-  changePasswordValidation,
-  deleteProfileValidation,
-};
-
-export default userValidator;
+}).refine((data) => !!(data.oldPassword || data.currentPassword), { message: "Current password required" });
+export const deleteProfileValidation = z.object({ password: z.string().min(1) });
+export default { updateProfileValidation, changePasswordValidation, deleteProfileValidation };

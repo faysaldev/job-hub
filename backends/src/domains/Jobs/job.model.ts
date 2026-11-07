@@ -4,6 +4,11 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface IJob extends Document {
   _id: Types.ObjectId;
   author: Types.ObjectId;
+  companyId?: Types.ObjectId;
+  createdBy?: Types.ObjectId;
+  status: "draft" | "scheduled" | "published" | "closed";
+  publishAt?: Date;
+  publishedAt?: Date;
   title: string;
   category: string;
   subcategory: string;
@@ -22,6 +27,9 @@ export interface IJob extends Document {
   applicationDeadline: Date;
   positions: number;
   isActive: boolean;
+  isDeleted: boolean;
+  moderation?: { status: "clear" | "blocked"; reason?: string; reviewedAt?: Date; reviewedBy?: Types.ObjectId };
+  sponsoredUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,69 +37,70 @@ export interface IJob extends Document {
 // Create the Mongoose schema for the job model
 const jobSchema = new Schema<IJob>(
   {
-    author: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    companyId: { type: Schema.Types.ObjectId, ref: "Company" },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+    status: { type: String, enum: ["draft", "scheduled", "published", "closed"], default: "published" },
+    publishAt: { type: Date },
+    publishedAt: { type: Date },
     title: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     category: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     subcategory: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     type: {
       type: String,
       enum: ["full-time", "part-time", "contract", "internship", "freelance"],
-      required: true,
+      required: false,
     },
     location: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
     locationType: {
       type: String,
       enum: ["remote", "onsite", "hybrid"],
-      required: true,
+      required: false,
     },
     salaryMin: {
       type: Number,
-      required: true,
+      required: false,
       min: 0,
     },
     salaryMax: {
       type: Number,
-      required: true,
+      required: false,
       min: 0,
     },
     salaryPeriod: {
       type: String,
       enum: ["hourly", "daily", "weekly", "monthly", "yearly"],
-      required: true,
+      required: false,
       default: "yearly",
     },
     experienceLevel: {
       type: String,
       enum: ["entry", "junior", "mid", "senior", "lead"],
-      required: true,
+      required: false,
     },
     description: {
       type: String,
-      required: true,
+      required: false,
     },
     requirements: {
       type: [String],
-      required: true,
+      required: false,
     },
     responsibilities: {
       type: [String],
@@ -104,21 +113,22 @@ const jobSchema = new Schema<IJob>(
     },
     skills: {
       type: [String],
-      required: true,
+      required: false,
     },
     applicationDeadline: {
       type: Date,
-      required: true,
+      required: false,
     },
     positions: {
       type: Number,
-      required: true,
+      required: false,
       min: 1,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
+    isActive: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false },
+    moderation: { status: { type: String, enum: ["clear", "blocked"], default: "clear" },
+      reason: { type: String, maxlength: 1000 }, reviewedAt: Date, reviewedBy: { type: Schema.Types.ObjectId, ref: "User" } },
+    sponsoredUntil: { type: Date },
   },
   {
     timestamps: true,
@@ -134,6 +144,17 @@ jobSchema.virtual("company", {
   foreignField: "userId",
   justOne: true,
 });
+
+jobSchema.index({ author: 1, isDeleted: 1, createdAt: -1 });
+jobSchema.index({ companyId: 1, status: 1, createdAt: -1 });
+jobSchema.index({ status: 1, publishAt: 1, isDeleted: 1 });
+jobSchema.index({ isActive: 1, isDeleted: 1, createdAt: -1 });
+jobSchema.index({ isActive: 1, isDeleted: 1, applicationDeadline: 1, createdAt: -1 });
+jobSchema.index({ author: 1, isActive: 1, isDeleted: 1, applicationDeadline: 1 });
+jobSchema.index({ category: 1, type: 1, locationType: 1 });
+jobSchema.index({ sponsoredUntil: -1, createdAt: -1 });
+jobSchema.index({ "moderation.status": 1, createdAt: -1 });
+jobSchema.virtual("isSponsored").get(function () { return !!this.sponsoredUntil && this.sponsoredUntil.getTime() > Date.now(); });
 
 // Create the model based on the schema
 const Job = mongoose.model<IJob>("Job", jobSchema);

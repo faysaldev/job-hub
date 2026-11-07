@@ -1,6 +1,12 @@
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 import { Application, ApplicationStatus } from "@/src/types";
 
+import type { ATSApplication } from "@/src/redux/features/hiring/hiringApi";
+export type ATSAction =
+ | { action: "stage"; status: "under_review" | "shortlisted" | "interview" | "hired" | "rejected"; note?: string }
+ | { action: "note"; text: string }
+ | { action: "offer"; salary: number; currency: string; expiresAt: string; message?: string }
+ | { action: "offer-response"; decision: "accepted" | "declined" };
 const applicationsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // POST /applications - Apply to a job (Seeker)
@@ -10,7 +16,7 @@ const applicationsApi = baseApi.injectEndpoints({
         job_id: string;
         cover_letter: string;
         resume_url: string;
-        paid_amount?: number;
+        boost?: boolean;
       }
     >({
       query: (body) => ({
@@ -62,6 +68,11 @@ const applicationsApi = baseApi.injectEndpoints({
       ],
     }),
 
+    // One ATS command endpoint for stage changes, private notes, offers and responses.
+    updateATS: builder.mutation<{ data: ATSApplication }, { applicationId: string; body: ATSAction }>({
+      query: ({ applicationId, body }) => ({ url: `/applications/${applicationId}`, method: "PATCH", body }),
+      invalidatesTags: ["applications"],
+    }),
     // DELETE /applications/:applicationId - Withdraw/delete application
     deleteApplication: builder.mutation<{ success: boolean }, string>({
       query: (applicationId) => ({
@@ -74,6 +85,7 @@ const applicationsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useUpdateATSMutation,
   useApplyToJobMutation,
   useGetUserApplicationsQuery,
   useUpdateApplicationStatusMutation,

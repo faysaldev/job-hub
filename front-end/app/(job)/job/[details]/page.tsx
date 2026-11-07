@@ -1,51 +1,14 @@
 import JobDetailsPage from "@/src/Page/Jobs/JobDetailsPage";
-import { Metadata } from "next";
+import { publicEntity, safeMetaText } from "@/src/lib/publicMetadata";
+import type { Metadata } from "next";
 
-type Props = {
-  params: Promise<{ details: string }>;
-};
-
+type Props = { params: Promise<{ details: string }> };
+type JobMeta = { title?: string; description?: string; company?: { companyName?: string }; location?: string; skills?: string[]; isActive?: boolean; applicationDeadline?: string; isDeleted?: boolean };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { details } = await params;
-
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${details}`,
-    );
-    const data = await res.json();
-    const job = data?.data;
-
-    if (!job) {
-      return {
-        title: "Job Not Found | JobHub",
-      };
-    }
-
-    const companyName =
-      typeof job.company === "object" ? job.company.companyName : "Company";
-
-    return {
-      title: `${job.title} at ${companyName} | JobHub`,
-      description: `Apply for the ${job.title} position at ${companyName} in ${job.location}. ${job.description.slice(0, 150)}...`,
-      keywords: [
-        job.title,
-        companyName,
-        job.location,
-        job.type,
-        "hiring",
-        "job opportunity",
-        "JobHub",
-        ...(job.skills || []),
-      ],
-    };
-  } catch (error) {
-    return {
-      title: "Job Details | JobHub",
-      description: "View job details and apply on JobHub.",
-    };
-  }
+  const job = await publicEntity<JobMeta>("job", details);
+  if (!job || job.isActive === false || job.isDeleted) return { title: "Job unavailable", robots: { index: false, follow: false } };
+  const company = job.company?.companyName || "Employer";
+  return { title: `${safeMetaText(job.title, 80)} at ${safeMetaText(company, 50)}`, description: safeMetaText(job.description) || `See the details of this job opportunity at ${company}.`, alternates: { canonical: `/job/${details}` }, openGraph: { type: "article", title: `${safeMetaText(job.title, 80)} at ${safeMetaText(company, 50)}`, description: safeMetaText(job.description) }, robots: { index: true, follow: true } };
 }
-
-export default function JobDetails() {
-  return <JobDetailsPage />;
-}
+export default function JobDetails() { return <JobDetailsPage />; }

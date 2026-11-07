@@ -7,6 +7,10 @@ export interface IContact extends Document {
   subject: string;
   message: string;
   createdAt: Date;
+  status?: "open" | "in_progress" | "resolved";
+  resolutionNote?: string;
+  reviewedBy?: mongoose.Types.ObjectId;
+  reviewedAt?: Date;
 }
 
 const contactSchema = new Schema<IContact>(
@@ -36,11 +40,17 @@ const contactSchema = new Schema<IContact>(
       type: String,
       required: true,
       trim: true,
+      maxlength: 10000,
     },
+    status: { type: String, enum: ["open", "in_progress", "resolved"], default: "open" },
+    resolutionNote: { type: String, maxlength: 1000 },
+    reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    reviewedAt: Date,
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
+contactSchema.index({ status: 1, createdAt: -1 });
 const Contact = mongoose.model<IContact>("Contact", contactSchema);
 
 export default Contact;

@@ -89,20 +89,20 @@ const FaqSection = () => {
     <section ref={sectionRef} className="py-20 bg-white relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[#234C6A]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#456882]/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#163B5C]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#516C83]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="faq-header text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#234C6A]/10 rounded-full mb-4">
-            <HelpCircle className="h-4 w-4 text-[#234C6A]" />
-            <span className="text-sm font-medium text-[#234C6A]">FAQ</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#163B5C]/10 rounded-full mb-4">
+            <HelpCircle className="h-4 w-4 text-[#163B5C]" />
+            <span className="text-sm font-medium text-[#163B5C]">FAQ</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-[#234C6A] mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#163B5C] mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-lg text-[#456882] max-w-2xl mx-auto">
+          <p className="text-lg text-[#516C83] max-w-2xl mx-auto">
             Find answers to common questions about using JobHub
           </p>
         </div>
@@ -113,8 +113,8 @@ const FaqSection = () => {
               key={index}
               className={`faq-item border-none overflow-hidden transition-all duration-300 rounded-2xl ${
                 activeIndex === index
-                  ? "bg-gradient-to-br from-[#234C6A] to-[#456882] shadow-lg"
-                  : "bg-[#E3E3E3]/50 hover:bg-[#E3E3E3]"
+                  ? "bg-gradient-to-br from-[#163B5C] to-[#516C83] shadow-lg"
+                  : "bg-[#E1E8EF]/50 hover:bg-[#E1E8EF]"
               }`}
             >
               <button
@@ -122,19 +122,19 @@ const FaqSection = () => {
                 onClick={() => toggleFaq(index)}
               >
                 <h3 className={`text-lg font-semibold ${
-                  activeIndex === index ? "text-white" : "text-[#234C6A]"
+                  activeIndex === index ? "text-white" : "text-[#163B5C]"
                 }`}>
                   {faq.question}
                 </h3>
                 <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                   activeIndex === index
                     ? "bg-white/20"
-                    : "bg-[#234C6A]/10"
+                    : "bg-[#163B5C]/10"
                 }`}>
                   {activeIndex === index ? (
                     <Minus className="h-4 w-4 text-white" />
                   ) : (
-                    <Plus className="h-4 w-4 text-[#234C6A]" />
+                    <Plus className="h-4 w-4 text-[#163B5C]" />
                   )}
                 </div>
               </button>
@@ -150,20 +150,20 @@ const FaqSection = () => {
         </div>
 
         {/* Contact CTA */}
-        <Card className="mt-12 p-8 bg-gradient-to-br from-[#E3E3E3] to-white border-none rounded-2xl">
+        <Card className="mt-12 p-8 bg-gradient-to-br from-[#E1E8EF] to-white border-none rounded-2xl">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#163B5C] to-[#516C83] flex items-center justify-center">
                 <MessageCircle className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-[#234C6A]">Still have questions?</h3>
-                <p className="text-[#456882]">Our support team is here to help you</p>
+                <h3 className="text-xl font-bold text-[#163B5C]">Still have questions?</h3>
+                <p className="text-[#516C83]">Our support team is here to help you</p>
               </div>
             </div>
             <Button
               asChild
-              className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white rounded-xl px-6 py-3 font-semibold group"
+              className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white rounded-xl px-6 py-3 font-semibold group"
             >
               <Link href="/contact">
                 Contact Us

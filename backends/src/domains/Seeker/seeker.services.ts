@@ -1,19 +1,27 @@
 import { Types } from "mongoose";
-import User from "../User/user.model";
 import Seeker, { ISeeker } from "./seeker.model";
 import ActivityLog from "./activity.model";
+import { assertId, escapeRegex, paging } from "../../lib/query";
+import { assertOwnedResume } from "../Asset/asset.services";
 
 export const createSeekerService = async (
   seekerData: Partial<ISeeker>,
 ): Promise<ISeeker> => {
+  const existing = await Seeker.exists({ userId: seekerData.userId });
+  if (existing) throw new Error("Seeker profile already exists");
+  if (seekerData.resume?.resumeLink) await assertOwnedResume(seekerData.resume.resumeLink, String(seekerData.userId));
   const seeker = new Seeker(seekerData);
   return await seeker.save();
 };
 
 export const getSeekerService = async (id: string): Promise<ISeeker | null> => {
-  return await Seeker.findById(id)
-    .select("-profileStrength")
-    .populate("userId", "name email image role phoneNumber");
+  assertId(id);
+  // Public candidate pages do not reveal email, phone or resume URLs.
+  const seeker = await Seeker.findOne({ _id: id, "privacy.profileVisibility": "public" })
+    .select("-resume -profileStrength -preferences")
+    .populate({ path: "userId", select: "name image role",
+      match: { isDeleted: { $ne: true }, suspendedAt: { $exists: false }, isEmailVerified: true, role: "seeker" } });
+  return seeker?.userId ? seeker : null;
 };
 
 export const getSeekerByUserIdService = async (
@@ -25,87 +33,46 @@ export const getSeekerByUserIdService = async (
   );
 };
 
+/** Stable count + page over only active, verified candidate accounts. */
 export const getAllSeekersService = async (query: any = {}) => {
-  const {
-    search,
-    skills,
-    location,
-    experienceLevel,
-    jobType,
-    availability,
-    totalExperience,
-    page = 1,
-    limit = 10,
-  } = query;
-
-  const filters: any = {};
-
-  if (search) {
-    // Find matching users by name first to include in search
-    const matchingUsers = await User.find({
-      name: { $regex: search, $options: "i" },
-    }).select("_id");
-    const userIds = matchingUsers.map((u: any) => u._id);
-
-    filters.$or = [
-      { designation: { $regex: search, $options: "i" } },
-      { aboutMe: { $regex: search, $options: "i" } },
-      { skills: { $in: [new RegExp(search, "i")] } },
-      { userId: { $in: userIds } },
-    ];
-  }
-
+  const { search, skills, location, experienceLevel, jobType, availability, totalExperience } = query;
+  const filters: any = { "privacy.profileVisibility": "public", "privacy.searchable": true };
   if (skills) {
-    const skillsArray = Array.isArray(skills)
-      ? skills
-      : skills.split(",").map((s: string) => s.trim());
-    filters.skills = { $all: skillsArray };
+    const names = Array.isArray(skills) ? skills : String(skills).split(",").slice(0, 20).map((item) => item.trim());
+    filters.skills = { $all: names };
   }
-
-  if (location) {
-    filters.userLocation = { $regex: location, $options: "i" };
+  if (location) filters.userLocation = new RegExp(escapeRegex(location), "i");
+  if (experienceLevel) filters.experienceLevel = experienceLevel;
+  if (jobType) filters.jobType = jobType;
+  if (availability) filters.availability = availability;
+  if (totalExperience) filters.totalExperience = new RegExp(escapeRegex(totalExperience), "i");
+  const bounds = paging(query);
+  const skip = (bounds.page - 1) * bounds.limit;
+  const pipeline: any[] = [
+    { $match: filters },
+    { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "candidate", pipeline: [
+      { $match: { isDeleted: { $ne: true }, suspendedAt: { $exists: false }, isEmailVerified: true, role: "seeker" } },
+      { $project: { name: 1, image: 1, role: 1 } },
+    ] } },
+    { $unwind: "$candidate" },
+  ];
+  if (search) {
+    const pattern = new RegExp(escapeRegex(search), "i");
+    pipeline.push({ $match: { $or: [
+      { designation: pattern }, { aboutMe: pattern }, { skills: pattern }, { "candidate.name": pattern },
+    ] } });
   }
-
-  if (experienceLevel) {
-    filters.experienceLevel = experienceLevel;
-  }
-
-  if (jobType) {
-    filters.jobType = jobType;
-  }
-
-  if (availability) {
-    filters.availability = availability;
-  }
-
-  if (totalExperience) {
-    filters.totalExperience = { $regex: totalExperience, $options: "i" };
-  }
-
-  const skip = (Number(page) - 1) * Number(limit);
-
-  const [seekers, total] = await Promise.all([
-    Seeker.find(filters)
-      .select(
-        "userId userLocation designation aboutMe skills resume portfolio experienceLevel availability jobType totalExperience",
-      )
-      .populate("userId", "name email image role phoneNumber")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit))
-      .lean(),
-    Seeker.countDocuments(filters),
-  ]);
-
-  return {
-    seekers,
-    pagination: {
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / Number(limit)),
-    },
-  };
+  pipeline.push({ $sort: { createdAt: -1 } }, { $facet: {
+    rows: [ { $skip: skip }, { $limit: bounds.limit },
+      { $project: { userId: "$candidate", userLocation: 1, designation: 1, aboutMe: 1, skills: 1,
+        portfolio: 1, experienceLevel: 1, availability: 1, jobType: 1, totalExperience: 1 } } ],
+    meta: [{ $count: "total" }],
+  } });
+  const result = await Seeker.aggregate(pipeline);
+  const total = result[0]?.meta?.[0]?.total || 0;
+  return { seekers: result[0]?.rows || [], pagination: {
+    total, page: bounds.page, limit: bounds.limit, totalPages: Math.ceil(total / bounds.limit),
+  } };
 };
 
 export const updateSeekerService = async (
@@ -123,9 +90,12 @@ export const updateSeekerByUserIdService = async (
   userId: string,
   seekerData: Partial<ISeeker>,
 ): Promise<ISeeker | null> => {
+  if (seekerData.resume?.resumeLink) await assertOwnedResume(seekerData.resume.resumeLink, userId);
+  if (seekerData.preferences?.expectedSalaryMin !== undefined && seekerData.preferences?.expectedSalaryMax !== undefined &&
+      seekerData.preferences.expectedSalaryMin > seekerData.preferences.expectedSalaryMax) throw new Error("Minimum expected salary exceeds maximum");
   return await Seeker.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
-    { ...seekerData },
+    { $set: seekerData },
     { new: true, runValidators: true },
   );
 };

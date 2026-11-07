@@ -19,6 +19,7 @@ import {
   useUpdateSeekerProfileMutation,
 } from "@/src/redux/features/seeker/seekerApi";
 import { useUpdateProfileMutation } from "@/src/redux/features/user/userApi";
+import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
 import { useAppSelector, useAppDispatch } from "@/src/redux/hooks";
 import {
   selectCurrentUser,
@@ -45,17 +46,17 @@ const BioSection = memo(
   ({ editing, bio }: { editing: boolean; bio: string }) => {
     const { register } = useFormContext<ProfileFormValues>();
     return (
-      <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-sm backdrop-blur pt-0">
-        <div className="border-b border-[#E3E3E3]/70 bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-5">
+      <Card className="overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 shadow-sm backdrop-blur pt-0">
+        <div className="border-b border-[#E1E8EF]/70 bg-gradient-to-r from-[#163B5C]/8 to-[#516C83]/8 p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/15">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C] text-white shadow-lg shadow-[#163B5C]/15">
               <User className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
+              <p className="text-xs font-black uppercase tracking-widest text-[#516C83]">
                 Summary
               </p>
-              <h3 className="text-xl font-black text-[#234C6A]">About Me</h3>
+              <h3 className="text-xl font-black text-[#163B5C]">About Me</h3>
             </div>
           </div>
         </div>
@@ -64,10 +65,10 @@ const BioSection = memo(
             <textarea
               {...register("bio")}
               placeholder="Write a brief professional summary..."
-              className="min-h-[170px] w-full resize-none rounded-2xl border border-transparent bg-[#F4F7F8] p-4 text-[#234C6A] outline-none placeholder:text-[#456882]/55 focus:border-[#234C6A]/15 focus:bg-white focus:ring-2 focus:ring-[#234C6A]/10"
+              className="min-h-[170px] w-full resize-none rounded-2xl border border-transparent bg-[#F4F7F8] p-4 text-[#163B5C] outline-none placeholder:text-[#516C83]/55 focus:border-[#163B5C]/15 focus:bg-white focus:ring-2 focus:ring-[#163B5C]/10"
             />
           ) : (
-            <p className="min-h-[110px] text-base font-medium leading-8 text-[#456882]">
+            <p className="min-h-[110px] text-base font-medium leading-8 text-[#516C83]">
               {bio || "No bio added yet. Tell us about your journey!"}
             </p>
           )}
@@ -119,7 +120,7 @@ const ProfileStrengthIndicator = ({ strength }: { strength: number }) => {
   ];
 
   return (
-    <Card className="overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#234C6A] to-[#456882] text-white shadow-xl shadow-[#234C6A]/20">
+    <Card className="overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] text-white shadow-xl shadow-[#163B5C]/20">
       <div className="relative p-6">
         <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[3rem] bg-white/10" />
         <div className="relative z-10">
@@ -198,7 +199,8 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
   const [updateUserBasicInfo, { isLoading: isUpdatingUser }] =
     useUpdateProfileMutation();
 
-  const isSaving = isUpdatingSeeker || isCreating || isUpdatingUser;
+  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
+  const isSaving = isUpdatingSeeker || isCreating || isUpdatingUser || isUploading;
   const profileData = (profileResponse as any)?.data;
 
   const methods = useForm<ProfileFormValues>({
@@ -296,13 +298,14 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         data.phoneNumber !== currentUser?.phoneNumber ||
         imageState.file
       ) {
-        const formData = new FormData();
-        if (data.name !== currentUser?.name) formData.append("name", data.name);
-        if (data.phoneNumber !== currentUser?.phoneNumber)
-          formData.append("phoneNumber", data.phoneNumber);
-        if (imageState.file) formData.append("image", imageState.file);
-
-        const res = await updateUserBasicInfo(formData).unwrap();
+        const basicChanges: Record<string, string> = {};
+        if (data.name !== currentUser?.name) basicChanges.name = data.name;
+        if (data.phoneNumber !== currentUser?.phoneNumber) basicChanges.phoneNumber = data.phoneNumber;
+        if (imageState.file) {
+          const uploaded = await uploadFile({ file: imageState.file, kind: "avatar" }).unwrap();
+          basicChanges.image = uploaded.data.url;
+        }
+        const res = await updateUserBasicInfo(basicChanges).unwrap();
         if (res?.data && token) {
           dispatch(
             setUser({
@@ -373,9 +376,9 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
 
   if (isFetching) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] py-20">
-        <Loader2 className="mb-4 h-10 w-10 animate-spin text-[#234C6A]" />
-        <p className="font-semibold text-[#456882]">Loading your profile...</p>
+      <div className="flex flex-col items-center justify-center rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] py-20">
+        <Loader2 className="mb-4 h-10 w-10 animate-spin text-[#163B5C]" />
+        <p className="font-semibold text-[#516C83]">Loading your profile...</p>
       </div>
     );
   }
@@ -383,15 +386,15 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
   return (
     <FormProvider {...methods}>
       <div className="space-y-7">
-        <div className="flex flex-col gap-4 rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-5 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
+            <p className="text-xs font-black uppercase tracking-widest text-[#516C83]">
               Profile Control
             </p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-[#234C6A]">
+            <h2 className="mt-1 text-2xl font-black tracking-tight text-[#163B5C]">
               Your Professional Profile
             </h2>
-            <p className="mt-1 text-sm font-medium text-[#456882]">
+            <p className="mt-1 text-sm font-medium text-[#516C83]">
               Keep the details aligned, complete, and recruiter-ready.
             </p>
           </div>
@@ -400,14 +403,14 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
               <Button
                 variant="outline"
                 onClick={toggleEdit}
-                className="h-11 rounded-2xl border-[#234C6A]/20 px-5 font-black text-[#234C6A] transition-all hover:-translate-y-0.5 hover:bg-[#234C6A]/5"
+                className="h-11 rounded-2xl border-[#163B5C]/20 px-5 font-black text-[#163B5C] transition-all hover:-translate-y-0.5 hover:bg-[#163B5C]/5"
                 disabled={isSaving}
               >
                 <X className="mr-2 h-4 w-4" /> Cancel
               </Button>
               <Button
                 onClick={handleSubmit(onSubmit)}
-                className="h-11 rounded-2xl bg-[#234C6A] px-5 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
+                className="h-11 rounded-2xl bg-[#163B5C] px-5 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:bg-[#516C83]"
                 disabled={isSaving}
               >
                 {isSaving ? (
@@ -421,7 +424,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
           ) : (
             <Button
               onClick={toggleEdit}
-              className="h-11 rounded-2xl bg-[#234C6A] px-6 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
+              className="h-11 rounded-2xl bg-[#163B5C] px-6 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:bg-[#516C83]"
             >
               <Edit3 className="mr-2 h-4 w-4" />
               Edit Profile

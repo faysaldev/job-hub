@@ -53,12 +53,12 @@ const SkillsSection = memo(({ editing, profileSkills }: SkillsSectionProps) => {
   );
 
   return (
-    <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
+    <Card className="p-8 border-[#516C83]/30 bg-white shadow-lg rounded-2xl">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-[#234C6A]/10 rounded-xl">
-          <Sparkles className="h-5 w-5 text-[#234C6A]" />
+        <div className="p-2 bg-[#163B5C]/10 rounded-xl">
+          <Sparkles className="h-5 w-5 text-[#163B5C]" />
         </div>
-        <h3 className="text-xl font-bold text-[#234C6A]">Skills & Expertise</h3>
+        <h3 className="text-xl font-bold text-[#163B5C]">Skills & Expertise</h3>
       </div>
 
       {editing ? (
@@ -67,7 +67,7 @@ const SkillsSection = memo(({ editing, profileSkills }: SkillsSectionProps) => {
             {watchedSkills?.map((skill: string, index: number) => (
               <Badge
                 key={`${skill}-${index}`}
-                className="px-4 py-2 text-sm bg-gradient-to-r from-[#234C6A] to-[#456882] text-white border-none shadow-md flex items-center gap-2"
+                className="px-4 py-2 text-sm bg-gradient-to-r from-[#163B5C] to-[#516C83] text-white border-none shadow-md flex items-center gap-2"
               >
                 {skill}
                 <button
@@ -84,13 +84,13 @@ const SkillsSection = memo(({ editing, profileSkills }: SkillsSectionProps) => {
             <Input
               ref={skillInputRef}
               placeholder="Add a skill (e.g. React, UI Design)"
-              className="flex-1 border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A] h-12 rounded-xl"
+              className="flex-1 border-[#516C83]/30 focus:border-[#163B5C] focus:ring-[#163B5C] h-12 rounded-xl"
               onKeyDown={handleKeyDown}
             />
             <Button
               type="button"
               onClick={addSkill}
-              className="h-12 rounded-2xl bg-[#234C6A] px-6 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
+              className="h-12 rounded-2xl bg-[#163B5C] px-6 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:bg-[#516C83]"
             >
               <Plus className="h-5 w-5 mr-1" /> Add
             </Button>
@@ -103,13 +103,13 @@ const SkillsSection = memo(({ editing, profileSkills }: SkillsSectionProps) => {
               <Badge
                 key={index}
                 variant="secondary"
-                className="px-5 py-2.5 text-base bg-[#234C6A]/10 text-[#234C6A] hover:bg-[#234C6A]/20 border-none rounded-xl"
+                className="px-5 py-2.5 text-base bg-[#163B5C]/10 text-[#163B5C] hover:bg-[#163B5C]/20 border-none rounded-xl"
               >
                 {skill}
               </Badge>
             ))
           ) : (
-            <p className="text-[#456882] italic">No skills added yet.</p>
+            <p className="text-[#516C83] italic">No skills added yet.</p>
           )}
         </div>
       )}

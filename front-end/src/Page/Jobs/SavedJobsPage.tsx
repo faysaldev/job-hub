@@ -92,7 +92,7 @@ const SavedJobsPage = () => {
         <div className="container mx-auto max-w-6xl px-4">
           {/* Header */}
           <div className="page-header mb-8">
-            <div className="relative overflow-hidden rounded-[2rem] bg-[#234C6A] p-8 text-white shadow-2xl shadow-[#234C6A]/20 md:p-10">
+            <div className="relative overflow-hidden rounded-[2rem] bg-[#163B5C] p-8 text-white shadow-2xl shadow-[#163B5C]/20 md:p-10">
               <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
               <div className="absolute bottom-0 right-0 h-36 w-full bg-gradient-to-t from-black/15 to-transparent" />
               <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -127,30 +127,30 @@ const SavedJobsPage = () => {
 
           {/* Content */}
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center rounded-3xl border border-[#234C6A]/10 bg-white/90 py-24 shadow-sm backdrop-blur">
-              <Loader2 className="h-10 w-10 animate-spin text-[#234C6A] mb-4" />
-              <p className="font-bold text-[#234C6A]">
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-[#163B5C]/10 bg-white/90 py-24 shadow-sm backdrop-blur">
+              <Loader2 className="h-10 w-10 animate-spin text-[#163B5C] mb-4" />
+              <p className="font-bold text-[#163B5C]">
                 Loading your saved jobs...
               </p>
-              <p className="mt-1 text-sm text-[#456882]">
+              <p className="mt-1 text-sm text-[#516C83]">
                 Pulling your bookmarked opportunities
               </p>
             </div>
           ) : savedJobs.length === 0 ? (
-            <Card className="rounded-3xl border border-dashed border-[#234C6A]/20 bg-white/80 p-10 text-center shadow-sm backdrop-blur md:p-16">
-              <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-[#234C6A]/10 to-[#456882]/10">
-                <Bookmark className="h-12 w-12 text-[#234C6A]/40" />
+            <Card className="rounded-3xl border border-dashed border-[#163B5C]/20 bg-white/80 p-10 text-center shadow-sm backdrop-blur md:p-16">
+              <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-[#163B5C]/10 to-[#516C83]/10">
+                <Bookmark className="h-12 w-12 text-[#163B5C]/40" />
               </div>
-              <h3 className="mb-3 text-3xl font-black text-[#234C6A]">
+              <h3 className="mb-3 text-3xl font-black text-[#163B5C]">
                 No Saved Jobs Yet
               </h3>
-              <p className="mx-auto mb-8 max-w-sm leading-relaxed text-[#456882]">
+              <p className="mx-auto mb-8 max-w-sm leading-relaxed text-[#516C83]">
                 Start exploring jobs and save the ones you&apos;re interested
                 in. They&apos;ll appear here for easy access.
               </p>
               <Button
                 asChild
-                className="h-12 rounded-xl bg-[#234C6A] px-8 font-black text-white shadow-lg shadow-[#234C6A]/15 hover:bg-[#1c405a]"
+                className="h-12 rounded-xl bg-[#163B5C] px-8 font-black text-white shadow-lg shadow-[#163B5C]/15 hover:bg-[#0C2C48]"
               >
                 <Link href="/job">
                   <Briefcase className="h-4 w-4 mr-2" /> Browse Jobs
@@ -165,12 +165,12 @@ const SavedJobsPage = () => {
                 return (
                   <Card
                     key={saved._id}
-                    className="saved-job-card group relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#234C6A]/25 hover:shadow-2xl hover:shadow-[#234C6A]/10"
+                    className="saved-job-card group relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10"
                   >
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882] scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83] scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
 
                     <div className="flex flex-col gap-5 p-6 lg:flex-row lg:items-start">
-                      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#234C6A]/10 bg-white shadow-sm transition-transform duration-300 group-hover:scale-105">
+                      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#163B5C]/10 bg-white shadow-sm transition-transform duration-300 group-hover:scale-105">
                         {job.company?.companyLogo ? (
                           <img
                             src={job.company.companyLogo}
@@ -178,7 +178,7 @@ const SavedJobsPage = () => {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#234C6A] to-[#456882]">
+                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#163B5C] to-[#516C83]">
                             <Building2 className="h-8 w-8 text-white" />
                           </div>
                         )}
@@ -188,11 +188,11 @@ const SavedJobsPage = () => {
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <Link href={`/job/${job._id}`}>
-                              <h3 className="truncate text-xl font-black tracking-tight text-[#234C6A] transition-colors hover:text-[#456882]">
+                              <h3 className="truncate text-xl font-black tracking-tight text-[#163B5C] transition-colors hover:text-[#516C83]">
                                 {job.title}
                               </h3>
                             </Link>
-                            <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#456882]">
+                            <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#516C83]">
                               <Building2 className="h-3.5 w-3.5" />
                               {job.company?.companyName || "Unknown Company"}
                             </p>
@@ -203,33 +203,33 @@ const SavedJobsPage = () => {
                               handleRemove(job._id);
                             }}
                             disabled={isDeleting}
-                            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#E3E3E3]/50 text-[#456882] opacity-100 transition-all duration-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-50 md:opacity-0 md:group-hover:opacity-100"
+                            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#E1E8EF]/50 text-[#516C83] opacity-100 transition-all duration-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-50 md:opacity-0 md:group-hover:opacity-100"
                             aria-label="Remove saved job"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
 
-                        <div className="flex flex-wrap gap-3 text-sm text-[#456882]">
+                        <div className="flex flex-wrap gap-3 text-sm text-[#516C83]">
                           {job.location && (
-                            <span className="flex items-center gap-1.5 rounded-full border border-[#234C6A]/10 bg-[#E3E3E3]/50 px-3 py-1 text-xs font-bold">
-                              <MapPin className="h-3.5 w-3.5 text-[#234C6A]" />
+                            <span className="flex items-center gap-1.5 rounded-full border border-[#163B5C]/10 bg-[#E1E8EF]/50 px-3 py-1 text-xs font-bold">
+                              <MapPin className="h-3.5 w-3.5 text-[#163B5C]" />
                               {job.location}
                             </span>
                           )}
                           {job.type && (
-                            <span className="flex items-center gap-1.5 rounded-full border border-[#234C6A]/10 bg-white px-3 py-1 text-xs font-bold capitalize">
-                              <Briefcase className="h-3.5 w-3.5 text-[#234C6A]" />
+                            <span className="flex items-center gap-1.5 rounded-full border border-[#163B5C]/10 bg-white px-3 py-1 text-xs font-bold capitalize">
+                              <Briefcase className="h-3.5 w-3.5 text-[#163B5C]" />
                               {job.type}
                             </span>
                           )}
                           {job.salaryMin && job.salaryMax && (
-                            <span className="flex items-center gap-1.5 rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-3 py-1 text-xs font-bold text-[#234C6A]">
-                              <DollarSign className="h-3.5 w-3.5 text-[#234C6A]" />
+                            <span className="flex items-center gap-1.5 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 text-xs font-bold text-[#163B5C]">
+                              <DollarSign className="h-3.5 w-3.5 text-[#163B5C]" />
                               {formatSalary(job.salaryMin, job.salaryMax)}
                             </span>
                           )}
-                          <span className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-[#456882]/70">
+                          <span className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-[#516C83]/70">
                             <Clock className="h-3 w-3" />
                             Saved{" "}
                             {new Date(saved.createdAt).toLocaleDateString(
@@ -243,7 +243,7 @@ const SavedJobsPage = () => {
                         </div>
 
                         {job.description && (
-                          <p className="line-clamp-2 text-sm leading-relaxed text-[#456882]/75">
+                          <p className="line-clamp-2 text-sm leading-relaxed text-[#516C83]/75">
                             {job.description}
                           </p>
                         )}
@@ -255,7 +255,7 @@ const SavedJobsPage = () => {
                               .map((s: string, i: number) => (
                                 <Badge
                                   key={i}
-                                  className="rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 text-xs font-semibold text-[#234C6A]"
+                                  className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 text-xs font-semibold text-[#163B5C]"
                                 >
                                   {s}
                                 </Badge>
@@ -267,7 +267,7 @@ const SavedJobsPage = () => {
                           <Link href={`/job/${job._id}`}>
                             <Button
                               variant="outline"
-                              className="h-10 rounded-xl border-[#234C6A]/20 text-sm font-bold text-[#234C6A] hover:bg-[#234C6A]/5"
+                              className="h-10 rounded-xl border-[#163B5C]/20 text-sm font-bold text-[#163B5C] hover:bg-[#163B5C]/5"
                             >
                               View Details{" "}
                               <ArrowRight className="h-4 w-4 ml-1.5" />
@@ -284,7 +284,7 @@ const SavedJobsPage = () => {
 
           {/* Recommendation CTA */}
           {savedJobs.length > 0 && (
-            <Card className="mt-8 overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#234C6A] to-[#456882] p-6 text-white shadow-xl shadow-[#234C6A]/15">
+            <Card className="mt-8 overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] p-6 text-white shadow-xl shadow-[#163B5C]/15">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
@@ -300,7 +300,7 @@ const SavedJobsPage = () => {
                   </div>
                 </div>
                 <Link href="/job">
-                  <Button className="h-11 flex-shrink-0 rounded-xl bg-white px-6 font-black text-[#234C6A] shadow-lg hover:bg-white/90">
+                  <Button className="h-11 flex-shrink-0 rounded-xl bg-white px-6 font-black text-[#163B5C] shadow-lg hover:bg-white/90">
                     Explore Similar Jobs <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>

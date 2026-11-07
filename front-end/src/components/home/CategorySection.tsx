@@ -1,71 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
 import Link from "next/link";
-import { Badge } from "@/src/components/ui/badge";
-import { Card } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ArrowRight, Briefcase } from "lucide-react";
-
-interface CategorySectionProps {
-  categories: any[];
-}
-
-export default function CategorySection({ categories }: CategorySectionProps) {
-  return (
-    <section className="py-20 lg:py-24">
-      <div className="container mx-auto px-4">
-        <div className="fade-up mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <Badge className="mb-4 bg-[#234C6A]/10 text-[#234C6A] border-none">
-              Browse categories
-            </Badge>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tight text-[#234C6A]">
-              Explore jobs by specialty
-            </h2>
-            <p className="mt-3 max-w-2xl text-[#456882]">
-              Category counts are connected to your backend stats, so this
-              section stays fresh as new roles are added.
-            </p>
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            className="rounded-xl border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A] hover:text-white"
-          >
-            <Link href="/job">
-              View all categories
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.slice(0, 8).map((category) => (
-            <Link
-              key={category.id}
-              href={`/job?category=${category.id}`}
-              className="stagger-item group"
-            >
-              <Card className="h-full overflow-hidden rounded-2xl border border-[#234C6A]/10 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-[#234C6A]/25 hover:shadow-xl">
-                <div className="mb-5 flex items-start justify-between">
-                  <div
-                    className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${category.color} shadow-lg`}
-                  >
-                    <Briefcase className="h-7 w-7 text-white" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-[#456882] opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100" />
-                </div>
-                <h3 className="text-lg font-black text-[#234C6A]">
-                  {category.name}
-                </h3>
-                <p className="mt-2 text-sm font-semibold text-[#456882]">
-                  {(category.count || 0).toLocaleString()} open jobs
-                </p>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+import { ArrowRight, BriefcaseBusiness } from "lucide-react";
+import type { JobCategory } from "@/src/lib/jobCategories";
+export default function CategorySection({ categories }: { categories: JobCategory[] }) {
+  return <section className="jh-container py-16 md:py-20" aria-labelledby="categories-heading">
+    <div className="mb-9 flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="jh-kicker mb-3">Explore by field</p><h2 id="categories-heading" className="text-3xl font-semibold tracking-tight text-[#162839] md:text-4xl">Find your area of interest</h2><p className="mt-3 text-sm text-[#66798a]">Browse opportunities grouped by career field.</p></div><Link className="jh-button jh-button--outline w-fit" href="/job">Browse all jobs <ArrowRight size={17}/></Link></div>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{categories.slice(0, 8).map((category)=> <Link href={`/job?category=${encodeURIComponent(category.id)}`} key={category.id} className="jh-panel group flex items-start gap-4 p-5 transition-colors hover:border-[#a0bad0] hover:bg-white">
+      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#edf3f8] text-[#163b5c]"><BriefcaseBusiness size={20}/></div><div className="min-w-0"><h3 className="font-semibold text-[#162839] group-hover:text-[#163b5c]">{category.name}</h3><p className="mt-1 text-sm text-[#66798a]">{category.count.toLocaleString()} {category.count === 1 ? "open role" : "open roles"}</p></div>
+    </Link>)}</div>
+  </section>;
 }

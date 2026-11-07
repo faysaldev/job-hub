@@ -18,7 +18,7 @@ const stats = [
     suffix: "+",
     label: "Active Jobs",
     description: "New opportunities daily",
-    color: "from-[#234C6A] to-[#456882]",
+    color: "from-[#163B5C] to-[#516C83]",
   },
   {
     icon: Users2,
@@ -26,7 +26,7 @@ const stats = [
     suffix: "+",
     label: "Companies",
     description: "Top employers hiring",
-    color: "from-[#456882] to-[#234C6A]",
+    color: "from-[#516C83] to-[#163B5C]",
   },
   {
     icon: Globe,
@@ -34,7 +34,7 @@ const stats = [
     suffix: "M+",
     label: "Job Seekers",
     description: "Trusted by millions",
-    color: "from-[#234C6A] to-[#456882]",
+    color: "from-[#163B5C] to-[#516C83]",
   },
   {
     icon: Award,
@@ -42,7 +42,7 @@ const stats = [
     suffix: "%",
     label: "Satisfaction",
     description: "Happy users",
-    color: "from-[#456882] to-[#234C6A]",
+    color: "from-[#516C83] to-[#163B5C]",
   },
 ];
 
@@ -112,7 +112,7 @@ const StatsSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-20 bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] relative overflow-hidden">
+    <section ref={sectionRef} className="py-20 bg-gradient-to-br from-[#163B5C] via-[#2d5a7a] to-[#516C83] relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl" />

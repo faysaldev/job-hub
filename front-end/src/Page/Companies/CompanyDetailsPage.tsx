@@ -83,9 +83,9 @@ const CompanyDetailsPage = () => {
       <div className="flex min-h-screen flex-col jobhub-page-bg">
         <Header />
         <div className="flex flex-1 flex-col items-center justify-center">
-          <div className="rounded-3xl border border-[#234C6A]/10 bg-white/90 p-8 text-center shadow-xl shadow-[#234C6A]/8 backdrop-blur">
-            <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-[#234C6A]" />
-            <p className="text-sm font-black uppercase tracking-widest text-[#234C6A]">
+          <div className="rounded-3xl border border-[#163B5C]/10 bg-white/90 p-8 text-center shadow-xl shadow-[#163B5C]/8 backdrop-blur">
+            <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-[#163B5C]" />
+            <p className="text-sm font-black uppercase tracking-widest text-[#163B5C]">
               Loading Company Profile...
             </p>
           </div>
@@ -103,14 +103,14 @@ const CompanyDetailsPage = () => {
           <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-red-50">
             <Building2 className="h-10 w-10 text-red-400" />
           </div>
-          <h3 className="text-2xl font-black text-[#234C6A]">
+          <h3 className="text-2xl font-black text-[#163B5C]">
             Company not found
           </h3>
-          <p className="mt-2 max-w-md text-[#456882]">
+          <p className="mt-2 max-w-md text-[#516C83]">
             We couldn&apos;t find the company profile you&apos;re looking for.
           </p>
           <Link href="/companies" className="mt-8">
-            <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-8 font-black text-white shadow-lg shadow-[#234C6A]/20">
+            <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-8 font-black text-white shadow-lg shadow-[#163B5C]/20">
               <ArrowLeft className="mr-2 h-4 w-4" /> Browse Companies
             </Button>
           </Link>
@@ -148,7 +148,7 @@ const CompanyDetailsPage = () => {
     >
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-[#234C6A] pb-36 pt-24 text-white shadow-2xl shadow-[#234C6A]/20">
+        <section className="relative overflow-hidden bg-[#163B5C] pb-36 pt-24 text-white shadow-2xl shadow-[#163B5C]/20">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
           <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/20 to-transparent" />
 
@@ -173,7 +173,7 @@ const CompanyDetailsPage = () => {
                       className="h-full w-full object-contain"
                     />
                   ) : (
-                    <Building2 className="h-16 w-16 text-[#234C6A]" />
+                    <Building2 className="h-16 w-16 text-[#163B5C]" />
                   )}
                 </div>
               </div>
@@ -224,17 +224,17 @@ const CompanyDetailsPage = () => {
                 {stats.map((stat, i) => (
                   <Card
                     key={i}
-                    className="stat-item group rounded-3xl border border-[#234C6A]/10 bg-white/95 p-5 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#234C6A]/25 hover:shadow-xl hover:shadow-[#234C6A]/10"
+                    className="stat-item group rounded-3xl border border-[#163B5C]/10 bg-white/95 p-5 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-xl hover:shadow-[#163B5C]/10"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A]/10 transition-colors group-hover:bg-[#234C6A]">
-                        <stat.icon className="h-5 w-5 text-[#234C6A] group-hover:text-white transition-colors" />
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C]/10 transition-colors group-hover:bg-[#163B5C]">
+                        <stat.icon className="h-5 w-5 text-[#163B5C] group-hover:text-white transition-colors" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[#456882]">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#516C83]">
                           {stat.label}
                         </p>
-                        <p className="truncate text-lg font-black text-[#234C6A]">
+                        <p className="truncate text-lg font-black text-[#163B5C]">
                           {stat.value}
                         </p>
                       </div>
@@ -244,14 +244,14 @@ const CompanyDetailsPage = () => {
               </div>
 
               {/* Contact Card */}
-              <Card className="main-card space-y-5 rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
-                <h3 className="flex items-center gap-2 text-lg font-black text-[#234C6A]">
-                  <Target className="h-5 w-5 text-[#234C6A]" />
+              <Card className="main-card space-y-5 rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
+                <h3 className="flex items-center gap-2 text-lg font-black text-[#163B5C]">
+                  <Target className="h-5 w-5 text-[#163B5C]" />
                   Contact Details
                 </h3>
                 <div className="space-y-3">
                   <div
-                    className="flex cursor-pointer items-center gap-3 rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-3 transition-colors hover:bg-[#234C6A]/5"
+                    className="flex cursor-pointer items-center gap-3 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-3 transition-colors hover:bg-[#163B5C]/5"
                     onClick={() => {
                       if (company.userId?.email) {
                         navigator.clipboard.writeText(company.userId.email);
@@ -260,27 +260,27 @@ const CompanyDetailsPage = () => {
                     }}
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-                      <Mail className="h-4 w-4 text-[#234C6A]" />
+                      <Mail className="h-4 w-4 text-[#163B5C]" />
                     </div>
                     <div className="min-w-0 overflow-hidden">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-[#456882]">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-[#516C83]">
                         Email
                       </p>
-                      <p className="truncate text-sm font-bold text-[#234C6A]">
+                      <p className="truncate text-sm font-bold text-[#163B5C]">
                         {company.userId?.email || "Not available"}
                       </p>
                     </div>
                   </div>
                   {company.userId?.phoneNumber && (
-                    <div className="flex items-center gap-3 rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-3">
+                    <div className="flex items-center gap-3 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
                         <Phone className="h-4 w-4 text-emerald-500" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[#456882]">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#516C83]">
                           Phone
                         </p>
-                        <p className="text-sm font-bold text-[#234C6A]">
+                        <p className="text-sm font-bold text-[#163B5C]">
                           {company.userId?.phoneNumber}
                         </p>
                       </div>
@@ -292,25 +292,25 @@ const CompanyDetailsPage = () => {
 
             {/* Right: Description & Jobs */}
             <div className="space-y-6 lg:col-span-2">
-              <Card className="main-card rounded-3xl border border-[#234C6A]/10 bg-white/95 p-8 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
-                <h2 className="mb-6 flex items-center gap-3 text-2xl font-black text-[#234C6A]">
-                  <ShieldCheck className="h-7 w-7 text-[#234C6A]" />
+              <Card className="main-card rounded-3xl border border-[#163B5C]/10 bg-white/95 p-8 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
+                <h2 className="mb-6 flex items-center gap-3 text-2xl font-black text-[#163B5C]">
+                  <ShieldCheck className="h-7 w-7 text-[#163B5C]" />
                   About the Company
                 </h2>
-                <div className="max-w-none whitespace-pre-line text-base font-medium leading-8 text-[#456882]">
+                <div className="max-w-none whitespace-pre-line text-base font-medium leading-8 text-[#516C83]">
                   {company.description || "No description provided."}
                 </div>
               </Card>
 
               {/* Open Positions */}
               {company.jobs && company.jobs.length > 0 && (
-                <Card className="main-card space-y-6 rounded-3xl border border-[#234C6A]/10 bg-white/95 p-8 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
+                <Card className="main-card space-y-6 rounded-3xl border border-[#163B5C]/10 bg-white/95 p-8 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
                   <div className="flex items-center justify-between">
-                    <h2 className="flex items-center gap-3 text-xl font-black text-[#234C6A]">
-                      <Briefcase className="h-6 w-6 text-[#234C6A]" />
+                    <h2 className="flex items-center gap-3 text-xl font-black text-[#163B5C]">
+                      <Briefcase className="h-6 w-6 text-[#163B5C]" />
                       Open Positions
                     </h2>
-                    <Badge className="rounded-full border-none bg-[#234C6A]/10 px-3 py-1 text-xs font-black text-[#234C6A]">
+                    <Badge className="rounded-full border-none bg-[#163B5C]/10 px-3 py-1 text-xs font-black text-[#163B5C]">
                       {company.jobs.length} Active
                     </Badge>
                   </div>
@@ -319,20 +319,20 @@ const CompanyDetailsPage = () => {
                     {company.jobs.map((job: any) => (
                       <div
                         key={job._id}
-                        className="group rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-xl hover:shadow-[#234C6A]/10"
+                        className="group rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-xl hover:shadow-[#163B5C]/10"
                       >
                         <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
                           <div className="space-y-2">
-                            <h3 className="text-lg font-black text-[#234C6A] transition-colors group-hover:text-[#456882]">
+                            <h3 className="text-lg font-black text-[#163B5C] transition-colors group-hover:text-[#516C83]">
                               {job.title}
                             </h3>
-                            <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-[#456882]">
+                            <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-[#516C83]">
                               <span className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2">
-                                <MapPin className="h-3.5 w-3.5 text-[#234C6A]" />
+                                <MapPin className="h-3.5 w-3.5 text-[#163B5C]" />
                                 {job.location || "Remote"} ({job.locationType})
                               </span>
                               <span className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2">
-                                <Clock className="h-3.5 w-3.5 text-[#234C6A]" />
+                                <Clock className="h-3.5 w-3.5 text-[#163B5C]" />
                                 {job.type?.replace("-", " ")}
                               </span>
                               <span className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2">
@@ -346,7 +346,7 @@ const CompanyDetailsPage = () => {
                             </div>
                           </div>
                           <Link href={`/job/${job._id}`}>
-                            <Button className="h-11 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-6 font-black text-white shadow-md transition-all hover:shadow-lg active:scale-95">
+                            <Button className="h-11 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-6 font-black text-white shadow-md transition-all hover:shadow-lg active:scale-95">
                               View Details
                               <ArrowUpRight className="ml-2 h-4 w-4" />
                             </Button>
@@ -360,26 +360,26 @@ const CompanyDetailsPage = () => {
 
               {/* Mission & Culture */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <Card className="main-card rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#234C6A]/10">
+                <Card className="main-card rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#163B5C]/10">
                     <Zap className="h-6 w-6 text-amber-500" />
                   </div>
-                  <h4 className="mb-2 text-lg font-black text-[#234C6A]">
+                  <h4 className="mb-2 text-lg font-black text-[#163B5C]">
                     Our Mission
                   </h4>
-                  <p className="text-sm font-medium leading-relaxed text-[#456882]">
+                  <p className="text-sm font-medium leading-relaxed text-[#516C83]">
                     To innovate and lead in the {company.industries} sector
                     through excellence and technology.
                   </p>
                 </Card>
-                <Card className="main-card rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+                <Card className="main-card rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50">
                     <Users2 className="h-6 w-6 text-emerald-500" />
                   </div>
-                  <h4 className="mb-2 text-lg font-black text-[#234C6A]">
+                  <h4 className="mb-2 text-lg font-black text-[#163B5C]">
                     Our Culture
                   </h4>
-                  <p className="text-sm font-medium leading-relaxed text-[#456882]">
+                  <p className="text-sm font-medium leading-relaxed text-[#516C83]">
                     We foster a collaborative environment where every team
                     member is empowered to grow.
                   </p>

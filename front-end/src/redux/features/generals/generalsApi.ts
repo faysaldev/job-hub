@@ -2,6 +2,24 @@
 import { baseApi } from "@/src/redux/baseApi/baseApi";
 import { ApiResponse, Job } from "@/src/types";
 
+export interface DiscoveryJob {
+  _id: string;
+  title: string;
+  location?: string;
+  type?: string;
+  locationType?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryPeriod?: string;
+  createdAt?: string;
+  company?: { companyName?: string; companyLogo?: string };
+}
+
+export interface DiscoveryPayload {
+  topJobs: DiscoveryJob[];
+  categoryStats: CategoryStat[];
+}
+
 export interface HeaderStats {
   unreadNotificationsCount: number;
   savedJobsCount: number;
@@ -60,6 +78,14 @@ const generalsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: ApiResponse<HeaderStats>) => response.data,
       providesTags: ["notifications", "savedJobs"],
+    }),
+
+    // Homepage data in one read instead of top-jobs + category-stats.
+    getDiscovery: builder.query<DiscoveryPayload, void>({
+      query: () => ({ url: "/generals/discovery", method: "GET" }),
+      transformResponse: (response: ApiResponse<DiscoveryPayload>) => response.data,
+      providesTags: ["jobs"],
+      keepUnusedDataFor: 120,
     }),
 
     // GET /generals/category-stats - Get job count by category
@@ -146,6 +172,7 @@ const generalsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetDiscoveryQuery,
   useGetHeaderStatsQuery,
   useGetCategoryStatsQuery,
   useGetSubcategoryStatsQuery,

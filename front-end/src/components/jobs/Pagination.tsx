@@ -60,25 +60,25 @@ const Pagination = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex flex-col items-center justify-between gap-4 rounded-3xl border border-[#234C6A]/10 bg-white/90 px-6 py-4 shadow-sm backdrop-blur sm:flex-row">
+    <div className="flex flex-col items-center justify-between gap-4 rounded-3xl border border-[#163B5C]/10 bg-white/90 px-6 py-4 shadow-sm backdrop-blur sm:flex-row">
       <div className="flex sm:hidden w-full justify-between items-center">
         <Button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           variant="outline"
-          className="rounded-xl border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10 disabled:opacity-50"
+          className="rounded-xl border-[#163B5C]/20 text-[#163B5C] hover:bg-[#163B5C]/10 disabled:opacity-50"
         >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Previous
         </Button>
-        <span className="text-sm text-[#456882]">
+        <span className="text-sm text-[#516C83]">
           {currentPage} / {totalPages}
         </span>
         <Button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           variant="outline"
-          className="rounded-xl border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10 disabled:opacity-50"
+          className="rounded-xl border-[#163B5C]/20 text-[#163B5C] hover:bg-[#163B5C]/10 disabled:opacity-50"
         >
           Next
           <ChevronRight className="h-4 w-4 ml-1" />
@@ -87,13 +87,13 @@ const Pagination = ({
 
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between w-full">
         <div className="flex items-center gap-2">
-          <p className="text-sm text-[#456882]">
+          <p className="text-sm text-[#516C83]">
             Showing{" "}
-            <span className="font-semibold text-[#234C6A]">{startItem}</span>
+            <span className="font-semibold text-[#163B5C]">{startItem}</span>
             {" - "}
-            <span className="font-semibold text-[#234C6A]">{endItem}</span>
+            <span className="font-semibold text-[#163B5C]">{endItem}</span>
             {" of "}
-            <span className="font-semibold text-[#234C6A]">{totalJobs}</span>
+            <span className="font-semibold text-[#163B5C]">{totalJobs}</span>
             {" results"}
           </p>
         </div>
@@ -105,7 +105,7 @@ const Pagination = ({
             disabled={currentPage === 1}
             variant="ghost"
             size="sm"
-            className="h-9 w-9 rounded-xl p-0 text-[#456882] hover:bg-[#234C6A]/10 hover:text-[#234C6A] disabled:opacity-50"
+            className="h-9 w-9 rounded-xl p-0 text-[#516C83] hover:bg-[#163B5C]/10 hover:text-[#163B5C] disabled:opacity-50"
           >
             <ChevronsLeft className="h-4 w-4" />
           </Button>
@@ -116,7 +116,7 @@ const Pagination = ({
             disabled={currentPage === 1}
             variant="ghost"
             size="sm"
-            className="h-9 w-9 rounded-xl p-0 text-[#456882] hover:bg-[#234C6A]/10 hover:text-[#234C6A] disabled:opacity-50"
+            className="h-9 w-9 rounded-xl p-0 text-[#516C83] hover:bg-[#163B5C]/10 hover:text-[#163B5C] disabled:opacity-50"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -132,10 +132,10 @@ const Pagination = ({
                 size="sm"
                 className={`h-9 min-w-[36px] px-3 font-medium transition-all duration-200 ${
                   currentPage === page
-                    ? "rounded-xl bg-gradient-to-r from-[#234C6A] to-[#456882] text-white shadow-md hover:from-[#234C6A]/90 hover:to-[#456882]/90"
+                    ? "rounded-xl bg-gradient-to-r from-[#163B5C] to-[#516C83] text-white shadow-md hover:from-[#163B5C]/90 hover:to-[#516C83]/90"
                     : page === -1
                     ? "cursor-default hover:bg-transparent"
-                    : "rounded-xl text-[#456882] hover:bg-[#234C6A]/10 hover:text-[#234C6A]"
+                    : "rounded-xl text-[#516C83] hover:bg-[#163B5C]/10 hover:text-[#163B5C]"
                 }`}
               >
                 {page === -1 ? <MoreHorizontal className="h-4 w-4" /> : page}
@@ -149,7 +149,7 @@ const Pagination = ({
             disabled={currentPage === totalPages}
             variant="ghost"
             size="sm"
-            className="h-9 w-9 rounded-xl p-0 text-[#456882] hover:bg-[#234C6A]/10 hover:text-[#234C6A] disabled:opacity-50"
+            className="h-9 w-9 rounded-xl p-0 text-[#516C83] hover:bg-[#163B5C]/10 hover:text-[#163B5C] disabled:opacity-50"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -160,7 +160,7 @@ const Pagination = ({
             disabled={currentPage === totalPages}
             variant="ghost"
             size="sm"
-            className="h-9 w-9 rounded-xl p-0 text-[#456882] hover:bg-[#234C6A]/10 hover:text-[#234C6A] disabled:opacity-50"
+            className="h-9 w-9 rounded-xl p-0 text-[#516C83] hover:bg-[#163B5C]/10 hover:text-[#163B5C] disabled:opacity-50"
           >
             <ChevronsRight className="h-4 w-4" />
           </Button>

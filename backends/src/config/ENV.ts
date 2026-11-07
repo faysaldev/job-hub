@@ -25,15 +25,6 @@ export const REDIS_PORT: string | undefined = process.env.REDIS_PORT;
 export const REDIS_PASSWORD: string | undefined = process.env.REDIS_PASSWORD;
 export const REDIS_DB: string | undefined = process.env.REDIS_DB;
 
-export const CLOUDINARY_CLOUD_NAME: string | undefined =
-  process.env.CLOUDINARY_CLOUD_NAME;
-
-export const CLOUDINARY_API_KEY: string | undefined =
-  process.env.CLOUDINARY_API_KEY;
-
-export const CLOUDINARY_API_SECRET: string | undefined =
-  process.env.CLOUDINARY_API_SECRET;
-
 // crypto secret key
 export const CRYPTO_SECRET_KEY: string | undefined =
   process.env.CRYPTO_SECRET_KEY;

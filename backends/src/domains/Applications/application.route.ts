@@ -1,30 +1,14 @@
 import { Router } from "express";
-import applicationController from "./application.controller";
-import { authMiddleware } from "../../middlewares/auth.middleware";
+import controller from "./application.controller";
+import { authMiddleware, requireRoles } from "../../middlewares/auth.middleware";
+import validate from "../../middlewares/validation.middleware";
+import { createApplicationValidation, applicationStatusValidation, atsActionValidation } from "./application.validation";
 
 const router = Router();
-
-// Protected routes for applications (authentication required)
-router.post(
-  "/",
-  authMiddleware,
-  applicationController.createApplication,
-); // Create a new application
-router.get("/", authMiddleware, applicationController.getUserApplications); // Get user's applications
-router.get(
-  "/recruiter",
-  authMiddleware,
-  applicationController.getRecruiterApplications,
-); // Get recruiter's applications
-router.put(
-  "/:applicationId/status",
-  authMiddleware,
-  applicationController.updateApplicationStatus,
-); // Update application status
-router.delete(
-  "/:applicationId",
-  authMiddleware,
-  applicationController.deleteApplication,
-); // Delete an application
-
+router.post("/", authMiddleware, requireRoles("seeker"), validate(createApplicationValidation), controller.createApplication);
+router.get("/", authMiddleware, requireRoles("seeker"), controller.getUserApplications);
+router.get("/recruiter", authMiddleware, requireRoles("recruiter", "admin"), controller.getRecruiterApplications);
+router.patch("/:applicationId", authMiddleware, validate(atsActionValidation), controller.updateATS);
+router.put("/:applicationId/status", authMiddleware, requireRoles("recruiter", "admin"), validate(applicationStatusValidation), controller.updateApplicationStatus);
+router.delete("/:applicationId", authMiddleware, requireRoles("seeker"), controller.deleteApplication);
 export default router;

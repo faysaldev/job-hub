@@ -51,37 +51,20 @@ const JobDetailsSidebar = ({ job }: JobDetailsSidebarProps) => {
     }
   };
 
-  const handleApply = (resume: File | null, paymentAmount: number = 0) => {
-    if (resume) {
-      // In a real application, you would submit the application to the backend
-      toast({
-        title: "Application Submitted!",
-        description: paymentAmount > 0
-          ? `Your application for ${job.title} with payment of $${paymentAmount.toFixed(2)} has been submitted.`
-          : `Your application for ${job.title} has been submitted.`,
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Please upload a resume to apply for this job.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <div className="space-y-6">
       {/* Apply Card */}
-      <Card className="p-6 bg-white border-[#456882]/30 sticky top-20">
+      <Card className="p-6 bg-white border-[#516C83]/30 sticky top-20">
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-2xl font-bold text-[#234C6A]">
+          <div className="flex items-center gap-2 text-2xl font-bold text-[#163B5C]">
             <DollarSign className="h-6 w-6" />
             {job.salary}
           </div>
-          <JobApplicationDialog jobTitle={job.title} onApply={handleApply} />
+          <JobApplicationDialog jobId={String(job.id)} jobTitle={job.title} companyName={job.company} />
           <Button
             variant="outline"
-            className="w-full border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/10"
+            className="w-full border-[#163B5C] text-[#163B5C] hover:bg-[#163B5C]/10"
             onClick={handleSaveJob}
           >
             {isSaved ? (
@@ -98,28 +81,28 @@ const JobDetailsSidebar = ({ job }: JobDetailsSidebarProps) => {
       </Card>
 
       {/* Company Info */}
-      <Card className="p-6 bg-white border-[#456882]/30">
-        <h3 className="font-semibold mb-4 text-[#234C6A]">
+      <Card className="p-6 bg-white border-[#516C83]/30">
+        <h3 className="font-semibold mb-4 text-[#163B5C]">
           About {job.company}
         </h3>
         <div className="space-y-3 text-sm">
-          <div className="flex items-center gap-2 text-[#234C6A]">
+          <div className="flex items-center gap-2 text-[#163B5C]">
             <Users className="h-4 w-4" />
             <span>500-1000 employees</span>
           </div>
-          <div className="flex items-center gap-2 text-[#234C6A]">
+          <div className="flex items-center gap-2 text-[#163B5C]">
             <Building2 className="h-4 w-4" />
             <span>Technology & Software</span>
           </div>
-          <div className="flex items-center gap-2 text-[#234C6A]">
-            <Star className="h-4 w-4 fill-current text-[#456882]" />
+          <div className="flex items-center gap-2 text-[#163B5C]">
+            <Star className="h-4 w-4 fill-current text-[#516C83]" />
             <span>4.5/5 company rating</span>
           </div>
         </div>
         <Link href={`/company/${job.company.toLowerCase().replace(/[^a-zA-Z0-9]/g, '')}`}>
           <Button
             variant="link"
-            className="mt-4 px-0 text-[#234C6A] hover:text-[#456882]"
+            className="mt-4 px-0 text-[#163B5C] hover:text-[#516C83]"
           >
             View company profile
           </Button>

@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
+import JobSeekerMessages from "@/src/components/JobSeeker/JobSeekerMessages";
+import { useAuth } from "@/src/hooks/useAuth";
 
-const MessagesPage = () => {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace("/recruiter/interviews");
-  }, [router]);
-
+/** Uses the same secure conversation transport and attachment permissions as candidates. */
+export default function RecruiterMessagesPage() {
+  const { user } = useAuth();
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#234C6A]" />
-    </div>
+    <RecruiterLayout>
+      <main className="mx-auto max-w-7xl space-y-5">
+        <header>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#163B5C]">Candidate messages</h1>
+          <p className="mt-1 text-sm text-slate-500">Discuss applications and exchange private documents securely.</p>
+        </header>
+        <div className="h-[calc(100vh-240px)] min-h-[540px] overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <JobSeekerMessages userId={user?._id || ""} viewerRole="recruiter" />
+        </div>
+      </main>
+    </RecruiterLayout>
   );
-};
-
-export default MessagesPage;
+}

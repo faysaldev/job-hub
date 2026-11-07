@@ -42,8 +42,8 @@ const ProfileHeader = memo(
     };
 
     return (
-      <Card className="p-8 border-[#456882]/30 bg-white shadow-xl rounded-2xl overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#234C6A] via-[#456882] to-[#234C6A]" />
+      <Card className="p-8 border-[#516C83]/30 bg-white shadow-xl rounded-2xl overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#163B5C] via-[#516C83] to-[#163B5C]" />
         <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
           {/* Avatar */}
           <div className="flex-shrink-0 relative group">
@@ -56,7 +56,7 @@ const ProfileHeader = memo(
             />
             <div
               className={cn(
-                "bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-3xl p-1 w-32 h-32 flex items-center justify-center shadow-lg transition-all duration-300",
+                "bg-gradient-to-br from-[#163B5C] to-[#516C83] rounded-3xl p-1 w-32 h-32 flex items-center justify-center shadow-lg transition-all duration-300",
                 editing
                   ? "cursor-pointer hover:scale-105"
                   : "group-hover:scale-105",
@@ -71,7 +71,7 @@ const ProfileHeader = memo(
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User className="h-14 w-14 text-[#234C6A]" />
+                  <User className="h-14 w-14 text-[#163B5C]" />
                 )}
                 {editing && (
                   <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -82,7 +82,7 @@ const ProfileHeader = memo(
             </div>
             {editing && (
               <Badge
-                className="absolute -bottom-2 -right-2 bg-white text-[#234C6A] border-[#234C6A]/20 shadow-md cursor-pointer hover:bg-gray-50"
+                className="absolute -bottom-2 -right-2 bg-white text-[#163B5C] border-[#163B5C]/20 shadow-md cursor-pointer hover:bg-gray-50"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Camera className="h-3 w-3 mr-1" /> Change
@@ -97,10 +97,10 @@ const ProfileHeader = memo(
                 <Input
                   {...register("name")}
                   placeholder="Your Full Name"
-                  className="text-2xl font-bold border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A] bg-gray-50 max-w-md h-12"
+                  className="text-2xl font-bold border-[#516C83]/30 focus:border-[#163B5C] focus:ring-[#163B5C] bg-gray-50 max-w-md h-12"
                 />
               ) : (
-                <h3 className="text-3xl font-extrabold text-[#234C6A]">
+                <h3 className="text-3xl font-extrabold text-[#163B5C]">
                   {profileData?.userId?.name || currentUser?.name}
                 </h3>
               )}
@@ -108,26 +108,26 @@ const ProfileHeader = memo(
                 <Input
                   {...register("headline")}
                   placeholder="Professional Headline"
-                  className="mt-2 text-lg border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A] bg-gray-50"
+                  className="mt-2 text-lg border-[#516C83]/30 focus:border-[#163B5C] focus:ring-[#163B5C] bg-gray-50"
                 />
               ) : (
-                <p className="text-xl text-[#456882] font-medium italic">
+                <p className="text-xl text-[#516C83] font-medium italic">
                   {profileData?.designation || "No headline set"}
                 </p>
               )}
             </div>
 
-            <div className="flex flex-wrap justify-center md:justify-start items-center gap-6 text-[#456882] mt-4 font-medium">
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-6 text-[#516C83] mt-4 font-medium">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-[#234C6A]/10 rounded-lg">
-                  <Mail className="h-4 w-4 text-[#234C6A]" />
+                <div className="p-1.5 bg-[#163B5C]/10 rounded-lg">
+                  <Mail className="h-4 w-4 text-[#163B5C]" />
                 </div>
                 <span>{currentUser?.email}</span>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-[#234C6A]/10 rounded-lg">
-                  <Phone className="h-4 w-4 text-[#234C6A]" />
+                <div className="p-1.5 bg-[#163B5C]/10 rounded-lg">
+                  <Phone className="h-4 w-4 text-[#163B5C]" />
                 </div>
                 {editing ? (
                   <Controller
@@ -137,7 +137,7 @@ const ProfileHeader = memo(
                       <PhoneInput
                         placeholder="Enter phone number"
                         {...field}
-                        className="flex h-8 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm"
+                        className="flex h-8 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm"
                       />
                     )}
                   />
@@ -149,14 +149,14 @@ const ProfileHeader = memo(
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-[#234C6A]/10 rounded-lg">
-                  <MapPin className="h-4 w-4 text-[#234C6A]" />
+                <div className="p-1.5 bg-[#163B5C]/10 rounded-lg">
+                  <MapPin className="h-4 w-4 text-[#163B5C]" />
                 </div>
                 {editing ? (
                   <Input
                     {...register("location")}
                     placeholder="City, Country"
-                    className="h-8 max-w-[200px] text-sm border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A] bg-gray-50"
+                    className="h-8 max-w-[200px] text-sm border-[#516C83]/30 focus:border-[#163B5C] focus:ring-[#163B5C] bg-gray-50"
                   />
                 ) : (
                   <span>{profileData?.userLocation || "Location not set"}</span>

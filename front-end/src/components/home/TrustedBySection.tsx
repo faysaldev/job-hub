@@ -1,34 +1,8 @@
-import React from "react";
-
-const featuredCompanies = [
-  "Google",
-  "Microsoft",
-  "Amazon",
-  "Meta",
-  "Apple",
-  "Netflix",
-];
-
+import { BriefcaseBusiness, CalendarCheck, MessageSquareText } from "lucide-react";
+/* Intentional replacement for unsupported partner logos/testimonials. */
+const features = [{icon:BriefcaseBusiness,text:"Discover and compare roles"},{icon:CalendarCheck,text:"Track applications and interviews"},{icon:MessageSquareText,text:"Keep recruiter conversations together"}];
 export default function TrustedBySection() {
-  return (
-    <section className="border-y border-[#234C6A]/10 bg-white py-8">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <p className="text-sm font-black uppercase tracking-[0.22em] text-[#456882]">
-            Trusted by teams hiring across every discipline
-          </p>
-          <div className="flex flex-wrap gap-x-8 gap-y-3">
-            {featuredCompanies.map((company) => (
-              <span
-                key={company}
-                className="text-lg font-black text-[#234C6A]/35 transition hover:text-[#234C6A]"
-              >
-                {company}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  return <section aria-label="Platform capabilities" className="border-b border-[#e1e8ef] bg-[#f6f8fb] py-7"><div className="jh-container flex flex-col justify-between gap-5 md:flex-row md:items-center">
+    {features.map(({icon:Icon,text})=><div key={text} className="flex items-center gap-3 text-sm font-medium text-[#516c83]"><Icon size={20} className="shrink-0 text-[#163b5c]" aria-hidden="true"/>{text}</div>)}
+  </div></section>;
 }

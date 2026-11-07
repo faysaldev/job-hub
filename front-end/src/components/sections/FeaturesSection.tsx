@@ -63,7 +63,7 @@ const FeaturesSection = () => {
       title: "Smart Job Search",
       description:
         "Advanced filters and AI-powered recommendations help you find the perfect match quickly.",
-      color: "from-[#234C6A] to-[#456882]",
+      color: "from-[#163B5C] to-[#516C83]",
       highlight: "AI Powered",
     },
     {
@@ -109,27 +109,27 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section ref={containerRef} className="py-24 md:py-32 relative bg-[#E3E3E3]">
+    <section ref={containerRef} className="py-24 md:py-32 relative bg-[#E1E8EF]">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-72 h-72 bg-[#234C6A]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-[#456882]/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-72 h-72 bg-[#163B5C]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-[#516C83]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="container relative z-10 px-4">
         {/* Header */}
         <div className="features-header text-center max-w-3xl mx-auto mb-16">
-          <Badge className="bg-[#234C6A]/10 text-[#234C6A] border-none mb-4 px-4 py-2">
+          <Badge className="bg-[#163B5C]/10 text-[#163B5C] border-none mb-4 px-4 py-2">
             <Sparkles className="h-4 w-4 mr-2" />
             Why Choose Us
           </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#234C6A]">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#163B5C]">
             Everything You Need to{" "}
-            <span className="bg-gradient-to-r from-[#234C6A] to-[#456882] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#163B5C] to-[#516C83] bg-clip-text text-transparent">
               Succeed
             </span>
           </h2>
-          <p className="text-lg text-[#456882]">
+          <p className="text-lg text-[#516C83]">
             We make job searching and hiring simple, efficient, and successful
             with powerful tools designed for modern professionals.
           </p>
@@ -157,16 +157,16 @@ const FeaturesSection = () => {
               </div>
 
               {/* Content */}
-              <h3 className="text-xl font-bold mb-3 text-[#234C6A] group-hover:text-[#456882] transition-colors">
+              <h3 className="text-xl font-bold mb-3 text-[#163B5C] group-hover:text-[#516C83] transition-colors">
                 {feature.title}
               </h3>
-              <p className="text-[#456882] leading-relaxed">
+              <p className="text-[#516C83] leading-relaxed">
                 {feature.description}
               </p>
 
               {/* Hover indicator */}
-              <div className="mt-6 pt-4 border-t border-[#E3E3E3] opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-sm text-[#234C6A] font-medium">
+              <div className="mt-6 pt-4 border-t border-[#E1E8EF] opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-sm text-[#163B5C] font-medium">
                   Learn more →
                 </span>
               </div>
@@ -176,11 +176,11 @@ const FeaturesSection = () => {
 
         {/* Bottom CTA */}
         <div className="mt-16 text-center">
-          <p className="text-[#456882]">
+          <p className="text-[#516C83]">
             Ready to get started?{" "}
             <a
               href="/auth"
-              className="text-[#234C6A] font-semibold hover:underline"
+              className="text-[#163B5C] font-semibold hover:underline"
             >
               Create your free account
             </a>

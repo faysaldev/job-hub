@@ -30,18 +30,18 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
   const jobType = watch("jobType");
 
   return (
-    <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
+    <Card className="p-8 border-[#516C83]/30 bg-white shadow-lg rounded-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 bg-[#234C6A]/10 rounded-xl">
-          <Layers className="h-5 w-5 text-[#234C6A]" />
+        <div className="p-2 bg-[#163B5C]/10 rounded-xl">
+          <Layers className="h-5 w-5 text-[#163B5C]" />
         </div>
-        <h3 className="text-xl font-bold text-[#234C6A]">Career Logistics</h3>
+        <h3 className="text-xl font-bold text-[#163B5C]">Career Logistics</h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
         {/* Total Experience */}
         <div className="space-y-3">
-          <label className="text-sm font-black text-[#456882] uppercase tracking-wider flex items-center gap-2">
+          <label className="text-sm font-black text-[#516C83] uppercase tracking-wider flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
             Experience
           </label>
@@ -49,10 +49,10 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
             <Input
               {...register("totalExperience")}
               placeholder="e.g. 5+ Years"
-              className="border-[#456882]/30 rounded-xl focus:ring-[#234C6A] h-12"
+              className="border-[#516C83]/30 rounded-xl focus:ring-[#163B5C] h-12"
             />
           ) : (
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold text-[#234C6A]">
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold text-[#163B5C]">
               {totalExperience || "Not specified"}
             </div>
           )}
@@ -60,13 +60,13 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
 
         {/* Experience Level */}
         <div className="space-y-3">
-          <label className="text-sm font-black text-[#456882] uppercase tracking-wider flex items-center gap-2">
+          <label className="text-sm font-black text-[#516C83] uppercase tracking-wider flex items-center gap-2">
             <Star className="h-4 w-4" /> Seniority Level
           </label>
           {editing ? (
             <select
               {...register("experienceLevel")}
-              className="w-full h-12 px-4 border border-[#456882]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#234C6A] bg-white text-[#234C6A] font-medium"
+              className="w-full h-12 px-4 border border-[#516C83]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#163B5C] bg-white text-[#163B5C] font-medium"
             >
               <option value="">Select Level</option>
               <option value="entry-level">Entry Level</option>
@@ -75,7 +75,7 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
               <option value="expert">Expert / Principal</option>
             </select>
           ) : (
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold text-[#234C6A] capitalize">
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold text-[#163B5C] capitalize">
               {experienceLevel?.replace("-", " ") || "Not specified"}
             </div>
           )}
@@ -83,13 +83,13 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
 
         {/* Availability */}
         <div className="space-y-3">
-          <label className="text-sm font-black text-[#456882] uppercase tracking-wider flex items-center gap-2">
+          <label className="text-sm font-black text-[#516C83] uppercase tracking-wider flex items-center gap-2">
             <Clock className="h-4 w-4" /> Availability
           </label>
           {editing ? (
             <select
               {...register("availability")}
-              className="w-full h-12 px-4 border border-[#456882]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#234C6A] bg-white text-[#234C6A] font-medium"
+              className="w-full h-12 px-4 border border-[#516C83]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#163B5C] bg-white text-[#163B5C] font-medium"
             >
               <option value="">Select Availability</option>
               <option value="immediately">Immediately</option>
@@ -98,7 +98,7 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
               <option value="1-month">1 Month</option>
             </select>
           ) : (
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold text-[#234C6A] capitalize">
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold text-[#163B5C] capitalize">
               {availability?.replace("-", " ") || "Not specified"}
             </div>
           )}
@@ -106,13 +106,13 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
 
         {/* Job Type */}
         <div className="space-y-3">
-          <label className="text-sm font-black text-[#456882] uppercase tracking-wider flex items-center gap-2">
+          <label className="text-sm font-black text-[#516C83] uppercase tracking-wider flex items-center gap-2">
             <Map className="h-4 w-4" /> Job Preference
           </label>
           {editing ? (
             <select
               {...register("jobType")}
-              className="w-full h-12 px-4 border border-[#456882]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#234C6A] bg-white text-[#234C6A] font-medium"
+              className="w-full h-12 px-4 border border-[#516C83]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#163B5C] bg-white text-[#163B5C] font-medium"
             >
               <option value="">Select Type</option>
               <option value="remote">Remote Only</option>
@@ -120,7 +120,7 @@ export const LogisticsSection = memo(({ editing }: { editing: boolean }) => {
               <option value="hybrid">Hybrid</option>
             </select>
           ) : (
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold text-[#234C6A] capitalize">
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 font-bold text-[#163B5C] capitalize">
               {jobType || "Not specified"}
             </div>
           )}
@@ -139,13 +139,13 @@ export const ProjectsSection = memo(({ editing }: { editing: boolean }) => {
   });
 
   return (
-    <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
+    <Card className="p-8 border-[#516C83]/30 bg-white shadow-lg rounded-2xl">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#234C6A]/10 rounded-xl">
-            <Layout className="h-5 w-5 text-[#234C6A]" />
+          <div className="p-2 bg-[#163B5C]/10 rounded-xl">
+            <Layout className="h-5 w-5 text-[#163B5C]" />
           </div>
-          <h3 className="text-xl font-bold text-[#234C6A]">Recent Projects</h3>
+          <h3 className="text-xl font-bold text-[#163B5C]">Recent Projects</h3>
         </div>
         {editing && (
           <Button
@@ -153,7 +153,7 @@ export const ProjectsSection = memo(({ editing }: { editing: boolean }) => {
             onClick={() =>
               append({ project_name: "", description: "", live_url: "" })
             }
-            className="h-11 rounded-2xl bg-[#234C6A] px-5 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
+            className="h-11 rounded-2xl bg-[#163B5C] px-5 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:bg-[#516C83]"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Project
           </Button>
@@ -182,26 +182,26 @@ export const ProjectsSection = memo(({ editing }: { editing: boolean }) => {
                   <Input
                     {...register(`recentProjects.${index}.project_name`)}
                     placeholder="Project Name"
-                    className="font-bold text-lg border-[#456882]/30"
+                    className="font-bold text-lg border-[#516C83]/30"
                   />
                   <textarea
                     {...register(`recentProjects.${index}.description`)}
                     placeholder="Brief project description..."
-                    className="w-full p-3 text-sm border border-[#456882]/30 rounded-xl focus:ring-[#234C6A] h-24 bg-white"
+                    className="w-full p-3 text-sm border border-[#516C83]/30 rounded-xl focus:ring-[#163B5C] h-24 bg-white"
                   />
                   <div className="flex items-center gap-2">
                     <ExternalLink className="h-4 w-4 text-gray-400" />
                     <Input
                       {...register(`recentProjects.${index}.live_url`)}
                       placeholder="https://..."
-                      className="text-sm border-[#456882]/30"
+                      className="text-sm border-[#516C83]/30"
                     />
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex justify-between items-start">
-                    <h4 className="text-xl font-black text-[#234C6A]">
+                    <h4 className="text-xl font-black text-[#163B5C]">
                       {field.project_name}
                     </h4>
                     {field.live_url && (
@@ -215,7 +215,7 @@ export const ProjectsSection = memo(({ editing }: { editing: boolean }) => {
                       </a>
                     )}
                   </div>
-                  <p className="text-[#456882] text-sm leading-relaxed">
+                  <p className="text-[#516C83] text-sm leading-relaxed">
                     {field.description}
                   </p>
                 </>
@@ -243,19 +243,19 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
   const twitter = watch("socialProfiles.twitter");
 
   return (
-    <Card className="p-6 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
+    <Card className="p-6 border-[#516C83]/30 bg-white shadow-lg rounded-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 bg-[#234C6A]/10 rounded-xl">
-          <Github className="h-5 w-5 text-[#234C6A]" />
+        <div className="p-2 bg-[#163B5C]/10 rounded-xl">
+          <Github className="h-5 w-5 text-[#163B5C]" />
         </div>
-        <h3 className="text-xl font-bold text-[#234C6A]">Online Presence</h3>
+        <h3 className="text-xl font-bold text-[#163B5C]">Online Presence</h3>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-5">
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <Linkedin className="h-4 w-4 text-[#0A66C2]" />
-            <span className="text-xs font-black text-[#456882] uppercase">
+            <span className="text-xs font-black text-[#516C83] uppercase">
               LinkedIn
             </span>
           </div>
@@ -263,11 +263,11 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
             <Input
               {...register("socialProfiles.linkedin")}
               placeholder="LinkedIn Profile URL"
-              className="border-[#456882]/30 rounded-xl h-12"
+              className="border-[#516C83]/30 rounded-xl h-12"
             />
           ) : (
             <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-              <span className="text-sm font-medium text-[#234C6A] truncate">
+              <span className="text-sm font-medium text-[#163B5C] truncate">
                 {linkedin || "Not linked"}
               </span>
             </div>
@@ -277,7 +277,7 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <Github className="h-4 w-4 text-[#181717]" />
-            <span className="text-xs font-black text-[#456882] uppercase">
+            <span className="text-xs font-black text-[#516C83] uppercase">
               GitHub
             </span>
           </div>
@@ -285,11 +285,11 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
             <Input
               {...register("socialProfiles.github")}
               placeholder="GitHub Profile URL"
-              className="border-[#456882]/30 rounded-xl h-12"
+              className="border-[#516C83]/30 rounded-xl h-12"
             />
           ) : (
             <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-              <span className="text-sm font-medium text-[#234C6A] truncate">
+              <span className="text-sm font-medium text-[#163B5C] truncate">
                 {github || "Not linked"}
               </span>
             </div>
@@ -299,7 +299,7 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
             <Twitter className="h-4 w-4 text-[#1DA1F2]" />
-            <span className="text-xs font-black text-[#456882] uppercase">
+            <span className="text-xs font-black text-[#516C83] uppercase">
               {" "}
               X
             </span>
@@ -308,11 +308,11 @@ export const SocialLinksSection = memo(({ editing }: { editing: boolean }) => {
             <Input
               {...register("socialProfiles.twitter")}
               placeholder="Twitter Profile URL"
-              className="border-[#456882]/30 rounded-xl h-12"
+              className="border-[#516C83]/30 rounded-xl h-12"
             />
           ) : (
             <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-              <span className="text-sm font-medium text-[#234C6A] truncate">
+              <span className="text-sm font-medium text-[#163B5C] truncate">
                 {twitter || "Not linked"}
               </span>
             </div>

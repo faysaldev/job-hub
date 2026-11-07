@@ -1,76 +1,21 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodSchema, ZodError } from "zod";
+import { ZodType, ZodError } from "zod";
 import { AppError } from "../lib/errors";
-import httpStatus from "http-status";
 
-/**
- * Validation middleware using Zod
- * Validates request body against a Zod schema
- */
-const validate = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+const parse = (schema: ZodType, source: "body" | "query" | "params") =>
+  (req: Request, _res: Response, next: NextFunction) => {
     try {
-      schema.parse(req.body);
+      const clean = schema.parse(req[source]);
+      // Explicitly use parsed fields: strips unknown/mass-assignment keys.
+      if (source === "body") req.body = clean;
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errors = error.issues.map((issue) => ({
-          field: issue.path.join("."),
-          message: issue.message,
-        }));
-        const appError = new AppError("Validation failed", httpStatus.BAD_REQUEST, true, errors);
-        next(appError);
-      } else {
-        next(error);
-      }
+        next(new AppError("Validation failed", 400, true,
+          error.issues.map((issue) => ({ field: issue.path.join("."), message: issue.message }))));
+      } else next(error);
     }
   };
-};
-
-/**
- * Validate query parameters
- */
-export const validateQuery = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    try {
-      schema.parse(req.query);
-      next();
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errors = error.issues.map((issue) => ({
-          field: issue.path.join("."),
-          message: issue.message,
-        }));
-        const appError = new AppError("Query validation failed", httpStatus.BAD_REQUEST, true, errors);
-        next(appError);
-      } else {
-        next(error);
-      }
-    }
-  };
-};
-
-/**
- * Validate URL parameters
- */
-export const validateParams = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    try {
-      schema.parse(req.params);
-      next();
-    } catch (error) {
-      if (error instanceof ZodError) {
-        const errors = error.issues.map((issue) => ({
-          field: issue.path.join("."),
-          message: issue.message,
-        }));
-        const appError = new AppError("Parameter validation failed", httpStatus.BAD_REQUEST, true, errors);
-        next(appError);
-      } else {
-        next(error);
-      }
-    }
-  };
-};
-
-export default validate;
+export const validateQuery = (schema: ZodType) => parse(schema, "query");
+export const validateParams = (schema: ZodType) => parse(schema, "params");
+export default (schema: ZodType) => parse(schema, "body");

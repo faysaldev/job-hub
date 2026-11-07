@@ -43,10 +43,10 @@ interface StatDef {
 function StatCard({ stat }: { stat: StatDef }) {
   return (
     <Link href={stat.href}>
-      <Card className="stat-card group relative h-full overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#234C6A]/25 hover:shadow-2xl hover:shadow-[#234C6A]/10">
-        <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-[#234C6A] to-[#456882] transition-transform duration-300 group-hover:scale-x-100" />
+      <Card className="stat-card group relative h-full overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10">
+        <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-[#163B5C] to-[#516C83] transition-transform duration-300 group-hover:scale-x-100" />
         <div className="mb-5 flex items-start justify-between">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/15 transition-transform duration-300 group-hover:scale-105">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#163B5C] text-white shadow-lg shadow-[#163B5C]/15 transition-transform duration-300 group-hover:scale-105">
             <stat.icon className="h-6 w-6" />
           </div>
           {stat.trend === "up" && (
@@ -56,13 +56,13 @@ function StatCard({ stat }: { stat: StatDef }) {
             </Badge>
           )}
         </div>
-        <p className="text-3xl font-black tracking-tight text-[#234C6A]">
+        <p className="text-3xl font-black tracking-tight text-[#163B5C]">
           {stat.value ?? "-"}
         </p>
-        <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#456882]">
+        <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#516C83]">
           {stat.title}
         </p>
-        <p className="mt-2 text-sm font-medium text-[#456882]/75">
+        <p className="mt-2 text-sm font-medium text-[#516C83]/75">
           {stat.change}
         </p>
       </Card>
@@ -215,7 +215,7 @@ const RecruiterDashboard = () => {
     <RecruiterLayout>
       <div ref={containerRef} className="mx-auto max-w-7xl space-y-8">
         <section className="dashboard-header">
-          <div className="relative overflow-hidden rounded-3xl bg-[#234C6A] p-7 text-white shadow-2xl shadow-[#234C6A]/20 md:p-9">
+          <div className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
             <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -234,7 +234,7 @@ const RecruiterDashboard = () => {
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                 <Button
-                  className="h-12 w-full rounded-2xl bg-white px-6 font-black text-[#234C6A] hover:bg-[#E3E3E3]"
+                  className="h-12 w-full rounded-2xl bg-white px-6 font-black text-[#163B5C] hover:bg-[#E1E8EF]"
                   onClick={() => router.push("/recruiter/create-job")}
                 >
                   <Plus className="mr-2 h-4 w-4" />
@@ -261,44 +261,44 @@ const RecruiterDashboard = () => {
 
         <section className="main-section grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
-            <Card className="relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+            <Card className="relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
               <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="mb-3 flex items-center gap-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#234C6A] text-white">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C] text-white">
                       <Target className="h-5 w-5" />
                     </div>
-                    <span className="text-xs font-black uppercase tracking-widest text-[#456882]">
+                    <span className="text-xs font-black uppercase tracking-widest text-[#516C83]">
                       Hiring Pipeline
                     </span>
                   </div>
-                  <h2 className="text-2xl font-black tracking-tight text-[#234C6A]">
+                  <h2 className="text-2xl font-black tracking-tight text-[#163B5C]">
                     Keep every role moving
                   </h2>
-                  <p className="mt-2 max-w-md text-sm font-medium leading-6 text-[#456882]">
+                  <p className="mt-2 max-w-md text-sm font-medium leading-6 text-[#516C83]">
                     Review active jobs, shortlist applicants, and schedule
                     interviews from one focused recruiter workspace.
                   </p>
                 </div>
                 <Link href="/recruiter/applicants" className="shrink-0">
-                  <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-7 font-black text-white shadow-lg shadow-[#234C6A]/20 hover:from-[#1c405a] hover:to-[#3b5a71]">
+                  <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-7 font-black text-white shadow-lg shadow-[#163B5C]/20 hover:from-[#0C2C48] hover:to-[#3b5a71]">
                     View Pipeline
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
-              <Sparkles className="absolute -bottom-8 -right-8 h-44 w-44 rotate-12 text-[#234C6A]/5" />
+              <Sparkles className="absolute -bottom-8 -right-8 h-44 w-44 rotate-12 text-[#163B5C]/5" />
             </Card>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
                 <div className="mb-5 flex items-center justify-between">
-                  <h3 className="flex items-center gap-2 font-black text-[#234C6A]">
+                  <h3 className="flex items-center gap-2 font-black text-[#163B5C]">
                     <Activity className="h-5 w-5" />
                     Pipeline Snapshot
                   </h3>
-                  <Badge className="rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 text-[10px] font-black uppercase tracking-wide text-[#234C6A]">
+                  <Badge className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 text-[10px] font-black uppercase tracking-wide text-[#163B5C]">
                     Live
                   </Badge>
                 </div>
@@ -306,20 +306,20 @@ const RecruiterDashboard = () => {
                   {pipelineItems.map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-center gap-4 rounded-2xl bg-[#F8FAFC] p-4"
+                      className="flex items-center gap-4 rounded-2xl bg-[#F6F8FB] p-4"
                     >
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#234C6A]/10 text-[#234C6A]">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#163B5C]/10 text-[#163B5C]">
                         <item.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-black text-[#234C6A]">
+                        <p className="text-sm font-black text-[#163B5C]">
                           {item.label}
                         </p>
-                        <p className="mt-0.5 text-xs font-semibold text-[#456882]">
+                        <p className="mt-0.5 text-xs font-semibold text-[#516C83]">
                           {item.detail}
                         </p>
                       </div>
-                      <p className="text-2xl font-black text-[#234C6A]">
+                      <p className="text-2xl font-black text-[#163B5C]">
                         {item.value}
                       </p>
                     </div>
@@ -327,7 +327,7 @@ const RecruiterDashboard = () => {
                 </div>
               </Card>
 
-              <Card className="relative overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#234C6A] to-[#456882] p-6 text-white shadow-xl shadow-[#234C6A]/20">
+              <Card className="relative overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] p-6 text-white shadow-xl shadow-[#163B5C]/20">
                 <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[3rem] bg-white/10" />
                 <div className="relative z-10">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
@@ -343,7 +343,7 @@ const RecruiterDashboard = () => {
                     <span className="font-black text-white">{avgSalary}</span>.
                   </p>
                   <Link href="/recruiter/jobs">
-                    <Button className="mt-6 h-11 w-full rounded-2xl bg-white font-black text-[#234C6A] hover:bg-[#E3E3E3]">
+                    <Button className="mt-6 h-11 w-full rounded-2xl bg-white font-black text-[#163B5C] hover:bg-[#E1E8EF]">
                       Manage Jobs
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -355,23 +355,23 @@ const RecruiterDashboard = () => {
           </div>
 
           <aside className="space-y-6">
-            <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#234C6A]/10 text-[#234C6A]">
+            <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#163B5C]/10 text-[#163B5C]">
                 <Clock className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-black text-[#234C6A]">
+              <h3 className="text-lg font-black text-[#163B5C]">
                 Quick Actions
               </h3>
-              <p className="mt-2 text-sm leading-6 text-[#456882]">
+              <p className="mt-2 text-sm leading-6 text-[#516C83]">
                 Jump into the recruiter tasks you use most.
               </p>
               <div className="mt-5 space-y-3">
                 {quickActions.map((action) => (
                   <Link key={action.label} href={action.href}>
-                    <button className="flex w-full items-center gap-3 rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-3 text-left text-sm font-black text-[#234C6A] transition-colors hover:bg-[#234C6A]/5">
+                    <button className="flex w-full items-center gap-3 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-3 text-left text-sm font-black text-[#163B5C] transition-colors hover:bg-[#163B5C]/5">
                       <action.icon className="h-4 w-4 shrink-0" />
                       <span className="flex-1">{action.label}</span>
-                      <ArrowUpRight className="h-4 w-4 text-[#456882]" />
+                      <ArrowUpRight className="h-4 w-4 text-[#516C83]" />
                     </button>
                   </Link>
                 ))}

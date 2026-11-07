@@ -8,8 +8,8 @@ const JobDetailsList = ({ items, className = "" }: JobDetailsListProps) => {
     <ul className={`space-y-3 ${className}`}>
       {items.map((item, index) => (
         <li key={index} className="flex gap-3">
-          <span className="text-[#456882] font-bold">•</span>
-          <span className="text-[#234C6A]">{item}</span>
+          <span className="text-[#516C83] font-bold">•</span>
+          <span className="text-[#163B5C]">{item}</span>
         </li>
       ))}
     </ul>

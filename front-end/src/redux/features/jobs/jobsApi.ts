@@ -19,10 +19,10 @@ const jobsApi = baseApi.injectEndpoints({
           : [{ type: "jobs", id: "LIST" }],
     }),
 
-    // GET /job/search - Search jobs
+    // GET /job - Canonical filtered search; /job/search stays a server compatibility alias
     searchJobs: builder.query<PaginatedResponse<Job>, JobFilters>({
       query: (filters) => ({
-        url: "/job/search",
+        url: "/job",
         method: "GET",
         params: filters,
       }),
@@ -47,6 +47,9 @@ const jobsApi = baseApi.injectEndpoints({
       providesTags: [{ type: "jobs", id: "AUTHOR_LIST" }],
     }),
 
+    getWorkspaceJobs: builder.query<{ data: { jobs: Array<{ _id: string; title: string; status?: string; isActive: boolean; publishAt?: string; applicationDeadline?: string; location?: string; sponsoredUntil?: string; createdAt: string }>; pagination: { total: number; page: number; totalPages: number } } }, { status?: string; page?: number } | void>({
+      query: (params) => ({ url: "/job/mine", params: params || {} }), providesTags: ["jobs"],
+    }),
     // POST /job - Create new job (Recruiter)
     createJob: builder.mutation<Job, Partial<Job>>({
       query: (body) => ({
@@ -54,7 +57,7 @@ const jobsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: [{ type: "jobs", id: "LIST" }],
+      invalidatesTags: ["jobs"],
     }),
 
     // PUT /job/:jobId - Update job (Recruiter)
@@ -67,6 +70,7 @@ const jobsApi = baseApi.injectEndpoints({
       invalidatesTags: (result, error, { jobId }) => [
         { type: "jobs", id: jobId },
         { type: "jobs", id: "LIST" },
+        "jobs",
       ],
     }),
 
@@ -79,12 +83,14 @@ const jobsApi = baseApi.injectEndpoints({
       invalidatesTags: (result, error, id) => [
         { type: "jobs", id },
         { type: "jobs", id: "LIST" },
+        "jobs",
       ],
     }),
   }),
 });
 
 export const {
+  useGetWorkspaceJobsQuery,
   useGetJobsQuery,
   useSearchJobsQuery,
   useGetJobByIdQuery,

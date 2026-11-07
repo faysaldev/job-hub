@@ -3,6 +3,7 @@ import SeekerMessagesPage from "@/src/Page/JobSeeker/MessagesPage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: "Messages | JobHub",
   description:
     "Communicate directly with employers and recruiters. Manage your conversations and stay connected during your job search.",

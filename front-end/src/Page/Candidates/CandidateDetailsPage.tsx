@@ -62,16 +62,16 @@ function SectionHeading({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/15">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C] text-white shadow-lg shadow-[#163B5C]/15">
         <Icon className="h-5 w-5" />
       </div>
       <div>
         {eyebrow && (
-          <p className="text-xs font-black uppercase tracking-widest text-[#456882]">
+          <p className="text-xs font-black uppercase tracking-widest text-[#516C83]">
             {eyebrow}
           </p>
         )}
-        <h2 className="text-xl font-black tracking-tight text-[#234C6A]">
+        <h2 className="text-xl font-black tracking-tight text-[#163B5C]">
           {title}
         </h2>
       </div>
@@ -92,12 +92,12 @@ export default function CandidateDetailsPage() {
     return (
       <div className="flex min-h-screen flex-col jobhub-page-bg">
         <div className="flex flex-1 items-center justify-center px-6">
-          <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-10 text-center shadow-2xl shadow-[#234C6A]/10">
-            <div className="mx-auto mb-5 h-14 w-14 animate-spin rounded-full border-4 border-[#234C6A]/15 border-t-[#234C6A]" />
-            <p className="text-sm font-black uppercase tracking-widest text-[#234C6A]">
+          <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-10 text-center shadow-2xl shadow-[#163B5C]/10">
+            <div className="mx-auto mb-5 h-14 w-14 animate-spin rounded-full border-4 border-[#163B5C]/15 border-t-[#163B5C]" />
+            <p className="text-sm font-black uppercase tracking-widest text-[#163B5C]">
               Loading Profile...
             </p>
-            <p className="mt-2 text-sm text-[#456882]">
+            <p className="mt-2 text-sm text-[#516C83]">
               Preparing the candidate snapshot
             </p>
           </Card>
@@ -110,19 +110,19 @@ export default function CandidateDetailsPage() {
     return (
       <div className="flex min-h-screen flex-col jobhub-page-bg">
         <div className="flex flex-1 items-center justify-center p-6 text-center">
-          <Card className="max-w-md rounded-3xl border border-[#234C6A]/10 bg-white/95 p-10 shadow-2xl shadow-[#234C6A]/10">
+          <Card className="max-w-md rounded-3xl border border-[#163B5C]/10 bg-white/95 p-10 shadow-2xl shadow-[#163B5C]/10">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-red-50">
               <User className="h-10 w-10 text-red-400" />
             </div>
-            <h3 className="text-2xl font-black text-[#234C6A]">
+            <h3 className="text-2xl font-black text-[#163B5C]">
               Profile not found
             </h3>
-            <p className="mt-2 text-[#456882]">
+            <p className="mt-2 text-[#516C83]">
               We couldn&apos;t find this candidate profile. It may have been
               removed.
             </p>
             <Link href="/candidates" className="mt-8 inline-flex">
-              <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-8 font-black text-white">
+              <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-8 font-black text-white">
                 Back to Candidates
               </Button>
             </Link>
@@ -139,7 +139,7 @@ export default function CandidateDetailsPage() {
 
   return (
     <div className="min-h-screen flex flex-col jobhub-page-bg">
-      <section className="relative overflow-hidden bg-[#234C6A] pt-28 pb-28 md:pt-20 md:pb-24">
+      <section className="relative overflow-hidden bg-[#163B5C] pt-28 pb-28 md:pt-20 md:pb-24">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
           <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/20 to-transparent" />
@@ -205,10 +205,10 @@ export default function CandidateDetailsPage() {
       <main className="container mx-auto flex-1 px-6 pb-20">
         <div className="relative z-20 -mt-16 grid grid-cols-1 gap-8 lg:grid-cols-[360px_1fr]">
           <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-            <Card className="overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur-xl pt-0">
-              <div className="bg-gradient-to-r from-[#234C6A]/8 to-[#456882]/8 p-8 text-center">
+            <Card className="overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 shadow-2xl shadow-[#163B5C]/10 backdrop-blur-xl pt-0">
+              <div className="bg-gradient-to-r from-[#163B5C]/8 to-[#516C83]/8 p-8 text-center">
                 <div className="relative mx-auto mb-5 inline-block">
-                  <div className="mx-auto h-36 w-36 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white p-1 shadow-xl">
+                  <div className="mx-auto h-36 w-36 overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white p-1 shadow-xl">
                     <img
                       src={
                         seeker.userId?.image ||
@@ -228,16 +228,16 @@ export default function CandidateDetailsPage() {
                   </div>
                 </div>
 
-                <h2 className="text-2xl font-black text-[#234C6A]">
+                <h2 className="text-2xl font-black text-[#163B5C]">
                   {seeker.userId?.name || "Anonymous"}
                 </h2>
-                <p className="mt-1 font-semibold text-[#456882]">
+                <p className="mt-1 font-semibold text-[#516C83]">
                   {seeker.designation || "Professional"}
                 </p>
 
                 {seeker.userLocation && (
-                  <p className="mt-4 flex items-center justify-center gap-1.5 text-sm font-semibold text-[#456882]">
-                    <MapPin className="h-4 w-4 text-[#234C6A]" />
+                  <p className="mt-4 flex items-center justify-center gap-1.5 text-sm font-semibold text-[#516C83]">
+                    <MapPin className="h-4 w-4 text-[#163B5C]" />
                     {seeker.userLocation}
                   </p>
                 )}
@@ -247,20 +247,20 @@ export default function CandidateDetailsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   {seeker.totalExperience && (
                     <div className="rounded-2xl bg-[#F4F7F8] p-4 text-center">
-                      <p className="text-lg font-black text-[#234C6A]">
+                      <p className="text-lg font-black text-[#163B5C]">
                         {seeker.totalExperience}
                       </p>
-                      <p className="text-xs font-bold text-[#456882]">
+                      <p className="text-xs font-bold text-[#516C83]">
                         Experience
                       </p>
                     </div>
                   )}
                   {seeker.jobType && (
                     <div className="rounded-2xl bg-[#F4F7F8] p-4 text-center">
-                      <p className="text-lg font-black capitalize text-[#234C6A]">
+                      <p className="text-lg font-black capitalize text-[#163B5C]">
                         {seeker.jobType}
                       </p>
-                      <p className="text-xs font-bold text-[#456882]">
+                      <p className="text-xs font-bold text-[#516C83]">
                         Job Type
                       </p>
                     </div>
@@ -274,27 +274,13 @@ export default function CandidateDetailsPage() {
                   </Badge>
                 )}
 
-                {(seeker.resume?.resumeLink || (typeof seeker.resume === "string" && seeker.resume)) && (
-                  <div className="space-y-3 border-t border-[#E3E3E3]/70 pt-5">
-                    <a
-                      href={seeker.resume?.resumeLink || seeker.resume}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full"
-                    >
-                      <Button className="h-11 w-full rounded-2xl bg-[#234C6A] hover:bg-[#234C6A]/90 font-black text-white transition duration-300 flex items-center justify-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        View Resume
-                      </Button>
-                    </a>
-                  </div>
-                )}
+                {/* Private resumes are available only through authenticated application access. */}
               </div>
             </Card>
 
             {(socials.length > 0 || seeker.portfolio) && (
-              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
-                <h3 className="mb-4 flex items-center gap-2 text-lg font-black text-[#234C6A]">
+              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-black text-[#163B5C]">
                   <Globe className="h-5 w-5" />
                   Online Presence
                 </h3>
@@ -305,7 +291,7 @@ export default function CandidateDetailsPage() {
                       href={s.link!}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`group flex items-center justify-between rounded-2xl bg-[#F4F7F8] p-3.5 text-sm font-black text-[#234C6A] transition-all ${s.hoverBg} ${s.hoverText}`}
+                      className={`group flex items-center justify-between rounded-2xl bg-[#F4F7F8] p-3.5 text-sm font-black text-[#163B5C] transition-all ${s.hoverBg} ${s.hoverText}`}
                     >
                       <span className="flex items-center gap-3">
                         <s.icon className="h-5 w-5" />
@@ -319,7 +305,7 @@ export default function CandidateDetailsPage() {
                       href={seeker.portfolio}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center justify-between rounded-2xl bg-[#F4F7F8] p-3.5 text-sm font-black text-[#234C6A] transition-all hover:bg-emerald-500 hover:text-white"
+                      className="group flex items-center justify-between rounded-2xl bg-[#F4F7F8] p-3.5 text-sm font-black text-[#163B5C] transition-all hover:bg-emerald-500 hover:text-white"
                     >
                       <span className="flex items-center gap-3">
                         <Globe className="h-5 w-5" />
@@ -334,20 +320,20 @@ export default function CandidateDetailsPage() {
           </aside>
 
           <div className="space-y-6">
-            <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-xl shadow-[#234C6A]/8 backdrop-blur">
+            <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
               <section className="space-y-4">
                 <SectionHeading
                   icon={User}
                   title="Professional Summary"
                   eyebrow="Overview"
                 />
-                <p className="text-base font-medium leading-8 text-[#456882]">
+                <p className="text-base font-medium leading-8 text-[#516C83]">
                   {seeker.aboutMe || "No summary provided."}
                 </p>
               </section>
 
               {seeker.skills?.length > 0 && (
-                <section className="mt-8 space-y-5 border-t border-[#E3E3E3]/70 pt-8">
+                <section className="mt-8 space-y-5 border-t border-[#E1E8EF]/70 pt-8">
                   <SectionHeading
                     icon={Code}
                     title="Technical Skills"
@@ -357,7 +343,7 @@ export default function CandidateDetailsPage() {
                     {seeker.skills.map((skill: string) => (
                       <Badge
                         key={skill}
-                        className="rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-4 py-2 text-sm font-bold text-[#234C6A] transition hover:bg-[#234C6A]/10"
+                        className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-4 py-2 text-sm font-bold text-[#163B5C] transition hover:bg-[#163B5C]/10"
                       >
                         {skill}
                       </Badge>
@@ -368,31 +354,31 @@ export default function CandidateDetailsPage() {
             </Card>
 
             {seeker.workExperiences?.length > 0 && (
-              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
+              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
                 <SectionHeading
                   icon={Briefcase}
                   title="Work Experience"
                   eyebrow="Career timeline"
                 />
                 <div className="relative mt-7 space-y-6">
-                  <div className="absolute bottom-2 left-[21px] top-2 w-px bg-gradient-to-b from-[#234C6A]/25 to-transparent" />
+                  <div className="absolute bottom-2 left-[21px] top-2 w-px bg-gradient-to-b from-[#163B5C]/25 to-transparent" />
                   {seeker.workExperiences.map((work: any, i: number) => (
                     <div key={i} className="relative flex gap-5">
-                      <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/15">
+                      <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#163B5C] text-white shadow-lg shadow-[#163B5C]/15">
                         <Briefcase className="h-5 w-5" />
                       </div>
-                      <div className="flex-1 rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-5">
+                      <div className="flex-1 rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                           <div>
-                            <h3 className="text-lg font-black text-[#234C6A]">
+                            <h3 className="text-lg font-black text-[#163B5C]">
                               {work.position}
                             </h3>
-                            <p className="mt-1 font-semibold text-[#456882]">
+                            <p className="mt-1 font-semibold text-[#516C83]">
                               {work.companyName}
                             </p>
                           </div>
-                          <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-black text-[#456882] shadow-sm">
-                            <CalendarDays className="mr-1.5 h-3.5 w-3.5 text-[#234C6A]" />
+                          <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-black text-[#516C83] shadow-sm">
+                            <CalendarDays className="mr-1.5 h-3.5 w-3.5 text-[#163B5C]" />
                             {formatDate(work.durationFrom)} -{" "}
                             {work.durationTo
                               ? formatDate(work.durationTo)
@@ -405,9 +391,9 @@ export default function CandidateDetailsPage() {
                               (r: string, j: number) => (
                                 <li
                                   key={j}
-                                  className="flex items-start gap-2 text-sm leading-6 text-[#456882]"
+                                  className="flex items-start gap-2 text-sm leading-6 text-[#516C83]"
                                 >
-                                  <CheckCircle className="mt-1 h-4 w-4 shrink-0 text-[#234C6A]" />
+                                  <CheckCircle className="mt-1 h-4 w-4 shrink-0 text-[#163B5C]" />
                                   {r}
                                 </li>
                               ),
@@ -422,7 +408,7 @@ export default function CandidateDetailsPage() {
             )}
 
             {seeker.recentProjects?.length > 0 && (
-              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
+              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
                 <SectionHeading
                   icon={BookOpen}
                   title="Recent Projects"
@@ -435,10 +421,10 @@ export default function CandidateDetailsPage() {
                     return (
                       <div
                         key={i}
-                        className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-6 transition hover:shadow-md"
+                        className="rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-6 transition hover:shadow-md"
                       >
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <h3 className="text-lg font-black text-[#234C6A]">
+                          <h3 className="text-lg font-black text-[#163B5C]">
                             {projectName}
                           </h3>
                           {projectLink && (
@@ -446,7 +432,7 @@ export default function CandidateDetailsPage() {
                               href={projectLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-sm font-bold text-[#234C6A] hover:underline"
+                              className="inline-flex items-center gap-1 text-sm font-bold text-[#163B5C] hover:underline"
                             >
                               Visit Project
                               <ExternalLink className="h-4 w-4" />
@@ -454,7 +440,7 @@ export default function CandidateDetailsPage() {
                           )}
                         </div>
                         {project.description && (
-                          <div className="mt-4 text-sm leading-relaxed text-[#456882] whitespace-pre-line">
+                          <div className="mt-4 text-sm leading-relaxed text-[#516C83] whitespace-pre-line">
                             {project.description}
                           </div>
                         )}
@@ -466,7 +452,7 @@ export default function CandidateDetailsPage() {
             )}
 
             {seeker.educations?.length > 0 && (
-              <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
+              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
                 <SectionHeading
                   icon={Award}
                   title="Education"
@@ -476,13 +462,13 @@ export default function CandidateDetailsPage() {
                   {seeker.educations.map((edu: any, i: number) => (
                     <div
                       key={i}
-                      className="rounded-2xl border border-[#234C6A]/8 bg-[#F8FAFC] p-4 transition hover:bg-[#234C6A]/5"
+                      className="rounded-2xl border border-[#163B5C]/8 bg-[#F6F8FB] p-4 transition hover:bg-[#163B5C]/5"
                     >
-                      <p className="font-black text-[#234C6A]">{edu.degree}</p>
-                      <p className="mt-1 text-sm font-semibold text-[#456882]">
+                      <p className="font-black text-[#163B5C]">{edu.degree}</p>
+                      <p className="mt-1 text-sm font-semibold text-[#516C83]">
                         {edu.school}
                       </p>
-                      <p className="mt-1 text-xs font-bold text-[#456882]/65">
+                      <p className="mt-1 text-xs font-bold text-[#516C83]/65">
                         {formatEduYear(edu.year)}
                       </p>
                     </div>

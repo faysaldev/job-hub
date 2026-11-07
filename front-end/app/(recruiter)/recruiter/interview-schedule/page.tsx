@@ -2,6 +2,7 @@ import InterviewSchedulePage from "@/src/Page/Recruiter/InterviewSchedulePage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: "Interview Schedule | JobHub Recruiter",
   description:
     "Manage and oversee your upcoming candidate interview sessions. Coordinate schedules, reschedule sessions, and easily launch video interviews directly from JobHub.",
@@ -12,10 +13,6 @@ export const metadata: Metadata = {
     "candidate sessions",
     "JobHub recruiter dashboard",
   ],
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 export default function RecruiterInterviewSchedulePage() {

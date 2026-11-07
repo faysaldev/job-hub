@@ -2,6 +2,7 @@ import SeekerProfilePage from "@/src/Page/JobSeeker/ProfilePage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: "My Professional Profile | JobHub",
   description:
     "Build and update your professional profile. Highlight your skills, experience, and projects to attract top employers on JobHub.",

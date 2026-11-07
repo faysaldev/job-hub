@@ -148,10 +148,10 @@ const Messages = ({ userId }: { userId: string }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[600px]">
-      <Card className="md:col-span-1 p-4 overflow-y-auto border-[#456882]/30 bg-white">
-        <h3 className="font-semibold mb-4 text-[#234C6A]">Conversations</h3>
+      <Card className="md:col-span-1 p-4 overflow-y-auto border-[#516C83]/30 bg-white">
+        <h3 className="font-semibold mb-4 text-[#163B5C]">Conversations</h3>
         {conversations.length === 0 ? (
-          <p className="text-sm text-[#234C6A]/50">No conversations yet</p>
+          <p className="text-sm text-[#163B5C]/50">No conversations yet</p>
         ) : (
           <div className="space-y-2">
             {conversations.map((conv) => (
@@ -160,15 +160,15 @@ const Messages = ({ userId }: { userId: string }) => {
                 onClick={() => setSelectedConversation(conv.id)}
                 className={`p-3 rounded-lg cursor-pointer transition-colors ${
                   selectedConversation === conv.id
-                    ? "bg-[#234C6A]/10 border border-[#234C6A]/30"
-                    : "hover:bg-[#234C6A]/5 border border-transparent"
+                    ? "bg-[#163B5C]/10 border border-[#163B5C]/30"
+                    : "hover:bg-[#163B5C]/5 border border-transparent"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="bg-[#234C6A]/10 p-2 rounded-full">
-                    <User className="h-4 w-4 text-[#234C6A]" />
+                  <div className="bg-[#163B5C]/10 p-2 rounded-full">
+                    <User className="h-4 w-4 text-[#163B5C]" />
                   </div>
-                  <p className="font-medium text-sm text-[#234C6A]">
+                  <p className="font-medium text-sm text-[#163B5C]">
                     {getOtherParticipant(conv)}
                   </p>
                   {conv.unread > 0 && (
@@ -177,10 +177,10 @@ const Messages = ({ userId }: { userId: string }) => {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#234C6A]/70 line-clamp-1">
+                <p className="text-xs text-[#163B5C]/70 line-clamp-1">
                   {conv.lastMessage}
                 </p>
-                <p className="text-xs text-[#234C6A]/50 mt-1">
+                <p className="text-xs text-[#163B5C]/50 mt-1">
                   {new Date(conv.lastMessageTime).toLocaleDateString()}
                 </p>
               </div>
@@ -189,7 +189,7 @@ const Messages = ({ userId }: { userId: string }) => {
         )}
       </Card>
 
-      <Card className="md:col-span-2 p-4 flex flex-col border-[#456882]/30 bg-white">
+      <Card className="md:col-span-2 p-4 flex flex-col border-[#516C83]/30 bg-white">
         {selectedConversation ? (
           <>
             <div className="flex-1 overflow-y-auto mb-4 space-y-4 p-2">
@@ -203,8 +203,8 @@ const Messages = ({ userId }: { userId: string }) => {
                   <div
                     className={`max-w-[80%] p-4 rounded-2xl ${
                       msg.senderId === userId
-                        ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white rounded-br-none"
-                        : "bg-[#E3E3E3] text-[#234C6A] rounded-bl-none"
+                        ? "bg-gradient-to-r from-[#163B5C] to-[#516C83] text-white rounded-br-none"
+                        : "bg-[#E1E8EF] text-[#163B5C] rounded-bl-none"
                     }`}
                   >
                     <p className="text-sm">{msg.content}</p>
@@ -224,11 +224,11 @@ const Messages = ({ userId }: { userId: string }) => {
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="Type a message..."
-                className="border-[#456882]/30 focus:border-[#234C6A] focus:ring-[#234C6A]"
+                className="border-[#516C83]/30 focus:border-[#163B5C] focus:ring-[#163B5C]"
               />
               <Button
                 onClick={sendMessage}
-                className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
+                className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -237,13 +237,13 @@ const Messages = ({ userId }: { userId: string }) => {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <div className="bg-[#234C6A]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="h-8 w-8 text-[#234C6A]" />
+              <div className="bg-[#163B5C]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="h-8 w-8 text-[#163B5C]" />
               </div>
-              <p className="text-[#234C6A]/70 text-lg">
+              <p className="text-[#163B5C]/70 text-lg">
                 Select a conversation to start messaging
               </p>
-              <p className="text-[#234C6A]/50 mt-2 max-w-md">
+              <p className="text-[#163B5C]/50 mt-2 max-w-md">
                 Connect with recruiters and hiring managers to discuss
                 opportunities
               </p>

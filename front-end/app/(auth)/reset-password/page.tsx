@@ -2,6 +2,7 @@ import ForgotPasswordPage from "@/src/Page/Auth/ForgotPasswordPage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: "Reset Passwords | JobHub",
   description:
     "Securely reset your JobHub account password. Follow the steps to verify your identity and create a new, strong password to get back to your career journey.",

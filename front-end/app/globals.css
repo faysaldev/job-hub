@@ -1,239 +1,145 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* ============================================================================
-   DESIGN SYSTEM TOKENS — JobHub
-   Primary:   #234C6A (deep navy)
-   Secondary: #456882 (muted teal-blue)
-   Surface:   #E3E3E3 (light gray)
-   ============================================================================ */
+/* JobHub UI kit v2. Product-facing and workspace surfaces share these tokens. */
 :root {
-  --color-primary: #234c6a;
-  --color-primary-dark: #1a3a52;
-  --color-primary-light: #2d5a7a;
-  --color-secondary: #456882;
-  --color-secondary-light: #5a7e9a;
-  --color-surface: #e3e3e3;
-  --color-surface-light: #f5f5f5;
-  --color-bg: #ffffff;
-
-  /* Semantic aliases */
-  --primary: #234c6a;
-  --secondary: #456882;
-  --third: #e3e3e3;
-
-  /* Typography */
-  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
-
-  /* Radius scale */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
-  --radius-2xl: 1.5rem;
-
-  /* Shadows */
-  --shadow-card: 0 4px 24px -4px rgba(35, 76, 106, 0.08),
-    0 2px 8px -2px rgba(35, 76, 106, 0.04);
-  --shadow-elevated: 0 8px 32px -8px rgba(35, 76, 106, 0.12),
-    0 4px 16px -4px rgba(35, 76, 106, 0.06);
+  color-scheme: light;
+  --jh-primary: #163b5c;
+  --jh-primary-hover: #0c2c48;
+  --jh-secondary: #516c83;
+  --jh-ink: #162839;
+  --jh-muted: #66798a;
+  --jh-border: #e1e8ef;
+  --jh-canvas: #f6f8fb;
+  --jh-panel: #ffffff;
+  --jh-soft: #edf3f8;
+  --jh-focus: #2563a9;
+  /* Retain aliases used by existing components during incremental modernization. */
+  --color-primary: var(--jh-primary);
+  --color-primary-dark: var(--jh-primary-hover);
+  --color-primary-light: #325e7f;
+  --color-secondary: var(--jh-secondary);
+  --color-secondary-light: #6f879a;
+  --color-surface: var(--jh-border);
+  --color-surface-light: var(--jh-canvas);
+  --color-bg: var(--jh-panel);
+  --primary: var(--jh-primary);
+  --secondary: var(--jh-secondary);
+  --third: var(--jh-border);
+  --radius-sm: .375rem;
+  --radius-md: .625rem;
+  --radius-lg: .875rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.125rem;
+  --shadow-card: 0 1px 3px rgba(21, 46, 70, .035);
+  --shadow-elevated: 0 12px 30px -15px rgba(21, 46, 70, .18);
+  --font-sans: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
 }
-
-/* ============================================================================
-   BASE STYLES
-   ============================================================================ */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+@theme inline {
+  --color-primary: var(--jh-primary);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--jh-soft);
+  --color-secondary-foreground: var(--jh-ink);
+  --color-background: var(--jh-panel);
+  --color-foreground: var(--jh-ink);
+  --color-card: var(--jh-panel);
+  --color-card-foreground: var(--jh-ink);
+  --color-muted: var(--jh-soft);
+  --color-muted-foreground: var(--jh-muted);
+  --color-accent: var(--jh-soft);
+  --color-accent-foreground: var(--jh-primary);
+  --color-border: var(--jh-border);
+  --color-input: var(--jh-border);
+  --color-ring: var(--jh-focus);
+  --color-destructive: #b42332;
 }
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; margin: 0; background: var(--jh-canvas); color: var(--jh-ink); font-family: var(--font-sans); }
+::selection { background: #d4e7f8; color: var(--jh-primary-hover); }
+:focus-visible { outline: 3px solid var(--jh-focus) !important; outline-offset: 3px !important; }
+[aria-invalid="true"] { border-color: #b42332 !important; }
+button, input, textarea, select { font: inherit; }
+button:not(:disabled) { cursor: pointer; }
+a { text-underline-offset: .2em; }
+img, svg { max-width: 100%; }
+.skip-to-content { position: fixed; top: 8px; left: 8px; z-index: 1000; padding: 12px 16px; color: white; background: var(--jh-primary); transform: translateY(-150%); border-radius: 10px; }
+.skip-to-content:focus { transform: translateY(0); }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Shared public shell and navigation. */
+.jh-public { background: var(--jh-canvas); min-height: 100vh; }
+.jh-container { width: min(100% - 2rem, 1200px); margin-inline: auto; }
+.jh-site-header { position: sticky; top: 0; z-index: 45; height: 72px; border-bottom: 1px solid var(--jh-border); background: rgba(255,255,255,.97); backdrop-filter: blur(12px); }
+.jh-header-inner { height: 100%; display: flex; align-items: center; gap: 30px; }
+.jh-logo { display: inline-flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 750; letter-spacing: -.04em; color: var(--jh-ink); white-space: nowrap; }
+.jh-logo-mark { width: 35px; height: 35px; background: var(--jh-primary); border-radius: 10px; display: grid; place-items: center; color: white; }
+.text-\[\#66798a\] { color: #596d7e; }
+.text-\[\#7895ad\] { color: #516c83; }
+.jh-nav { display: flex; align-items: center; gap: 4px; }
+.jh-nav.hidden { display: none; }
+@media (min-width: 1024px) {
+  .jh-nav.lg\:flex { display: flex; }
 }
+.jh-nav-link { display: inline-flex; align-items: center; gap: 8px; padding: 10px 13px; border-radius: 9px; font-size: 14px; color: #4b6174; font-weight: 560; transition: background-color .18s, color .18s; }
+.jh-nav-link:hover, .jh-nav-link[data-active="true"] { background: var(--jh-soft); color: var(--jh-primary); }
+.jh-button { display: inline-flex; gap: 8px; align-items: center; justify-content: center; min-height: 40px; border: 1px solid transparent; border-radius: 10px; background: var(--jh-primary); padding: 9px 16px; font-size: 14px; font-weight: 650; color: white; transition: background-color .2s; }
+.jh-button:hover { background: var(--jh-primary-hover); }
+.jh-button--outline { background: white; color: var(--jh-primary); border-color: var(--jh-border); }
+.jh-button--outline:hover { background: var(--jh-soft); }
+.jh-button--ghost { background: transparent; color: var(--jh-primary); }
+.jh-button--ghost:hover { background: var(--jh-soft); }
+.jh-icon-button { display: inline-grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--jh-border); border-radius: 10px; background: white; color: var(--jh-primary); }
+.jh-mobile-panel { border-top: 1px solid var(--jh-border); background: white; box-shadow: 0 20px 30px rgba(12,37,60,.08); }
+.jh-mobile-panel .jh-nav-link { display: flex; width: 100%; }
+.jh-footer { border-top: 1px solid var(--jh-border); background: white; }
+.jh-panel { border: 1px solid var(--jh-border); border-radius: 14px; background: white; box-shadow: var(--shadow-card); }
+.jh-kicker { font-size: 11px; line-height: 1.5; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--jh-secondary); }
 
-body {
-  font-family: var(--font-sans);
-  background-color: var(--color-bg);
-  color: var(--color-primary);
+/* Workspaces use the same surface, radius, typography and navigation geometry. */
+.jobhub-workspace { min-height: 100vh; background: var(--jh-canvas); }
+.jh-workspace-shell { min-height: calc(100vh - 72px); display: flex; }
+.jh-workspace-sidebar { width: 250px; flex: 0 0 250px; border-right: 1px solid var(--jh-border); background: white; padding: 22px 14px; }
+.jh-workspace-nav { display: grid; gap: 3px; }
+.jh-sidebar-link { display: flex; align-items: center; gap: 11px; min-height: 43px; border-radius: 9px; padding: 10px 12px; font-size: 14px; font-weight: 550; color: var(--jh-secondary); }
+.jh-sidebar-link:hover { color: var(--jh-primary); background: var(--jh-canvas); }
+.jh-sidebar-link[aria-current="page"] { color: var(--jh-primary); background: #e9f1f8; font-weight: 680; }
+.jh-sidebar-label { padding: 8px 12px; font-size: 11px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; color: #8999a7; }
+.jh-workspace-main { min-width: 0; flex: 1; }
+.jh-workspace-inner { width: min(100%, 1450px); margin: 0 auto; padding: 28px clamp(16px, 3vw, 42px) 72px; }
+.jobhub-workspace .font-black { font-weight: 700; }
+.jobhub-workspace .rounded-3xl, .jobhub-workspace .rounded-\[2rem\] { border-radius: 14px; }
+.jobhub-workspace .shadow-2xl, .jobhub-workspace .shadow-xl { box-shadow: var(--shadow-card); }
+.jobhub-workspace .backdrop-blur, .jobhub-workspace .backdrop-blur-xl { backdrop-filter: none; }
+.jobhub-workspace [data-slot="card"] { border-color: var(--jh-border); box-shadow: var(--shadow-card); }
+.jobhub-workspace :is(input,select,textarea) { max-width: 100%; }
+.jobhub-workspace table { width: 100%; border-collapse: collapse; }
+.jobhub-workspace th { font-weight: 650; color: var(--jh-secondary); }
+.jobhub-workspace th, .jobhub-workspace td { text-align: left; border-bottom: 1px solid var(--jh-border); }
+@media (max-width: 1023px) {
+  .jh-workspace-sidebar { position: fixed; z-index: 65; left: 0; top: 0; height: 100dvh; width: min(300px, 86vw); transform: translateX(-105%); transition: transform .2s; overflow-y: auto; box-shadow: 15px 0 35px rgba(12,37,60,.08); }
+  .jh-workspace-sidebar[data-open="true"] { transform: translateX(0); }
+  .jh-workspace-inner { padding-top: 20px; }
 }
+@media (min-width: 1024px) { .jh-workspace-sidebar { position: sticky; top: 72px; height: calc(100vh - 72px); overflow-y: auto; } }
 
-/* ============================================================================
-   SCROLLBAR STYLING
-   ============================================================================ */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-surface);
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-secondary);
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
-}
-
-/* ============================================================================
-   FOCUS STYLES (Accessibility)
-   ============================================================================ */
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
-}
-
-/* Global input/button focus outline removal */
-input:focus,
-input:focus-visible,
-textarea:focus,
-textarea:focus-visible,
-select:focus,
-select:focus-visible,
-button:focus,
-button:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-/* ============================================================================
-   ANIMATIONS
-   ============================================================================ */
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-blob {
-  animation: blob 8s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Loading skeleton */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface) 25%,
-    #f0f0f0 50%,
-    var(--color-surface) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease infinite;
-  border-radius: var(--radius-md);
-}
-
-/* ============================================================================
-   UTILITY CLASSES
-   ============================================================================ */
-
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-secondary) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Glass effect */
-.glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Card elevation levels */
-.card-base {
-  background: white;
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
-}
-
-.card-elevated {
-  background: white;
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-elevated);
-}
-
-/* Truncate with tooltip */
-.truncate-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.truncate-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Safe area for mobile bottom nav */
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0);
+/* Loading, feedback and legacy compatibility utilities. */
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.skeleton, .jh-skeleton { border-radius: 8px; background: linear-gradient(90deg,#e8edf3 0%,#f5f8fb 45%,#e8edf3 90%); background-size: 200% 100%; animation: shimmer 1.5s linear infinite; }
+.jh-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 240px; border: 1px dashed var(--jh-border); border-radius: 14px; background: white; padding: 36px; text-align: center; }
+.jh-state h2 { color: var(--jh-ink); font-size: 18px; font-weight: 700; }
+.jh-state p { max-width: 440px; color: var(--jh-muted); font-size: 14px; line-height: 1.6; }
+.jobhub-page-bg { background: var(--jh-canvas); }
+.card-base { background: white; border: 1px solid var(--jh-border); border-radius: 14px; box-shadow: var(--shadow-card); }
+.card-elevated { background: white; border: 1px solid var(--jh-border); border-radius: 14px; box-shadow: var(--shadow-elevated); }
+.glass { background: rgba(255,255,255,.96); border: 1px solid var(--jh-border); }
+.gradient-text { color: var(--jh-primary); }
+.truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.truncate-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-in { animation: fadeIn .3s ease-out both; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #c5d0da; border-radius: 20px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

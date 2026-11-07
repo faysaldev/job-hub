@@ -1,47 +1,13 @@
 import CompanyDetailsPage from "@/src/Page/Companies/CompanyDetailsPage";
-import { Metadata } from "next";
-
-type Props = {
-  params: Promise<{ id: string }>;
-};
-
+import { publicEntity, safeMetaText } from "@/src/lib/publicMetadata";
+import type { Metadata } from "next";
+type Props = { params: Promise<{ id: string }> };
+type CompanyMeta = { companyName?: string; description?: string; industries?: string; companyLocation?: string };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/companies/${id}`,
-    );
-    const data = await res.json();
-    const company = data?.data;
-
-    if (!company) {
-      return {
-        title: "Company Not Found | JobHub",
-      };
-    }
-
-    return {
-      title: `${company.companyName} Careers & Profile | JobHub`,
-      description: `Learn more about ${company.companyName}. Explore their company culture, open positions, and what it's like to work in the ${company.industries} industry.`,
-      keywords: [
-        company.companyName,
-        "company profile",
-        "careers",
-        "jobs at " + company.companyName,
-        company.industries,
-        "JobHub",
-        "hiring",
-      ],
-    };
-  } catch (error) {
-    return {
-      title: "Company Profile | JobHub",
-      description: "Explore company profiles and careers on JobHub.",
-    };
-  }
+  const company = await publicEntity<CompanyMeta>("recruiter-company", id);
+  if (!company) return { title: "Company unavailable", robots: { index: false, follow: false } };
+  const name = safeMetaText(company.companyName, 80) || "Company";
+  return { title: `${name} — Company profile`, description: safeMetaText(company.description) || `Explore ${name} on JobHub.`, alternates: { canonical: `/company/${id}` }, openGraph: { title: `${name} — Company profile`, description: safeMetaText(company.description) } };
 }
-
-export default function CompanyDetails() {
-  return <CompanyDetailsPage />;
-}
+export default function CompanyDetails() { return <CompanyDetailsPage />; }
