@@ -96,17 +96,17 @@ function formatSalary(min: number, max: number, period: string): string {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  "full-time": "bg-[#163B5C]/10 text-[#163B5C] border-[#163B5C]/10",
-  "part-time": "bg-[#516C83]/10 text-[#163B5C] border-[#516C83]/10",
-  contract: "bg-[#E1E8EF]/70 text-[#163B5C] border-[#163B5C]/10",
-  freelance: "bg-white text-[#163B5C] border-[#163B5C]/10",
-  internship: "bg-[#163B5C]/5 text-[#516C83] border-[#163B5C]/10",
+  "full-time": "bg-neutral-100 text-neutral-800 border-neutral-200",
+  "part-time": "bg-neutral-100 text-neutral-800 border-neutral-200",
+  contract: "bg-neutral-100 text-neutral-800 border-neutral-200",
+  freelance: "bg-white text-neutral-800 border-neutral-200",
+  internship: "bg-neutral-50 text-neutral-600 border-neutral-200",
 };
 
 const LOCATION_COLORS: Record<string, string> = {
   remote: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  hybrid: "bg-[#E1E8EF]/70 text-[#163B5C] border-[#163B5C]/10",
-  onsite: "bg-white text-[#516C83] border-[#163B5C]/10",
+  hybrid: "bg-neutral-100 text-neutral-800 border-neutral-200",
+  onsite: "bg-white text-neutral-600 border-neutral-200",
 };
 
 // ─── Job Card (Reference Design) ─────────────────────────────────────────────
@@ -241,13 +241,13 @@ JobCard.displayName = "JobCard";
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
 const EmptyState = memo(() => (
-  <Card className="rounded-3xl border border-dashed border-[#163B5C]/20 bg-white/80 p-12 text-center shadow-sm">
-    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#163B5C]/10">
-      <Briefcase className="h-8 w-8 text-[#163B5C]" />
+  <Card className="rounded-2xl border border-dashed border-[#eaecf0] bg-white p-12 text-center shadow-xs">
+    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
+      <Briefcase className="h-8 w-8" />
     </div>
-    <h3 className="mb-2 text-2xl font-black text-[#163B5C]">No Jobs Found</h3>
-    <p className="text-[#516C83] max-w-md mx-auto">
-      We couldn't find any jobs matching your criteria. Try adjusting your
+    <h3 className="mb-2 text-xl font-bold text-neutral-900">No Jobs Found</h3>
+    <p className="text-xs sm:text-sm text-neutral-500 max-w-md mx-auto leading-relaxed">
+      We couldn&apos;t find any jobs matching your criteria. Try adjusting your
       filters or search terms.
     </p>
   </Card>

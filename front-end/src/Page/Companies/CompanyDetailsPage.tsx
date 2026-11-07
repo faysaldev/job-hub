@@ -28,6 +28,7 @@ import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
 import Header from "@/src/components/common/Header";
 import Footer from "@/src/components/common/Footer";
+import { CompanyBrandIcon } from "@/src/components/jobs/JobCard";
 import { toast } from "sonner";
 import gsap from "gsap";
 
@@ -45,31 +46,25 @@ const CompanyDetailsPage = () => {
     if (!isLoading && company) {
       const ctx = gsap.context(() => {
         gsap.fromTo(
-          ".hero-content",
-          { opacity: 0, y: -20 },
-          { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" },
-        );
-        gsap.fromTo(
           ".stat-item",
-          { opacity: 0, y: 20 },
+          { opacity: 0, y: 16 },
           {
             opacity: 1,
             y: 0,
             duration: 0.4,
-            stagger: 0.1,
-            delay: 0.3,
+            stagger: 0.05,
             ease: "power2.out",
           },
         );
         gsap.fromTo(
           ".main-card",
-          { opacity: 0, y: 20 },
+          { opacity: 0, y: 16 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.5,
-            stagger: 0.15,
-            delay: 0.5,
+            duration: 0.4,
+            stagger: 0.08,
+            delay: 0.1,
             ease: "power2.out",
           },
         );
@@ -80,12 +75,12 @@ const CompanyDetailsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col jobhub-page-bg">
+      <div className="flex min-h-screen flex-col bg-[#f8fafc]">
         <Header />
-        <div className="flex flex-1 flex-col items-center justify-center">
-          <div className="rounded-3xl border border-[#163B5C]/10 bg-white/90 p-8 text-center shadow-xl shadow-[#163B5C]/8 backdrop-blur">
-            <Loader2 className="mx-auto mb-4 h-12 w-12 animate-spin text-[#163B5C]" />
-            <p className="text-sm font-black uppercase tracking-widest text-[#163B5C]">
+        <div className="flex flex-1 flex-col items-center justify-center p-4">
+          <div className="rounded-2xl border border-[#eaecf0] bg-white p-8 text-center shadow-xs max-w-xs w-full">
+            <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-neutral-800" />
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-900">
               Loading Company Profile...
             </p>
           </div>
@@ -97,21 +92,21 @@ const CompanyDetailsPage = () => {
 
   if (error || !company) {
     return (
-      <div className="flex min-h-screen flex-col jobhub-page-bg">
+      <div className="flex min-h-screen flex-col bg-[#f8fafc]">
         <Header />
         <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-red-50">
-            <Building2 className="h-10 w-10 text-red-400" />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
+            <Building2 className="h-7 w-7" />
           </div>
-          <h3 className="text-2xl font-black text-[#163B5C]">
+          <h2 className="text-lg font-bold text-neutral-950">
             Company not found
-          </h3>
-          <p className="mt-2 max-w-md text-[#516C83]">
+          </h2>
+          <p className="mt-1 max-w-md text-xs text-neutral-500">
             We couldn&apos;t find the company profile you&apos;re looking for.
           </p>
-          <Link href="/companies" className="mt-8">
-            <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-8 font-black text-white shadow-lg shadow-[#163B5C]/20">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Browse Companies
+          <Link href="/companies" className="mt-6">
+            <Button className="h-9 rounded-xl bg-black px-6 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800">
+              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Browse Companies
             </Button>
           </Link>
         </div>
@@ -121,7 +116,7 @@ const CompanyDetailsPage = () => {
   }
 
   const stats = [
-    { label: "Company Size", value: company.companySize || "N/A", icon: Users },
+    { label: "Company Size", value: company.companySize ? `${company.companySize} employees` : "Not specified", icon: Users },
     {
       label: "Industry",
       value: company.industries || "Technology",
@@ -133,7 +128,7 @@ const CompanyDetailsPage = () => {
       icon: MapPin,
     },
     {
-      label: "Since",
+      label: "Founded",
       value: company.createdAt
         ? new Date(company.createdAt).getFullYear()
         : "N/A",
@@ -144,57 +139,48 @@ const CompanyDetailsPage = () => {
   return (
     <div
       ref={containerRef}
-      className="flex min-h-screen flex-col jobhub-page-bg"
+      className="flex min-h-screen flex-col bg-[#f8fafc]"
     >
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-[#163B5C] pb-36 pt-24 text-white shadow-2xl shadow-[#163B5C]/20">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/20 to-transparent" />
+      <Header />
 
-          <div className="hero-content container mx-auto px-6 relative z-10">
+      <main className="flex-1">
+        {/* Pitch-Black Hero Header */}
+        <section className="relative overflow-hidden bg-black text-white pt-8 pb-20 border-b border-neutral-800">
+          <div className="container mx-auto max-w-5xl px-4 relative z-10">
             <Link
               href="/companies"
-              className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/85 backdrop-blur-sm transition-colors hover:bg-white/15"
+              className="mb-6 inline-flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5" />
               Back to companies
             </Link>
 
-            <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-start">
-              {/* Logo */}
-              <div className="relative group">
-                <div className="absolute -inset-1 rounded-[2rem] bg-white/20 opacity-25 blur transition duration-500 group-hover:opacity-40" />
-                <div className="relative flex h-36 w-36 items-center justify-center rounded-3xl border border-white/20 bg-white p-6 shadow-2xl">
-                  {company.companyLogo ? (
-                    <img
-                      src={company.companyLogo}
-                      alt={company.companyName}
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <Building2 className="h-16 w-16 text-[#163B5C]" />
-                  )}
-                </div>
-              </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+              <CompanyBrandIcon
+                companyName={company.companyName}
+                logoUrl={company.companyLogo}
+                id={company._id}
+                className="h-20 w-20 rounded-2xl shrink-0"
+              />
 
-              {/* Title */}
-              <div className="flex-1 space-y-5 text-center lg:text-left">
-                <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-                  <Badge className="flex items-center gap-2 rounded-full border-emerald-300/30 bg-emerald-400/15 px-3 py-1 text-xs font-black tracking-wider text-emerald-200">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
                     Verified Employer
-                  </Badge>
-                  <Badge className="rounded-full border-white/20 bg-white/10 px-3 py-1 text-xs font-black text-white">
+                  </span>
+                  <span className="rounded-full border border-neutral-700 bg-neutral-800 px-2.5 py-0.5 text-[11px] font-medium text-neutral-200">
                     {company.industries || "Company"}
-                  </Badge>
+                  </span>
                 </div>
-                <h1 className="text-4xl font-black tracking-tight text-white md:text-6xl">
+
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
                   {company.companyName}
                 </h1>
-                <div className="flex flex-wrap items-center justify-center gap-4 text-base font-medium text-white/75 lg:justify-start">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-white/70" />
+
+                <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-neutral-400">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-neutral-400" />
                     {company.companyLocation || "Global"}
                   </div>
                   {company.website && (
@@ -202,11 +188,11 @@ const CompanyDetailsPage = () => {
                       href={company.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 transition-colors hover:text-white"
+                      className="flex items-center gap-1 text-neutral-300 hover:text-white transition-colors"
                     >
-                      <Globe className="h-5 w-5 text-white/70" />
-                      Visit Website
-                      <ArrowUpRight className="h-4 w-4" />
+                      <Globe className="h-3.5 w-3.5" />
+                      {company.website.replace(/https?:\/\//, "")}
+                      <ArrowUpRight className="h-3 w-3" />
                     </a>
                   )}
                 </div>
@@ -215,26 +201,26 @@ const CompanyDetailsPage = () => {
           </div>
         </section>
 
-        {/* Main Content */}
-        <div className="container relative z-20 mx-auto -mt-24 px-6 pb-20">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* Content Section */}
+        <div className="container relative z-20 mx-auto max-w-5xl -mt-10 px-4 pb-16">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Left: Stats & Contact */}
-            <div className="space-y-6 lg:col-span-1">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="space-y-4 lg:col-span-1">
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
                 {stats.map((stat, i) => (
                   <Card
                     key={i}
-                    className="stat-item group rounded-3xl border border-[#163B5C]/10 bg-white/95 p-5 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-xl hover:shadow-[#163B5C]/10"
+                    className="stat-item rounded-2xl border border-[#eaecf0] bg-white p-4 shadow-xs"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C]/10 transition-colors group-hover:bg-[#163B5C]">
-                        <stat.icon className="h-5 w-5 text-[#163B5C] group-hover:text-white transition-colors" />
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100 text-neutral-800 shrink-0">
+                        <stat.icon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[#516C83]">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                           {stat.label}
                         </p>
-                        <p className="truncate text-lg font-black text-[#163B5C]">
+                        <p className="truncate text-xs font-bold text-neutral-900 mt-0.5">
                           {stat.value}
                         </p>
                       </div>
@@ -244,14 +230,14 @@ const CompanyDetailsPage = () => {
               </div>
 
               {/* Contact Card */}
-              <Card className="main-card space-y-5 rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
-                <h3 className="flex items-center gap-2 text-lg font-black text-[#163B5C]">
-                  <Target className="h-5 w-5 text-[#163B5C]" />
-                  Contact Details
+              <Card className="main-card space-y-3 rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs">
+                <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-400">
+                  <Target className="h-3.5 w-3.5 text-neutral-500" />
+                  Contact Info
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <div
-                    className="flex cursor-pointer items-center gap-3 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-3 transition-colors hover:bg-[#163B5C]/5"
+                    className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-neutral-100 bg-[#f8fafc] p-2.5 transition-colors hover:bg-neutral-100"
                     onClick={() => {
                       if (company.userId?.email) {
                         navigator.clipboard.writeText(company.userId.email);
@@ -259,28 +245,28 @@ const CompanyDetailsPage = () => {
                       }
                     }}
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-                      <Mail className="h-4 w-4 text-[#163B5C]" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-2xs shrink-0">
+                      <Mail className="h-3.5 w-3.5 text-neutral-600" />
                     </div>
-                    <div className="min-w-0 overflow-hidden">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-[#516C83]">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                         Email
                       </p>
-                      <p className="truncate text-sm font-bold text-[#163B5C]">
-                        {company.userId?.email || "Not available"}
+                      <p className="truncate text-xs font-bold text-neutral-900">
+                        {company.userId?.email || "Not public"}
                       </p>
                     </div>
                   </div>
                   {company.userId?.phoneNumber && (
-                    <div className="flex items-center gap-3 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-                        <Phone className="h-4 w-4 text-emerald-500" />
+                    <div className="flex items-center gap-2.5 rounded-xl border border-neutral-100 bg-[#f8fafc] p-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-2xs shrink-0">
+                        <Phone className="h-3.5 w-3.5 text-emerald-600" />
                       </div>
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-[#516C83]">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                           Phone
                         </p>
-                        <p className="text-sm font-bold text-[#163B5C]">
+                        <p className="text-xs font-bold text-neutral-900 truncate">
                           {company.userId?.phoneNumber}
                         </p>
                       </div>
@@ -291,67 +277,62 @@ const CompanyDetailsPage = () => {
             </div>
 
             {/* Right: Description & Jobs */}
-            <div className="space-y-6 lg:col-span-2">
-              <Card className="main-card rounded-3xl border border-[#163B5C]/10 bg-white/95 p-8 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
-                <h2 className="mb-6 flex items-center gap-3 text-2xl font-black text-[#163B5C]">
-                  <ShieldCheck className="h-7 w-7 text-[#163B5C]" />
+            <div className="space-y-5 lg:col-span-2">
+              <Card className="main-card rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-6 shadow-xs">
+                <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-neutral-900">
+                  <ShieldCheck className="h-5 w-5 text-neutral-700" />
                   About the Company
                 </h2>
-                <div className="max-w-none whitespace-pre-line text-base font-medium leading-8 text-[#516C83]">
-                  {company.description || "No description provided."}
+                <div className="whitespace-pre-line text-xs sm:text-sm leading-relaxed text-neutral-600">
+                  {company.description || "No company description provided."}
                 </div>
               </Card>
 
               {/* Open Positions */}
               {company.jobs && company.jobs.length > 0 && (
-                <Card className="main-card space-y-6 rounded-3xl border border-[#163B5C]/10 bg-white/95 p-8 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
-                  <div className="flex items-center justify-between">
-                    <h2 className="flex items-center gap-3 text-xl font-black text-[#163B5C]">
-                      <Briefcase className="h-6 w-6 text-[#163B5C]" />
+                <Card className="main-card space-y-4 rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-6 shadow-xs">
+                  <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                    <h2 className="flex items-center gap-2 text-base font-bold text-neutral-900">
+                      <Briefcase className="h-4 w-4 text-neutral-700" />
                       Open Positions
                     </h2>
-                    <Badge className="rounded-full border-none bg-[#163B5C]/10 px-3 py-1 text-xs font-black text-[#163B5C]">
+                    <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-[10px] font-bold text-neutral-800">
                       {company.jobs.length} Active
-                    </Badge>
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-3">
                     {company.jobs.map((job: any) => (
                       <div
                         key={job._id}
-                        className="group rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-xl hover:shadow-[#163B5C]/10"
+                        className="rounded-xl border border-neutral-100 bg-[#f8fafc] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-neutral-50 transition-colors"
                       >
-                        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
-                          <div className="space-y-2">
-                            <h3 className="text-lg font-black text-[#163B5C] transition-colors group-hover:text-[#516C83]">
-                              {job.title}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-[#516C83]">
-                              <span className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2">
-                                <MapPin className="h-3.5 w-3.5 text-[#163B5C]" />
-                                {job.location || "Remote"} ({job.locationType})
-                              </span>
-                              <span className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2">
-                                <Clock className="h-3.5 w-3.5 text-[#163B5C]" />
-                                {job.type?.replace("-", " ")}
-                              </span>
-                              <span className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2">
-                                <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-                                $
-                                {(Number(job.salaryMin || 0) / 1000).toFixed(0)}
-                                k - $
-                                {(Number(job.salaryMax || 0) / 1000).toFixed(0)}
-                                k
-                              </span>
-                            </div>
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-bold text-neutral-900">
+                            {job.title}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3 text-neutral-400" />
+                              {job.location || "Remote"} ({job.locationType})
+                            </span>
+                            <span className="flex items-center gap-1 capitalize">
+                              <Clock className="h-3 w-3 text-neutral-400" />
+                              {job.type?.replace("-", " ")}
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-neutral-900">
+                              <DollarSign className="h-3 w-3 text-neutral-400" />
+                              ${(Number(job.salaryMin || 0) / 1000).toFixed(0)}k - $
+                              {(Number(job.salaryMax || 0) / 1000).toFixed(0)}k
+                            </span>
                           </div>
-                          <Link href={`/job/${job._id}`}>
-                            <Button className="h-11 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-6 font-black text-white shadow-md transition-all hover:shadow-lg active:scale-95">
-                              View Details
-                              <ArrowUpRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          </Link>
                         </div>
+                        <Link href={`/job/${job._id}`}>
+                          <Button className="h-8 rounded-lg bg-black text-white hover:bg-neutral-800 text-[10px] font-bold uppercase tracking-wider px-3.5 shrink-0">
+                            View Details
+                            <ArrowUpRight className="ml-1 h-3 w-3" />
+                          </Button>
+                        </Link>
                       </div>
                     ))}
                   </div>
@@ -359,29 +340,27 @@ const CompanyDetailsPage = () => {
               )}
 
               {/* Mission & Culture */}
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <Card className="main-card rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#163B5C]/10">
-                    <Zap className="h-6 w-6 text-amber-500" />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Card className="main-card rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs">
+                  <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
+                    <Zap className="h-4 w-4" />
                   </div>
-                  <h4 className="mb-2 text-lg font-black text-[#163B5C]">
+                  <h3 className="mb-1 text-sm font-bold text-neutral-900">
                     Our Mission
-                  </h4>
-                  <p className="text-sm font-medium leading-relaxed text-[#516C83]">
-                    To innovate and lead in the {company.industries} sector
-                    through excellence and technology.
+                  </h3>
+                  <p className="text-xs text-neutral-500 leading-relaxed">
+                    To innovate and deliver quality in the {company.industries || "technology"} domain through focused teamwork and purpose.
                   </p>
                 </Card>
-                <Card className="main-card rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50">
-                    <Users2 className="h-6 w-6 text-emerald-500" />
+                <Card className="main-card rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs">
+                  <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
+                    <Users2 className="h-4 w-4" />
                   </div>
-                  <h4 className="mb-2 text-lg font-black text-[#163B5C]">
+                  <h3 className="mb-1 text-sm font-bold text-neutral-900">
                     Our Culture
-                  </h4>
-                  <p className="text-sm font-medium leading-relaxed text-[#516C83]">
-                    We foster a collaborative environment where every team
-                    member is empowered to grow.
+                  </h3>
+                  <p className="text-xs text-neutral-500 leading-relaxed">
+                    We foster an inclusive and transparent work environment where team members can thrive and do their best work.
                   </p>
                 </Card>
               </div>
@@ -389,6 +368,8 @@ const CompanyDetailsPage = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

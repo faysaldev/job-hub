@@ -20,10 +20,11 @@ import {
   BookOpen,
   CheckCircle,
   Clock,
-  Mail,
   CalendarDays,
-  FileText,
+  ShieldCheck,
 } from "lucide-react";
+import Header from "@/src/components/common/Header";
+import Footer from "@/src/components/common/Footer";
 import { useGetSeekerByIdQuery } from "@/src/redux/features/seeker/seekerApi";
 import { formatDate, formatEduYear } from "@/src/utils/helper";
 
@@ -32,7 +33,7 @@ const SOCIAL_CONFIG = [
     key: "github",
     icon: Github,
     label: "GitHub",
-    hoverBg: "hover:bg-gray-900",
+    hoverBg: "hover:bg-neutral-900",
     hoverText: "hover:text-white",
   },
   {
@@ -61,17 +62,17 @@ function SectionHeading({
   eyebrow?: string;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C] text-white shadow-lg shadow-[#163B5C]/15">
-        <Icon className="h-5 w-5" />
+    <div className="flex items-center gap-2.5">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
+        <Icon className="h-4 w-4" />
       </div>
       <div>
         {eyebrow && (
-          <p className="text-xs font-black uppercase tracking-widest text-[#516C83]">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
             {eyebrow}
           </p>
         )}
-        <h2 className="text-xl font-black tracking-tight text-[#163B5C]">
+        <h2 className="text-base font-bold text-neutral-950">
           {title}
         </h2>
       </div>
@@ -87,47 +88,50 @@ export default function CandidateDetailsPage() {
     error,
   } = useGetSeekerByIdQuery(params?.id as string);
   const seeker = response?.data;
-  console.log("seeker", seeker);
+
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col jobhub-page-bg">
-        <div className="flex flex-1 items-center justify-center px-6">
-          <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-10 text-center shadow-2xl shadow-[#163B5C]/10">
-            <div className="mx-auto mb-5 h-14 w-14 animate-spin rounded-full border-4 border-[#163B5C]/15 border-t-[#163B5C]" />
-            <p className="text-sm font-black uppercase tracking-widest text-[#163B5C]">
+      <div className="flex min-h-screen flex-col bg-[#f8fafc]">
+        <Header />
+        <div className="flex flex-1 items-center justify-center px-4">
+          <Card className="rounded-2xl border border-[#eaecf0] bg-white p-8 text-center shadow-xs max-w-xs w-full">
+            <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-neutral-300 border-t-black" />
+            <p className="text-xs font-bold uppercase tracking-wider text-neutral-900">
               Loading Profile...
             </p>
-            <p className="mt-2 text-sm text-[#516C83]">
+            <p className="mt-1 text-xs text-neutral-500">
               Preparing the candidate snapshot
             </p>
           </Card>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (error || !seeker) {
     return (
-      <div className="flex min-h-screen flex-col jobhub-page-bg">
-        <div className="flex flex-1 items-center justify-center p-6 text-center">
-          <Card className="max-w-md rounded-3xl border border-[#163B5C]/10 bg-white/95 p-10 shadow-2xl shadow-[#163B5C]/10">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-red-50">
-              <User className="h-10 w-10 text-red-400" />
+      <div className="flex min-h-screen flex-col bg-[#f8fafc]">
+        <Header />
+        <div className="flex flex-1 items-center justify-center p-4 text-center">
+          <Card className="max-w-md rounded-2xl border border-[#eaecf0] bg-white p-8 shadow-xs w-full">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
+              <User className="h-7 w-7" />
             </div>
-            <h3 className="text-2xl font-black text-[#163B5C]">
+            <h2 className="text-lg font-bold text-neutral-950">
               Profile not found
-            </h3>
-            <p className="mt-2 text-[#516C83]">
-              We couldn&apos;t find this candidate profile. It may have been
-              removed.
+            </h2>
+            <p className="mt-1 text-xs text-neutral-500">
+              We couldn&apos;t find this candidate profile. It may have been removed.
             </p>
-            <Link href="/candidates" className="mt-8 inline-flex">
-              <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-8 font-black text-white">
+            <Link href="/candidates" className="mt-6 inline-flex">
+              <Button className="h-9 rounded-xl bg-black px-6 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800">
                 Back to Candidates
               </Button>
             </Link>
           </Card>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -138,166 +142,140 @@ export default function CandidateDetailsPage() {
   })).filter((s) => s.link);
 
   return (
-    <div className="min-h-screen flex flex-col jobhub-page-bg">
-      <section className="relative overflow-hidden bg-[#163B5C] pt-28 pb-28 md:pt-20 md:pb-24">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
-          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/20 to-transparent" />
-          <div className="absolute left-8 top-28 hidden h-28 w-64 rotate-[-8deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
-          <div className="absolute bottom-14 right-10 hidden h-32 w-72 rotate-[7deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
-        </div>
+    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+      <Header />
 
-        <div className="container mx-auto px-6 relative z-10">
+      {/* Hero Header */}
+      <section className="relative overflow-hidden bg-black text-white pt-8 pb-20 border-b border-neutral-800">
+        <div className="container mx-auto max-w-5xl px-4 relative z-10">
           <Link
             href="/candidates"
-            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/80 backdrop-blur-sm transition hover:text-white"
+            className="mb-6 inline-flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold text-neutral-300 transition hover:bg-neutral-800 hover:text-white"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3.5 w-3.5" />
             Back to Candidates
           </Link>
 
-          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
-              <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+              <h1 className="max-w-3xl text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
                 {seeker.userId?.name || "Anonymous Candidate"}
               </h1>
-              <p className="mt-4 max-w-2xl text-lg font-medium leading-8 text-white/75">
-                {seeker.designation || "Professional"} profile with skills,
-                experience, availability, and project history in one focused
-                recruiter view.
+              <p className="mt-2 max-w-xl text-xs sm:text-sm text-neutral-400">
+                {seeker.designation || "Professional"} profile with verified skills,
+                experience, and availability overview.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:w-[520px]">
-              {[
-                {
-                  icon: Briefcase,
-                  label: "Experience",
-                  value: seeker.totalExperience || "Not added",
-                },
-                {
-                  icon: Clock,
-                  label: "Availability",
-                  value: seeker.availability?.replace("-", " ") || "Flexible",
-                },
-                {
-                  icon: Globe,
-                  label: "Preference",
-                  value: seeker.jobType || "Open",
-                },
-              ].map(({ icon: Icon, label, value }) => (
-                <div
-                  key={label}
-                  className="rounded-2xl border border-white/10 bg-white/10 p-4 text-white backdrop-blur-sm"
-                >
-                  <Icon className="mb-3 h-5 w-5" />
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
-                    {label}
-                  </p>
-                  <p className="mt-1 text-sm font-black capitalize">{value}</p>
-                </div>
-              ))}
+            <div className="flex flex-wrap gap-2">
+              <span className="flex items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-neutral-300">
+                <Briefcase className="h-3.5 w-3.5 text-neutral-400" />
+                {seeker.totalExperience || "Experience open"}
+              </span>
+              <span className="flex items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-neutral-300 capitalize">
+                <Clock className="h-3.5 w-3.5 text-neutral-400" />
+                {seeker.availability?.replace("-", " ") || "Flexible"}
+              </span>
+              <span className="flex items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-xs font-medium text-neutral-300 capitalize">
+                <Globe className="h-3.5 w-3.5 text-neutral-400" />
+                {seeker.jobType || "Open to roles"}
+              </span>
             </div>
           </div>
         </div>
       </section>
 
-      <main className="container mx-auto flex-1 px-6 pb-20">
-        <div className="relative z-20 -mt-16 grid grid-cols-1 gap-8 lg:grid-cols-[360px_1fr]">
-          <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-            <Card className="overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 shadow-2xl shadow-[#163B5C]/10 backdrop-blur-xl pt-0">
-              <div className="bg-gradient-to-r from-[#163B5C]/8 to-[#516C83]/8 p-8 text-center">
-                <div className="relative mx-auto mb-5 inline-block">
-                  <div className="mx-auto h-36 w-36 overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white p-1 shadow-xl">
-                    <img
-                      src={
-                        seeker.userId?.image ||
-                        `https://api.dicebear.com/7.x/initials/svg?seed=${
-                          seeker.userId?.name || "U"
-                        }`
-                      }
-                      alt={seeker.userId?.name}
-                      className="h-full w-full rounded-[1.35rem] object-cover"
-                    />
-                  </div>
-                  <div className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-white bg-emerald-500 shadow-lg">
-                    <CheckCircle
-                      className="h-5 w-5 text-white"
-                      strokeWidth={3}
-                    />
-                  </div>
+      {/* Main Content Layout */}
+      <main className="container mx-auto max-w-5xl flex-1 px-4 pb-16">
+        <div className="relative z-20 -mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
+          {/* Sidebar Snapshot */}
+          <aside className="space-y-4">
+            <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs text-center">
+              <div className="relative mx-auto mb-4 inline-block">
+                <div className="mx-auto h-24 w-24 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 p-0.5">
+                  <img
+                    src={
+                      seeker.userId?.image ||
+                      `https://api.dicebear.com/7.x/initials/svg?seed=${
+                        seeker.userId?.name || "U"
+                      }`
+                    }
+                    alt={seeker.userId?.name}
+                    className="h-full w-full rounded-xl object-cover"
+                  />
                 </div>
-
-                <h2 className="text-2xl font-black text-[#163B5C]">
-                  {seeker.userId?.name || "Anonymous"}
-                </h2>
-                <p className="mt-1 font-semibold text-[#516C83]">
-                  {seeker.designation || "Professional"}
-                </p>
-
-                {seeker.userLocation && (
-                  <p className="mt-4 flex items-center justify-center gap-1.5 text-sm font-semibold text-[#516C83]">
-                    <MapPin className="h-4 w-4 text-[#163B5C]" />
-                    {seeker.userLocation}
-                  </p>
-                )}
+                <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white border-2 border-white">
+                  <CheckCircle className="h-3.5 w-3.5" strokeWidth={3} />
+                </div>
               </div>
 
-              <div className="space-y-5 p-6">
-                <div className="grid grid-cols-2 gap-3">
+              <h2 className="text-base font-bold text-neutral-950">
+                {seeker.userId?.name || "Anonymous"}
+              </h2>
+              <p className="text-xs text-neutral-500 font-medium mt-0.5">
+                {seeker.designation || "Professional"}
+              </p>
+
+              {seeker.userLocation && (
+                <p className="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-neutral-600">
+                  <MapPin className="h-3.5 w-3.5 text-neutral-400" />
+                  {seeker.userLocation}
+                </p>
+              )}
+
+              <div className="mt-4 pt-4 border-t border-neutral-100 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   {seeker.totalExperience && (
-                    <div className="rounded-2xl bg-[#F4F7F8] p-4 text-center">
-                      <p className="text-lg font-black text-[#163B5C]">
+                    <div className="rounded-xl bg-[#f8fafc] p-2.5 text-center">
+                      <p className="text-xs font-bold text-neutral-950">
                         {seeker.totalExperience}
                       </p>
-                      <p className="text-xs font-bold text-[#516C83]">
+                      <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">
                         Experience
                       </p>
                     </div>
                   )}
                   {seeker.jobType && (
-                    <div className="rounded-2xl bg-[#F4F7F8] p-4 text-center">
-                      <p className="text-lg font-black capitalize text-[#163B5C]">
+                    <div className="rounded-xl bg-[#f8fafc] p-2.5 text-center">
+                      <p className="text-xs font-bold capitalize text-neutral-950 truncate">
                         {seeker.jobType}
                       </p>
-                      <p className="text-xs font-bold text-[#516C83]">
-                        Job Type
+                      <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold">
+                        Preference
                       </p>
                     </div>
                   )}
                 </div>
 
                 {seeker.availability && (
-                  <Badge className="w-full justify-center rounded-2xl border border-emerald-100 bg-emerald-50 py-2 font-black capitalize text-emerald-700">
-                    <Clock className="mr-2 h-4 w-4" />
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 py-2 px-3 text-xs font-semibold text-emerald-800 capitalize flex items-center justify-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-emerald-700" />
                     Available {seeker.availability.replace("-", " ")}
-                  </Badge>
+                  </div>
                 )}
-
-                {/* Private resumes are available only through authenticated application access. */}
               </div>
             </Card>
 
             {(socials.length > 0 || seeker.portfolio) && (
-              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
-                <h3 className="mb-4 flex items-center gap-2 text-lg font-black text-[#163B5C]">
-                  <Globe className="h-5 w-5" />
+              <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs">
+                <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-400">
+                  <Globe className="h-3.5 w-3.5 text-neutral-500" />
                   Online Presence
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   {socials.map((s) => (
                     <a
                       key={s.key}
                       href={s.link!}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`group flex items-center justify-between rounded-2xl bg-[#F4F7F8] p-3.5 text-sm font-black text-[#163B5C] transition-all ${s.hoverBg} ${s.hoverText}`}
+                      className="group flex items-center justify-between rounded-xl bg-[#f8fafc] p-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-black"
                     >
-                      <span className="flex items-center gap-3">
-                        <s.icon className="h-5 w-5" />
+                      <span className="flex items-center gap-2">
+                        <s.icon className="h-4 w-4 text-neutral-500" />
                         {s.label}
                       </span>
-                      <ExternalLink className="h-4 w-4 opacity-45 transition-opacity group-hover:opacity-100" />
+                      <ExternalLink className="h-3.5 w-3.5 text-neutral-400" />
                     </a>
                   ))}
                   {seeker.portfolio && (
@@ -305,13 +283,13 @@ export default function CandidateDetailsPage() {
                       href={seeker.portfolio}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex items-center justify-between rounded-2xl bg-[#F4F7F8] p-3.5 text-sm font-black text-[#163B5C] transition-all hover:bg-emerald-500 hover:text-white"
+                      className="group flex items-center justify-between rounded-xl bg-[#f8fafc] p-2.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-black"
                     >
-                      <span className="flex items-center gap-3">
-                        <Globe className="h-5 w-5" />
+                      <span className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-neutral-500" />
                         Portfolio
                       </span>
-                      <ExternalLink className="h-4 w-4 opacity-45 transition-opacity group-hover:opacity-100" />
+                      <ExternalLink className="h-3.5 w-3.5 text-neutral-400" />
                     </a>
                   )}
                 </div>
@@ -319,112 +297,113 @@ export default function CandidateDetailsPage() {
             )}
           </aside>
 
-          <div className="space-y-6">
-            <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
-              <section className="space-y-4">
+          {/* Details Feed */}
+          <div className="space-y-5">
+            {/* Summary */}
+            <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-6 shadow-xs">
+              <section className="space-y-3">
                 <SectionHeading
                   icon={User}
                   title="Professional Summary"
                   eyebrow="Overview"
                 />
-                <p className="text-base font-medium leading-8 text-[#516C83]">
+                <p className="text-xs sm:text-sm leading-relaxed text-neutral-600 whitespace-pre-line">
                   {seeker.aboutMe || "No summary provided."}
                 </p>
               </section>
 
               {seeker.skills?.length > 0 && (
-                <section className="mt-8 space-y-5 border-t border-[#E1E8EF]/70 pt-8">
+                <section className="mt-5 space-y-3 border-t border-neutral-100 pt-5">
                   <SectionHeading
                     icon={Code}
                     title="Technical Skills"
                     eyebrow={`${seeker.skills.length} skills`}
                   />
-                  <div className="flex flex-wrap gap-2.5">
+                  <div className="flex flex-wrap gap-1.5">
                     {seeker.skills.map((skill: string) => (
-                      <Badge
+                      <span
                         key={skill}
-                        className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-4 py-2 text-sm font-bold text-[#163B5C] transition hover:bg-[#163B5C]/10"
+                        className="rounded-md bg-[#f3f4f6] text-neutral-700 px-2.5 py-1 text-xs font-medium border border-neutral-200/50"
                       >
                         {skill}
-                      </Badge>
+                      </span>
                     ))}
                   </div>
                 </section>
               )}
             </Card>
 
+            {/* Experience */}
             {seeker.workExperiences?.length > 0 && (
-              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
+              <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-6 shadow-xs">
                 <SectionHeading
                   icon={Briefcase}
                   title="Work Experience"
-                  eyebrow="Career timeline"
+                  eyebrow="Career Timeline"
                 />
-                <div className="relative mt-7 space-y-6">
-                  <div className="absolute bottom-2 left-[21px] top-2 w-px bg-gradient-to-b from-[#163B5C]/25 to-transparent" />
+                <div className="mt-4 space-y-3">
                   {seeker.workExperiences.map((work: any, i: number) => (
-                    <div key={i} className="relative flex gap-5">
-                      <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#163B5C] text-white shadow-lg shadow-[#163B5C]/15">
-                        <Briefcase className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <h3 className="text-lg font-black text-[#163B5C]">
-                              {work.position}
-                            </h3>
-                            <p className="mt-1 font-semibold text-[#516C83]">
-                              {work.companyName}
-                            </p>
-                          </div>
-                          <span className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-black text-[#516C83] shadow-sm">
-                            <CalendarDays className="mr-1.5 h-3.5 w-3.5 text-[#163B5C]" />
-                            {formatDate(work.durationFrom)} -{" "}
-                            {work.durationTo
-                              ? formatDate(work.durationTo)
-                              : "Present"}
-                          </span>
+                    <div
+                      key={i}
+                      className="rounded-xl border border-neutral-100 bg-[#f8fafc] p-4 space-y-2"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                        <div>
+                          <h3 className="text-sm font-bold text-neutral-900">
+                            {work.position}
+                          </h3>
+                          <p className="text-xs font-semibold text-neutral-500">
+                            {work.companyName}
+                          </p>
                         </div>
-                        {work.responsibilities?.length > 0 && (
-                          <ul className="mt-4 space-y-2">
-                            {work.responsibilities.map(
-                              (r: string, j: number) => (
-                                <li
-                                  key={j}
-                                  className="flex items-start gap-2 text-sm leading-6 text-[#516C83]"
-                                >
-                                  <CheckCircle className="mt-1 h-4 w-4 shrink-0 text-[#163B5C]" />
-                                  {r}
-                                </li>
-                              ),
-                            )}
-                          </ul>
-                        )}
+                        <span className="inline-flex items-center rounded-md bg-white border border-neutral-200/60 px-2 py-0.5 text-[11px] font-medium text-neutral-500 self-start sm:self-auto">
+                          <CalendarDays className="mr-1 h-3 w-3 text-neutral-400" />
+                          {formatDate(work.durationFrom)} -{" "}
+                          {work.durationTo
+                            ? formatDate(work.durationTo)
+                            : "Present"}
+                        </span>
                       </div>
+                      {work.responsibilities?.length > 0 && (
+                        <ul className="mt-2 space-y-1">
+                          {work.responsibilities.map(
+                            (r: string, j: number) => (
+                              <li
+                                key={j}
+                                className="flex items-start gap-2 text-xs leading-normal text-neutral-600"
+                              >
+                                <CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                                <span>{r}</span>
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      )}
                     </div>
                   ))}
                 </div>
               </Card>
             )}
 
+            {/* Projects */}
             {seeker.recentProjects?.length > 0 && (
-              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
+              <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-6 shadow-xs">
                 <SectionHeading
                   icon={BookOpen}
                   title="Recent Projects"
-                  eyebrow="Portfolio work"
+                  eyebrow="Portfolio & Products"
                 />
-                <div className="mt-7 space-y-6">
+                <div className="mt-4 space-y-3">
                   {seeker.recentProjects.map((project: any, i: number) => {
                     const projectName = project.projectName || project.project_name;
                     const projectLink = project.link || project.live_url;
                     return (
                       <div
                         key={i}
-                        className="rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-6 transition hover:shadow-md"
+                        className="rounded-xl border border-neutral-100 bg-[#f8fafc] p-4"
                       >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <h3 className="text-lg font-black text-[#163B5C]">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-sm font-bold text-neutral-900">
                             {projectName}
                           </h3>
                           {projectLink && (
@@ -432,17 +411,16 @@ export default function CandidateDetailsPage() {
                               href={projectLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-sm font-bold text-[#163B5C] hover:underline"
+                              className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-black hover:text-neutral-600"
                             >
-                              Visit Project
-                              <ExternalLink className="h-4 w-4" />
+                              Visit <ExternalLink className="h-3 w-3" />
                             </a>
                           )}
                         </div>
                         {project.description && (
-                          <div className="mt-4 text-sm leading-relaxed text-[#516C83] whitespace-pre-line">
+                          <p className="mt-2 text-xs leading-relaxed text-neutral-600 whitespace-pre-line">
                             {project.description}
-                          </div>
+                          </p>
                         )}
                       </div>
                     );
@@ -451,24 +429,27 @@ export default function CandidateDetailsPage() {
               </Card>
             )}
 
+            {/* Education */}
             {seeker.educations?.length > 0 && (
-              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-sm backdrop-blur">
+              <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-6 shadow-xs">
                 <SectionHeading
                   icon={Award}
                   title="Education"
                   eyebrow="Credentials"
                 />
-                <div className="mt-6 space-y-3">
+                <div className="mt-4 space-y-2">
                   {seeker.educations.map((edu: any, i: number) => (
                     <div
                       key={i}
-                      className="rounded-2xl border border-[#163B5C]/8 bg-[#F6F8FB] p-4 transition hover:bg-[#163B5C]/5"
+                      className="rounded-xl border border-neutral-100 bg-[#f8fafc] p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
                     >
-                      <p className="font-black text-[#163B5C]">{edu.degree}</p>
-                      <p className="mt-1 text-sm font-semibold text-[#516C83]">
-                        {edu.school}
-                      </p>
-                      <p className="mt-1 text-xs font-bold text-[#516C83]/65">
+                      <div>
+                        <p className="text-xs font-bold text-neutral-900">{edu.degree}</p>
+                        <p className="text-[11px] font-medium text-neutral-500">
+                          {edu.school}
+                        </p>
+                      </div>
+                      <p className="text-[10px] font-semibold text-neutral-400 self-start sm:self-auto">
                         {formatEduYear(edu.year)}
                       </p>
                     </div>
@@ -479,6 +460,8 @@ export default function CandidateDetailsPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
