@@ -4,6 +4,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Header from "@/src/components/common/Header";
+import { TableLoading } from "@/src/components/feedback/LoadingStates";
+import { ErrorState } from "@/src/components/feedback/StateViews";
 import Footer from "@/src/components/common/Footer";
 import SearchSection from "@/src/components/jobs/SearchSection";
 import JobFilters from "@/src/components/jobs/JobFilters";
@@ -87,17 +89,17 @@ function formatSalary(min: number, max: number, period: string): string {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  "full-time": "bg-[#234C6A]/10 text-[#234C6A] border-[#234C6A]/10",
-  "part-time": "bg-[#456882]/10 text-[#234C6A] border-[#456882]/10",
-  contract: "bg-[#E3E3E3]/70 text-[#234C6A] border-[#234C6A]/10",
-  freelance: "bg-white text-[#234C6A] border-[#234C6A]/10",
-  internship: "bg-[#234C6A]/5 text-[#456882] border-[#234C6A]/10",
+  "full-time": "bg-[#163B5C]/10 text-[#163B5C] border-[#163B5C]/10",
+  "part-time": "bg-[#516C83]/10 text-[#163B5C] border-[#516C83]/10",
+  contract: "bg-[#E1E8EF]/70 text-[#163B5C] border-[#163B5C]/10",
+  freelance: "bg-white text-[#163B5C] border-[#163B5C]/10",
+  internship: "bg-[#163B5C]/5 text-[#516C83] border-[#163B5C]/10",
 };
 
 const LOCATION_COLORS: Record<string, string> = {
   remote: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  hybrid: "bg-[#E3E3E3]/70 text-[#234C6A] border-[#234C6A]/10",
-  onsite: "bg-white text-[#456882] border-[#234C6A]/10",
+  hybrid: "bg-[#E1E8EF]/70 text-[#163B5C] border-[#163B5C]/10",
+  onsite: "bg-white text-[#516C83] border-[#163B5C]/10",
 };
 
 // ─── Job Card ─────────────────────────────────────────────────────────────────
@@ -130,9 +132,13 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
   return (
     <div
       onClick={handleClick}
-      className="job-card-item group relative cursor-pointer overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#234C6A]/25 hover:shadow-2xl hover:shadow-[#234C6A]/10"
+      onKeyDown={(event) => { if (event.key === "Enter" && event.target === event.currentTarget) handleClick(); }}
+      role="link"
+      tabIndex={0}
+      aria-label={`View ${job.title} at ${job.company?.companyName || "company"}`}
+      className="job-card-item group relative cursor-pointer overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10"
     >
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882] scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83] scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
 
       <div className="p-5 sm:p-6">
         <div className="flex gap-4 items-start">
@@ -141,10 +147,10 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
               <img
                 src={job.company.companyLogo}
                 alt={job.company.companyName}
-                className="h-14 w-14 rounded-2xl border border-[#234C6A]/10 object-cover shadow-sm"
+                className="h-14 w-14 rounded-2xl border border-[#163B5C]/10 object-cover shadow-sm"
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] shadow-sm">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#163B5C] to-[#516C83] shadow-sm">
                 <Building2 className="h-7 w-7 text-white" />
               </div>
             )}
@@ -153,45 +159,45 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="truncate text-lg font-black tracking-tight text-[#234C6A] transition-colors group-hover:text-[#456882]">
+                <h3 className="truncate text-lg font-black tracking-tight text-[#163B5C] transition-colors group-hover:text-[#516C83]">
                   {job.title}
                 </h3>
-                <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#456882]">
+                <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#516C83]">
                   <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
                   {job.company?.companyName || "Unknown Company"}
                 </p>
               </div>
 
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E3E3E3]/50 text-[#456882] transition group-hover:bg-[#234C6A] group-hover:text-white">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E1E8EF]/50 text-[#516C83] transition group-hover:bg-[#163B5C] group-hover:text-white">
                 <ChevronRight className="h-5 w-5" />
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 mt-3">
               <span
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold capitalize ${TYPE_COLORS[job.type] || "bg-white text-[#234C6A] border-[#234C6A]/10"}`}
+                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold capitalize ${TYPE_COLORS[job.type] || "bg-white text-[#163B5C] border-[#163B5C]/10"}`}
               >
                 <Briefcase className="h-3 w-3" />
                 {job.type.replace("-", " ")}
               </span>
               <span
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold capitalize ${LOCATION_COLORS[job.locationType] || "bg-white text-[#456882] border-[#234C6A]/10"}`}
+                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold capitalize ${LOCATION_COLORS[job.locationType] || "bg-white text-[#516C83] border-[#163B5C]/10"}`}
               >
                 <MapPin className="h-3 w-3" />
                 {job.locationType}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-3 py-1 text-xs font-bold text-[#234C6A]">
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 text-xs font-bold text-[#163B5C]">
                 <DollarSign className="h-3 w-3" />
                 {formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}
               </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#E3E3E3]/55 px-3 py-1 text-xs font-semibold text-[#456882]">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#E1E8EF]/55 px-3 py-1 text-xs font-semibold text-[#516C83]">
                 <Users className="h-3 w-3" />
                 {job.positions} {job.positions === 1 ? "opening" : "openings"}
               </span>
             </div>
 
             <div className="mt-3">
-              <p className="text-sm text-[#456882] leading-relaxed inline">
+              <p className="text-sm text-[#516C83] leading-relaxed inline">
                 {isExpanded ? job.description : truncate(job.description, 150)}
               </p>
               {shouldTruncate(job.description, 150) && (
@@ -200,7 +206,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
                     e.stopPropagation();
                     setIsExpanded(!isExpanded);
                   }}
-                  className="ml-2 text-[#234C6A] font-semibold hover:text-[#456882] transition-colors text-xs underline-offset-4 hover:underline"
+                  className="ml-2 text-[#163B5C] font-semibold hover:text-[#516C83] transition-colors text-xs underline-offset-4 hover:underline"
                 >
                   {isExpanded ? "Show Less" : "See More"}
                 </button>
@@ -208,7 +214,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
             </div>
 
             {/* Location text */}
-            <p className="mt-3 flex items-center gap-1 text-xs font-medium text-[#456882]/80">
+            <p className="mt-3 flex items-center gap-1 text-xs font-medium text-[#516C83]/80">
               <MapPin className="h-3 w-3 flex-shrink-0" />
               {job.location}
             </p>
@@ -219,13 +225,13 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
                 {job.skills.slice(0, 4).map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-2.5 py-1 text-xs font-semibold text-[#234C6A]"
+                    className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-2.5 py-1 text-xs font-semibold text-[#163B5C]"
                   >
                     {skill}
                   </span>
                 ))}
                 {job.skills.length > 4 && (
-                  <span className="rounded-full bg-[#E3E3E3]/70 px-2.5 py-1 text-xs font-semibold text-[#456882]">
+                  <span className="rounded-full bg-[#E1E8EF]/70 px-2.5 py-1 text-xs font-semibold text-[#516C83]">
                     +{job.skills.length - 4}
                   </span>
                 )}
@@ -235,13 +241,13 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
         </div>
 
         {/* Footer row */}
-        <div className="mt-5 flex flex-col gap-2 border-t border-[#E3E3E3]/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="flex items-center gap-1 text-xs font-semibold text-[#456882]/70">
+        <div className="mt-5 flex flex-col gap-2 border-t border-[#E1E8EF]/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <span className="flex items-center gap-1 text-xs font-semibold text-[#516C83]/70">
             <Clock className="h-3 w-3" />
             Posted {timeAgo(job.createdAt)}
           </span>
           <span
-            className={`flex items-center gap-1 text-xs font-semibold ${isExpiringSoon ? "text-red-500" : "text-[#456882]/70"}`}
+            className={`flex items-center gap-1 text-xs font-semibold ${isExpiringSoon ? "text-red-500" : "text-[#516C83]/70"}`}
           >
             <Clock className="h-3 w-3" />
             Deadline: {deadlineDate}
@@ -257,12 +263,12 @@ JobCard.displayName = "JobCard";
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
 const EmptyState = memo(() => (
-  <Card className="rounded-3xl border border-dashed border-[#234C6A]/20 bg-white/80 p-12 text-center shadow-sm">
-    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#234C6A]/10">
-      <Briefcase className="h-8 w-8 text-[#234C6A]" />
+  <Card className="rounded-3xl border border-dashed border-[#163B5C]/20 bg-white/80 p-12 text-center shadow-sm">
+    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#163B5C]/10">
+      <Briefcase className="h-8 w-8 text-[#163B5C]" />
     </div>
-    <h3 className="mb-2 text-2xl font-black text-[#234C6A]">No Jobs Found</h3>
-    <p className="text-[#456882] max-w-md mx-auto">
+    <h3 className="mb-2 text-2xl font-black text-[#163B5C]">No Jobs Found</h3>
+    <p className="text-[#516C83] max-w-md mx-auto">
       We couldn't find any jobs matching your criteria. Try adjusting your
       filters or search terms.
     </p>
@@ -421,7 +427,7 @@ const Jobs = () => {
   }, [postedDateFilters]);
 
   // ── API Query (server-side search + pagination) ───────────────────────────
-  const { data: searchJobsData, isFetching } = useSearchJobsQuery({
+  const { data: searchJobsData, isFetching, isError, refetch } = useSearchJobsQuery({
     search: searchTerm,
     location: locationTerm || undefined,
     category: selectedCategory || undefined,
@@ -667,7 +673,7 @@ const Jobs = () => {
   return (
     <div ref={containerRef} className="min-h-screen flex flex-col jobhub-page-bg">
       <Header />
-      <main className="flex-1 w-full">
+      <main id="main-content" className="flex-1 w-full">
          <SearchSection
           searchTerm={searchInput}
           locationTerm={locationInput}
@@ -719,7 +725,7 @@ const Jobs = () => {
                   />
 
                   {/* Tips */}
-                  <Card className="overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#234C6A] to-[#456882] p-5 text-white shadow-xl shadow-[#234C6A]/15">
+                  <Card className="overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] p-5 text-white shadow-xl shadow-[#163B5C]/15">
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15">
                       <Sparkles className="h-5 w-5" />
                     </div>
@@ -743,15 +749,15 @@ const Jobs = () => {
               {/* Job Listings */}
               <div className="flex-1 job-listings">
                 {/* Results header */}
-                <Card className="mb-6 overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/90 p-5 shadow-sm backdrop-blur">
+                <Card className="mb-6 overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 p-5 shadow-sm backdrop-blur">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <h2 className="mb-1 text-2xl font-black tracking-tight text-[#234C6A]">
+                      <h2 className="mb-1 text-2xl font-black tracking-tight text-[#163B5C]">
                         {selectedCategory
                           ? `${jobCategories.find((c) => c.id === selectedCategory)?.name ?? "Category"} Jobs`
                           : "Available Positions"}
                         {selectedSubcategory && selectedCategory && (
-                          <span className="ml-2 text-base font-semibold text-[#456882]">
+                          <span className="ml-2 text-base font-semibold text-[#516C83]">
                             /{" "}
                             {
                               jobCategories
@@ -763,21 +769,21 @@ const Jobs = () => {
                           </span>
                         )}
                       </h2>
-                      <p className="text-sm font-medium text-[#456882]">
+                      <p aria-live="polite" className="text-sm font-medium text-[#516C83]">
                         {isFetching ? (
                           "Loading..."
                         ) : (
                           <>
-                            <span className="font-semibold text-[#234C6A]">
+                            <span className="font-semibold text-[#163B5C]">
                               {filteredJobs.length}
                             </span>{" "}
                             job{filteredJobs.length !== 1 ? "s" : ""} of{" "}
-                            <span className="font-semibold text-[#234C6A]">
+                            <span className="font-semibold text-[#163B5C]">
                               {paginationMeta.totalJobs}
                             </span>{" "}
                             total
                             {activeFilterCount > 0 && (
-                              <span className="text-[#456882]/70 ml-1">
+                              <span className="text-[#516C83]/70 ml-1">
                                 ({activeFilterCount} filter
                                 {activeFilterCount !== 1 ? "s" : ""})
                               </span>
@@ -792,7 +798,7 @@ const Jobs = () => {
                         {paginationMeta.totalJobs} Active
                       </Badge>
                       {selectedCategory && (
-                        <Badge className="rounded-full bg-[#234C6A]/10 text-[#234C6A] border border-[#234C6A]/10">
+                        <Badge className="rounded-full bg-[#163B5C]/10 text-[#163B5C] border border-[#163B5C]/10">
                           {
                             jobCategories.find((c) => c.id === selectedCategory)
                               ?.name
@@ -804,14 +810,14 @@ const Jobs = () => {
                 </Card>
 
                 {/* Loading skeleton */}
-                {isFetching && (
-                  <div className="flex justify-center py-16">
-                    <Loader2 className="h-8 w-8 animate-spin text-[#234C6A]" />
-                  </div>
+                {isFetching && <TableLoading rows={5} />}
+
+                {!isFetching && isError && (
+                  <ErrorState description="Job listings could not be loaded. Check your connection and try again." onRetry={() => void refetch()} />
                 )}
 
                 {/* Jobs list */}
-                {!isFetching && filteredJobs.length > 0 && (
+                {!isFetching && !isError && filteredJobs.length > 0 && (
                   <div className="space-y-4">
                     {filteredJobs.map((job) => (
                       <JobCard key={job._id} job={job} />
@@ -819,10 +825,10 @@ const Jobs = () => {
                   </div>
                 )}
 
-                {!isFetching && filteredJobs.length === 0 && <EmptyState />}
+                {!isFetching && !isError && filteredJobs.length === 0 && <EmptyState />}
 
                 {/* Pagination — driven by API meta */}
-                {!isFetching && paginationMeta.totalPages > 1 && (
+                {!isFetching && !isError && paginationMeta.totalPages > 1 && (
                   <div className="mt-8">
                     <Pagination
                       currentPage={paginationMeta.currentPage}

@@ -12,7 +12,7 @@ export default function SeekerMessagesPage() {
   return (
     <JobSeekerLayout>
       <div className="mx-auto max-w-7xl space-y-8">
-        <section className="relative overflow-hidden rounded-3xl bg-[#234C6A] p-7 text-white shadow-2xl shadow-[#234C6A]/20 md:p-9">
+        <section className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
           <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -49,7 +49,7 @@ export default function SeekerMessagesPage() {
           <Sparkles className="absolute -bottom-8 -right-8 h-40 w-40 text-white/5" />
         </section>
 
-        <Card className="h-[calc(100vh-300px)] min-h-[640px] overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-0 shadow-2xl shadow-[#234C6A]/10 backdrop-blur">
+        <Card className="h-[calc(100vh-300px)] min-h-[640px] overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-0 shadow-2xl shadow-[#163B5C]/10 backdrop-blur">
           <JobSeekerMessages userId={user?._id as string} />
         </Card>
       </div>

@@ -87,13 +87,13 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
               onPaste={index === 0 ? handlePaste : undefined}
               className={`w-12 h-14 text-2xl font-bold text-center rounded-xl transition-all duration-300 ${
                 digit
-                  ? "border-2 border-[#234C6A] bg-[#234C6A]/5 text-[#234C6A]"
-                  : "border-2 border-[#234C6A]/20 bg-[#E3E3E3]/30"
-              } focus:outline-none focus:ring-2 focus:ring-[#234C6A] focus:border-[#234C6A]`}
+                  ? "border-2 border-[#163B5C] bg-[#163B5C]/5 text-[#163B5C]"
+                  : "border-2 border-[#163B5C]/20 bg-[#E1E8EF]/30"
+              } focus:outline-none focus:ring-2 focus:ring-[#163B5C] focus:border-[#163B5C]`}
             />
           ))}
         </div>
-        <p className="text-sm text-[#456882] mt-3">
+        <p className="text-sm text-[#516C83] mt-3">
           Tip: You can paste the code directly
         </p>
       </div>
@@ -101,9 +101,9 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
       {/* Timer Section */}
       <div className="flex items-center justify-center">
         {timeLeft > 0 ? (
-          <div className="flex items-center gap-3 px-4 py-2 bg-[#E3E3E3]/50 rounded-xl">
-            <Clock className="h-5 w-5 text-[#456882]" />
-            <span className="text-[#234C6A] font-medium">
+          <div className="flex items-center gap-3 px-4 py-2 bg-[#E1E8EF]/50 rounded-xl">
+            <Clock className="h-5 w-5 text-[#516C83]" />
+            <span className="text-[#163B5C] font-medium">
               Resend available in <span className="font-bold">{formatTime(timeLeft)}</span>
             </span>
           </div>
@@ -112,7 +112,7 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
             onClick={onResend}
             disabled={loading}
             variant="ghost"
-            className="text-[#234C6A] hover:bg-[#234C6A]/10"
+            className="text-[#163B5C] hover:bg-[#163B5C]/10"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
             Resend Verification Code
@@ -124,8 +124,8 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
       <Button
         className={`w-full h-12 rounded-xl font-semibold transition-all duration-300 ${
           isComplete
-            ? "bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white shadow-lg hover:shadow-xl"
-            : "bg-[#234C6A]/20 text-[#234C6A]/50 cursor-not-allowed"
+            ? "bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white shadow-lg hover:shadow-xl"
+            : "bg-[#163B5C]/20 text-[#163B5C]/50 cursor-not-allowed"
         }`}
         onClick={handleVerify}
         disabled={loading || !isComplete}

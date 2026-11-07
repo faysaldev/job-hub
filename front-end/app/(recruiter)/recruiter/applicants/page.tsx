@@ -2,6 +2,7 @@ import ApplicantsPage from "@/src/Page/Recruiter/ApplicantsPage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: "Recruiter Applicants | JobHub",
   description:
     "View and manage all candidate applications in one place. Review resumes, track progress, and connect with top talent for your open roles.",

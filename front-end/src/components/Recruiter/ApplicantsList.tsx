@@ -92,9 +92,9 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
       case "applied":
         return {
           label: "Applied",
-          color: "bg-[#234C6A]/5 text-[#234C6A] border-[#234C6A]/15",
+          color: "bg-[#163B5C]/5 text-[#163B5C] border-[#163B5C]/15",
           icon: Clock,
-          bgColor: "bg-[#234C6A]",
+          bgColor: "bg-[#163B5C]",
         };
       case "under_review":
         return {
@@ -140,14 +140,14 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
         {[1, 2, 3].map((i) => (
           <Card
             key={i}
-            className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-6"
+            className="rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-6"
           >
             <div className="flex animate-pulse gap-4">
-              <div className="h-16 w-16 rounded-2xl bg-[#E3E3E3]" />
+              <div className="h-16 w-16 rounded-2xl bg-[#E1E8EF]" />
               <div className="flex-1 space-y-3">
-                <div className="h-5 w-2/5 rounded-full bg-[#E3E3E3]" />
-                <div className="h-4 w-4/5 rounded-full bg-[#E3E3E3]" />
-                <div className="h-4 w-3/5 rounded-full bg-[#E3E3E3]" />
+                <div className="h-5 w-2/5 rounded-full bg-[#E1E8EF]" />
+                <div className="h-4 w-4/5 rounded-full bg-[#E1E8EF]" />
+                <div className="h-4 w-3/5 rounded-full bg-[#E1E8EF]" />
               </div>
             </div>
           </Card>
@@ -182,34 +182,34 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
   return (
     <div className="space-y-6">
       {/* Header & Filter */}
-      <div className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-5">
+      <div className="rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-black text-[#234C6A]">
+          <h2 className="text-xl font-black text-[#163B5C]">
             Candidate Pipeline
           </h2>
-          <p className="text-sm font-medium text-[#456882]">
+          <p className="text-sm font-medium text-[#516C83]">
             Manage and track your job applications
           </p>
         </div>
 
         <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
-          <div className="flex items-center gap-2 rounded-2xl border border-[#234C6A]/10 bg-white px-4 py-3 text-sm font-black text-[#234C6A]">
+          <div className="flex items-center gap-2 rounded-2xl border border-[#163B5C]/10 bg-white px-4 py-3 text-sm font-black text-[#163B5C]">
             <Filter className="h-4 w-4" />
             <span>{applications.length} Candidates</span>
           </div>
 
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger className="h-12 w-full rounded-2xl border-[#234C6A]/10 bg-white font-black text-[#234C6A] focus:ring-[#234C6A]/5 sm:w-[210px]">
+            <SelectTrigger className="h-12 w-full rounded-2xl border-[#163B5C]/10 bg-white font-black text-[#163B5C] focus:ring-[#163B5C]/5 sm:w-[210px]">
               <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
-            <SelectContent className="rounded-2xl border-[#234C6A]/10 shadow-xl">
+            <SelectContent className="rounded-2xl border-[#163B5C]/10 shadow-xl">
               <SelectItem value="all" className="rounded-lg font-medium">
                 All Applicants
               </SelectItem>
               <SelectItem
                 value="applied"
-                className="rounded-lg font-medium text-[#234C6A]"
+                className="rounded-lg font-medium text-[#163B5C]"
               >
                 New Applied
               </SelectItem>
@@ -252,12 +252,12 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
           ].map((item) => (
             <div
               key={item.label}
-              className="rounded-2xl border border-[#234C6A]/10 bg-white p-4"
+              className="rounded-2xl border border-[#163B5C]/10 bg-white p-4"
             >
-              <p className="text-2xl font-black text-[#234C6A]">
+              <p className="text-2xl font-black text-[#163B5C]">
                 {item.value}
               </p>
-              <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[#456882]">
+              <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[#516C83]">
                 {item.label}
               </p>
             </div>
@@ -268,14 +268,14 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
       {/* List */}
       <div className="space-y-4">
         {applications.length === 0 ? (
-          <Card className="rounded-3xl border border-dashed border-[#234C6A]/20 bg-[#F8FAFC] p-12 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#234C6A]/10">
-              <User className="h-10 w-10 text-[#234C6A]" />
+          <Card className="rounded-3xl border border-dashed border-[#163B5C]/20 bg-[#F6F8FB] p-12 text-center">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#163B5C]/10">
+              <User className="h-10 w-10 text-[#163B5C]" />
             </div>
-            <h3 className="mb-2 text-2xl font-black text-[#234C6A]">
+            <h3 className="mb-2 text-2xl font-black text-[#163B5C]">
               No applications found
             </h3>
-            <p className="mx-auto max-w-xs leading-relaxed text-[#456882]">
+            <p className="mx-auto max-w-xs leading-relaxed text-[#516C83]">
               Try adjusting your filters or wait for more candidates to apply.
             </p>
           </Card>
@@ -289,7 +289,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
             return (
               <Card
                 key={app._id}
-                className="group relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#234C6A]/25 hover:shadow-xl hover:shadow-[#234C6A]/10"
+                className="group relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#163B5C]/25 hover:shadow-xl hover:shadow-[#163B5C]/10"
               >
                 {/* Decorative Side Bar */}
                 <div
@@ -300,7 +300,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                   <div className="flex w-full flex-1 gap-5">
                     {/* Applicant Avatar */}
                     <div className="relative flex-shrink-0">
-                      <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] text-white shadow-lg shadow-[#234C6A]/20">
+                      <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#163B5C] to-[#516C83] text-white shadow-lg shadow-[#163B5C]/20">
                         {applicant?.image ? (
                           <img
                             src={applicant.image}
@@ -322,7 +322,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
 
                     <div className="min-w-0 flex-1">
                       <div className="mb-2 flex flex-wrap items-center gap-3">
-                        <h3 className="truncate text-xl font-black tracking-tight text-[#234C6A]">
+                        <h3 className="truncate text-xl font-black tracking-tight text-[#163B5C]">
                           {applicant?.name}
                         </h3>
                         <Badge
@@ -338,18 +338,18 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                         )}
                       </div>
 
-                      <p className="mb-4 flex items-center gap-2 font-black text-[#234C6A]">
-                        <Briefcase className="h-4 w-4 text-[#456882]" />
+                      <p className="mb-4 flex items-center gap-2 font-black text-[#163B5C]">
+                        <Briefcase className="h-4 w-4 text-[#516C83]" />
                         {job?.title}
                       </p>
 
-                      <div className="grid grid-cols-1 gap-3 text-xs font-semibold text-[#456882] sm:grid-cols-2">
-                        <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
-                          <Mail className="h-3.5 w-3.5 text-[#234C6A]" />
+                      <div className="grid grid-cols-1 gap-3 text-xs font-semibold text-[#516C83] sm:grid-cols-2">
+                        <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-3 py-2">
+                          <Mail className="h-3.5 w-3.5 text-[#163B5C]" />
                           <span>{applicant?.email}</span>
                         </div>
-                        <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
-                          <MapPin className="h-3.5 w-3.5 text-[#234C6A]" />
+                        <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-3 py-2">
+                          <MapPin className="h-3.5 w-3.5 text-[#163B5C]" />
                           <span>{job?.location || "Remote"}</span>
                         </div>
                       </div>
@@ -360,7 +360,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-10 w-full flex-1 rounded-2xl border-[#234C6A]/20 font-black text-[#234C6A] transition-all hover:bg-[#234C6A]/5"
+                      className="h-10 w-full flex-1 rounded-2xl border-[#163B5C]/20 font-black text-[#163B5C] transition-all hover:bg-[#163B5C]/5"
                       onClick={() =>
                         setExpandedAppId(
                           expandedAppId === app._id ? null : app._id,
@@ -376,7 +376,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                       {app.status === "applied" && (
                         <Button
                           size="sm"
-                          className="h-10 flex-1 rounded-2xl bg-[#234C6A] font-black text-white hover:bg-[#456882]"
+                          className="h-10 flex-1 rounded-2xl bg-[#163B5C] font-black text-white hover:bg-[#516C83]"
                           onClick={() =>
                             handleUpdateStatus(app._id, "under_review")
                           }
@@ -405,12 +405,12 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
 
                 {/* Expanded Details */}
                 {expandedAppId === app._id && (
-                  <div className="animate-in slide-in-from-top-2 mt-6 space-y-6 border-t border-[#234C6A]/10 pt-6 duration-300">
+                  <div className="animate-in slide-in-from-top-2 mt-6 space-y-6 border-t border-[#163B5C]/10 pt-6 duration-300">
                     <div>
-                      <h4 className="mb-3 flex items-center gap-2 text-sm font-black text-[#234C6A]">
+                      <h4 className="mb-3 flex items-center gap-2 text-sm font-black text-[#163B5C]">
                         <MessageSquare className="h-4 w-4" /> Cover Letter
                       </h4>
-                      <div className="rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-5 text-sm font-medium leading-relaxed text-[#456882]">
+                      <div className="rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5 text-sm font-medium leading-relaxed text-[#516C83]">
                         {app.cover_letter || "No cover letter provided."}
                       </div>
                     </div>
@@ -419,7 +419,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                       <Button
                         asChild
                         variant="secondary"
-                        className="rounded-2xl border-none bg-[#234C6A]/5 font-black text-[#234C6A] hover:bg-[#234C6A]/10"
+                        className="rounded-2xl border-none bg-[#163B5C]/5 font-black text-[#163B5C] hover:bg-[#163B5C]/10"
                       >
                         <a
                           href={app.resume_url}
@@ -468,10 +468,10 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600">
                 <XCircle className="h-6 w-6" />
               </div>
-              <DialogTitle className="text-2xl font-black text-[#234C6A]">
+              <DialogTitle className="text-2xl font-black text-[#163B5C]">
                 Reject Candidate?
               </DialogTitle>
-              <DialogDescription className="text-base leading-relaxed text-[#456882]">
+              <DialogDescription className="text-base leading-relaxed text-[#516C83]">
                 Provide a brief explanation for this decision. This note will be
                 shared with the applicant to help them grow.
               </DialogDescription>
@@ -479,14 +479,14 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="ml-1 text-sm font-black text-[#234C6A]">
+                <label className="ml-1 text-sm font-black text-[#163B5C]">
                   Feedback Note
                 </label>
                 <Textarea
                   placeholder="e.g. We're looking for someone with more experience in high-load systems..."
                   value={rejectionNote}
                   onChange={(e) => setRejectionNote(e.target.value)}
-                  className="min-h-[140px] resize-none rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] p-4 text-sm transition-all focus:border-[#234C6A] focus:bg-white focus:ring-4 focus:ring-[#234C6A]/5"
+                  className="min-h-[140px] resize-none rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] p-4 text-sm transition-all focus:border-[#163B5C] focus:bg-white focus:ring-4 focus:ring-[#163B5C]/5"
                 />
               </div>
             </div>
@@ -495,7 +495,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
               <Button
                 variant="ghost"
                 onClick={() => setIsRejectionModalOpen(false)}
-                className="rounded-2xl px-6 font-black text-[#456882] hover:bg-[#234C6A]/5"
+                className="rounded-2xl px-6 font-black text-[#516C83] hover:bg-[#163B5C]/5"
               >
                 Go Back
               </Button>

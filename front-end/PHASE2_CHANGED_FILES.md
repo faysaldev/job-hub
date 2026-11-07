@@ -1,0 +1,160 @@
+# Phase 2 changed-files manifest
+
+Apply after the **complete Phase 1** codebase, not to the original upload. ZIP entries preserve repository-relative paths.
+
+Modified: **116**; New (before manifest): **29**; Deleted: **0**.
+
+## Existing files modified
+
+- `front-end/app/(auth)/auth/page.tsx`
+- `front-end/app/(auth)/reset-password/page.tsx`
+- `front-end/app/(auth)/verify-email/page.tsx`
+- `front-end/app/(job)/applied-successfully/page.tsx`
+- `front-end/app/(job)/cancel/page.tsx`
+- `front-end/app/(job)/candidates/[id]/page.tsx`
+- `front-end/app/(job)/candidates/page.tsx`
+- `front-end/app/(job)/job/[details]/page.tsx`
+- `front-end/app/(job)/job/page.tsx`
+- `front-end/app/(job)/job/saved/page.tsx`
+- `front-end/app/(job)/job-seeker/applications/page.tsx`
+- `front-end/app/(job)/job-seeker/interviews/page.tsx`
+- `front-end/app/(job)/job-seeker/messages/page.tsx`
+- `front-end/app/(job)/job-seeker/page.tsx`
+- `front-end/app/(job)/job-seeker/profile/page.tsx`
+- `front-end/app/(recruiter)/company/[id]/page.tsx`
+- `front-end/app/(recruiter)/recruiter/applicants/page.tsx`
+- `front-end/app/(recruiter)/recruiter/company/page.tsx`
+- `front-end/app/(recruiter)/recruiter/create-job/page.tsx`
+- `front-end/app/(recruiter)/recruiter/interview-schedule/page.tsx`
+- `front-end/app/(recruiter)/recruiter/interviews/page.tsx`
+- `front-end/app/(recruiter)/recruiter/jobs/page.tsx`
+- `front-end/app/(recruiter)/recruiter/layout.tsx`
+- `front-end/app/(recruiter)/recruiter/messages/page.tsx`
+- `front-end/app/(recruiter)/recruiter/page.tsx`
+- `front-end/app/globals.css`
+- `front-end/app/layout.tsx`
+- `front-end/app/notifications/page.tsx`
+- `front-end/app/page.tsx`
+- `front-end/app/privacy-policy/page.tsx`
+- `front-end/app/site.webmanifest`
+- `front-end/app/terms-of-service/page.tsx`
+- `front-end/src/Page/About/AboutPage.tsx`
+- `front-end/src/Page/Auth/AuthPage.tsx`
+- `front-end/src/Page/Auth/EmailVerificationPage.tsx`
+- `front-end/src/Page/Auth/ForgotPasswordPage.tsx`
+- `front-end/src/Page/Candidates/CandidateDetailsPage.tsx`
+- `front-end/src/Page/Candidates/CandidatesListingPage.tsx`
+- `front-end/src/Page/Companies/CompaniesPage.tsx`
+- `front-end/src/Page/Companies/CompanyDetailsPage.tsx`
+- `front-end/src/Page/Contact/ContactPage.tsx`
+- `front-end/src/Page/HomePage.tsx`
+- `front-end/src/Page/JobSeeker/ApplicationsPage.tsx`
+- `front-end/src/Page/JobSeeker/InterviewsPage.tsx`
+- `front-end/src/Page/JobSeeker/JobSeeker.tsx`
+- `front-end/src/Page/JobSeeker/MessagesPage.tsx`
+- `front-end/src/Page/JobSeeker/ProfilePage.tsx`
+- `front-end/src/Page/Jobs/AppliedCancelPage.tsx`
+- `front-end/src/Page/Jobs/AppliedSuccessfullyPage.tsx`
+- `front-end/src/Page/Jobs/JobDetailsPage.tsx`
+- `front-end/src/Page/Jobs/JobsPage.tsx`
+- `front-end/src/Page/Jobs/SavedJobsPage.tsx`
+- `front-end/src/Page/Notifications/NotificationsPage.tsx`
+- `front-end/src/Page/PrivacyPolicy/PrivacyPolicyPage.tsx`
+- `front-end/src/Page/Recruiter/ApplicantsPage.tsx`
+- `front-end/src/Page/Recruiter/CompanyPage.tsx`
+- `front-end/src/Page/Recruiter/CreateJobPage.tsx`
+- `front-end/src/Page/Recruiter/InterviewSchedulePage.tsx`
+- `front-end/src/Page/Recruiter/InterviewsPage.tsx`
+- `front-end/src/Page/Recruiter/JobsPage.tsx`
+- `front-end/src/Page/Recruiter/MessagesPage.tsx`
+- `front-end/src/Page/Recruiter/RecruiterPage.tsx`
+- `front-end/src/Page/TermsOfService/TermsOfServicePage.tsx`
+- `front-end/src/components/JobSeeker/AppliedJobs.tsx`
+- `front-end/src/components/JobSeeker/JobSeeker/Educationsection.tsx`
+- `front-end/src/components/JobSeeker/JobSeeker/Experiencesection.tsx`
+- `front-end/src/components/JobSeeker/JobSeeker/LogisticsAndProjects.tsx`
+- `front-end/src/components/JobSeeker/JobSeeker/ProfileHeader.tsx`
+- `front-end/src/components/JobSeeker/JobSeeker/Resumeportfoliosection.tsx`
+- `front-end/src/components/JobSeeker/JobSeeker/Skillssection.tsx`
+- `front-end/src/components/JobSeeker/JobSeekerLayout.tsx`
+- `front-end/src/components/JobSeeker/JobSeekerMessages.tsx`
+- `front-end/src/components/JobSeeker/JobSeekerProfile.tsx`
+- `front-end/src/components/JobSeeker/JobSeekerSidebar.tsx`
+- `front-end/src/components/Recruiter/ApplicantsList.tsx`
+- `front-end/src/components/Recruiter/CompanyProfile.tsx`
+- `front-end/src/components/Recruiter/JobManagement.tsx`
+- `front-end/src/components/Recruiter/RecruiterLayout.tsx`
+- `front-end/src/components/Recruiter/RecruiterSidebar.tsx`
+- `front-end/src/components/analysis/ResumeAnalyzer.tsx`
+- `front-end/src/components/analysis/SkillAnalyzer.tsx`
+- `front-end/src/components/auth/OTPVerification.tsx`
+- `front-end/src/components/auth/ResetPassword.tsx`
+- `front-end/src/components/auth/SignInForm.tsx`
+- `front-end/src/components/auth/SignUpForm.tsx`
+- `front-end/src/components/common/AppCommon/Message.tsx`
+- `front-end/src/components/common/Footer.tsx`
+- `front-end/src/components/common/Header.tsx`
+- `front-end/src/components/home/CTASection.tsx`
+- `front-end/src/components/home/CategorySection.tsx`
+- `front-end/src/components/home/HeroSection.tsx`
+- `front-end/src/components/home/LatestJobsSection.tsx`
+- `front-end/src/components/home/PathsSection.tsx`
+- `front-end/src/components/home/StepsSection.tsx`
+- `front-end/src/components/home/TestimonialsSection.tsx`
+- `front-end/src/components/home/TrustedBySection.tsx`
+- `front-end/src/components/home/WhySection.tsx`
+- `front-end/src/components/jobs/ApplyJobModal.tsx`
+- `front-end/src/components/jobs/JobCard.tsx`
+- `front-end/src/components/jobs/JobDetailsHeader.tsx`
+- `front-end/src/components/jobs/JobDetailsList.tsx`
+- `front-end/src/components/jobs/JobDetailsSection.tsx`
+- `front-end/src/components/jobs/JobDetailsSidebar.tsx`
+- `front-end/src/components/jobs/JobFilters.tsx`
+- `front-end/src/components/jobs/Pagination.tsx`
+- `front-end/src/components/jobs/SearchSection.tsx`
+- `front-end/src/components/notifications/NotificationItem.tsx`
+- `front-end/src/components/sections/CTASection.tsx`
+- `front-end/src/components/sections/FaqSection.tsx`
+- `front-end/src/components/sections/FeaturesSection.tsx`
+- `front-end/src/components/sections/HowItWorksSection.tsx`
+- `front-end/src/components/sections/StatsSection.tsx`
+- `front-end/src/components/sections/TestimonialsSection.tsx`
+- `front-end/src/components/ui/select.tsx`
+- `front-end/src/redux/features/generals/generalsApi.ts`
+- `front-end/src/redux/features/jobs/jobsApi.ts`
+
+## New files
+
+- `front-end/PHASE2_CLIENT_NOTES.md`
+- `front-end/app/(auth)/error.tsx`
+- `front-end/app/(auth)/layout.tsx`
+- `front-end/app/(auth)/loading.tsx`
+- `front-end/app/(job)/error.tsx`
+- `front-end/app/(job)/job/loading.tsx`
+- `front-end/app/(job)/job-seeker/layout.tsx`
+- `front-end/app/(job)/job-seeker/loading.tsx`
+- `front-end/app/(job)/job-seeker/messages/loading.tsx`
+- `front-end/app/(job)/loading.tsx`
+- `front-end/app/(recruiter)/error.tsx`
+- `front-end/app/(recruiter)/loading.tsx`
+- `front-end/app/(recruiter)/recruiter/interviews/loading.tsx`
+- `front-end/app/(recruiter)/recruiter/loading.tsx`
+- `front-end/app/error.tsx`
+- `front-end/app/global-error.tsx`
+- `front-end/app/loading.tsx`
+- `front-end/app/not-found.tsx`
+- `front-end/app/notifications/error.tsx`
+- `front-end/app/notifications/loading.tsx`
+- `front-end/app/opengraph-image.tsx`
+- `front-end/app/robots.ts`
+- `front-end/app/sitemap.ts`
+- `front-end/src/components/feedback/LoadingStates.tsx`
+- `front-end/src/components/feedback/RouteError.tsx`
+- `front-end/src/components/feedback/StateViews.tsx`
+- `front-end/src/components/layout/WorkspaceShell.tsx`
+- `front-end/src/hooks/useDebouncedValue.ts`
+- `front-end/src/lib/publicMetadata.ts`
+
+## Files to delete
+
+**NONE**

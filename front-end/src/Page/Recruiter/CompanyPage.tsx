@@ -14,7 +14,7 @@ const CompanyPage = () => {
   return (
     <RecruiterLayout>
       <div className="mx-auto max-w-6xl space-y-8">
-        <section className="relative overflow-hidden rounded-3xl bg-[#234C6A] p-7 text-white shadow-2xl shadow-[#234C6A]/20 md:p-9">
+        <section className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
           <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -49,26 +49,26 @@ const CompanyPage = () => {
           <Sparkles className="absolute -bottom-8 -right-8 h-44 w-44 rotate-12 text-white/5" />
         </section>
 
-        <Card className="relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-xl shadow-[#234C6A]/8 backdrop-blur md:p-8">
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+        <Card className="relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-xl shadow-[#163B5C]/8 backdrop-blur md:p-8">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#234C6A] text-white shadow-lg shadow-[#234C6A]/20">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#163B5C] text-white shadow-lg shadow-[#163B5C]/20">
                 <Building2 className="h-7 w-7" />
               </div>
               <div>
                 <div className="mb-1 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-[#456882]" />
-                  <span className="text-xs font-black uppercase tracking-widest text-[#456882]">
+                  <Sparkles className="h-4 w-4 text-[#516C83]" />
+                  <span className="text-xs font-black uppercase tracking-widest text-[#516C83]">
                     Employer Brand
                   </span>
                 </div>
-                <h2 className="text-2xl font-black tracking-tight text-[#234C6A]">
+                <h2 className="text-2xl font-black tracking-tight text-[#163B5C]">
                   Company Presence
                 </h2>
               </div>
             </div>
-            <div className="inline-flex items-center gap-2 rounded-2xl border border-[#234C6A]/10 bg-[#234C6A]/5 px-4 py-3 text-sm font-black text-[#234C6A]">
+            <div className="inline-flex items-center gap-2 rounded-2xl border border-[#163B5C]/10 bg-[#163B5C]/5 px-4 py-3 text-sm font-black text-[#163B5C]">
               <ShieldCheck className="h-4 w-4" />
               Profile controls
             </div>

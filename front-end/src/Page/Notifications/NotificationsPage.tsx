@@ -219,7 +219,7 @@ const NotificationsPage = () => {
       <div className="container max-w-5xl mx-auto px-4">
         {/* Header */}
         <div className="notif-header mb-10">
-          <div className="relative overflow-hidden rounded-[2rem] bg-[#234C6A] p-8 text-white shadow-2xl shadow-[#234C6A]/20 md:p-10">
+          <div className="relative overflow-hidden rounded-[2rem] bg-[#163B5C] p-8 text-white shadow-2xl shadow-[#163B5C]/20 md:p-10">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/15 to-transparent" />
 
@@ -228,7 +228,7 @@ const NotificationsPage = () => {
                 <div className="relative flex h-16 w-16 items-center justify-center rounded-3xl border border-white/20 bg-white/15 text-white shadow-lg backdrop-blur-sm">
                   <Bell className="h-8 w-8" />
                   {unreadCount > 0 && (
-                    <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white ring-4 ring-[#234C6A]">
+                    <span className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white ring-4 ring-[#163B5C]">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
@@ -250,7 +250,7 @@ const NotificationsPage = () => {
               <Button
                 onClick={handleMarkAllRead}
                 disabled={unreadCount === 0}
-                className="h-12 rounded-2xl bg-white px-6 font-black text-[#234C6A] shadow-lg transition-all hover:bg-[#E3E3E3] active:scale-95 disabled:opacity-50"
+                className="h-12 rounded-2xl bg-white px-6 font-black text-[#163B5C] shadow-lg transition-all hover:bg-[#E1E8EF] active:scale-95 disabled:opacity-50"
               >
                 <CheckCheck className="mr-2 h-5 w-5" />
                 Mark All Read
@@ -260,41 +260,41 @@ const NotificationsPage = () => {
         </div>
 
         {/* List */}
-        <div className="overflow-hidden rounded-[2rem] border border-[#234C6A]/10 bg-white/90 shadow-xl shadow-[#234C6A]/10 backdrop-blur">
-          <div className="flex items-center justify-between border-b border-[#E3E3E3] bg-[#F8FAFC] p-6 md:p-8">
-            <h2 className="flex items-center gap-3 text-xl font-black text-[#234C6A]">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A]/10">
-                <Inbox className="h-6 w-6 text-[#234C6A]" />
+        <div className="overflow-hidden rounded-[2rem] border border-[#163B5C]/10 bg-white/90 shadow-xl shadow-[#163B5C]/10 backdrop-blur">
+          <div className="flex items-center justify-between border-b border-[#E1E8EF] bg-[#F6F8FB] p-6 md:p-8">
+            <h2 className="flex items-center gap-3 text-xl font-black text-[#163B5C]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                <Inbox className="h-6 w-6 text-[#163B5C]" />
               </span>
               Notification Center
             </h2>
             {unreadCount > 0 && (
-              <Badge className="rounded-full border-none bg-[#234C6A] px-4 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+              <Badge className="rounded-full border-none bg-[#163B5C] px-4 py-1 text-[10px] font-black uppercase tracking-widest text-white">
                 {unreadCount} New
               </Badge>
             )}
           </div>
 
-          <div className="divide-y divide-[#E3E3E3]/70">
+          <div className="divide-y divide-[#E1E8EF]/70">
             {isLoading ? (
               <div className="text-center py-20">
-                <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-[#234C6A]" />
-                <p className="text-sm font-black uppercase tracking-widest text-[#234C6A]">
+                <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-[#163B5C]" />
+                <p className="text-sm font-black uppercase tracking-widest text-[#163B5C]">
                   Loading Notifications...
                 </p>
-                <p className="mt-2 text-sm text-[#456882]">
+                <p className="mt-2 text-sm text-[#516C83]">
                   Syncing your real-time activity center
                 </p>
               </div>
             ) : notifications.length === 0 ? (
               <div className="text-center py-32">
-                <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-3xl bg-[#234C6A]/10">
-                  <BellOff className="h-12 w-12 text-[#234C6A]/35" />
+                <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-3xl bg-[#163B5C]/10">
+                  <BellOff className="h-12 w-12 text-[#163B5C]/35" />
                 </div>
-                <h3 className="text-2xl font-black text-[#234C6A]">
+                <h3 className="text-2xl font-black text-[#163B5C]">
                   No notifications found
                 </h3>
-                <p className="mx-auto mt-2 max-w-sm font-medium text-[#456882]">
+                <p className="mx-auto mt-2 max-w-sm font-medium text-[#516C83]">
                   We&apos;ll let you know when something important happens.
                 </p>
               </div>
@@ -305,12 +305,12 @@ const NotificationsPage = () => {
                   <div
                     key={n._id}
                     className={cn(
-                      "notif-item group relative flex items-start gap-5 p-6 transition-all duration-300 hover:bg-[#F8FAFC] md:p-8",
-                      !n.isRead && "bg-[#234C6A]/5",
+                      "notif-item group relative flex items-start gap-5 p-6 transition-all duration-300 hover:bg-[#F6F8FB] md:p-8",
+                      !n.isRead && "bg-[#163B5C]/5",
                     )}
                   >
                     {!n.isRead && (
-                      <div className="absolute bottom-0 left-0 top-0 w-1.5 rounded-r-full bg-gradient-to-b from-[#234C6A] to-[#456882]" />
+                      <div className="absolute bottom-0 left-0 top-0 w-1.5 rounded-r-full bg-gradient-to-b from-[#163B5C] to-[#516C83]" />
                     )}
 
                     <div className="relative flex-shrink-0">
@@ -318,8 +318,8 @@ const NotificationsPage = () => {
                         className={cn(
                           "flex h-14 w-14 items-center justify-center rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-105 md:h-16 md:w-16",
                           n.isRead
-                            ? "border border-[#234C6A]/10 bg-white text-[#456882]"
-                            : "bg-gradient-to-br from-[#234C6A] to-[#456882] text-white",
+                            ? "border border-[#163B5C]/10 bg-white text-[#516C83]"
+                            : "bg-gradient-to-br from-[#163B5C] to-[#516C83] text-white",
                         )}
                       >
                         {n.sender?.image ? (
@@ -333,7 +333,7 @@ const NotificationsPage = () => {
                         )}
                       </div>
                       {!n.isRead && (
-                        <span className="absolute -right-1 -top-1 h-4 w-4 animate-pulse rounded-full border-4 border-white bg-[#234C6A]" />
+                        <span className="absolute -right-1 -top-1 h-4 w-4 animate-pulse rounded-full border-4 border-white bg-[#163B5C]" />
                       )}
                     </div>
 
@@ -343,8 +343,8 @@ const NotificationsPage = () => {
                           className={cn(
                             "truncate pr-4 text-lg tracking-tight",
                             n.isRead
-                              ? "font-bold text-[#456882]"
-                              : "font-black text-[#234C6A]",
+                              ? "font-bold text-[#516C83]"
+                              : "font-black text-[#163B5C]",
                           )}
                         >
                           {n.link ? (
@@ -355,7 +355,7 @@ const NotificationsPage = () => {
                             n.title
                           )}
                         </h3>
-                        <span className="flex shrink-0 items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#456882]/70">
+                        <span className="flex shrink-0 items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#516C83]/70">
                           <Clock className="h-3.5 w-3.5" />
                           {formatDate(n.createdAt)}
                         </span>
@@ -373,8 +373,8 @@ const NotificationsPage = () => {
                             className={cn(
                               "h-10 w-10 rounded-xl transition-all",
                               n.isRead
-                                ? "text-[#456882]/35 cursor-not-allowed"
-                                : "text-[#234C6A] hover:bg-[#234C6A]/10",
+                                ? "text-[#516C83]/35 cursor-not-allowed"
+                                : "text-[#163B5C] hover:bg-[#163B5C]/10",
                             )}
                             title={n.isRead ? "Already read" : "Mark as read"}
                           >
@@ -404,23 +404,23 @@ const NotificationsPage = () => {
 
           {/* Pagination */}
           {meta.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 border-t border-[#E3E3E3] bg-[#F8FAFC] p-8">
+            <div className="flex items-center justify-center gap-4 border-t border-[#E1E8EF] bg-[#F6F8FB] p-8">
               <Button
                 variant="outline"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => p - 1)}
-                className="h-12 w-12 rounded-2xl border-[#234C6A]/10 bg-white text-[#234C6A] shadow-sm hover:bg-[#234C6A]/5 disabled:opacity-30"
+                className="h-12 w-12 rounded-2xl border-[#163B5C]/10 bg-white text-[#163B5C] shadow-sm hover:bg-[#163B5C]/5 disabled:opacity-30"
               >
                 <ChevronLeft className="h-6 w-6" />
               </Button>
-              <span className="font-black text-[#234C6A] tracking-widest text-sm uppercase">
+              <span className="font-black text-[#163B5C] tracking-widest text-sm uppercase">
                 Page {currentPage} of {meta.totalPages}
               </span>
               <Button
                 variant="outline"
                 disabled={currentPage === meta.totalPages}
                 onClick={() => setCurrentPage((p) => p + 1)}
-                className="h-12 w-12 rounded-2xl border-[#234C6A]/10 bg-white text-[#234C6A] shadow-sm hover:bg-[#234C6A]/5 disabled:opacity-30"
+                className="h-12 w-12 rounded-2xl border-[#163B5C]/10 bg-white text-[#163B5C] shadow-sm hover:bg-[#163B5C]/5 disabled:opacity-30"
               >
                 <ChevronRight className="h-6 w-6" />
               </Button>

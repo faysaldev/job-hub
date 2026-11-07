@@ -25,11 +25,11 @@ const JobCard = ({ job }: JobCardProps) => {
 
   return (
     <Link href={`/job/${job.id}`}>
-      <Card className="p-6 hover:shadow-xl transition-all duration-300 hover:border-[#234C6A]/30 border border-[#E3E3E3] bg-white rounded-xl group">
+      <Card className="p-6 hover:shadow-xl transition-all duration-300 hover:border-[#163B5C]/30 border border-[#E1E8EF] bg-white rounded-xl group">
         <div className="flex flex-col lg:flex-row lg:items-start gap-5">
           {/* Company Logo Placeholder */}
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#234C6A]/10 to-[#456882]/10 flex items-center justify-center flex-shrink-0 group-hover:from-[#234C6A]/20 group-hover:to-[#456882]/20 transition-colors">
-            <Building2 className="h-7 w-7 text-[#234C6A]" />
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#163B5C]/10 to-[#516C83]/10 flex items-center justify-center flex-shrink-0 group-hover:from-[#163B5C]/20 group-hover:to-[#516C83]/20 transition-colors">
+            <Building2 className="h-7 w-7 text-[#163B5C]" />
           </div>
 
           <div className="flex-1 space-y-3">
@@ -37,7 +37,7 @@ const JobCard = ({ job }: JobCardProps) => {
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-xl font-semibold text-[#234C6A] group-hover:text-[#456882] transition-colors">
+                  <h3 className="text-xl font-semibold text-[#163B5C] group-hover:text-[#516C83] transition-colors">
                     {job.title}
                   </h3>
                   {isNew && (
@@ -47,13 +47,13 @@ const JobCard = ({ job }: JobCardProps) => {
                     </Badge>
                   )}
                 </div>
-                <p className="text-[#456882] font-medium">{job.company}</p>
+                <p className="text-[#516C83] font-medium">{job.company}</p>
               </div>
 
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="text-[#516C83] hover:text-[#163B5C] hover:bg-[#163B5C]/10 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -65,7 +65,7 @@ const JobCard = ({ job }: JobCardProps) => {
             </div>
 
             {/* Meta Info */}
-            <div className="flex flex-wrap gap-4 text-sm text-[#456882]">
+            <div className="flex flex-wrap gap-4 text-sm text-[#516C83]">
               <span className="flex items-center gap-1.5">
                 <MapPin className="h-4 w-4" />
                 {job.location}
@@ -90,7 +90,7 @@ const JobCard = ({ job }: JobCardProps) => {
             </div>
 
             {/* Description */}
-            <p className="text-[#456882] line-clamp-2 text-sm leading-relaxed">
+            <p className="text-[#516C83] line-clamp-2 text-sm leading-relaxed">
               {job.description}
             </p>
 
@@ -100,20 +100,20 @@ const JobCard = ({ job }: JobCardProps) => {
                 {job.skills.slice(0, 4).map((skill, index) => (
                   <Badge
                     key={index}
-                    className="bg-[#234C6A]/10 text-[#234C6A] border-none hover:bg-[#234C6A]/20 transition-colors"
+                    className="bg-[#163B5C]/10 text-[#163B5C] border-none hover:bg-[#163B5C]/20 transition-colors"
                   >
                     {skill}
                   </Badge>
                 ))}
                 {job.skills.length > 4 && (
-                  <Badge className="bg-[#E3E3E3] text-[#456882] border-none">
+                  <Badge className="bg-[#E1E8EF] text-[#516C83] border-none">
                     +{job.skills.length - 4}
                   </Badge>
                 )}
               </div>
 
               <Button
-                className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 View Details
                 <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />

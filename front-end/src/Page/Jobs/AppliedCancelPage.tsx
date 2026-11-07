@@ -44,10 +44,10 @@ const CancelContent = () => {
   ];
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-[#E3E3E3] via-white to-[#E3E3E3] py-16 px-4 relative overflow-hidden">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-[#E1E8EF] via-white to-[#E1E8EF] py-16 px-4 relative overflow-hidden">
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 -left-48 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-[#456882]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-[#516C83]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="max-w-5xl mx-auto relative">
@@ -67,22 +67,22 @@ const CancelContent = () => {
                   <Badge className="bg-rose-100 text-rose-700 border-none px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
                     Payment Cancelled or Failed
                   </Badge>
-                  <h1 className="text-4xl font-black text-[#234C6A] tracking-tight leading-tight">
+                  <h1 className="text-4xl font-black text-[#163B5C] tracking-tight leading-tight">
                     Application Submited<br />without Boost ⚠️
                   </h1>
-                  <p className="text-[#456882] font-medium text-base max-w-md mx-auto leading-relaxed">
+                  <p className="text-[#516C83] font-medium text-base max-w-md mx-auto leading-relaxed">
                     Don&apos;t worry! Your standard application was **successfully submitted** to the recruiter. However, your profile rank boost payment was not completed.
                   </p>
                 </div>
                 <div className="pt-4 flex flex-col gap-3">
                   <Link href="/job-seeker/applications">
-                    <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white font-black shadow-xl shadow-[#234C6A]/20 transition-all active:scale-95">
+                    <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white font-black shadow-xl shadow-[#163B5C]/20 transition-all active:scale-95">
                       Track Standard Application
                       <ArrowRight className="h-5 w-5 ml-2" />
                     </Button>
                   </Link>
                   <Link href="/job">
-                    <Button variant="ghost" className="w-full h-12 rounded-xl font-semibold text-[#456882] hover:text-[#234C6A] hover:bg-[#234C6A]/5">
+                    <Button variant="ghost" className="w-full h-12 rounded-xl font-semibold text-[#516C83] hover:text-[#163B5C] hover:bg-[#163B5C]/5">
                       Return to Job Board
                     </Button>
                   </Link>
@@ -96,8 +96,8 @@ const CancelContent = () => {
                   <div className={`w-10 h-10 rounded-xl ${h.bg} flex items-center justify-center`}>
                     <h.icon className={`h-5 w-5 ${h.color}`} />
                   </div>
-                  <p className="text-[10px] font-black text-[#456882] uppercase tracking-widest">{h.label}</p>
-                  <p className="text-sm font-bold text-[#234C6A]">{h.value}</p>
+                  <p className="text-[10px] font-black text-[#516C83] uppercase tracking-widest">{h.label}</p>
+                  <p className="text-sm font-bold text-[#163B5C]">{h.value}</p>
                 </div>
               ))}
             </div>
@@ -106,8 +106,8 @@ const CancelContent = () => {
           {/* Sidebar */}
           <div className="md:col-span-2 space-y-5">
             <Card className="animate-in border border-white/40 shadow-xl rounded-3xl p-8 bg-white/70 backdrop-blur-xl">
-              <h2 className="text-lg font-black text-[#234C6A] mb-6 flex items-center gap-3">
-                <HelpCircle className="h-5 w-5 text-[#456882]" />
+              <h2 className="text-lg font-black text-[#163B5C] mb-6 flex items-center gap-3">
+                <HelpCircle className="h-5 w-5 text-[#516C83]" />
                 Common Payment Issues
               </h2>
               <div className="space-y-4">
@@ -117,11 +117,11 @@ const CancelContent = () => {
                   { q: "Can I try to boost again later?", a: "Yes, you can upgrade your application status to Premium from your Dashboard." },
                 ].map((item, idx) => (
                   <div key={idx} className="space-y-1">
-                    <h4 className="text-xs font-bold text-[#234C6A] flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-[#163B5C] flex items-center gap-1.5">
                       <ChevronRight className="h-3.5 w-3.5 text-rose-500 flex-shrink-0" />
                       {item.q}
                     </h4>
-                    <p className="text-xs text-[#456882] leading-relaxed pl-5">{item.a}</p>
+                    <p className="text-xs text-[#516C83] leading-relaxed pl-5">{item.a}</p>
                   </div>
                 ))}
               </div>
@@ -154,7 +154,7 @@ const CancelContent = () => {
 export default function AppliedCancelPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#163B5C] via-[#2d5a7a] to-[#516C83] flex flex-col items-center justify-center p-4">
         <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mb-6" />
         <h2 className="text-xl font-bold text-white animate-pulse">Loading Details...</h2>
       </div>

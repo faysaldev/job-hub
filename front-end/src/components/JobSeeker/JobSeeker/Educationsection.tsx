@@ -30,7 +30,7 @@ const EducationItem = memo(
       return (
         <div className="group border-l-4 border-amber-400 pl-6 py-1 relative">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-            <h4 className="text-xl font-bold text-[#234C6A]">{field.degree}</h4>
+            <h4 className="text-xl font-bold text-[#163B5C]">{field.degree}</h4>
             <span className="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm font-bold">
               {field.startDate
                 ? new Date(field.startDate).toLocaleDateString(undefined, {
@@ -49,7 +49,7 @@ const EducationItem = memo(
                   : ""}
             </span>
           </div>
-          <p className="text-lg font-medium text-[#456882] italic mt-1">
+          <p className="text-lg font-medium text-[#516C83] italic mt-1">
             {field.institution}
           </p>
         </div>
@@ -69,12 +69,12 @@ const EducationItem = memo(
           <Input
             {...register(`education.${index}.degree`)}
             placeholder="Degree/Certificate"
-            className="font-bold border-[#456882]/30"
+            className="font-bold border-[#516C83]/30"
           />
           <Input
             {...register(`education.${index}.institution`)}
             placeholder="School/University"
-            className="border-[#456882]/30"
+            className="border-[#516C83]/30"
           />
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
@@ -82,11 +82,11 @@ const EducationItem = memo(
                 type="checkbox"
                 {...register(`education.${index}.current`)}
                 id={`edu-current-${field.id}`}
-                className="rounded border-[#234C6A] text-[#234C6A]"
+                className="rounded border-[#163B5C] text-[#163B5C]"
               />
               <label
                 htmlFor={`edu-current-${field.id}`}
-                className="text-sm font-medium text-[#456882]"
+                className="text-sm font-medium text-[#516C83]"
               >
                 I am still studying here
               </label>
@@ -102,7 +102,7 @@ const EducationItem = memo(
                     placeholderText="Start Date"
                     dateFormat="MM/yyyy"
                     showMonthYearPicker
-                    className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm"
+                    className="flex h-10 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm"
                   />
                 )}
               />
@@ -117,7 +117,7 @@ const EducationItem = memo(
                     dateFormat="MM/yyyy"
                     showMonthYearPicker
                     disabled={isCurrent}
-                    className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm disabled:opacity-50"
                   />
                 )}
               />
@@ -162,19 +162,19 @@ const AddEducationForm = memo(({ onAdd }: { onAdd: (edu: any) => void }) => {
 
   return (
     <div className="mt-10 p-6 bg-amber-50/30 rounded-2xl border-2 border-dashed border-amber-200">
-      <h4 className="text-lg font-bold text-[#234C6A] mb-6 flex items-center gap-2">
+      <h4 className="text-lg font-bold text-[#163B5C] mb-6 flex items-center gap-2">
         <Plus className="h-5 w-5" /> Add New Education
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Input
           ref={degreeRef}
           placeholder="Degree (e.g. B.S. Computer Science)"
-          className="border-[#456882]/30"
+          className="border-[#516C83]/30"
         />
         <Input
           ref={instRef}
           placeholder="School/University"
-          className="border-[#456882]/30"
+          className="border-[#516C83]/30"
         />
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
@@ -183,11 +183,11 @@ const AddEducationForm = memo(({ onAdd }: { onAdd: (edu: any) => void }) => {
               checked={current}
               onChange={(e) => setCurrent(e.target.checked)}
               id="new-edu-current"
-              className="rounded border-[#234C6A] text-[#234C6A]"
+              className="rounded border-[#163B5C] text-[#163B5C]"
             />
             <label
               htmlFor="new-edu-current"
-              className="text-sm font-medium text-[#456882]"
+              className="text-sm font-medium text-[#516C83]"
             >
               Still studying here
             </label>
@@ -199,9 +199,9 @@ const AddEducationForm = memo(({ onAdd }: { onAdd: (edu: any) => void }) => {
               placeholderText="Start Date"
               dateFormat="MM/yyyy"
               showMonthYearPicker
-              className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm"
+              className="flex h-10 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm"
             />
-            <span className="text-[#456882]">-</span>
+            <span className="text-[#516C83]">-</span>
             <DatePicker
               selected={endDate}
               onChange={setEndDate}
@@ -209,7 +209,7 @@ const AddEducationForm = memo(({ onAdd }: { onAdd: (edu: any) => void }) => {
               dateFormat="MM/yyyy"
               showMonthYearPicker
               disabled={current}
-              className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm disabled:opacity-50"
             />
           </div>
         </div>
@@ -217,7 +217,7 @@ const AddEducationForm = memo(({ onAdd }: { onAdd: (edu: any) => void }) => {
           <Button
             type="button"
             onClick={handleAdd}
-            className="h-12 rounded-2xl bg-[#234C6A] px-8 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
+            className="h-12 rounded-2xl bg-[#163B5C] px-8 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:bg-[#516C83]"
           >
             <Plus className="h-4 w-4 mr-2" /> Add Education
           </Button>
@@ -240,12 +240,12 @@ const EducationSection = memo(({ editing }: { editing: boolean }) => {
   const handleAdd = useCallback((edu: any) => append(edu), [append]);
 
   return (
-    <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
+    <Card className="p-8 border-[#516C83]/30 bg-white shadow-lg rounded-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 bg-[#234C6A]/10 rounded-xl">
-          <GraduationCap className="h-5 w-5 text-[#234C6A]" />
+        <div className="p-2 bg-[#163B5C]/10 rounded-xl">
+          <GraduationCap className="h-5 w-5 text-[#163B5C]" />
         </div>
-        <h3 className="text-xl font-bold text-[#234C6A]">Education</h3>
+        <h3 className="text-xl font-bold text-[#163B5C]">Education</h3>
       </div>
 
       <div className="space-y-8">
@@ -262,7 +262,7 @@ const EducationSection = memo(({ editing }: { editing: boolean }) => {
         {editing && <AddEducationForm onAdd={handleAdd} />}
 
         {!editing && fields.length === 0 && (
-          <p className="text-[#456882] italic text-center py-6 bg-gray-50 rounded-xl">
+          <p className="text-[#516C83] italic text-center py-6 bg-gray-50 rounded-xl">
             No education added yet.
           </p>
         )}

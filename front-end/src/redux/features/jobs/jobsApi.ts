@@ -19,10 +19,10 @@ const jobsApi = baseApi.injectEndpoints({
           : [{ type: "jobs", id: "LIST" }],
     }),
 
-    // GET /job/search - Search jobs
+    // GET /job - Canonical filtered search; /job/search stays a server compatibility alias
     searchJobs: builder.query<PaginatedResponse<Job>, JobFilters>({
       query: (filters) => ({
-        url: "/job/search",
+        url: "/job",
         method: "GET",
         params: filters,
       }),

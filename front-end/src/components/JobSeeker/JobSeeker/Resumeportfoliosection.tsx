@@ -18,12 +18,12 @@ const ResumePortfolioSection = memo(
     const { register, watch } = useFormContext<ProfileFormValues>();
 
     return (
-      <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
+      <Card className="p-8 border-[#516C83]/30 bg-white shadow-lg rounded-2xl">
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 bg-[#234C6A]/10 rounded-xl">
-            <ExternalLink className="h-5 w-5 text-[#234C6A]" />
+          <div className="p-2 bg-[#163B5C]/10 rounded-xl">
+            <ExternalLink className="h-5 w-5 text-[#163B5C]" />
           </div>
-          <h3 className="text-xl font-bold text-[#234C6A]">
+          <h3 className="text-xl font-bold text-[#163B5C]">
             Documents & Professional Links
           </h3>
         </div>
@@ -31,23 +31,23 @@ const ResumePortfolioSection = memo(
         {editing ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-[#234C6A]">
+              <label className="text-sm font-bold text-[#163B5C]">
                 Resume URL (Google Drive/Dropbox)
               </label>
               <Input
                 {...register("resume")}
                 placeholder="https://..."
-                className="border-[#456882]/30 rounded-xl h-12"
+                className="border-[#516C83]/30 rounded-xl h-12"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-[#234C6A]">
+              <label className="text-sm font-bold text-[#163B5C]">
                 Personal Website/Portfolio
               </label>
               <Input
                 {...register("website")}
                 placeholder="https://yourportfolio.com"
-                className="border-[#456882]/30 rounded-xl h-12"
+                className="border-[#516C83]/30 rounded-xl h-12"
               />
             </div>
           </div>
@@ -59,15 +59,15 @@ const ResumePortfolioSection = memo(
                 profileData?.resume?.resumeLink &&
                 window.open(profileData.resume.resumeLink, "_blank")
               }
-              className="h-16 flex items-center justify-start gap-4 border-2 border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/5 rounded-2xl group transition-all"
+              className="h-16 flex items-center justify-start gap-4 border-2 border-[#163B5C] text-[#163B5C] hover:bg-[#163B5C]/5 rounded-2xl group transition-all"
               disabled={!profileData?.resume?.resumeLink}
             >
-              <div className="w-10 h-10 rounded-xl bg-[#234C6A] text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-[#163B5C] text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Mail className="h-5 w-5" />
               </div>
               <div className="text-left">
                 <p className="font-bold">View Resume</p>
-                <p className="text-xs text-[#456882]">
+                <p className="text-xs text-[#516C83]">
                   {profileData?.resume?.resumeLink
                     ? "External Link"
                     : "No resume uploaded"}
@@ -82,15 +82,15 @@ const ResumePortfolioSection = memo(
                 profileData?.portfolio &&
                 window.open(profileData.portfolio, "_blank")
               }
-              className="h-16 flex items-center justify-start gap-4 border-2 border-[#456882] text-[#234C6A] hover:bg-[#456882]/5 rounded-2xl group transition-all"
+              className="h-16 flex items-center justify-start gap-4 border-2 border-[#516C83] text-[#163B5C] hover:bg-[#516C83]/5 rounded-2xl group transition-all"
               disabled={!profileData?.portfolio}
             >
-              <div className="w-10 h-10 rounded-xl bg-[#456882] text-white flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-[#516C83] text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Briefcase className="h-5 w-5" />
               </div>
               <div className="text-left">
                 <p className="font-bold">Portfolio Website</p>
-                <p className="text-xs text-[#456882]">
+                <p className="text-xs text-[#516C83]">
                   {profileData?.portfolio ? "Visit site" : "No link added"}
                 </p>
               </div>

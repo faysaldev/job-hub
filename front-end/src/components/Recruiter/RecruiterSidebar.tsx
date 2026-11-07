@@ -69,22 +69,22 @@ const RecruiterSidebar = () => {
   return (
     <aside
       className={cn(
-        "sticky top-0 z-40 flex h-screen flex-col border-r border-[#234C6A]/10 bg-white/95 shadow-2xl shadow-[#234C6A]/10 backdrop-blur-xl transition-all duration-300",
+        "sticky top-0 z-40 flex h-screen flex-col border-r border-[#163B5C]/10 bg-white/95 shadow-2xl shadow-[#163B5C]/10 backdrop-blur-xl transition-all duration-300",
         isCollapsed ? "w-20" : "w-64",
       )}
     >
       {/* Logo Section */}
-      <div className="border-b border-[#E3E3E3]/80 p-4">
+      <div className="border-b border-[#E1E8EF]/80 p-4">
         <Link href="/recruiter" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#234C6A] to-[#456882] shadow-lg shadow-[#234C6A]/20">
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#163B5C] to-[#516C83] shadow-lg shadow-[#163B5C]/20">
             <Briefcase className="h-5 w-5 text-white" />
           </div>
           {!isCollapsed && (
             <div>
-              <h2 className="font-black tracking-tight text-[#234C6A]">
+              <h2 className="font-black tracking-tight text-[#163B5C]">
                 JobHub
               </h2>
-              <p className="text-xs font-semibold text-[#456882]">
+              <p className="text-xs font-semibold text-[#516C83]">
                 Recruiter Portal
               </p>
             </div>
@@ -103,8 +103,8 @@ const RecruiterSidebar = () => {
               className={cn(
                 "group relative flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200",
                 isActive
-                  ? "bg-gradient-to-r from-[#234C6A] to-[#456882] text-white shadow-lg shadow-[#234C6A]/20"
-                  : "text-[#456882] hover:bg-[#234C6A]/8 hover:text-[#234C6A]",
+                  ? "bg-gradient-to-r from-[#163B5C] to-[#516C83] text-white shadow-lg shadow-[#163B5C]/20"
+                  : "text-[#516C83] hover:bg-[#163B5C]/8 hover:text-[#163B5C]",
                 isCollapsed && "justify-center px-3",
               )}
             >
@@ -113,7 +113,7 @@ const RecruiterSidebar = () => {
                   "h-5 w-5 flex-shrink-0",
                   isActive
                     ? "text-white"
-                    : "text-[#456882] group-hover:text-[#234C6A]",
+                    : "text-[#516C83] group-hover:text-[#163B5C]",
                 )}
               />
               {!isCollapsed && (
@@ -127,7 +127,7 @@ const RecruiterSidebar = () => {
                         "rounded-full px-2 py-0.5 text-xs font-black",
                         isActive
                           ? "bg-white/20 text-white"
-                          : "bg-[#234C6A]/10 text-[#234C6A]",
+                          : "bg-[#163B5C]/10 text-[#163B5C]",
                       )}
                     >
                       {item.badge}
@@ -137,7 +137,7 @@ const RecruiterSidebar = () => {
               )}
               {/* Tooltip for collapsed state */}
               {isCollapsed && (
-                <div className="invisible absolute left-full z-50 ml-2 whitespace-nowrap rounded-2xl bg-[#234C6A] px-3 py-2 text-sm font-bold text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+                <div className="invisible absolute left-full z-50 ml-2 whitespace-nowrap rounded-2xl bg-[#163B5C] px-3 py-2 text-sm font-bold text-white opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
                   {item.label}
                   {item.badge && (
                     <span className="ml-2 rounded bg-white/20 px-1.5 py-0.5 text-xs">
@@ -153,23 +153,23 @@ const RecruiterSidebar = () => {
 
       {/* Collapse Toggle */}
       {!isCollapsed && (
-        <div className="mx-4 mb-3 rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-4">
+        <div className="mx-4 mb-3 rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-4">
           <div className="mb-2 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#234C6A]" />
-            <p className="text-xs font-black uppercase tracking-widest text-[#234C6A]">
+            <Sparkles className="h-4 w-4 text-[#163B5C]" />
+            <p className="text-xs font-black uppercase tracking-widest text-[#163B5C]">
               Hiring Focus
             </p>
           </div>
-          <p className="text-xs leading-5 text-[#456882]">
+          <p className="text-xs leading-5 text-[#516C83]">
             Review applicants, schedule interviews, and keep new roles moving.
           </p>
         </div>
       )}
 
-      <div className="border-t border-[#E3E3E3]/80 p-4">
+      <div className="border-t border-[#E1E8EF]/80 p-4">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-black text-[#456882] transition-colors hover:bg-[#234C6A]/10 hover:text-[#234C6A]"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-black text-[#516C83] transition-colors hover:bg-[#163B5C]/10 hover:text-[#163B5C]"
         >
           {isCollapsed ? (
             <ChevronRight className="h-5 w-5" />

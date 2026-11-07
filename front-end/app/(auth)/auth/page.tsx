@@ -2,6 +2,7 @@ import AuthPage from "@/src/Page/Auth/AuthPage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: "Authentications | Sign In & Sign Up - JobHub",
   description:
     "Join JobHub to find your dream job or the perfect candidate. Sign in to your account or create a new one to get started.",

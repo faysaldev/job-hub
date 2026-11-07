@@ -130,7 +130,7 @@ export default function ApplyJobModal({
           "w-full h-12 rounded-xl font-semibold mb-4 group transition-all",
           isApplied
             ? "bg-gray-300 text-gray-500 cursor-not-allowed hover:from-transparent hover:to-transparent"
-            : "bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/90 hover:to-[#456882]/90 text-white"
+            : "bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white"
         )}
       >
         <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
@@ -142,7 +142,7 @@ export default function ApplyJobModal({
           <div
             className="transition-all duration-300"
           >
-            <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white">
+            <div className="bg-gradient-to-br from-[#163B5C] to-[#516C83] p-8 text-white">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-black tracking-tight flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <span className="break-words max-w-full">Apply for {jobTitle}</span>
@@ -161,7 +161,7 @@ export default function ApplyJobModal({
             <div className="p-8 pb-0 space-y-6 max-h-[45vh] overflow-y-auto">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-sm font-black text-[#234C6A] flex items-center gap-2 uppercase tracking-widest">
+                  <Label className="text-sm font-black text-[#163B5C] flex items-center gap-2 uppercase tracking-widest">
                     <LinkIcon className="h-4 w-4" />
                     Resume
                   </Label>
@@ -204,7 +204,7 @@ export default function ApplyJobModal({
                 <div className="space-y-2">
                   <Label
                     htmlFor="coverLetter"
-                    className="text-sm font-black text-[#234C6A] flex items-center gap-2 uppercase tracking-widest"
+                    className="text-sm font-black text-[#163B5C] flex items-center gap-2 uppercase tracking-widest"
                   >
                     <FileText className="h-4 w-4" />
                     Cover Letter
@@ -215,7 +215,7 @@ export default function ApplyJobModal({
                     value={coverLetter}
                     onChange={(e) => setCoverLetter(e.target.value)}
                     maxLength={1300}
-                    className="min-h-[180px] max-h-[220px] overflow-y-auto rounded-2xl border-[#E3E3E3] focus:border-[#234C6A] focus:ring-[#234C6A]/10 p-5 leading-relaxed font-medium"
+                    className="min-h-[180px] max-h-[220px] overflow-y-auto rounded-2xl border-[#E1E8EF] focus:border-[#163B5C] focus:ring-[#163B5C]/10 p-5 leading-relaxed font-medium"
                     required
                   />
                   <div className="flex justify-between items-center px-1">
@@ -234,7 +234,7 @@ export default function ApplyJobModal({
                           ? "Limit exceeded"
                           : "Requirement met"}
                     </span>
-                    <p className="text-[10px] font-black text-[#456882] uppercase tracking-widest">
+                    <p className="text-[10px] font-black text-[#516C83] uppercase tracking-widest">
                       {coverLetter.length} / 1300 max
                     </p>
                   </div>
@@ -247,9 +247,9 @@ export default function ApplyJobModal({
           <div className="px-8 py-5">
             <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 cursor-pointer">
               <input type="checkbox" checked={boostSelected} onChange={(event) => setBoostSelected(event.target.checked)}
-                className="mt-1 h-4 w-4 accent-[#234C6A]" />
+                className="mt-1 h-4 w-4 accent-[#163B5C]" />
               <span>
-                <span className="block text-sm font-semibold text-[#234C6A]">Optional application highlight</span>
+                <span className="block text-sm font-semibold text-[#163B5C]">Optional application highlight</span>
                 <span className="block text-xs text-slate-600 mt-1">Only charged after confirmed Stripe checkout at the server-set price. It does not guarantee an interview or an offer.</span>
               </span>
             </label>
@@ -262,14 +262,14 @@ export default function ApplyJobModal({
                 type="button"
                 variant="ghost"
                 onClick={() => setOpen(false)}
-                className="rounded-xl h-14 px-8 text-[#456882] font-black uppercase tracking-widest text-xs"
+                className="rounded-xl h-14 px-8 text-[#516C83] font-black uppercase tracking-widest text-xs"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isLoading || coverLetter.length < 150 || coverLetter.length > 1300 || !resumeUrl}
-                className="rounded-2xl h-14 px-10 bg-[#234C6A] text-white hover:bg-[#1a3a52] font-black text-sm shadow-xl shadow-blue-900/10 min-w-[180px] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-2xl h-14 px-10 bg-[#163B5C] text-white hover:bg-[#0C2C48] font-black text-sm shadow-xl shadow-blue-900/10 min-w-[180px] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

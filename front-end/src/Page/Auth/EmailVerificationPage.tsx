@@ -180,9 +180,9 @@ const EmailVerificationPage = () => {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen flex bg-gradient-to-br from-[#E3E3E3] via-white to-[#E3E3E3]">
+    <div ref={containerRef} className="min-h-screen flex bg-gradient-to-br from-[#E1E8EF] via-white to-[#E1E8EF]">
       {/* Left Side - Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#234C6A] via-[#2d5a7a] to-[#456882] relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#163B5C] via-[#2d5a7a] to-[#516C83] relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse" />
@@ -238,14 +238,14 @@ const EmailVerificationPage = () => {
         {/* Mobile Header */}
         <div className="lg:hidden p-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] rounded-xl p-2">
+            <div className="bg-gradient-to-br from-[#163B5C] to-[#516C83] rounded-xl p-2">
               <Briefcase className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-[#234C6A]">JobHub</span>
+            <span className="font-bold text-[#163B5C]">JobHub</span>
           </Link>
           <Link
             href="/auth"
-            className="flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors"
+            className="flex items-center gap-2 text-[#516C83] hover:text-[#163B5C] transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -259,7 +259,7 @@ const EmailVerificationPage = () => {
             <div className="hidden lg:block mb-8">
               <Link
                 href="/auth"
-                className="inline-flex items-center gap-2 text-[#456882] hover:text-[#234C6A] transition-colors text-sm font-medium group"
+                className="inline-flex items-center gap-2 text-[#516C83] hover:text-[#163B5C] transition-colors text-sm font-medium group"
               >
                 <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back to Sign In
@@ -271,10 +271,10 @@ const EmailVerificationPage = () => {
               <div className="relative inline-block mb-6">
                 {/* Pulse ring animation */}
                 {!isVerified && !error && (
-                  <div className="pulse-ring absolute inset-0 bg-[#234C6A]/20 rounded-2xl" />
+                  <div className="pulse-ring absolute inset-0 bg-[#163B5C]/20 rounded-2xl" />
                 )}
                 <div
-                  className={`email-icon bg-gradient-to-br ${isVerified ? "from-green-500 to-emerald-500" : error ? "from-red-500 to-rose-500" : "from-[#234C6A] to-[#456882]"} rounded-2xl p-5 w-24 h-24 flex items-center justify-center shadow-lg relative z-10`}
+                  className={`email-icon bg-gradient-to-br ${isVerified ? "from-green-500 to-emerald-500" : error ? "from-red-500 to-rose-500" : "from-[#163B5C] to-[#516C83]"} rounded-2xl p-5 w-24 h-24 flex items-center justify-center shadow-lg relative z-10`}
                 >
                   {isVerified ? (
                     <CheckCircle className="success-icon h-12 w-12 text-white" />
@@ -286,10 +286,10 @@ const EmailVerificationPage = () => {
                 </div>
               </div>
 
-              <h1 className="text-3xl font-bold mb-3 text-[#234C6A]">
+              <h1 className="text-3xl font-bold mb-3 text-[#163B5C]">
                 {isVerified ? "Email Verified!" : error ? "Verification Failed" : "Check Your Email"}
               </h1>
-              <p className="text-[#456882]">
+              <p className="text-[#516C83]">
                 {isVerified ? (
                   "Your email has been successfully verified"
                 ) : error ? (
@@ -298,7 +298,7 @@ const EmailVerificationPage = () => {
                   <>
                     We have sent a verification link to
                     <br />
-                    <span className="font-semibold text-[#234C6A]">
+                    <span className="font-semibold text-[#163B5C]">
                       {email}
                     </span>
                   </>
@@ -308,13 +308,13 @@ const EmailVerificationPage = () => {
 
             {/* Card */}
             <Card className="verify-card p-6 sm:p-10 border border-white/50 bg-white/75 backdrop-blur-xl shadow-[0_20px_50px_rgba(35,76,106,0.12)] rounded-[32px] relative overflow-hidden transition-all duration-300">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
               {isVerified ? (
                 <div className="text-center py-6">
                   {/* Confetti icons */}
                   <div className="flex justify-center gap-4 mb-8">
                     {[PartyPopper, Sparkles, PartyPopper].map((Icon, i) => (
-                      <div key={i} className="confetti text-[#234C6A]">
+                      <div key={i} className="confetti text-[#163B5C]">
                         <Icon
                           className="h-8 w-8"
                           style={{
@@ -328,10 +328,10 @@ const EmailVerificationPage = () => {
                     ))}
                   </div>
 
-                  <h2 className="text-2xl font-bold mb-3 text-[#234C6A]">
+                  <h2 className="text-2xl font-bold mb-3 text-[#163B5C]">
                     Welcome to JobHub!
                   </h2>
-                  <p className="text-[#456882] mb-8">
+                  <p className="text-[#516C83] mb-8">
                     Your account is now active. Redirecting to your dashboard...
                   </p>
 
@@ -341,7 +341,7 @@ const EmailVerificationPage = () => {
                         // This is handled by useEffect auto-redirect, but as fallback:
                         router.push("/job-seeker");
                       }}
-                      className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/95 hover:to-[#456882]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                      className="w-full h-12 bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
                     >
                       Go to Dashboard
                       <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -350,37 +350,37 @@ const EmailVerificationPage = () => {
                 </div>
               ) : isVerifying ? (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 border-4 border-[#234C6A] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-                  <h3 className="text-xl font-semibold text-[#234C6A]">Verifying your email...</h3>
-                  <p className="text-[#456882] mt-2">Please wait a moment while we process your request.</p>
+                  <div className="w-16 h-16 border-4 border-[#163B5C] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+                  <h3 className="text-xl font-semibold text-[#163B5C]">Verifying your email...</h3>
+                  <p className="text-[#516C83] mt-2">Please wait a moment while we process your request.</p>
                 </div>
               ) : (
                 <>
                   {/* Instructions */}
                   <div className="space-y-4 mb-8">
                     <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
-                      <div className="w-8 h-8 rounded-full bg-[#234C6A] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-[#163B5C] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         1
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#234C6A]">
+                        <h4 className="font-semibold text-[#163B5C]">
                           Open your email
                         </h4>
-                        <p className="text-sm text-[#456882]">
+                        <p className="text-sm text-[#516C83]">
                           Check your inbox for an email from JobHub
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
-                      <div className="w-8 h-8 rounded-full bg-[#234C6A] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-[#163B5C] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         2
                       </div>
                       <div>
-                        <h4 className="font-semibold text-[#234C6A]">
+                        <h4 className="font-semibold text-[#163B5C]">
                           Click the verification link
                         </h4>
-                        <p className="text-sm text-[#456882]">
+                        <p className="text-sm text-[#516C83]">
                           The link will verify your email instantly
                         </p>
                       </div>
@@ -389,12 +389,12 @@ const EmailVerificationPage = () => {
 
                   {/* Resend Section */}
                   <div className="text-center mb-6">
-                    <p className="text-[#456882] mb-4">
+                    <p className="text-[#516C83] mb-4">
                       Did not receive the email?
                     </p>
 
                     {timeLeft > 0 ? (
-                      <div className="flex items-center justify-center gap-2 text-[#456882]">
+                      <div className="flex items-center justify-center gap-2 text-[#516C83]">
                         <Clock className="h-4 w-4" />
                         <span>Resend available in {formatTime(timeLeft)}</span>
                       </div>
@@ -402,7 +402,7 @@ const EmailVerificationPage = () => {
                       <Button
                         onClick={handleResendEmail}
                         disabled={isResending}
-                        className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/95 hover:to-[#456882]/95 text-white rounded-xl px-8 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl px-8 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                       >
                         {isResending ? (
                           <span className="flex items-center gap-2">
@@ -438,10 +438,10 @@ const EmailVerificationPage = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className={`grid ${code ? 'grid-cols-2' : 'grid-cols-1'} gap-3 pt-6 border-t border-[#E3E3E3]/60`}>
+                  <div className={`grid ${code ? 'grid-cols-2' : 'grid-cols-1'} gap-3 pt-6 border-t border-[#E1E8EF]/60`}>
                     <Button
                       variant="outline"
-                      className="border-[#234C6A]/20 text-[#234C6A] hover:bg-[#234C6A]/10 h-12 rounded-xl cursor-pointer"
+                      className="border-[#163B5C]/20 text-[#163B5C] hover:bg-[#163B5C]/10 h-12 rounded-xl cursor-pointer"
                       onClick={() => router.push("/auth")}
                     >
                       <ArrowLeft className="h-4 w-4 mr-2" />
@@ -450,7 +450,7 @@ const EmailVerificationPage = () => {
                     
                     {code && (
                       <Button
-                        className="bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/95 hover:to-[#456882]/95 text-white h-12 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                        className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white h-12 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                         onClick={() => handleVerify()}
                         disabled={isVerifying}
                       >
@@ -490,11 +490,11 @@ const EmailVerificationPage = () => {
             {/* Help text */}
             {!isVerified && (
               <div className="mt-6 text-center">
-                <p className="text-sm text-[#456882]">
+                <p className="text-sm text-[#516C83]">
                   Check your spam folder if you do not see the email.{" "}
                   <Link
                     href="/contact"
-                    className="text-[#234C6A] font-semibold hover:underline"
+                    className="text-[#163B5C] font-semibold hover:underline"
                   >
                     Contact support
                   </Link>

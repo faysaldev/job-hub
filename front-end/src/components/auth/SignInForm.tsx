@@ -15,39 +15,40 @@ const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
   return (
     <form onSubmit={handleSignIn} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-[#234C6A] font-semibold text-sm tracking-wide">
+        <Label htmlFor="email" className="text-[#163B5C] font-semibold text-sm tracking-wide">
           Email Address
         </Label>
         <div className="relative">
-          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]/80" />
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="email"
             name="email"
             type="email"
             placeholder="Enter your email"
             required
-            className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#234C6A] focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl placeholder:text-[#456882]/50 text-[#234C6A]"
+            className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
           />
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-[#234C6A] font-semibold text-sm tracking-wide">
+        <Label htmlFor="password" className="text-[#163B5C] font-semibold text-sm tracking-wide">
           Password
         </Label>
         <div className="relative">
-          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]/80" />
+          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
             required
-            className="pl-11 pr-10 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#234C6A] focus:ring-4 focus:ring-[#234C6A]/10 transition-all duration-300 rounded-xl placeholder:text-[#456882]/50 text-[#234C6A]"
+            className="pl-11 pr-10 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
           />
           <button
             type="button"
+            aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#456882]/80 hover:text-[#234C6A] transition-colors cursor-pointer"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#516C83]/80 hover:text-[#163B5C] transition-colors cursor-pointer"
           >
             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
@@ -55,7 +56,7 @@ const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
       </div>
       <Button
         type="submit"
-        className="w-full h-12 bg-gradient-to-r from-[#234C6A] to-[#456882] hover:from-[#234C6A]/95 hover:to-[#456882]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+        className="w-full h-12 bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
         disabled={loading}
       >
         {loading ? (

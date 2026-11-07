@@ -8,8 +8,8 @@ interface JobDetailsSectionProps {
 
 const JobDetailsSection = ({ title, children, className = "" }: JobDetailsSectionProps) => {
   return (
-    <Card className={`p-6 bg-white border-[#456882]/30 ${className}`}>
-      <h2 className="text-2xl font-semibold mb-4 text-[#234C6A]">{title}</h2>
+    <Card className={`p-6 bg-white border-[#516C83]/30 ${className}`}>
+      <h2 className="text-2xl font-semibold mb-4 text-[#163B5C]">{title}</h2>
       {children}
     </Card>
   );

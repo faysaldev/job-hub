@@ -76,14 +76,14 @@ const JobManagement = ({ userId }: { userId: string }) => {
         {[1, 2, 3].map((item) => (
           <Card
             key={item}
-            className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-6"
+            className="rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-6"
           >
             <div className="flex animate-pulse gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-[#E3E3E3]" />
+              <div className="h-12 w-12 rounded-2xl bg-[#E1E8EF]" />
               <div className="flex-1 space-y-3">
-                <div className="h-5 w-2/5 rounded-full bg-[#E3E3E3]" />
-                <div className="h-4 w-4/5 rounded-full bg-[#E3E3E3]" />
-                <div className="h-4 w-3/5 rounded-full bg-[#E3E3E3]" />
+                <div className="h-5 w-2/5 rounded-full bg-[#E1E8EF]" />
+                <div className="h-4 w-4/5 rounded-full bg-[#E1E8EF]" />
+                <div className="h-4 w-3/5 rounded-full bg-[#E1E8EF]" />
               </div>
             </div>
           </Card>
@@ -117,13 +117,13 @@ const JobManagement = ({ userId }: { userId: string }) => {
         ].map((item) => (
           <div
             key={item.label}
-            className="rounded-3xl border border-[#234C6A]/10 bg-[#F8FAFC] p-5"
+            className="rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5"
           >
-            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A]/10 text-[#234C6A]">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C]/10 text-[#163B5C]">
               <item.icon className="h-5 w-5" />
             </div>
-            <p className="text-3xl font-black text-[#234C6A]">{item.value}</p>
-            <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#456882]">
+            <p className="text-3xl font-black text-[#163B5C]">{item.value}</p>
+            <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#516C83]">
               {item.label}
             </p>
           </div>
@@ -131,19 +131,19 @@ const JobManagement = ({ userId }: { userId: string }) => {
       </div>
 
       {!jobs.length ? (
-        <Card className="rounded-3xl border border-dashed border-[#234C6A]/20 bg-[#F8FAFC] p-12 text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-[#234C6A]/10 text-[#234C6A]">
+        <Card className="rounded-3xl border border-dashed border-[#163B5C]/20 bg-[#F6F8FB] p-12 text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-[#163B5C]/10 text-[#163B5C]">
             <Briefcase className="h-8 w-8" />
           </div>
-          <h3 className="text-xl font-black text-[#234C6A]">
+          <h3 className="text-xl font-black text-[#163B5C]">
             No job postings yet
           </h3>
-          <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[#456882]">
+          <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-6 text-[#516C83]">
             Create your first role with the full premium job builder and start
             receiving applications.
           </p>
           <Button
-            className="mt-6 h-12 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-7 font-black text-white shadow-lg shadow-[#234C6A]/20 hover:from-[#1c405a] hover:to-[#3b5a71]"
+            className="mt-6 h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-7 font-black text-white shadow-lg shadow-[#163B5C]/20 hover:from-[#0C2C48] hover:to-[#3b5a71]"
             onClick={() => router.push("/recruiter/create-job")}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -164,12 +164,12 @@ const JobManagement = ({ userId }: { userId: string }) => {
             return (
               <Card
                 key={job._id}
-                className="group overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#234C6A]/25 hover:shadow-xl hover:shadow-[#234C6A]/10"
+                className="group overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#163B5C]/25 hover:shadow-xl hover:shadow-[#163B5C]/10"
               >
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="mb-3 flex flex-wrap items-center gap-3">
-                      <h3 className="text-xl font-black tracking-tight text-[#234C6A] transition-colors group-hover:text-[#456882]">
+                      <h3 className="text-xl font-black tracking-tight text-[#163B5C] transition-colors group-hover:text-[#516C83]">
                         {job.title}
                       </h3>
                       <Badge
@@ -177,35 +177,35 @@ const JobManagement = ({ userId }: { userId: string }) => {
                         className={`rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-widest ${
                           status === "active"
                             ? "border-emerald-100 bg-emerald-50 text-emerald-700"
-                            : "border-[#456882]/20 bg-[#456882]/10 text-[#456882]"
+                            : "border-[#516C83]/20 bg-[#516C83]/10 text-[#516C83]"
                         }`}
                       >
                         {status}
                       </Badge>
                     </div>
 
-                    <div className="mb-5 grid grid-cols-1 gap-3 text-sm font-semibold text-[#456882] md:grid-cols-2 xl:grid-cols-4">
-                      <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
-                        <Briefcase className="h-4 w-4 text-[#234C6A]" />
+                    <div className="mb-5 grid grid-cols-1 gap-3 text-sm font-semibold text-[#516C83] md:grid-cols-2 xl:grid-cols-4">
+                      <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-3 py-2">
+                        <Briefcase className="h-4 w-4 text-[#163B5C]" />
                         <span>{job.type || "Job type"}</span>
                       </div>
-                      <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
-                        <MapPin className="h-4 w-4 text-[#234C6A]" />
+                      <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-3 py-2">
+                        <MapPin className="h-4 w-4 text-[#163B5C]" />
                         <span>{job.location || "Location"}</span>
                       </div>
-                      <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
-                        <DollarSign className="h-4 w-4 text-[#234C6A]" />
+                      <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-3 py-2">
+                        <DollarSign className="h-4 w-4 text-[#163B5C]" />
                         <span>
                           {salaryMin} - {salaryMax} {job.salaryPeriod}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 rounded-2xl bg-[#F8FAFC] px-3 py-2">
-                        <Calendar className="h-4 w-4 text-[#234C6A]" />
+                      <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-3 py-2">
+                        <Calendar className="h-4 w-4 text-[#163B5C]" />
                         <span>Deadline: {deadline}</span>
                       </div>
                     </div>
 
-                    <p className="mb-5 line-clamp-2 text-sm font-medium leading-6 text-[#456882]">
+                    <p className="mb-5 line-clamp-2 text-sm font-medium leading-6 text-[#516C83]">
                       {job.description || "No description provided."}
                     </p>
 
@@ -217,7 +217,7 @@ const JobManagement = ({ userId }: { userId: string }) => {
                             <Badge
                               key={`${skill}-${index}`}
                               variant="secondary"
-                              className="rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-3 py-1 font-black text-[#234C6A] hover:bg-[#234C6A]/10"
+                              className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 font-black text-[#163B5C] hover:bg-[#163B5C]/10"
                             >
                               {skill}
                             </Badge>
@@ -230,7 +230,7 @@ const JobManagement = ({ userId }: { userId: string }) => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-10 rounded-2xl border-[#234C6A]/20 px-4 font-black text-[#234C6A] hover:bg-[#234C6A]/5"
+                      className="h-10 rounded-2xl border-[#163B5C]/20 px-4 font-black text-[#163B5C] hover:bg-[#163B5C]/5"
                       onClick={() => toggleJobStatus(job._id, status)}
                     >
                       <Edit3 className="mr-2 h-4 w-4" />

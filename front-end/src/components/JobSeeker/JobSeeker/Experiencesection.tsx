@@ -33,10 +33,10 @@ const ExperienceItem = memo(
 
     if (!editing) {
       return (
-        <div className="group border-l-4 border-[#234C6A] pl-6 py-1 relative">
+        <div className="group border-l-4 border-[#163B5C] pl-6 py-1 relative">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-            <h4 className="text-xl font-bold text-[#234C6A]">{field.title}</h4>
-            <div className="flex items-center gap-2 px-3 py-1 bg-[#234C6A]/5 rounded-full text-sm font-semibold text-[#456882]">
+            <h4 className="text-xl font-bold text-[#163B5C]">{field.title}</h4>
+            <div className="flex items-center gap-2 px-3 py-1 bg-[#163B5C]/5 rounded-full text-sm font-semibold text-[#516C83]">
               <Clock className="h-3.5 w-3.5" />
               {field.startDate
                 ? new Date(field.startDate).toLocaleDateString(undefined, {
@@ -55,11 +55,11 @@ const ExperienceItem = memo(
                   : ""}
             </div>
           </div>
-          <p className="text-lg font-semibold text-[#456882] flex items-center gap-2 mt-1">
+          <p className="text-lg font-semibold text-[#516C83] flex items-center gap-2 mt-1">
             <Briefcase className="h-4 w-4" /> {field.company}
           </p>
           {field.description && (
-            <p className="text-[#234C6A]/80 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-100 mt-2">
+            <p className="text-[#163B5C]/80 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-100 mt-2">
               {field.description}
             </p>
           )}
@@ -68,7 +68,7 @@ const ExperienceItem = memo(
     }
 
     return (
-      <div className="group border-l-4 border-[#234C6A] pl-6 py-1 relative">
+      <div className="group border-l-4 border-[#163B5C] pl-6 py-1 relative">
         <button
           type="button"
           onClick={() => onRemove(index)}
@@ -81,12 +81,12 @@ const ExperienceItem = memo(
             <Input
               {...register(`experience.${index}.title`)}
               placeholder="Job Title"
-              className="font-bold text-[#234C6A] border-[#456882]/30 focus:border-[#234C6A]"
+              className="font-bold text-[#163B5C] border-[#516C83]/30 focus:border-[#163B5C]"
             />
             <Input
               {...register(`experience.${index}.company`)}
               placeholder="Company"
-              className="border-[#456882]/30 focus:border-[#234C6A]"
+              className="border-[#516C83]/30 focus:border-[#163B5C]"
             />
           </div>
           <div className="space-y-4">
@@ -101,11 +101,11 @@ const ExperienceItem = memo(
                     placeholderText="Start Date"
                     dateFormat="MM/yyyy"
                     showMonthYearPicker
-                    className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#234C6A]"
+                    className="flex h-10 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#163B5C]"
                   />
                 )}
               />
-              <span className="text-[#456882]">-</span>
+              <span className="text-[#516C83]">-</span>
               <Controller
                 control={control}
                 name={`experience.${index}.endDate`}
@@ -117,7 +117,7 @@ const ExperienceItem = memo(
                     dateFormat="MM/yyyy"
                     showMonthYearPicker
                     disabled={isCurrent}
-                    className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#234C6A] disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#163B5C] disabled:opacity-50"
                   />
                 )}
               />
@@ -127,11 +127,11 @@ const ExperienceItem = memo(
                 type="checkbox"
                 {...register(`experience.${index}.current`)}
                 id={`current-${field.id}`}
-                className="rounded border-[#234C6A] text-[#234C6A] focus:ring-[#234C6A]"
+                className="rounded border-[#163B5C] text-[#163B5C] focus:ring-[#163B5C]"
               />
               <label
                 htmlFor={`current-${field.id}`}
-                className="text-sm font-medium text-[#456882]"
+                className="text-sm font-medium text-[#516C83]"
               >
                 I am currently working here
               </label>
@@ -141,7 +141,7 @@ const ExperienceItem = memo(
             <textarea
               {...register(`experience.${index}.description`)}
               placeholder="Describe your achievements and responsibilities..."
-              className="w-full p-4 border border-[#456882]/30 rounded-xl focus:ring-[#234C6A] bg-gray-50 min-h-[100px]"
+              className="w-full p-4 border border-[#516C83]/30 rounded-xl focus:ring-[#163B5C] bg-gray-50 min-h-[100px]"
             />
           </div>
         </div>
@@ -187,20 +187,20 @@ const AddExperienceForm = memo(({ onAdd }: { onAdd: (exp: any) => void }) => {
   }, [startDate, endDate, current, onAdd]);
 
   return (
-    <div className="mt-10 p-6 bg-[#E3E3E3]/30 rounded-2xl border-2 border-dashed border-[#456882]/30">
-      <h4 className="text-lg font-bold text-[#234C6A] mb-6 flex items-center gap-2">
+    <div className="mt-10 p-6 bg-[#E1E8EF]/30 rounded-2xl border-2 border-dashed border-[#516C83]/30">
+      <h4 className="text-lg font-bold text-[#163B5C] mb-6 flex items-center gap-2">
         <Plus className="h-5 w-5" /> Add New Experience
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Input
           ref={titleRef}
           placeholder="Job Title"
-          className="border-[#456882]/30"
+          className="border-[#516C83]/30"
         />
         <Input
           ref={companyRef}
           placeholder="Company Name"
-          className="border-[#456882]/30"
+          className="border-[#516C83]/30"
         />
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
@@ -209,11 +209,11 @@ const AddExperienceForm = memo(({ onAdd }: { onAdd: (exp: any) => void }) => {
               checked={current}
               onChange={(e) => setCurrent(e.target.checked)}
               id="new-exp-current"
-              className="rounded border-[#234C6A] text-[#234C6A]"
+              className="rounded border-[#163B5C] text-[#163B5C]"
             />
             <label
               htmlFor="new-exp-current"
-              className="text-sm font-medium text-[#456882]"
+              className="text-sm font-medium text-[#516C83]"
             >
               Currently working here
             </label>
@@ -225,9 +225,9 @@ const AddExperienceForm = memo(({ onAdd }: { onAdd: (exp: any) => void }) => {
               placeholderText="Start Date"
               dateFormat="MM/yyyy"
               showMonthYearPicker
-              className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm"
+              className="flex h-10 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm"
             />
-            <span className="text-[#456882]">-</span>
+            <span className="text-[#516C83]">-</span>
             <DatePicker
               selected={endDate}
               onChange={setEndDate}
@@ -235,7 +235,7 @@ const AddExperienceForm = memo(({ onAdd }: { onAdd: (exp: any) => void }) => {
               dateFormat="MM/yyyy"
               showMonthYearPicker
               disabled={current}
-              className="flex h-10 w-full rounded-md border border-[#456882]/30 bg-background px-3 py-2 text-sm disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-[#516C83]/30 bg-background px-3 py-2 text-sm disabled:opacity-50"
             />
           </div>
         </div>
@@ -243,13 +243,13 @@ const AddExperienceForm = memo(({ onAdd }: { onAdd: (exp: any) => void }) => {
           <textarea
             ref={descRef}
             placeholder="Describe your achievements and responsibilities..."
-            className="w-full p-4 border border-[#456882]/30 rounded-xl bg-gray-50 min-h-[100px]"
+            className="w-full p-4 border border-[#516C83]/30 rounded-xl bg-gray-50 min-h-[100px]"
           />
         </div>
         <Button
           type="button"
           onClick={handleAdd}
-          className="h-12 rounded-2xl bg-[#234C6A] px-8 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
+          className="h-12 rounded-2xl bg-[#163B5C] px-8 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:bg-[#516C83]"
         >
           <Plus className="h-4 w-4 mr-2" /> Add to Profile
         </Button>
@@ -271,12 +271,12 @@ const ExperienceSection = memo(({ editing }: ExperienceSectionProps) => {
   const handleAdd = useCallback((exp: any) => append(exp), [append]);
 
   return (
-    <Card className="p-8 border-[#456882]/30 bg-white shadow-lg rounded-2xl">
+    <Card className="p-8 border-[#516C83]/30 bg-white shadow-lg rounded-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 bg-[#234C6A]/10 rounded-xl">
-          <Briefcase className="h-5 w-5 text-[#234C6A]" />
+        <div className="p-2 bg-[#163B5C]/10 rounded-xl">
+          <Briefcase className="h-5 w-5 text-[#163B5C]" />
         </div>
-        <h3 className="text-xl font-bold text-[#234C6A]">Work Experience</h3>
+        <h3 className="text-xl font-bold text-[#163B5C]">Work Experience</h3>
       </div>
 
       <div className="space-y-8">
@@ -293,7 +293,7 @@ const ExperienceSection = memo(({ editing }: ExperienceSectionProps) => {
         {editing && <AddExperienceForm onAdd={handleAdd} />}
 
         {!editing && fields.length === 0 && (
-          <p className="text-[#456882] italic text-center py-6 bg-gray-50 rounded-xl">
+          <p className="text-[#516C83] italic text-center py-6 bg-gray-50 rounded-xl">
             No work experience added yet.
           </p>
         )}

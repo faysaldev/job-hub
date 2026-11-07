@@ -2,6 +2,7 @@ import CreateJobPage from "@/src/Page/Recruiter/CreateJobPage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: "Create Job | JobHub",
   description:
     "Create a new job opening with detailed information about the role, responsibilities, and qualifications. Attract top talent to your company.",

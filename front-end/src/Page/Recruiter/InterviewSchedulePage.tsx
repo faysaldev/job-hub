@@ -57,7 +57,7 @@ export default function InterviewSchedulePage() {
   return (
     <RecruiterLayout>
       <div className="animate-in fade-in mx-auto max-w-7xl space-y-8 duration-700">
-        <section className="relative overflow-hidden rounded-3xl bg-[#234C6A] p-7 text-white shadow-2xl shadow-[#234C6A]/20 md:p-9">
+        <section className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
           <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -97,7 +97,7 @@ export default function InterviewSchedulePage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           {/* Sidebar Stats */}
           <div className="space-y-6 lg:col-span-1">
-            <Card className="overflow-hidden rounded-3xl border-none bg-[#234C6A] p-6 text-white shadow-xl shadow-[#234C6A]/20">
+            <Card className="overflow-hidden rounded-3xl border-none bg-[#163B5C] p-6 text-white shadow-xl shadow-[#163B5C]/20">
               <p className="mb-1 text-sm font-black uppercase tracking-widest text-white/60">
                 Scheduled Queue
               </p>
@@ -131,8 +131,8 @@ export default function InterviewSchedulePage() {
               </div>
             </Card>
 
-            <Card className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
-              <h3 className="mb-5 font-black text-[#234C6A]">
+            <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+              <h3 className="mb-5 font-black text-[#163B5C]">
                 Status Overview
               </h3>
               <div className="space-y-4">
@@ -140,7 +140,7 @@ export default function InterviewSchedulePage() {
                   {
                     label: "Scheduled",
                     count: upcomingInterviews.length,
-                    color: "bg-[#234C6A]",
+                    color: "bg-[#163B5C]",
                   },
                   {
                     label: "Completed",
@@ -155,10 +155,10 @@ export default function InterviewSchedulePage() {
                 ].map((stat) => (
                   <div key={stat.label}>
                     <div className="mb-1.5 flex items-center justify-between text-sm font-black">
-                      <span className="text-[#456882]">{stat.label}</span>
-                      <span className="text-[#234C6A]">{stat.count}</span>
+                      <span className="text-[#516C83]">{stat.label}</span>
+                      <span className="text-[#163B5C]">{stat.count}</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-[#E3E3E3]">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-[#E1E8EF]">
                       <div
                         className={cn("h-full rounded-full", stat.color)}
                         style={{
@@ -180,9 +180,9 @@ export default function InterviewSchedulePage() {
           <div className="space-y-6 lg:col-span-3">
             <div className="space-y-4">
               {isLoading ? (
-                <div className="flex flex-col items-center justify-center rounded-3xl border border-[#234C6A]/10 bg-white py-20 shadow-sm">
-                  <Loader2 className="h-10 w-10 animate-spin text-[#234C6A]" />
-                  <p className="mt-4 font-medium text-[#456882]">
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-[#163B5C]/10 bg-white py-20 shadow-sm">
+                  <Loader2 className="h-10 w-10 animate-spin text-[#163B5C]" />
+                  <p className="mt-4 font-medium text-[#516C83]">
                     Syncing your recruitment schedule...
                   </p>
                 </div>
@@ -198,14 +198,14 @@ export default function InterviewSchedulePage() {
                   />
                 ))
               ) : (
-                <div className="rounded-3xl border-2 border-dashed border-[#234C6A]/15 bg-white py-24 text-center shadow-sm">
-                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#234C6A]/5">
-                    <CalendarIcon className="h-10 w-10 text-[#456882]/35" />
+                <div className="rounded-3xl border-2 border-dashed border-[#163B5C]/15 bg-white py-24 text-center shadow-sm">
+                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#163B5C]/5">
+                    <CalendarIcon className="h-10 w-10 text-[#516C83]/35" />
                   </div>
-                  <h3 className="text-2xl font-black text-[#234C6A]">
+                  <h3 className="text-2xl font-black text-[#163B5C]">
                     No Interviews Scheduled
                   </h3>
-                  <p className="mx-auto mt-2 max-w-sm text-[#456882]">
+                  <p className="mx-auto mt-2 max-w-sm text-[#516C83]">
                     Your schedule is currently clear. Interviews will appear
                     here once you coordinate with candidates.
                   </p>
@@ -283,12 +283,12 @@ function RescheduleDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="overflow-hidden rounded-3xl border-none bg-white p-8 shadow-2xl sm:max-w-[425px]">
         <DialogHeader className="mb-6">
-          <DialogTitle className="text-2xl font-black text-[#234C6A] tracking-tight">
+          <DialogTitle className="text-2xl font-black text-[#163B5C] tracking-tight">
             Reschedule Session
           </DialogTitle>
-          <p className="text-sm font-medium text-[#456882]">
+          <p className="text-sm font-medium text-[#516C83]">
             Updating session for{" "}
-            <span className="font-bold text-[#234C6A]">
+            <span className="font-bold text-[#163B5C]">
               {interview.interviewee?.name}
             </span>
           </p>
@@ -296,7 +296,7 @@ function RescheduleDialog({
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#234C6A]/60">
+            <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#163B5C]/60">
               Interview Date
             </Label>
             <Input
@@ -305,13 +305,13 @@ function RescheduleDialog({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setDate(e.target.value)
               }
-              className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] font-bold text-[#234C6A] focus:ring-[#234C6A]"
+              className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] font-bold text-[#163B5C] focus:ring-[#163B5C]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#234C6A]/60">
+              <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#163B5C]/60">
                 Start Time
               </Label>
               <Input
@@ -320,11 +320,11 @@ function RescheduleDialog({
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setStartTime(e.target.value)
                 }
-                className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] font-bold text-[#234C6A] focus:ring-[#234C6A]"
+                className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] font-bold text-[#163B5C] focus:ring-[#163B5C]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#234C6A]/60">
+              <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#163B5C]/60">
                 End Time
               </Label>
               <Input
@@ -333,7 +333,7 @@ function RescheduleDialog({
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setEndTime(e.target.value)
                 }
-                className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] font-bold text-[#234C6A] focus:ring-[#234C6A]"
+                className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] font-bold text-[#163B5C] focus:ring-[#163B5C]"
               />
             </div>
           </div>
@@ -343,14 +343,14 @@ function RescheduleDialog({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="flex-1 rounded-2xl font-black text-[#456882] hover:bg-[#234C6A]/5 sm:flex-none"
+            className="flex-1 rounded-2xl font-black text-[#516C83] hover:bg-[#163B5C]/5 sm:flex-none"
           >
             Cancel
           </Button>
           <Button
             onClick={handleReschedule}
             disabled={isLoading}
-            className="h-12 flex-1 rounded-2xl bg-[#234C6A] px-8 font-black text-white shadow-lg shadow-[#234C6A]/20 transition-all hover:bg-[#456882] active:scale-95 sm:flex-none"
+            className="h-12 flex-1 rounded-2xl bg-[#163B5C] px-8 font-black text-white shadow-lg shadow-[#163B5C]/20 transition-all hover:bg-[#516C83] active:scale-95 sm:flex-none"
           >
             {isLoading ? (
               <>
@@ -381,11 +381,11 @@ function RecruiterInterviewCard({
   };
 
   return (
-    <Card className="group relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#234C6A]/25 hover:shadow-xl hover:shadow-[#234C6A]/10">
+    <Card className="group relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#163B5C]/25 hover:shadow-xl hover:shadow-[#163B5C]/10">
       <div className="p-6">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
           <div className="flex items-center gap-5">
-            <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] shadow-sm">
+            <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] shadow-sm">
               {interview.interviewee?.image ? (
                 <img
                   src={interview.interviewee.image}
@@ -393,18 +393,18 @@ function RecruiterInterviewCard({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#234C6A]/5 to-[#456882]/5 text-[#234C6A]">
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#163B5C]/5 to-[#516C83]/5 text-[#163B5C]">
                   <User className="h-6 w-6" />
                 </div>
               )}
             </div>
             <div>
-              <h3 className="text-lg font-black text-[#234C6A] transition-colors group-hover:text-[#456882]">
+              <h3 className="text-lg font-black text-[#163B5C] transition-colors group-hover:text-[#516C83]">
                 {interview.job_id?.title || "Job Title"}
               </h3>
-              <p className="text-sm font-medium text-[#456882]">
+              <p className="text-sm font-medium text-[#516C83]">
                 Candidate:{" "}
-                <span className="font-bold text-[#234C6A]">
+                <span className="font-bold text-[#163B5C]">
                   {interview.interviewee?.name || "Unknown Candidate"}
                 </span>
               </p>
@@ -412,15 +412,15 @@ function RecruiterInterviewCard({
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2 rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] px-4 py-2">
-              <CalendarIcon className="h-4 w-4 text-[#234C6A]" />
-              <span className="text-sm font-bold text-[#234C6A]">
+            <div className="flex items-center gap-2 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] px-4 py-2">
+              <CalendarIcon className="h-4 w-4 text-[#163B5C]" />
+              <span className="text-sm font-bold text-[#163B5C]">
                 {new Date(interview.date).toLocaleDateString()}
               </span>
             </div>
-            <div className="flex items-center gap-2 rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] px-4 py-2">
-              <Clock className="h-4 w-4 text-[#234C6A]" />
-              <span className="text-sm font-bold text-[#234C6A]">
+            <div className="flex items-center gap-2 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] px-4 py-2">
+              <Clock className="h-4 w-4 text-[#163B5C]" />
+              <span className="text-sm font-bold text-[#163B5C]">
                 {interview.start_time}
               </span>
             </div>
@@ -429,7 +429,7 @@ function RecruiterInterviewCard({
                 "border-none px-3 py-1 rounded-xl text-[10px] font-black uppercase",
                 interview.status === "scheduled"
                   ? "bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-100"
-                  : "bg-[#456882]/10 text-[#456882]",
+                  : "bg-[#516C83]/10 text-[#516C83]",
               )}
             >
               {interview.status}
@@ -437,15 +437,15 @@ function RecruiterInterviewCard({
             <Button
               size="icon"
               variant="ghost"
-              className="rounded-full hover:bg-[#234C6A]/5"
+              className="rounded-full hover:bg-[#163B5C]/5"
             >
-              <MoreVertical className="h-5 w-5 text-[#456882]" />
+              <MoreVertical className="h-5 w-5 text-[#516C83]" />
             </Button>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#234C6A]/10 pt-6 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2 text-sm text-[#456882]">
+        <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#163B5C]/10 pt-6 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 text-sm text-[#516C83]">
             {interview.type === "video" ? (
               <Video className="h-4 w-4" />
             ) : (
@@ -460,7 +460,7 @@ function RecruiterInterviewCard({
               <Button
                 variant="outline"
                 onClick={onReschedule}
-                className="h-10 rounded-2xl border-[#234C6A]/20 text-xs font-black text-[#234C6A] hover:bg-[#234C6A]/5"
+                className="h-10 rounded-2xl border-[#163B5C]/20 text-xs font-black text-[#163B5C] hover:bg-[#163B5C]/5"
               >
                 Reschedule
               </Button>
@@ -468,7 +468,7 @@ function RecruiterInterviewCard({
             {interview.meet_link && interview.status === "scheduled" && (
               <Button
                 onClick={handleLaunchSession}
-                className="h-10 rounded-2xl bg-[#234C6A] px-6 text-xs font-black text-white shadow-md transition-all hover:bg-[#456882] active:scale-95"
+                className="h-10 rounded-2xl bg-[#163B5C] px-6 text-xs font-black text-white shadow-md transition-all hover:bg-[#516C83] active:scale-95"
               >
                 Launch Session
                 <ArrowUpRight className="ml-2 h-3.5 w-3.5" />

@@ -140,7 +140,7 @@ const ListManager = memo(
 
     return (
       <div className="space-y-4">
-        <label className="block text-sm font-black text-[#234C6A]">
+        <label className="block text-sm font-black text-[#163B5C]">
           {label}
         </label>
         <div className="flex gap-2">
@@ -148,12 +148,12 @@ const ListManager = memo(
             ref={inputRef}
             placeholder={placeholder}
             onKeyDown={handleKeyDown}
-            className="h-12 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] font-medium focus:border-[#234C6A]"
+            className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] font-medium focus:border-[#163B5C]"
           />
           <Button
             type="button"
             onClick={handleAdd}
-            className="h-12 w-12 rounded-2xl bg-[#234C6A] p-0 hover:bg-[#456882] text-white"
+            className="h-12 w-12 rounded-2xl bg-[#163B5C] p-0 hover:bg-[#516C83] text-white"
           >
             <Plus className="h-5 w-5" />
           </Button>
@@ -164,7 +164,7 @@ const ListManager = memo(
             {items?.map((item, index) => (
               <span
                 key={`${item}-${index}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-3 py-1.5 text-sm font-black text-[#234C6A]"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1.5 text-sm font-black text-[#163B5C]"
               >
                 {item}
                 <button
@@ -182,16 +182,16 @@ const ListManager = memo(
             {items?.map((item, index) => (
               <div
                 key={`${item}-${index}`}
-                className="group flex items-center gap-3 rounded-2xl border border-[#234C6A]/10 bg-[#F8FAFC] p-3"
+                className="group flex items-center gap-3 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-3"
               >
-                {Icon && <Icon className="h-4 w-4 text-[#456882] shrink-0" />}
-                <span className="flex-1 text-sm font-semibold text-[#234C6A]">
+                {Icon && <Icon className="h-4 w-4 text-[#516C83] shrink-0" />}
+                <span className="flex-1 text-sm font-semibold text-[#163B5C]">
                   {item}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleRemove(index)}
-                  className="text-[#456882] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                  className="text-[#516C83] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -219,13 +219,13 @@ const StepBasicInfo = memo(() => {
   return (
     <div className="animate-in fade-in space-y-8 duration-500">
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-sm font-black text-[#234C6A]">
-          <Sparkles className="h-4 w-4 text-[#456882]" /> Job Title *
+        <label className="flex items-center gap-2 text-sm font-black text-[#163B5C]">
+          <Sparkles className="h-4 w-4 text-[#516C83]" /> Job Title *
         </label>
         <Input
           {...register("title", { required: "Title is required" })}
           placeholder="e.g. Senior Frontend Architect"
-          className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] px-6 text-lg font-medium focus:border-[#234C6A] focus:ring-4 focus:ring-[#234C6A]/5"
+          className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 text-lg font-medium focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/5"
         />
         {errors.title && (
           <p className="ml-2 text-xs font-bold text-red-500">
@@ -236,7 +236,7 @@ const StepBasicInfo = memo(() => {
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-black text-[#234C6A]">
+          <label className="text-sm font-black text-[#163B5C]">
             Category *
           </label>
           <Select
@@ -244,7 +244,7 @@ const StepBasicInfo = memo(() => {
               setValue("category", val, { shouldValidate: true })
             }
           >
-            <SelectTrigger className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] px-6 font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue placeholder="Select Industry" />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
@@ -252,7 +252,7 @@ const StepBasicInfo = memo(() => {
                 <SelectItem
                   key={cat.id}
                   value={cat.id}
-                  className="rounded-xl focus:bg-[#234C6A]/5"
+                  className="rounded-xl focus:bg-[#163B5C]/5"
                 >
                   {cat.name}
                 </SelectItem>
@@ -262,7 +262,7 @@ const StepBasicInfo = memo(() => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-black text-[#234C6A]">
+          <label className="text-sm font-black text-[#163B5C]">
             Subcategory *
           </label>
           <Select
@@ -271,7 +271,7 @@ const StepBasicInfo = memo(() => {
               setValue("subcategory", val, { shouldValidate: true })
             }
           >
-            <SelectTrigger className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] px-6 font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue placeholder="Specialization" />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
@@ -281,7 +281,7 @@ const StepBasicInfo = memo(() => {
                   <SelectItem
                     key={sub.id}
                     value={sub.id}
-                    className="rounded-xl focus:bg-[#234C6A]/5"
+                    className="rounded-xl focus:bg-[#163B5C]/5"
                   >
                     {sub.name}
                   </SelectItem>
@@ -293,14 +293,14 @@ const StepBasicInfo = memo(() => {
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-black text-[#234C6A]">
+          <label className="text-sm font-black text-[#163B5C]">
             Work Arrangement *
           </label>
           <Select
             defaultValue="onsite"
             onValueChange={(val) => setValue("locationType", val)}
           >
-            <SelectTrigger className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] px-6 font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
@@ -318,14 +318,14 @@ const StepBasicInfo = memo(() => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-black text-[#234C6A]">
+          <label className="text-sm font-black text-[#163B5C]">
             Job Type *
           </label>
           <Select
             defaultValue="full-time"
             onValueChange={(val) => setValue("type", val)}
           >
-            <SelectTrigger className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] px-6 font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
@@ -350,15 +350,15 @@ const StepBasicInfo = memo(() => {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-black text-[#234C6A]">
+        <label className="text-sm font-black text-[#163B5C]">
           Primary Location *
         </label>
         <div className="relative group">
-          <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882] group-focus-within:text-[#234C6A] transition-colors" />
+          <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83] group-focus-within:text-[#163B5C] transition-colors" />
           <Input
             {...register("location", { required: "Location is required" })}
             placeholder="e.g. San Francisco, CA or Remote"
-            className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-14 font-medium"
+            className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
           />
         </div>
       </div>
@@ -376,14 +376,14 @@ const StepDetails = memo(() => {
     <div className="animate-in fade-in space-y-8 duration-500">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-black text-[#234C6A]">
+          <label className="text-sm font-black text-[#163B5C]">
             Experience Level *
           </label>
           <Select
             defaultValue="entry"
             onValueChange={(val) => setValue("experienceLevel", val)}
           >
-            <SelectTrigger className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] px-6 font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
@@ -407,48 +407,48 @@ const StepDetails = memo(() => {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-black text-[#234C6A]">
+          <label className="text-sm font-black text-[#163B5C]">
             Open Positions *
           </label>
           <div className="relative">
-            <Users className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+            <Users className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
             <Input
               type="number"
               {...register("positions", { required: true, min: 1 })}
-              className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-14 font-medium"
+              className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
             />
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-black text-[#234C6A]">
+        <label className="text-sm font-black text-[#163B5C]">
           Compensation Package (USD)
         </label>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="relative">
-            <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+            <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
             <Input
               type="number"
               {...register("salaryMin", { required: true })}
               placeholder="Min"
-              className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-14 font-medium"
+              className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
             />
           </div>
           <div className="relative">
-            <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+            <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
             <Input
               type="number"
               {...register("salaryMax", { required: true })}
               placeholder="Max"
-              className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-14 font-medium"
+              className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
             />
           </div>
           <Select
             defaultValue="yearly"
             onValueChange={(val) => setValue("salaryPeriod", val)}
           >
-            <SelectTrigger className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] px-6 font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
@@ -467,27 +467,27 @@ const StepDetails = memo(() => {
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-black text-[#234C6A]">
+        <label className="text-sm font-black text-[#163B5C]">
           Application Deadline *
         </label>
         <div className="relative">
-          <Clock className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#456882]" />
+          <Clock className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
           <Input
             type="date"
             {...register("applicationDeadline", { required: true })}
-            className="h-14 rounded-2xl border-[#234C6A]/10 bg-[#F8FAFC] pl-14 font-medium"
+            className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-black text-[#234C6A]">
+        <label className="text-sm font-black text-[#163B5C]">
           Role Description *
         </label>
         <Textarea
           {...register("description", { required: true })}
           placeholder="Paint a picture of the ideal candidate and the impact they'll make..."
-          className="min-h-[250px] resize-none rounded-3xl border-[#234C6A]/10 bg-[#F8FAFC] p-8 font-medium leading-relaxed"
+          className="min-h-[250px] resize-none rounded-3xl border-[#163B5C]/10 bg-[#F6F8FB] p-8 font-medium leading-relaxed"
         />
       </div>
     </div>
@@ -574,7 +574,7 @@ const StepReview = memo(() => {
   return (
     <div className="animate-in fade-in space-y-10 duration-500">
       {/* Hero card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white shadow-2xl shadow-[#234C6A]/20 md:p-10">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#163B5C] to-[#516C83] p-8 text-white shadow-2xl shadow-[#163B5C]/20 md:p-10">
         <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[3rem] bg-white/10" />
         <div className="relative space-y-6">
           <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
@@ -628,34 +628,34 @@ const StepReview = memo(() => {
 
       <div className="grid grid-cols-1 gap-8 px-1 md:grid-cols-2 md:px-4">
         <div className="space-y-4">
-          <h4 className="flex items-center gap-2 text-lg font-black text-[#234C6A]">
-            <div className="h-6 w-1.5 rounded-full bg-[#234C6A]" /> Description
+          <h4 className="flex items-center gap-2 text-lg font-black text-[#163B5C]">
+            <div className="h-6 w-1.5 rounded-full bg-[#163B5C]" /> Description
           </h4>
-          <p className="text-[#456882] font-medium leading-relaxed whitespace-pre-wrap">
+          <p className="text-[#516C83] font-medium leading-relaxed whitespace-pre-wrap">
             {description}
           </p>
         </div>
 
         <div className="space-y-10">
           <div className="space-y-4">
-            <h4 className="text-lg font-black text-[#234C6A]">Requirements</h4>
+            <h4 className="text-lg font-black text-[#163B5C]">Requirements</h4>
             <div className="space-y-2">
               {requirements?.map((req, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-                  <span className="text-[#456882] font-medium">{req}</span>
+                  <span className="text-[#516C83] font-medium">{req}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-lg font-black text-[#234C6A]">Core Skills</h4>
+            <h4 className="text-lg font-black text-[#163B5C]">Core Skills</h4>
             <div className="flex flex-wrap gap-2">
               {skills?.map((skill, i) => (
                 <Badge
                   key={i}
-                  className="bg-[#234C6A]/5 text-[#234C6A] border-none font-bold rounded-lg px-4 py-1.5"
+                  className="bg-[#163B5C]/5 text-[#163B5C] border-none font-bold rounded-lg px-4 py-1.5"
                 >
                   {skill}
                 </Badge>
@@ -682,10 +682,10 @@ const ProgressBar = memo(({ currentStep }: { currentStep: number }) => {
   const progressRatio = (currentStep - 1) / (STEPS.length - 1);
 
   return (
-    <div className="relative mb-10 rounded-3xl border border-[#234C6A]/10 bg-white/95 p-5 shadow-sm backdrop-blur md:mb-12 md:p-6">
-      <div className="absolute left-6 right-6 top-[2.75rem] h-1 rounded-full bg-[#E3E3E3]" />
+    <div className="relative mb-10 rounded-3xl border border-[#163B5C]/10 bg-white/95 p-5 shadow-sm backdrop-blur md:mb-12 md:p-6">
+      <div className="absolute left-6 right-6 top-[2.75rem] h-1 rounded-full bg-[#E1E8EF]" />
       <div
-        className="absolute left-6 top-[2.75rem] h-1 rounded-full bg-gradient-to-r from-[#234C6A] to-[#456882] transition-all duration-500"
+        className="absolute left-6 top-[2.75rem] h-1 rounded-full bg-gradient-to-r from-[#163B5C] to-[#516C83] transition-all duration-500"
         style={{ width: `calc((100% - 3rem) * ${progressRatio})` }}
       />
       <div className="relative flex justify-between">
@@ -696,15 +696,15 @@ const ProgressBar = memo(({ currentStep }: { currentStep: number }) => {
               <div
                 className={`z-10 flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-500 ${
                   active
-                    ? "border-2 border-[#234C6A] bg-white text-[#234C6A] shadow-xl shadow-[#234C6A]/10"
-                    : "border-2 border-[#E3E3E3] bg-white text-[#456882]/30"
+                    ? "border-2 border-[#163B5C] bg-white text-[#163B5C] shadow-xl shadow-[#163B5C]/10"
+                    : "border-2 border-[#E1E8EF] bg-white text-[#516C83]/30"
                 }`}
               >
                 <step.icon className="h-5 w-5" />
               </div>
               <span
                 className={`mt-3 hidden text-xs font-black uppercase tracking-widest sm:block ${
-                  active ? "text-[#234C6A]" : "text-[#456882]/35"
+                  active ? "text-[#163B5C]" : "text-[#516C83]/35"
                 }`}
               >
                 {step.title}
@@ -782,7 +782,7 @@ const CreateJobPage = () => {
   return (
     <RecruiterLayout>
       <div className="mx-auto max-w-6xl space-y-8 pb-20">
-        <section className="relative overflow-hidden rounded-3xl bg-[#234C6A] p-7 text-white shadow-2xl shadow-[#234C6A]/20 md:p-9">
+        <section className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
           <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -801,7 +801,7 @@ const CreateJobPage = () => {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               <Button
-                className="h-12 rounded-2xl bg-white px-6 font-black text-[#234C6A] hover:bg-[#E3E3E3]"
+                className="h-12 rounded-2xl bg-white px-6 font-black text-[#163B5C] hover:bg-[#E1E8EF]"
                 onClick={() => router.push("/recruiter/jobs")}
               >
                 <Briefcase className="mr-2 h-4 w-4" />
@@ -842,16 +842,16 @@ const CreateJobPage = () => {
           ].map((item) => (
             <Card
               key={item.label}
-              className="rounded-3xl border border-[#234C6A]/10 bg-white/95 p-5 shadow-sm backdrop-blur"
+              className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-5 shadow-sm backdrop-blur"
             >
-              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#234C6A]/10 text-[#234C6A]">
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C]/10 text-[#163B5C]">
                 <item.icon className="h-5 w-5" />
               </div>
-              <p className="text-2xl font-black text-[#234C6A]">{item.value}</p>
-              <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#456882]">
+              <p className="text-2xl font-black text-[#163B5C]">{item.value}</p>
+              <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#516C83]">
                 {item.label}
               </p>
-              <p className="mt-2 text-sm font-medium text-[#456882]/80">
+              <p className="mt-2 text-sm font-medium text-[#516C83]/80">
                 {item.detail}
               </p>
             </Card>
@@ -862,8 +862,8 @@ const CreateJobPage = () => {
 
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Card className="relative overflow-hidden rounded-3xl border border-[#234C6A]/10 bg-white/95 p-6 shadow-2xl shadow-[#234C6A]/10 backdrop-blur md:p-10 lg:p-12">
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882]" />
+            <Card className="relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-2xl shadow-[#163B5C]/10 backdrop-blur md:p-10 lg:p-12">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
 
               {/* Mount all steps but hide inactive — avoids RHF field unmount/remount */}
               <div className={currentStep === 1 ? "block" : "hidden"}>
@@ -880,13 +880,13 @@ const CreateJobPage = () => {
               </div>
 
               {/* Navigation */}
-              <div className="mt-16 flex flex-col-reverse gap-3 border-t border-[#234C6A]/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-16 flex flex-col-reverse gap-3 border-t border-[#163B5C]/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="h-12 rounded-2xl px-6 font-black text-[#456882] disabled:opacity-0"
+                  className="h-12 rounded-2xl px-6 font-black text-[#516C83] disabled:opacity-0"
                 >
                   <ArrowLeft className="mr-3 h-5 w-5" /> Previous Step
                 </Button>
@@ -895,7 +895,7 @@ const CreateJobPage = () => {
                   <Button
                     type="button"
                     onClick={nextStep}
-                    className="h-12 rounded-2xl bg-[#234C6A] px-8 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:bg-[#456882]"
+                    className="h-12 rounded-2xl bg-[#163B5C] px-8 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:bg-[#516C83]"
                   >
                     Next Step <ArrowRight className="ml-3 h-5 w-5" />
                   </Button>
@@ -903,7 +903,7 @@ const CreateJobPage = () => {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="h-12 rounded-2xl bg-gradient-to-r from-[#234C6A] to-[#456882] px-10 font-black text-white shadow-xl shadow-[#234C6A]/20 transition-all hover:-translate-y-0.5 hover:from-[#1c405a] hover:to-[#3b5a71]"
+                    className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-10 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:from-[#0C2C48] hover:to-[#3b5a71]"
                   >
                     {isLoading ? (
                       <Loader2 className="mr-3 h-5 w-5 animate-spin" />

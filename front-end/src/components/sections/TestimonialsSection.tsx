@@ -76,23 +76,23 @@ const TestimonialsSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-20 bg-[#E3E3E3] relative overflow-hidden">
+    <section ref={sectionRef} className="py-20 bg-[#E1E8EF] relative overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-80 h-80 bg-[#234C6A]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-[#456882]/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-80 h-80 bg-[#163B5C]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-[#516C83]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="container px-4">
         <div className="testimonial-header text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#234C6A]/10 rounded-full mb-4">
-            <Quote className="h-4 w-4 text-[#234C6A]" />
-            <span className="text-sm font-medium text-[#234C6A]">Testimonials</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#163B5C]/10 rounded-full mb-4">
+            <Quote className="h-4 w-4 text-[#163B5C]" />
+            <span className="text-sm font-medium text-[#163B5C]">Testimonials</span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#234C6A]">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#163B5C]">
             Success Stories
           </h2>
-          <p className="text-lg text-[#456882]">
+          <p className="text-lg text-[#516C83]">
             Hear from job seekers who found their dream careers through JobHub
           </p>
         </div>
@@ -113,7 +113,7 @@ const TestimonialsSection = () => {
 
               {/* Quote icon */}
               <div className="mb-6">
-                <Quote className="h-10 w-10 text-[#234C6A]/10" />
+                <Quote className="h-10 w-10 text-[#163B5C]/10" />
               </div>
 
               {/* Rating */}
@@ -127,25 +127,25 @@ const TestimonialsSection = () => {
               </div>
 
               {/* Quote */}
-              <p className="text-[#234C6A] mb-6 leading-relaxed">
+              <p className="text-[#163B5C] mb-6 leading-relaxed">
                 &ldquo;{testimonial.quote}&rdquo;
               </p>
 
               {/* Author */}
-              <div className="flex items-center gap-4 pt-6 border-t border-[#E3E3E3]">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#234C6A] to-[#456882] flex items-center justify-center text-white font-bold">
+              <div className="flex items-center gap-4 pt-6 border-t border-[#E1E8EF]">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#163B5C] to-[#516C83] flex items-center justify-center text-white font-bold">
                   {testimonial.avatar}
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[#234C6A]">{testimonial.name}</h4>
-                  <p className="text-sm text-[#456882]">
+                  <h4 className="font-semibold text-[#163B5C]">{testimonial.name}</h4>
+                  <p className="text-sm text-[#516C83]">
                     {testimonial.role} at {testimonial.company}
                   </p>
                 </div>
               </div>
 
               {/* Hover effect gradient */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#234C6A] to-[#456882] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
             </Card>
           ))}
         </div>

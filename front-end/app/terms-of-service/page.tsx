@@ -5,13 +5,7 @@ export const metadata: Metadata = {
   title: "Terms of Service | JobHub",
   description:
     "Read the JobHub Terms of Service. Understand the rules, guidelines, and legal agreements for using our recruitment platform.",
-  keywords: [
-    "terms of service",
-    "JobHub terms",
-    "legal agreement",
-    "user agreement",
-    "platform rules",
-  ],
+  robots: { index: false, follow: false },
 };
 
 export default function Page() {

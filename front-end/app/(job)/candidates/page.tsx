@@ -2,9 +2,9 @@ import CandidatesListingPage from "@/src/Page/Candidates/CandidatesListingPage";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Discover Top Talent | JobHub",
+  title: "Browse candidate profiles",
   description:
-    "Browse and filter through a curated list of exceptional professionals across various industries. Find the perfect candidate for your team on JobHub.",
+    "Search candidate profiles by skills, availability, and experience in JobHub.",
   keywords: [
     "candidates",
     "hire talent",
