@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -16,7 +15,6 @@ import {
   ShieldCheck,
   CheckCircle,
   Sparkles,
-  Briefcase,
 } from "lucide-react";
 import { toast } from "@/src/hooks/use-toast";
 import ResetPassword from "@/src/components/auth/ResetPassword";
@@ -181,11 +179,11 @@ const ForgotPasswordPage = () => {
   const getStepIcon = () => {
     switch (step) {
       case 1:
-        return <Mail className="h-12 w-12 text-white" />;
+        return <Mail className="h-7 w-7 text-white" />;
       case 2:
-        return <ShieldCheck className="h-12 w-12 text-white" />;
+        return <ShieldCheck className="h-7 w-7 text-white" />;
       default:
-        return <Mail className="h-12 w-12 text-white" />;
+        return <Mail className="h-7 w-7 text-white" />;
     }
   };
 
@@ -203,140 +201,117 @@ const ForgotPasswordPage = () => {
   const getStepDescription = () => {
     switch (step) {
       case 1:
-        return "No worries! Enter your email and we will send you a reset code.";
+        return "Enter your registered email address and we will send you a 6-digit recovery code.";
       case 2:
-        return `Enter the code sent to ${email} and create your new password.`;
+        return `Enter the code sent to ${email} and choose a strong new password.`;
       default:
         return "";
     }
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen flex bg-gradient-to-br from-[#E1E8EF] via-white to-[#E1E8EF]">
+    <div ref={containerRef} className="min-h-screen flex bg-[#f8fafc]">
       {/* Left Side - Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#163B5C] via-[#2d5a7a] to-[#516C83] relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-white/3 to-transparent rounded-full blur-3xl" />
-        </div>
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
+      <div className="hidden lg:flex lg:w-1/2 bg-black border-r border-neutral-800 p-12 xl:p-16 text-white flex-col justify-between">
+        <Link
+          href="/"
+          aria-label="JOB ! HUB home"
+          className="inline-flex items-center gap-2 text-2xl font-black tracking-tighter text-white"
+        >
+          JOB ! HUB
+        </Link>
 
-        <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 font-bold text-xl group z-10 mb-12"
-          >
-            <Image
-              width={100}
-              height={100}
-              src={"/job-hub-logo-removebg-preview.png"}
-              alt="Logo"
-              priority
-              className="h-auto max-h-14 w-[150px] object-contain md:w-[175px]"
-            />
-          </Link>
+        <div className="max-w-md my-auto">
+          <p className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-400">
+            Account Recovery · Security First
+          </p>
+          <h1 className="text-4xl xl:text-5xl font-extrabold text-white mb-4 leading-tight tracking-tight">
+            Secure Password
+            <span className="block text-neutral-400">Recovery</span>
+          </h1>
 
-          <div className="mb-12">
-            <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
-              Secure Password
-              <span className="block text-white/80">Recovery</span>
-            </h1>
+          <p className="text-sm text-neutral-400 leading-relaxed">
+            We prioritize your account security. Our two-step verification process ensures that only verified owners can restore access.
+          </p>
 
-            <p className="text-lg text-white/70 leading-relaxed max-w-md">
-              We take security seriously. Our password recovery process is
-              designed to keep your account safe.
-            </p>
-          </div>
-
-          {/* Security features */}
-          <div className="space-y-4">
+          <div className="mt-8 space-y-3.5">
             {[
-              { icon: ShieldCheck, text: "Enterprise-grade encryption" },
-              { icon: KeyRound, text: "Secure verification codes" },
-              { icon: Lock, text: "Strong password requirements" },
+              { icon: ShieldCheck, text: "End-to-end credential encryption" },
+              { icon: KeyRound, text: "Expiring 6-digit verification codes" },
+              { icon: Lock, text: "Strong password complexity requirements" },
             ].map((item, i) => (
               <div
                 key={i}
-                className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10"
+                className="flex items-center gap-3 p-3.5 bg-neutral-900 border border-neutral-800 rounded-xl"
               >
-                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                  <item.icon className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-white font-medium">{item.text}</span>
+                <span className="w-9 h-9 rounded-lg bg-black border border-neutral-800 flex items-center justify-center shrink-0">
+                  <item.icon className="h-4 w-4 text-white" />
+                </span>
+                <span className="text-xs font-medium text-neutral-200">{item.text}</span>
               </div>
             ))}
           </div>
         </div>
+
+        <p className="text-xs text-neutral-500">© {new Date().getFullYear()} JOB ! HUB · All rights reserved.</p>
       </div>
 
       {/* Right Side - Form */}
       <div className="w-full lg:w-1/2 flex flex-col">
         {/* Mobile Header */}
         <div className="lg:hidden p-6 flex items-center justify-between">
-          {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2.5 font-bold text-xl group z-10"
+            aria-label="JOB ! HUB home"
+            className="inline-flex items-center gap-1.5 text-xl font-black tracking-tighter text-black"
           >
-            <Image
-              width={100}
-              height={100}
-              src={"/job-hub-logo-removebg-preview.png"}
-              alt="Logo"
-              priority
-              className="h-auto max-h-14 w-[150px] object-contain md:w-[175px]"
-            />
+            JOB ! HUB
           </Link>
           <Link
             href="/auth"
-            className="flex items-center gap-2 text-[#516C83] hover:text-[#163B5C] transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
             Back to Sign In
           </Link>
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 flex items-center justify-center p-6 md:p-10 lg:p-16 xl:p-20">
-          <div className="w-full max-w-[480px] md:max-w-[520px] lg:max-w-[550px] transition-all duration-300">
+        <div className="flex-1 flex items-center justify-center p-6 md:p-10 lg:p-12 xl:p-16">
+          <div className="w-full max-w-[480px]">
             {/* Desktop Back Link */}
-            <div className="hidden lg:block mb-8">
+            <div className="hidden lg:block mb-6">
               <Link
                 href="/auth"
-                className="inline-flex items-center gap-2 text-[#516C83] hover:text-[#163B5C] transition-colors text-sm font-medium group"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black transition-colors group"
               >
-                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
                 Back to Sign In
               </Link>
             </div>
 
             {/* Step Indicator */}
-            <div className="step-indicator flex items-center justify-center gap-2 mb-8">
+            <div className="step-indicator flex items-center justify-center gap-2 mb-6">
               {steps.map((s, i) => (
                 <div key={s.number} className="flex items-center">
                   <div
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                    className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
                       step >= s.number
-                        ? "bg-gradient-to-r from-[#163B5C] to-[#516C83] text-white"
-                        : "bg-white text-[#516C83] border border-[#E1E8EF]"
+                        ? "bg-black text-white shadow-2xs"
+                        : "bg-white text-neutral-500 border border-[#eaecf0]"
                     }`}
                   >
                     {step > s.number ? (
-                      <CheckCircle className="h-4 w-4" />
+                      <CheckCircle className="h-3.5 w-3.5" />
                     ) : (
                       s.icon
                     )}
-                    <span className="text-sm font-medium hidden sm:inline">
-                      {s.title}
-                    </span>
+                    <span>{s.title}</span>
                   </div>
                   {i < steps.length - 1 && (
                     <div
-                      className={`w-8 h-0.5 mx-1 transition-colors duration-300 ${
-                        step > s.number ? "bg-[#163B5C]" : "bg-[#E1E8EF]"
+                      className={`w-8 h-0.5 mx-1 transition-colors ${
+                        step > s.number ? "bg-black" : "bg-neutral-200"
                       }`}
                     />
                   )}
@@ -345,36 +320,37 @@ const ForgotPasswordPage = () => {
             </div>
 
             {/* Header */}
-            <div className="text-center mb-8">
-              <div className="bg-gradient-to-br from-[#163B5C] to-[#516C83] rounded-2xl p-5 w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <div className="text-center mb-6">
+              <div className="bg-black text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-xs">
                 {getStepIcon()}
               </div>
-              <h1 className="text-3xl font-bold mb-3 text-[#163B5C]">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#111827] mb-1.5">
                 {getStepTitle()}
               </h1>
-              <p className="text-[#516C83]">{getStepDescription()}</p>
+              <p className="text-xs text-[#596d7e] max-w-sm mx-auto leading-relaxed">
+                {getStepDescription()}
+              </p>
             </div>
 
             {/* Card */}
-            <Card className="forgot-card p-6 sm:p-10 border border-white/50 bg-white/75 backdrop-blur-xl shadow-[0_20px_50px_rgba(35,76,106,0.12)] rounded-[32px] relative overflow-hidden transition-all duration-300">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
+            <Card className="forgot-card p-6 sm:p-8 border border-[#eaecf0] bg-white shadow-xs rounded-2xl relative overflow-hidden">
               {step === 1 && (
-                <form onSubmit={handleSendOtp} className="space-y-6">
-                  <div className="space-y-2">
+                <form onSubmit={handleSendOtp} className="space-y-4">
+                  <div className="space-y-1.5">
                     <Label
                       htmlFor="forgot-email"
-                      className="text-[#163B5C] font-semibold text-sm tracking-wide"
+                      className="text-[11px] font-bold uppercase tracking-wider text-neutral-700"
                     >
                       Email Address
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
                       <Input
                         id="forgot-email"
                         type="email"
-                        placeholder="Enter your email address"
+                        placeholder="name@company.com"
                         ref={emailRef}
-                        className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
+                        className="pl-10 h-11 border-[#eaecf0] bg-white shadow-2xs focus:border-black focus:ring-1 focus:ring-black transition-all rounded-xl placeholder:text-neutral-400 text-sm text-[#111827]"
                         required
                       />
                     </div>
@@ -382,13 +358,13 @@ const ForgotPasswordPage = () => {
 
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                    className="w-full h-11 bg-black hover:bg-neutral-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-2xs transition-all group cursor-pointer"
                     disabled={isForgotLoading}
                   >
                     {isForgotLoading ? (
                       <span className="flex items-center gap-2">
                         <svg
-                          className="animate-spin h-5 w-5"
+                          className="animate-spin h-4 w-4"
                           viewBox="0 0 24 24"
                         >
                           <circle
@@ -411,30 +387,29 @@ const ForgotPasswordPage = () => {
                     ) : (
                       <span className="flex items-center justify-center gap-2">
                         Send Verification Code
-                        <Sparkles className="h-4 w-4" />
+                        <Sparkles className="h-3.5 w-3.5" />
                       </span>
                     )}
                   </Button>
 
                   {/* Security notice */}
-                  <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
-                    <ShieldCheck className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-[#516C83]">
-                      For your security, we will send a 6-digit verification
-                      code to your email.
+                  <div className="flex items-start gap-2.5 p-3 bg-neutral-50 rounded-xl border border-[#eaecf0] text-xs text-neutral-600">
+                    <ShieldCheck className="h-4 w-4 text-neutral-500 flex-shrink-0 mt-0.5" />
+                    <p>
+                      For your account security, a 6-digit temporary verification code will be sent to your inbox.
                     </p>
                   </div>
                 </form>
               )}
 
               {step === 2 && (
-                <div className="space-y-8">
+                <div className="space-y-6">
                   {/* OTP Section */}
-                  <div className="space-y-4">
-                    <Label className="text-[#163B5C] font-semibold text-center block text-sm tracking-wide">
+                  <div className="space-y-3">
+                    <Label className="text-[11px] font-bold uppercase tracking-wider text-neutral-700 text-center block">
                       Verification Code
                     </Label>
-                    <div className="flex justify-center gap-2 sm:gap-3">
+                    <div className="flex justify-center gap-2 sm:gap-2.5">
                       {otp.map((digit, index) => (
                         <Input
                           key={index}
@@ -449,22 +424,22 @@ const ForgotPasswordPage = () => {
                             handleOtpChange(index, e.target.value)
                           }
                           onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className={`w-10 h-12 sm:w-12 sm:h-14 text-xl sm:text-2xl font-bold text-center rounded-xl transition-all duration-300 cursor-pointer ${
+                          className={`w-10 h-12 sm:w-11 sm:h-13 text-xl font-bold text-center rounded-xl transition-all shadow-2xs ${
                             digit
-                              ? "border-2 border-[#163B5C] bg-[#163B5C]/5 text-[#163B5C] shadow-inner"
-                              : "border border-slate-200/80 bg-white/60 text-[#163B5C]"
-                          } focus:outline-none focus:ring-4 focus:ring-[#163B5C]/10 focus:border-[#163B5C]`}
+                              ? "border-2 border-black bg-black/5 text-black"
+                              : "border border-[#eaecf0] bg-white text-neutral-900"
+                          } focus:outline-none focus:ring-1 focus:ring-black focus:border-black`}
                         />
                       ))}
                     </div>
 
-                    <div className="flex justify-center">
+                    <div className="flex justify-center pt-1">
                       {timeLeft > 0 ? (
-                        <p className="text-sm text-[#516C83]">
+                        <p className="text-xs text-neutral-500">
                           Resend in{" "}
-                          <span className="font-bold">
+                          <strong className="font-bold text-black">
                             {formatTime(timeLeft)}
-                          </span>
+                          </strong>
                         </p>
                       ) : (
                         <Button
@@ -472,10 +447,10 @@ const ForgotPasswordPage = () => {
                           disabled={isForgotLoading}
                           variant="ghost"
                           size="sm"
-                          className="text-[#163B5C] hover:bg-[#163B5C]/10 h-8 cursor-pointer"
+                          className="text-xs font-semibold text-black hover:bg-neutral-100 h-8 rounded-lg"
                         >
                           <RefreshCw
-                            className={`h-3 w-3 mr-2 ${isForgotLoading ? "animate-spin" : ""}`}
+                            className={`h-3 w-3 mr-1.5 ${isForgotLoading ? "animate-spin" : ""}`}
                           />
                           Resend Code
                         </Button>
@@ -484,7 +459,7 @@ const ForgotPasswordPage = () => {
                   </div>
 
                   {/* Password Section */}
-                  <div className="pt-6 border-t border-[#E1E8EF]/60">
+                  <div className="pt-5 border-t border-neutral-100">
                     <ResetPassword
                       onSubmit={handleResetPassword}
                       loading={isResetLoading}
@@ -494,10 +469,10 @@ const ForgotPasswordPage = () => {
               )}
 
               {/* Back button */}
-              <div className="mt-6 pt-6 border-t border-[#E1E8EF]/60">
+              <div className="mt-5 pt-4 border-t border-neutral-100">
                 <Button
                   variant="ghost"
-                  className="w-full text-[#163B5C] hover:bg-[#163B5C]/10 font-semibold h-12 rounded-xl cursor-pointer"
+                  className="w-full text-xs font-semibold text-neutral-600 hover:text-black hover:bg-neutral-50 h-10 rounded-xl"
                   onClick={() => {
                     if (step > 1) {
                       setStep(step - 1);
@@ -506,18 +481,18 @@ const ForgotPasswordPage = () => {
                     }
                   }}
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
                   {step > 1 ? "Go Back" : "Back to Sign In"}
                 </Button>
               </div>
             </Card>
 
             {/* Help text */}
-            <p className="text-center text-sm text-[#516C83] mt-6">
+            <p className="text-center text-xs text-[#596d7e] mt-5">
               Remember your password?{" "}
               <Link
                 href="/auth"
-                className="text-[#163B5C] font-semibold hover:underline"
+                className="font-semibold text-black hover:underline"
               >
                 Sign in here
               </Link>
