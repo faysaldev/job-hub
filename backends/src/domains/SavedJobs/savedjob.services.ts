@@ -1,9 +1,11 @@
 import SavedJob from "./savedjob.model";
 import Job from "../Jobs/job.model";
 import redis from "../../config/redis";
+import { assertId } from "../../lib/query";
 
 // Save a job for a user
 const saveJob = async (userId: string, jobId: string) => {
+  assertId(jobId, "job ID");
   // Check if the job already exists in user's saved jobs
   const existingSavedJob = await SavedJob.findOne({ userId, jobId });
   if (existingSavedJob) {
@@ -11,7 +13,7 @@ const saveJob = async (userId: string, jobId: string) => {
   }
 
   // Verify that the job exists
-  const job = await Job.findById(jobId);
+  const job = await Job.findOne({ _id: jobId, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } });
   if (!job) {
     throw new Error("Job not found");
   }

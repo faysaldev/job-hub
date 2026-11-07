@@ -4,55 +4,27 @@ import routes from "./routes/index";
 import logRequestResponse from "./middlewares/logger.middleware";
 import compression from "compression";
 import { globalErrorHandler, notFoundHandler } from "./lib/errorsHandle";
-
-import { FRONTEND_URL } from "./config/ENV";
+import { corsOptions } from "./config/cors";
+import stripeController from "./domains/Stripe/stripe.controller";
 
 const app = express();
-
-// Set up allowed origins for CORS
-const allowedOrigins = FRONTEND_URL
-  ? FRONTEND_URL.split(",").map((url) => url.trim())
-  : ["http://localhost:3000", "https://job-hubs.vercel.app"];
-
-// Add production Vercel URL to allowed origins if not already present
-if (!allowedOrigins.includes("https://job-hubs.vercel.app")) {
-  allowedOrigins.push("https://job-hubs.vercel.app");
-}
-
-// Enable CORS for all routes
-app.use(
-  cors({
-    origin: true, // This instructs cors to automatically reflect the request origin
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
-    optionsSuccessStatus: 200,
-  })
-);
-
-app.use(express.json());
-
-// parse urlencoded request body
-app.use(express.urlencoded({ extended: true }));
-
-// compression the all data
-app.use(compression());
-
-// Use the logging middleware for all routes
-app.use(logRequestResponse);
-
-// Health check endpoint
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, Job Hub Backend API!");
+app.disable("x-powered-by");
+app.set("trust proxy", process.env.TRUST_PROXY === "true" ? 1 : false);
+app.use(cors(corsOptions));
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("X-Frame-Options", "DENY");
+  next();
 });
-
-// API routes
+// Stripe requires the original request bytes for signature verification.
+app.post("/api/v1/stripe/webhook", express.raw({ type: "application/json", limit: "128kb" }), stripeController.webhook);
+app.use(express.json({ limit: "250kb" }));
+app.use(express.urlencoded({ extended: true, limit: "250kb" }));
+app.use(compression());
+app.use(logRequestResponse);
+app.get("/", (_req: Request, res: Response) => res.json({ service: "JobHub API", status: "ok" }));
 app.use("/api/v1", routes);
-
-// Handle 404 - Route not found
 app.use(notFoundHandler);
-
-// Global error handler - must be last
 app.use(globalErrorHandler);
-
 export default app;

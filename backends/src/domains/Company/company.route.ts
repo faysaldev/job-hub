@@ -6,7 +6,7 @@ import {
   getAllCompanies,
   updateCompany,
 } from "./company.controller";
-import { authMiddleware } from "../../middlewares/auth.middleware";
+import { authMiddleware, requireRoles } from "../../middlewares/auth.middleware";
 import {
   cloudinaryFileUploadMiddleware,
   processCloudinarySingleUpload,
@@ -19,15 +19,17 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
+  requireRoles("recruiter"),
   validate(companyValidator.createCompanyValidation),
   createCompany,
 );
-router.get("/profile", authMiddleware, getCompany); // Get authenticated user's company profile
+router.get("/profile", authMiddleware, requireRoles("recruiter"), getCompany); // Get authenticated user's company profile
 router.get("/all", getAllCompanies); // Get all companies
 router.get("/:id", getCompanyById); // Get company by ID
 router.put(
   "/",
   authMiddleware,
+  requireRoles("recruiter"),
   validate(companyValidator.updateCompanyValidation),
   updateCompany,
 ); // Update authenticated user's company profile

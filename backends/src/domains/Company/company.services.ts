@@ -1,9 +1,11 @@
 import Company, { ICompany } from "./company.model";
 import { Types } from "mongoose";
+import { assertId, escapeRegex, paging } from "../../lib/query";
 
 export const createCompanyService = async (
   companyData: Partial<ICompany>,
 ): Promise<ICompany> => {
+  if (await Company.exists({ userId: companyData.userId })) throw new Error("Company already exists");
   const company = new Company(companyData);
   return await company.save();
 };
@@ -11,14 +13,17 @@ export const createCompanyService = async (
 export const getCompanyService = async (
   id: string,
 ): Promise<ICompany | null> => {
-  return await Company.findById(id)
-    .populate("userId", "email")
+  assertId(id);
+  const company = await Company.findById(id)
+    .populate({ path: "userId", select: "name image",
+      match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "recruiter" } })
     .populate({
       path: "jobs",
-      match: { isActive: true }, // Only show active jobs
+      match: { isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } },
       select:
         "title type location locationType salaryMax salaryMin salaryPeriod",
     });
+  return company?.userId ? company : null;
 };
 
 export const getCompanyByUserIdService = async (
@@ -43,14 +48,14 @@ export const getAllCompaniesService = async (query: any = {}): Promise<any> => {
 
   if (search) {
     filters.$or = [
-      { companyName: { $regex: search, $options: "i" } },
-      { companyLocation: { $regex: search, $options: "i" } },
-      { description: { $regex: search, $options: "i" } },
+      { companyName: { $regex: escapeRegex(search), $options: "i" } },
+      { companyLocation: { $regex: escapeRegex(search), $options: "i" } },
+      { description: { $regex: escapeRegex(search), $options: "i" } },
     ];
   }
 
   if (industries) {
-    filters.industries = { $regex: industries, $options: "i" };
+    filters.industries = { $regex: escapeRegex(industries), $options: "i" };
   }
 
   if (companySize) {
@@ -58,28 +63,30 @@ export const getAllCompaniesService = async (query: any = {}): Promise<any> => {
   }
 
   if (location) {
-    filters.companyLocation = { $regex: location, $options: "i" };
+    filters.companyLocation = { $regex: escapeRegex(location), $options: "i" };
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const bounds = paging({ page, limit });
+  const skip = (bounds.page - 1) * bounds.limit;
 
   const [companies, total] = await Promise.all([
     Company.find(filters)
-      .populate("userId", "name email image role phoneNumber")
+      .populate({ path: "userId", select: "name image role",
+        match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "recruiter" } })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(Number(limit))
+      .limit(bounds.limit)
       .lean(),
     Company.countDocuments(filters),
   ]);
 
   return {
-    companies,
+    companies: companies.filter((company) => !!company.userId),
     pagination: {
       total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / Number(limit)),
+      page: bounds.page,
+      limit: bounds.limit,
+      totalPages: Math.ceil(total / bounds.limit),
     },
   };
 };
@@ -90,7 +97,7 @@ export const updateCompanyService = async (
 ): Promise<ICompany | null> => {
   return await Company.findByIdAndUpdate(
     id,
-    { ...companyData },
+    { $set: companyData },
     { new: true, runValidators: true },
   ).populate("userId", "name email image role phoneNumber");
 };
@@ -101,7 +108,7 @@ export const updateCompanyByUserIdService = async (
 ): Promise<ICompany | null> => {
   return await Company.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
-    { ...companyData },
+    { $set: companyData },
     { new: true, runValidators: true },
   ).populate("userId", "name email image role phoneNumber");
 };

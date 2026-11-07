@@ -3,11 +3,12 @@ import { IJob } from "./job.model";
 import redis from "../../config/redis";
 import crypto from "crypto";
 import mongoose from "mongoose";
+import { escapeRegex, assertId } from "../../lib/query";
 
 // Get all jobs with optional filters and Redis caching
 const getAllJobs = async (filters: any = {}) => {
   // Create a cache key based on filters
-  const cacheKey = `allJobs:${crypto
+  const cacheKey = `allJobs:v${await currentSearchVersion()}:${crypto
     .createHash("md5")
     .update(JSON.stringify(filters))
     .digest("hex")}`;
@@ -23,7 +24,7 @@ const getAllJobs = async (filters: any = {}) => {
     // Continue with database query if cache fails
   }
 
-  const jobs = await Job.find(filters).sort({ createdAt: -1 });
+  const jobs = await Job.find({ ...filters, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }).sort({ createdAt: -1 }).limit(50);
 
   try {
     // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
@@ -37,21 +38,24 @@ const getAllJobs = async (filters: any = {}) => {
 };
 
 // Get job by ID with Redis caching
-const getJobById = async (jobId: string) => {
+const getJobById = async (jobId: string, requesterId?: string) => {
+  assertId(jobId);
+  if (requesterId) return Job.findOne({ _id: jobId, $or: [{ isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }, { author: requesterId, isDeleted: { $ne: true } }] }).populate("author", "name image").populate("company", "companyName companyLogo");
   const cacheKey = `job:${jobId}`;
 
   try {
     // Try to get cached result
     const cachedResult = await redis.get(cacheKey);
     if (cachedResult) {
-      return JSON.parse(cachedResult);
+      const cachedJob = JSON.parse(cachedResult);
+      if (cachedJob?.applicationDeadline && new Date(cachedJob.applicationDeadline).getTime() >= Date.now()) return cachedJob;
     }
   } catch (error) {
     console.log("Error fetching from Redis cache:", error);
     // Continue with database query if cache fails
   }
 
-  const job = await Job.findById(jobId)
+  const job = await Job.findOne({ _id: jobId, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
     .populate("author", "name image")
     .populate("company", "companyName companyLogo");
 
@@ -69,8 +73,9 @@ const getJobById = async (jobId: string) => {
 };
 
 // Get jobs by author ID
-const getJobsByAuthorId = async (authorId: string) => {
-  return await Job.find({ author: authorId })
+const getJobsByAuthorId = async (authorId: string, requesterId?: string) => {
+  assertId(authorId);
+  return await Job.find({ author: authorId, isDeleted: { $ne: true }, ...(requesterId === authorId ? {} : { isActive: true, applicationDeadline: { $gte: new Date() } }) })
     .select(
       "author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive responsibilities requirements benefits positions",
     )
@@ -78,18 +83,14 @@ const getJobsByAuthorId = async (authorId: string) => {
 };
 
 // Function to clear job search cache
-const clearJobCache = async () => {
+const currentSearchVersion = async () => {
+  try { return (await redis.get("jobhub:search:version")) || "1"; } catch { return String(Date.now()); }
+};
+const clearJobCache = async (jobId?: string) => {
   try {
-    // Delete all keys that start with "jobs:" or "allJobs:"
-    const keys1 = await redis.keys("jobs:*");
-    const keys2 = await redis.keys("allJobs:*");
-    const keys = [...keys1, ...keys2];
-    if (keys.length > 0) {
-      await redis.del(...keys);
-    }
-  } catch (error) {
-    console.log("Error clearing Redis cache:", error);
-  }
+    await redis.incr("jobhub:search:version");
+    if (jobId) await redis.del(`job:${jobId}`);
+  } catch { /* cache TTL also limits stale results */ }
 };
 
 // Create a new job
@@ -104,23 +105,25 @@ const createJob = async (jobData: Partial<IJob>) => {
 };
 
 // Update job by ID
-const updateJob = async (jobId: string, updateData: Partial<IJob>) => {
-  const updatedJob = await Job.findByIdAndUpdate(jobId, updateData, {
-    new: true,
-  });
+const updateJob = async (jobId: string, updateData: Partial<IJob>, requesterId: string) => {
+  const updatedJob = await Job.findOneAndUpdate(
+    { _id: jobId, author: requesterId, isDeleted: { $ne: true } },
+    { $set: Object.fromEntries(Object.entries(updateData).filter(([key]) => key !== "author")) },
+    { new: true, runValidators: true });
 
   // Clear cache after updating a job
-  await clearJobCache();
+  if (updatedJob) await clearJobCache(jobId);
 
   return updatedJob;
 };
 
 // Delete job by ID
-const deleteJob = async (jobId: string) => {
-  const deletedJob = await Job.findByIdAndDelete(jobId);
+const deleteJob = async (jobId: string, requesterId: string) => {
+  const deletedJob = await Job.findOneAndUpdate({ _id: jobId, author: requesterId, isDeleted: { $ne: true } },
+    { $set: { isDeleted: true, isActive: false } }, { new: true });
 
   // Clear cache after deleting a job
-  await clearJobCache();
+  if (deletedJob) await clearJobCache(jobId);
 
   return deletedJob;
 };
@@ -180,20 +183,27 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
     postedDate,
   };
 
-  const cacheKey = `jobs:search:${crypto.createHash("md5").update(JSON.stringify(params)).digest("hex")}`;
+  const cacheKey = `jobs:search:v${await currentSearchVersion()}:${crypto.createHash("md5").update(JSON.stringify(params)).digest("hex")}`;
 
   try {
     const cached = await redis.get(cacheKey);
-    if (cached) return JSON.parse(cached);
+    if (cached) {
+      const result = JSON.parse(cached);
+      // An expiring job must never be returned merely because Redis still has it.
+      if (Array.isArray(result.jobs) && result.jobs.every((job: { applicationDeadline?: string }) =>
+        job.applicationDeadline && new Date(job.applicationDeadline).getTime() >= Date.now())) {
+        return result;
+      }
+    }
   } catch (error) {
     console.error("Redis Read Error:", error);
   }
 
   // Build Query Conditions
-  const filterConditions: any[] = [{ isActive: true }];
+  const filterConditions: any[] = [{ isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }];
 
   if (searchTerm) {
-    const searchRegex = { $regex: searchTerm, $options: "i" };
+    const searchRegex = { $regex: escapeRegex(searchTerm), $options: "i" };
     filterConditions.push({
       $or: [
         { title: searchRegex },
@@ -231,21 +241,18 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
 
   if (locationType) filterConditions.push({ locationType });
   if (location)
-    filterConditions.push({ location: { $regex: location, $options: "i" } });
+    filterConditions.push({ location: { $regex: escapeRegex(location), $options: "i" } });
 
-  if (minSalary !== undefined || maxSalary !== undefined) {
-    const salaryCond: any = {};
-    if (minSalary !== undefined) salaryCond.$gte = minSalary;
-    if (maxSalary !== undefined) salaryCond.$lte = maxSalary;
-    filterConditions.push({ salaryMin: salaryCond });
-  }
+  if (minSalary !== undefined) filterConditions.push({ salaryMax: { $gte: minSalary } });
+  if (maxSalary !== undefined) filterConditions.push({ salaryMin: { $lte: maxSalary } });
 
   if (salaryRanges) {
-    const ranges = salaryRanges.split(",").map((r) => {
+    const ranges = salaryRanges.split(",").slice(0, 10).map((r) => {
       const [minStr, maxStr] = r.split("-");
       const min = parseFloat(minStr);
       const max = maxStr === "Infinity" ? Infinity : parseFloat(maxStr);
       const cond: any = {};
+      if (!Number.isFinite(min) || Number.isNaN(max)) throw new Error("Invalid salary range");
       if (max !== Infinity) cond.salaryMin = { $lte: max };
       cond.salaryMax = { $gte: min };
       return cond;
@@ -277,15 +284,14 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
       .filter(Boolean);
     if (sizes.length > 0) {
       const Company = mongoose.model("Company");
-      const companies = await Company.find({ companySize: { $in: sizes } })
-        .select("_id")
-        .lean();
-      const companyIds = companies.map((c) => c._id);
-      filterConditions.push({ company: { $in: companyIds } });
+      const recruiters = await Company.distinct("userId", { companySize: { $in: sizes } });
+      filterConditions.push({ author: { $in: recruiters } });
     }
   }
 
   const filter = { $and: filterConditions };
+  const safePage = Math.min(Math.max(Number(page) || 1, 1), 10000);
+  const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 50);
 
   // Execute concurrently
   const [jobs, total] = await Promise.all([
@@ -295,26 +301,29 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
       )
       .populate("company", "companyName companyLogo companySize")
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit)
       .lean({ virtuals: true }),
     Job.countDocuments(filter),
   ]);
 
-  const totalPages = Math.ceil(total / limit);
+  const totalPages = Math.ceil(total / safeLimit);
   const result = {
     jobs,
     pagination: {
-      currentPage: page,
+      currentPage: safePage,
       totalPages,
       totalJobs: total,
-      hasNext: page < totalPages,
-      hasPrev: page > 1,
+      hasNext: safePage < totalPages,
+      hasPrev: safePage > 1,
     },
   };
 
   try {
-    await redis.setex(cacheKey, 300, JSON.stringify(result));
+    const earliestDeadline = Math.min(...jobs.map((job) => new Date(job.applicationDeadline).getTime()));
+    const remaining = Number.isFinite(earliestDeadline) ? Math.floor((earliestDeadline - Date.now()) / 1000) : 60;
+    // Bound cache lifetime by the nearest expiring result; a zero lifetime is not cached.
+    if (remaining > 0) await redis.setex(cacheKey, Math.min(60, remaining), JSON.stringify(result));
   } catch (error) {
     console.error("Redis Write Error:", error);
   }

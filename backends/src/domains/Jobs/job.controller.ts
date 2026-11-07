@@ -38,8 +38,8 @@ const getAllJobs = asyncHandler(async (req: Request, res: Response) => {
     salaryRanges: salaryRanges as string,
     companySizes: companySizes as string,
     postedDate: postedDate as string,
-    page: parseInt(page as string) || 1,
-    limit: parseInt(limit as string) || 10,
+    page: Number(page) || 1,
+    limit: Number(limit) || 10,
   });
 
   res.status(httpStatus.OK).json(
@@ -55,7 +55,7 @@ const getAllJobs = asyncHandler(async (req: Request, res: Response) => {
 // Get job by ID
 const getJobById = asyncHandler(async (req: Request, res: Response) => {
   const { jobId } = req.params;
-  const job = await jobService.getJobById(jobId);
+  const job = await jobService.getJobById(jobId, (req as ProtectedRequest).user?._id);
 
   if (!job) {
     throw new AppError("Job not found", httpStatus.NOT_FOUND);
@@ -74,7 +74,7 @@ const getJobById = asyncHandler(async (req: Request, res: Response) => {
 // Get jobs by author ID
 const getJobsByAuthorId = asyncHandler(async (req: Request, res: Response) => {
   const { authorId } = req.params;
-  const jobs = await jobService.getJobsByAuthorId(authorId);
+  const jobs = await jobService.getJobsByAuthorId(authorId, (req as ProtectedRequest).user?._id);
 
   res.status(httpStatus.OK).json(
     response({
@@ -88,8 +88,7 @@ const getJobsByAuthorId = asyncHandler(async (req: Request, res: Response) => {
 
 // Create a new job (requires authentication)
 const createJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const jobData = req.body;
-  jobData.author = req.user?._id;
+  const jobData = { ...req.body, author: req.user!._id };
 
   const job = await jobService.createJob(jobData);
 
@@ -107,13 +106,8 @@ const createJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
 const updateJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const { jobId } = req.params;
   const updateData = req.body;
-
-  const existingJob = await jobService.getJobById(jobId);
-  if (!existingJob) {
-    throw new AppError("Job not found", httpStatus.NOT_FOUND);
-  }
-
-  await jobService.updateJob(jobId, updateData);
+  const updated = await jobService.updateJob(jobId, updateData, req.user!._id);
+  if (!updated) throw new AppError("Job not found or permission denied", 404);
 
   res.status(httpStatus.OK).json(
     response({
@@ -129,12 +123,8 @@ const updateJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
 const deleteJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const { jobId } = req.params;
 
-  const existingJob = await jobService.getJobById(jobId);
-  if (!existingJob) {
-    throw new AppError("Job not found", httpStatus.NOT_FOUND);
-  }
-
-  await jobService.deleteJob(jobId);
+  const deleted = await jobService.deleteJob(jobId, req.user!._id);
+  if (!deleted) throw new AppError("Job not found or permission denied", 404);
 
   res.status(httpStatus.OK).json(
     response({
@@ -178,8 +168,8 @@ const searchJobs = asyncHandler(async (req: Request, res: Response) => {
     salaryRanges: salaryRanges as string,
     companySizes: companySizes as string,
     postedDate: postedDate as string,
-    page: parseInt(page as string) || 1,
-    limit: parseInt(limit as string) || 10,
+    page: Number(page) || 1,
+    limit: Number(limit) || 10,
   });
 
   res.status(httpStatus.OK).json(

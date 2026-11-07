@@ -26,10 +26,12 @@ const applicationSchema = new Schema(
       enum: ["applied", "under_review", "interview", "rejected", "hired"],
       default: "applied",
     },
-    paid_amount: {
-      type: Number,
-      default: 0,
-    },
+    paid_amount: { type: Number, default: 0, min: 0 },
+    boostPaymentStatus: { type: String, enum: ["none", "pending", "paid"], default: "none" },
+    stripeCheckoutSessionId: { type: String },
+    boostPriceCents: { type: Number, min: 0 },
+    isWithdrawn: { type: Boolean, default: false },
+    withdrawnAt: { type: Date },
     rejection_note: {
       type: String,
       trim: true,
@@ -38,6 +40,10 @@ const applicationSchema = new Schema(
   { timestamps: true }
 );
 
+applicationSchema.index({ job_id: 1, applicant: 1 }, { unique: true });
+applicationSchema.index({ applicant: 1, createdAt: -1 });
+applicationSchema.index({ job_id: 1, status: 1, createdAt: -1 });
+applicationSchema.index({ stripeCheckoutSessionId: 1 }, { sparse: true });
 const Application = mongoose.model("Application", applicationSchema);
 
 export default Application;

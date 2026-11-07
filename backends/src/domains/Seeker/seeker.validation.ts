@@ -50,7 +50,7 @@ export const createSeekerValidation = z.object({
   resume: resumeSchema.optional(),
   portfolio: z.string().optional(),
   socialProfiles: socialProfilesSchema.optional(),
-  profileStrength: z.number().min(0).max(100).optional(),
+  // Profile strength is calculated by the server, not controlled by a client.
 });
 
 export const updateSeekerValidation = z.object({
@@ -72,7 +72,7 @@ export const updateSeekerValidation = z.object({
   resume: resumeSchema.optional(),
   portfolio: z.string().optional(),
   socialProfiles: socialProfilesSchema.optional(),
-  profileStrength: z.number().min(0).max(100).optional(),
+  // Profile strength is calculated by the server, not controlled by a client.
 });
 
 const seekerValidation = {

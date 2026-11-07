@@ -2,18 +2,25 @@ import { Types } from "mongoose";
 import User from "../User/user.model";
 import Seeker, { ISeeker } from "./seeker.model";
 import ActivityLog from "./activity.model";
+import { assertId, escapeRegex, paging } from "../../lib/query";
 
 export const createSeekerService = async (
   seekerData: Partial<ISeeker>,
 ): Promise<ISeeker> => {
+  const existing = await Seeker.exists({ userId: seekerData.userId });
+  if (existing) throw new Error("Seeker profile already exists");
   const seeker = new Seeker(seekerData);
   return await seeker.save();
 };
 
 export const getSeekerService = async (id: string): Promise<ISeeker | null> => {
-  return await Seeker.findById(id)
-    .select("-profileStrength")
-    .populate("userId", "name email image role phoneNumber");
+  assertId(id);
+  // Public candidate pages do not reveal email, phone or resume URLs.
+  const seeker = await Seeker.findById(id)
+    .select("-resume -profileStrength")
+    .populate({ path: "userId", select: "name image role",
+      match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "seeker" } });
+  return seeker?.userId ? seeker : null;
 };
 
 export const getSeekerByUserIdService = async (
@@ -43,14 +50,14 @@ export const getAllSeekersService = async (query: any = {}) => {
   if (search) {
     // Find matching users by name first to include in search
     const matchingUsers = await User.find({
-      name: { $regex: search, $options: "i" },
+      name: { $regex: escapeRegex(search), $options: "i" },
     }).select("_id");
     const userIds = matchingUsers.map((u: any) => u._id);
 
     filters.$or = [
-      { designation: { $regex: search, $options: "i" } },
-      { aboutMe: { $regex: search, $options: "i" } },
-      { skills: { $in: [new RegExp(search, "i")] } },
+      { designation: { $regex: escapeRegex(search), $options: "i" } },
+      { aboutMe: { $regex: escapeRegex(search), $options: "i" } },
+      { skills: { $in: [new RegExp(escapeRegex(search), "i")] } },
       { userId: { $in: userIds } },
     ];
   }
@@ -63,7 +70,7 @@ export const getAllSeekersService = async (query: any = {}) => {
   }
 
   if (location) {
-    filters.userLocation = { $regex: location, $options: "i" };
+    filters.userLocation = { $regex: escapeRegex(location), $options: "i" };
   }
 
   if (experienceLevel) {
@@ -79,31 +86,33 @@ export const getAllSeekersService = async (query: any = {}) => {
   }
 
   if (totalExperience) {
-    filters.totalExperience = { $regex: totalExperience, $options: "i" };
+    filters.totalExperience = { $regex: escapeRegex(totalExperience), $options: "i" };
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const bounds = paging({ page, limit });
+  const skip = (bounds.page - 1) * bounds.limit;
 
   const [seekers, total] = await Promise.all([
     Seeker.find(filters)
       .select(
-        "userId userLocation designation aboutMe skills resume portfolio experienceLevel availability jobType totalExperience",
+        "userId userLocation designation aboutMe skills portfolio experienceLevel availability jobType totalExperience",
       )
-      .populate("userId", "name email image role phoneNumber")
+      .populate({ path: "userId", select: "name image role",
+        match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "seeker" } })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(Number(limit))
+      .limit(bounds.limit)
       .lean(),
     Seeker.countDocuments(filters),
   ]);
 
   return {
-    seekers,
+    seekers: seekers.filter((seeker) => !!seeker.userId),
     pagination: {
       total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / Number(limit)),
+      page: bounds.page,
+      limit: bounds.limit,
+      totalPages: Math.ceil(total / bounds.limit),
     },
   };
 };
@@ -125,7 +134,7 @@ export const updateSeekerByUserIdService = async (
 ): Promise<ISeeker | null> => {
   return await Seeker.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
-    { ...seekerData },
+    { $set: seekerData },
     { new: true, runValidators: true },
   );
 };

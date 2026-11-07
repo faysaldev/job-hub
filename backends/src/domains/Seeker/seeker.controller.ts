@@ -15,7 +15,7 @@ import { ProtectedRequest } from "../../types/protected-request";
 
 export const createSeeker = asyncHandler(
   async (req: Request, res: Response) => {
-    const seekerData = req.body;
+    const seekerData = { ...req.body };
     const protectedReq = req as ProtectedRequest;
 
     if (protectedReq.user) {
@@ -79,7 +79,7 @@ export const updateSeeker = asyncHandler(
       throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
     }
 
-    const seekerData = req.body;
+    const seekerData = { ...req.body };
     const updatedSeeker = await updateSeekerByUserIdService(
       protectedReq.user._id,
       seekerData,

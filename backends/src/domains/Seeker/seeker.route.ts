@@ -7,7 +7,7 @@ import {
   updateSeeker,
   getActivities,
 } from "./seeker.controller";
-import { authMiddleware } from "../../middlewares/auth.middleware";
+import { authMiddleware, requireRoles } from "../../middlewares/auth.middleware";
 import validate from "../../middlewares/validation.middleware";
 import seekerValidation from "./seeker.validation";
 
@@ -17,15 +17,17 @@ router.get("/activities", authMiddleware, getActivities);
 router.post(
   "/",
   authMiddleware,
+  requireRoles("seeker"),
   validate(seekerValidation.createSeekerValidation),
   createSeeker,
 );
-router.get("/profile", authMiddleware, getSeeker); // Get authenticated user's seeker profile
+router.get("/profile", authMiddleware, requireRoles("seeker"), getSeeker); // Get authenticated user's seeker profile
 router.get("/all", getAllSeekers); // Get all seekers
 router.get("/:id", getSeekerById); // Get seeker by ID
 router.put(
   "/",
   authMiddleware,
+  requireRoles("seeker"),
   validate(seekerValidation.updateSeekerValidation),
   updateSeeker,
 ); // Update authenticated user's seeker profile

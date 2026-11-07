@@ -1,201 +1,65 @@
 import Message from "./message.model";
 import Conversation from "../Conversations/conversations.model";
-import { Types } from "mongoose";
+import { AppError } from "../../lib/errors";
+import { assertId } from "../../lib/query";
+import conversationService from "../Conversations/conversations.services";
 
-interface CreateMessageData {
-  conversationId: string;
-  senderId: string;
-  receiverId: string;
-  content: string;
-}
-
-const createMessageService = async (data: CreateMessageData) => {
-  const { conversationId, senderId, receiverId, content } = data;
-
-  // Validate ObjectIds
-  if (
-    !Types.ObjectId.isValid(conversationId) ||
-    !Types.ObjectId.isValid(senderId) ||
-    !Types.ObjectId.isValid(receiverId)
-  ) {
-    throw new Error("Invalid IDs provided");
+const contentCheck = (value: unknown) => {
+  if (typeof value !== "string" || !value.trim() || value.length > 4000) throw new AppError("Message must contain 1-4000 characters", 400);
+  return value.trim();
+};
+const createMessageService = async (data: { conversationId: string; senderId: string; receiverId: string; content: string }) => {
+  assertId(data.receiverId, "receiver ID");
+  const conversation = await conversationService.ensureParticipant(data.conversationId, data.senderId);
+  if (data.receiverId === data.senderId || !conversation.participants.some((id) => id.toString() === data.receiverId)) {
+    throw new AppError("Receiver must be the other participant", 403);
   }
-
-  // Convert string IDs to ObjectId
-  const conversationObjectId = new Types.ObjectId(conversationId);
-  const senderObjectId = new Types.ObjectId(senderId);
-  const receiverObjectId = new Types.ObjectId(receiverId);
-
-  // Check if the conversation exists and if the sender is part of it
-  const conversation = await Conversation.findById(conversationObjectId);
-  if (!conversation) {
-    throw new Error("Conversation not found");
-  }
-
-  // Check if sender is part of the conversation
-  const isSenderInConversation = conversation.participants.some(
-    (participant: Types.ObjectId) => participant.equals(senderObjectId)
-  );
-
-  if (!isSenderInConversation) {
-    throw new Error("Sender is not part of this conversation");
-  }
-
-  // Create the message
-  const message = new Message({
-    conversationId: conversationObjectId,
-    senderId: senderObjectId,
-    receiverId: receiverObjectId,
-    content,
+  const message = await Message.create({ conversationId: conversation._id, senderId: data.senderId,
+    receiverId: data.receiverId, content: contentCheck(data.content) });
+  await Conversation.updateOne({ _id: conversation._id }, {
+    $set: { lastMessage: message._id }, $pull: { hiddenFor: { $in: [data.senderId, data.receiverId] } }
   });
-
-  const savedMessage = await message.save();
-
-  // Update the conversation with the new message information
-  await Conversation.findByIdAndUpdate(conversationObjectId, {
-    lastMessage: savedMessage._id,
-    lastMessageAt: new Date(),
-  });
-
-  // Update unread counts for the receiver
-  const participantIndex = conversation.participants.findIndex(
-    (participant: Types.ObjectId) => participant.equals(senderObjectId)
-  );
-  const receiverIndex = participantIndex === 0 ? 1 : 0;
-
-  if (receiverIndex === 0) {
-    await Conversation.findByIdAndUpdate(conversationObjectId, {
-      $inc: { user1UnreadCount: 1 },
-    });
-  } else {
-    await Conversation.findByIdAndUpdate(conversationObjectId, {
-      $inc: { user2UnreadCount: 1 },
-    });
-  }
-
-  // Return the saved message without problematic populate
-  // If populate is needed, it should be handled in the controller or by a separate service
-  return savedMessage;
+  return message;
 };
-
-const editMessageService = async (messageId: string, newContent: string) => {
-  if (!Types.ObjectId.isValid(messageId)) {
-    throw new Error("Invalid message ID");
-  }
-
-  const messageObjectId = new Types.ObjectId(messageId);
-
-  const message = await Message.findById(messageObjectId);
-  if (!message) {
-    throw new Error("Message not found");
-  }
-
-  // Update the message content
-  message.content = newContent;
-  message.updatedAt = new Date();
-
-  return await message.save();
+const editMessageService = async (id: string, content: string, actorId: string) => {
+  assertId(id, "message ID");
+  const message = await Message.findOneAndUpdate({ _id: id, senderId: actorId },
+    { $set: { content: contentCheck(content) } }, { new: true, runValidators: true });
+  if (!message) throw new AppError("Message not found", 404);
+  await conversationService.ensureParticipant(message.conversationId.toString(), actorId);
+  return message;
 };
-
-const deleteMessageService = async (messageId: string) => {
-  if (!Types.ObjectId.isValid(messageId)) {
-    throw new Error("Invalid message ID");
+const deleteMessageService = async (id: string, actorId: string) => {
+  assertId(id, "message ID");
+  const message = await Message.findOne({ _id: id, senderId: actorId });
+  if (!message) throw new AppError("Message not found", 404);
+  await conversationService.ensureParticipant(message.conversationId.toString(), actorId);
+  await Message.deleteOne({ _id: id, senderId: actorId });
+  if ((await Conversation.findById(message.conversationId))?.lastMessage?.toString() === id) {
+    const latest = await Message.findOne({ conversationId: message.conversationId }).sort({ createdAt: -1 }).select("_id");
+    await Conversation.updateOne({ _id: message.conversationId }, { $set: { lastMessage: latest?._id || null } });
   }
-
-  const messageObjectId = new Types.ObjectId(messageId);
-
-  const message = await Message.findById(messageObjectId);
-  if (!message) {
-    throw new Error("Message not found");
-  }
-
-  return await Message.findByIdAndDelete(messageObjectId);
+  return message;
 };
-
-const getAllMessagesService = async (
-  conversationId: string,
-  options: { page: number; limit: number }
-) => {
-  if (!Types.ObjectId.isValid(conversationId)) {
-    throw new Error("Invalid conversation ID");
-  }
-
-  const conversationObjectId = new Types.ObjectId(conversationId);
-  const { page, limit } = options;
-
-  // Calculate skip value for pagination
-  const skip = (page - 1) * limit;
-
-  // Find messages in the conversation without problematic populate
-  // We need to manually handle user data if populate is required
-  const messages = await Message.find({ conversationId: conversationObjectId })
-    .sort({ createdAt: -1 }) // Get the latest messages first for pagination
-    .skip(skip)
-    .limit(limit);
-
-  // Get total count for pagination info
-  const total = await Message.countDocuments({
-    conversationId: conversationObjectId,
-  });
-
-  return {
-    messages,
-    pagination: {
-      currentPage: page,
-      totalPages: Math.ceil(total / limit),
-      totalMessages: total,
-      hasNext: page < Math.ceil(total / limit),
-      hasPrev: page > 1,
-    },
-  };
+const getAllMessagesService = async (id: string, actorId: string, options: { page: number; limit: number }) => {
+  const conversation = await conversationService.ensureParticipant(id, actorId);
+  const page = Math.min(Math.max(Number(options.page) || 1, 1), 10000);
+  const limit = Math.min(Math.max(Number(options.limit) || 20, 1), 50);
+  const [messages, total] = await Promise.all([
+    Message.find({ conversationId: conversation._id }).sort({ createdAt: -1 })
+      .skip((page - 1) * limit).limit(limit).lean(),
+    Message.countDocuments({ conversationId: conversation._id }),
+  ]);
+  return { messages, pagination: { currentPage: page, totalPages: Math.ceil(total / limit),
+    totalMessages: total, hasNext: page * limit < total, hasPrev: page > 1 } };
 };
-
-const markMessageAsReadService = async (messageId: string, userId: string) => {
-  if (!Types.ObjectId.isValid(messageId) || !Types.ObjectId.isValid(userId)) {
-    throw new Error("Invalid IDs provided");
-  }
-
-  const messageObjectId = new Types.ObjectId(messageId);
-  const userObjectId = new Types.ObjectId(userId);
-
-  const message = await Message.findById(messageObjectId);
-  if (!message) {
-    throw new Error("Message not found");
-  }
-
-  // Update the message as read
-  message.isRead = true;
-
-  const updatedMessage = await message.save();
-
-  // Find the conversation and update the unread count for the user
-  const conversation = await Conversation.findById(message.conversationId);
-  if (conversation) {
-    // Determine which user's unread count to decrement
-    const receiverIndex = conversation.participants.findIndex(
-      (participant: Types.ObjectId) => participant.equals(userObjectId)
-    );
-
-    if (receiverIndex === 0) {
-      // Decrement user1's unread count
-      await Conversation.findByIdAndUpdate(message.conversationId, {
-        $inc: { user1UnreadCount: -1 },
-      });
-    } else {
-      // Decrement user2's unread count
-      await Conversation.findByIdAndUpdate(message.conversationId, {
-        $inc: { user2UnreadCount: -1 },
-      });
-    }
-  }
-
-  return updatedMessage;
+const markMessageAsReadService = async (id: string, actorId: string) => {
+  assertId(id, "message ID");
+  const message = await Message.findOne({ _id: id, receiverId: actorId });
+  if (!message) throw new AppError("Message not found", 404);
+  await conversationService.ensureParticipant(message.conversationId.toString(), actorId);
+  if (!message.isRead) await Message.updateOne({ _id: id, receiverId: actorId }, { $set: { isRead: true } });
+  return { ...message.toObject(), isRead: true };
 };
-
-export default {
-  createMessageService,
-  editMessageService,
-  deleteMessageService,
-  getAllMessagesService,
-  markMessageAsReadService,
-};
+export default { createMessageService, editMessageService, deleteMessageService,
+  getAllMessagesService, markMessageAsReadService };

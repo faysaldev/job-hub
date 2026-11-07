@@ -17,6 +17,8 @@ const savedJobSchema = new Schema(
   { timestamps: true }
 );
 
+savedJobSchema.index({ userId: 1, jobId: 1 }, { unique: true });
+
 // Create the model based on the schema
 const SavedJob = mongoose.model("SavedJob", savedJobSchema);
 

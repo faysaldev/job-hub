@@ -1,13 +1,12 @@
 import { Router } from "express";
-import interviewController from "./interviews.controller";
-import { authMiddleware } from "../../middlewares/auth.middleware";
-
+import controller from "./interviews.controller";
+import { authMiddleware, requireRoles } from "../../middlewares/auth.middleware";
+import validate from "../../middlewares/validation.middleware";
+import { scheduleValidation, hireValidation, statusValidation, rescheduleValidation } from "./interviews.validation";
 const router = Router();
-
-router.post("/", authMiddleware, interviewController.scheduleInterview);
-router.post("/hire", authMiddleware, interviewController.hireCandidate);
-router.get("/my", authMiddleware, interviewController.getMyInterviews);
-router.put("/:interviewId/status", authMiddleware, interviewController.updateStatus);
-router.patch("/:interviewId/reschedule", authMiddleware, interviewController.rescheduleInterview);
-
+router.post("/", authMiddleware, requireRoles("recruiter"), validate(scheduleValidation), controller.scheduleInterview);
+router.post("/hire", authMiddleware, requireRoles("recruiter"), validate(hireValidation), controller.hireCandidate);
+router.get("/my", authMiddleware, controller.getMyInterviews);
+router.put("/:interviewId/status", authMiddleware, requireRoles("recruiter"), validate(statusValidation), controller.updateStatus);
+router.patch("/:interviewId/reschedule", authMiddleware, requireRoles("recruiter"), validate(rescheduleValidation), controller.rescheduleInterview);
 export default router;

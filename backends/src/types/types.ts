@@ -1,9 +1,9 @@
 export interface ProtectedUser {
-  _id: string; // Explicitly typing _id
+  _id: string;
+  sessionId: string;
   name: string;
   email: string;
-  password: string;
-  image: string;
-  role: string;
-  phoneNumber: string;
+  image?: string;
+  role: "seeker" | "recruiter" | "admin";
+  phoneNumber?: string;
 }

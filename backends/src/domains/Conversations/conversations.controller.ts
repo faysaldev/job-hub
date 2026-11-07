@@ -68,10 +68,10 @@ const createConversation = asyncHandler(async (req: ProtectedRequest, res: Respo
   );
 });
 
-const deleteConversation = asyncHandler(async (req: Request, res: Response) => {
+const deleteConversation = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const { conversationId } = req.params;
 
-  await conversationService.deleteConversationService(conversationId);
+  await conversationService.deleteConversationService(conversationId, req.user!._id);
 
   res.status(httpStatus.OK).json(
     response({

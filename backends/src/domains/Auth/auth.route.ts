@@ -1,49 +1,20 @@
 import { Router } from "express";
-import authController from "./auth.controller";
+import controller from "./auth.controller";
 import validate from "../../middlewares/validation.middleware";
-import authValidator from "./auth.validation";
+import validation from "./auth.validation";
+import { authMiddleware, requireRoles } from "../../middlewares/auth.middleware";
+import { rateLimit } from "../../middlewares/rateLimit.middleware";
+import { requireTrustedOrigin } from "../../middlewares/requireTrustedOrigin";
 
 const router = Router();
-
-// Auth Routes
-router.post(
-  "/register",
-  validate(authValidator.registerValidation),
-  authController.register
-);
-
-router.post(
-  "/verify-email",
-  validate(authValidator.verificationValidation),
-  authController.verifyEmail
-);
-
-router.post(
-  "/login",
-  validate(authValidator.loginValidation),
-  authController.login
-);
-
-router.post(
-  "/forgot-password",
-  validate(authValidator.forgotPasswordValidation),
-  authController.forgotPassword
-);
-
-router.post(
-  "/reset-password",
-  validate(authValidator.resetPasswordValidation),
-  authController.resetPassword
-);
-
-router.post(
-  "/resend-verification",
-  validate(authValidator.resendVerificationValidation),
-  authController.resendVerification
-);
-
-router.delete("/delete/:userId", authController.deleteUser);
-
-router.post("/logout", authController.logout);
-
+const authRate = rateLimit(10, 15 * 60, "auth");
+router.post("/register", authRate, validate(validation.registerValidation), controller.register);
+router.post("/verify-email", authRate, validate(validation.verificationValidation), controller.verifyEmail);
+router.post("/login", authRate, validate(validation.loginValidation), controller.login);
+router.post("/forgot-password", authRate, validate(validation.forgotPasswordValidation), controller.forgotPassword);
+router.post("/reset-password", authRate, validate(validation.resetPasswordValidation), controller.resetPassword);
+router.post("/resend-verification", authRate, validate(validation.resendVerificationValidation), controller.resendVerification);
+router.post("/refresh", requireTrustedOrigin, rateLimit(60, 15 * 60, "refresh"), controller.refresh);
+router.post("/logout", requireTrustedOrigin, controller.logout);
+router.delete("/delete/:userId", authMiddleware, requireRoles("admin"), controller.deleteUser);
 export default router;

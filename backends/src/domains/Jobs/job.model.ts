@@ -22,6 +22,7 @@ export interface IJob extends Document {
   applicationDeadline: Date;
   positions: number;
   isActive: boolean;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -115,10 +116,8 @@ const jobSchema = new Schema<IJob>(
       required: true,
       min: 1,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
+    isActive: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,
@@ -134,6 +133,10 @@ jobSchema.virtual("company", {
   foreignField: "userId",
   justOne: true,
 });
+
+jobSchema.index({ author: 1, isDeleted: 1, createdAt: -1 });
+jobSchema.index({ isActive: 1, isDeleted: 1, createdAt: -1 });
+jobSchema.index({ category: 1, type: 1, locationType: 1 });
 
 // Create the model based on the schema
 const Job = mongoose.model<IJob>("Job", jobSchema);

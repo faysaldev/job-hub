@@ -1,199 +1,123 @@
+import { createHash, randomInt, timingSafeEqual } from "node:crypto";
 import { sendEmail } from "../../lib/mail.service";
+import { AppError } from "../../lib/errors";
 import User, { IAMUser } from "../User/user.model";
-import { createRefreshToken, createToken } from "./auth.token.services";
+import { issueSession, revokeAllSessions } from "./auth.token.services";
+import Job from "../Jobs/job.model";
+import jobService from "../Jobs/job.services";
 
-// Register User
-const register = async (userData: {
-  name: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
-  role: string;
-}) => {
-  const { email, password, phoneNumber, name, role } = userData;
+const emailKey = (email: string) => email.trim().toLowerCase();
+const codeHash = (purpose: string, email: string, code: number | string) =>
+  createHash("sha256").update(`${purpose}:${emailKey(email)}:${code}:${process.env.JWT_SECRET}`).digest("hex");
+const codeMatches = (stored: string | undefined, computed: string) =>
+  typeof stored === "string" && /^[a-f0-9]{64}$/i.test(stored) &&
+  timingSafeEqual(Buffer.from(stored, "hex"), Buffer.from(computed, "hex"));
+const newCode = () => randomInt(100000, 1000000);
+const mainFrontendUrl = () => (process.env.FRONTEND_URL || "http://localhost:3000").split(",")[0].trim().replace(/\/$/, "");
 
-  // Check if email or phone number already exists
-  const existingUser = await User.findOne({
-    $or: [{ email }, { phoneNumber }],
-  });
-  if (existingUser) throw new Error("Email or Phone number is already taken");
+const account = (user: IAMUser) => ({ _id: user._id, name: user.name, email: user.email,
+  phoneNumber: user.phoneNumber, image: user.image, role: user.role,
+  isEmailVerified: user.isEmailVerified, createdAt: user.get("createdAt") });
 
-  const oneTimeCode =
-    Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-  const newUser = new User({
-    name,
-    email,
-    password,
-    phoneNumber,
-    oneTimeCode: oneTimeCode, // Generate a one-time code for email verification
-    role,
-  });
-
-  // Save User to DB
-  await newUser.save();
-
-  // Send Email Verification
-  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?code=${newUser.oneTimeCode}&email=${newUser.email}`;
-  const emailText = `Please click the following link to verify your email address: ${verificationLink}`;
-
-  await sendEmail(newUser.email, "Verify Your Email Address", emailText);
-
-  return newUser;
+const register = async (input: { name: string; email: string; password: string; phoneNumber: string;
+  role: "seeker" | "recruiter" }) => {
+  const email = emailKey(input.email);
+  const existing = await User.exists({ $or: [{ email }, { phoneNumber: input.phoneNumber }] });
+  if (existing) throw new AppError("Email or phone number already registered", 409);
+  const code = newCode();
+  const user = await User.create({ name: input.name, email, password: input.password,
+    phoneNumber: input.phoneNumber, role: input.role,
+    verificationCodeHash: codeHash("verification", email, code),
+    verificationExpiresAt: new Date(Date.now() + 10 * 60 * 1000) });
+  const url = `${mainFrontendUrl()}/verify-email?email=${encodeURIComponent(email)}&code=${code}`;
+  await sendEmail(email, "Verify your JobHub account", `Verify your email within 10 minutes: ${url}`);
+  return { message: "Verification email sent" };
 };
 
-const verifyEmail = async (email: string, code: number) => {
-  // Find the user by email
-  const user = await User.findOne({ email }).select(
-    "name email image password phoneNumber role isEmailVerified oneTimeCode",
-  );
-  if (!user) throw new Error("User not found");
-  if (user.oneTimeCode !== code) throw new Error("Invalid verification code");
-
+const verifyEmail = async (emailInput: string, code: number) => {
+  const email = emailKey(emailInput);
+  const user = await User.findOne({ email }).select("+password +verificationCodeHash");
+  if (!user || user.isDeleted) throw new AppError("Invalid or expired verification code", 400);
+  if (user.isEmailVerified) throw new AppError("Email already verified", 409);
+  if (user.verificationAttempts >= 5 || !user.verificationExpiresAt || user.verificationExpiresAt < new Date() ||
+      !codeMatches(user.verificationCodeHash, codeHash("verification", email, code))) {
+    user.verificationAttempts += 1;
+    await user.save();
+    throw new AppError("Invalid or expired verification code", 400);
+  }
   user.isEmailVerified = true;
+  user.verificationCodeHash = undefined;
+  user.verificationExpiresAt = undefined;
+  user.verificationAttempts = 0;
   user.oneTimeCode = null;
   await user.save();
-
-  // Generate JWT tokens for auto-login
-  const userDetails = {
-    userId: user._id.toString(),
-    role: user.role,
-    name: user.name,
-    email: user.email,
-    image: user.image,
-    password: user.password,
-    phoneNumber: user.phoneNumber,
-  };
-
-  const accessToken = createToken(
-    userDetails,
-    process.env.JWT_SECRET!,
-    process.env.JWT_EXPIRE_TIME!,
-  );
-
-  const refreshToken = createRefreshToken(userDetails);
-
-  return { user, accessToken, refreshToken };
+  const tokens = await issueSession(user);
+  return { user: account(user), ...tokens };
 };
 
-// Login User
-const loginUser = async (email: string, password: string) => {
-  const user = await User.findOne({ email }).select(
-    "name email image password phoneNumber role isEmailVerified",
-  );
-
-  if (!user) throw new Error("User not found");
-
-  // Check if the user's email is verified
-  if (!user.isEmailVerified)
-    throw new Error(
-      "Email is not verified. Please check your email to verify.",
-    );
-
-  const isMatch = await user.isPasswordMatch(password);
-  if (!isMatch) throw new Error("Invalid credentials");
-  // Generate JWT tokens
-  const userDetails = {
-    userId: user._id.toString(),
-    role: user.role,
-    name: user.name,
-    email: user.email,
-    image: user.image,
-    password: user.password,
-    phoneNumber: user.phoneNumber,
-  };
-
-  // Generate JWT tokens
-  const accessToken = createToken(
-    userDetails,
-    process.env.JWT_SECRET!,
-    process.env.JWT_EXPIRE_TIME!,
-  );
-
-  const refreshToken = createRefreshToken(userDetails);
-
-  return { user, accessToken, refreshToken };
-};
-
-// Forgot Password
-const forgotPassword = async (email: string) => {
-  const user = (await User.findOne({ email })) as IAMUser;
-  if (!user) throw new Error("User not found");
-
-  const resetCode = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-
-  user.oneTimeCode = resetCode;
-  await user.save();
-
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password?code=${resetCode}`;
-  const emailText = `Please click the following link to reset your password: ${resetLink}`;
-  await sendEmail(user.email, "Reset Your Password", emailText);
-
-  return { message: "Password reset email sent" };
-};
-
-// Reset Password
-const resetPassword = async (
-  email: string,
-  code: string,
-  newPassword: string,
-) => {
-  const user = (await User.findOne({
-    email,
-    oneTimeCode: Number(code),
-  })) as IAMUser;
-  if (!user) {
-    throw new Error("Invalid reset code");
-  } else {
-    user.password = newPassword;
-    user.isResetPassword = true;
-    user.oneTimeCode = null;
-    await user.save();
-
-    return { message: "Password successfully reset" };
+const loginUser = async (emailInput: string, password: string) => {
+  const user = await User.findOne({ email: emailKey(emailInput) }).select("+password");
+  if (!user || user.isDeleted || !(await user.isPasswordMatch(password))) {
+    throw new AppError("Invalid credentials", 401);
   }
+  if (!user.isEmailVerified) throw new AppError("Please verify your email", 403);
+  return { user: account(user), ...(await issueSession(user)) };
 };
 
-// Resend Verification Email
-const resendVerificationEmail = async (email: string) => {
-  const user = (await User.findOne({ email })) as IAMUser;
-  if (!user) throw new Error("User not found");
-  const oneTimeCode =
-    Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-  user.oneTimeCode = oneTimeCode;
-  user.save();
-
-  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?code=${oneTimeCode}&email=${user.email}`;
-  const emailText = `Please click the following link to verify your email address: ${verificationLink}`;
-  await sendEmail(user.email, "Verify Your Email Address", emailText);
-
-  return { message: "Verification email resent" };
+const forgotPassword = async (emailInput: string) => {
+  const email = emailKey(emailInput);
+  const user = await User.findOne({ email });
+  if (user && !user.isDeleted && user.isEmailVerified) {
+    const code = newCode();
+    user.resetCodeHash = codeHash("reset", email, code);
+    user.resetExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    user.resetAttempts = 0;
+    await user.save();
+    const url = `${mainFrontendUrl()}/reset-password?email=${encodeURIComponent(email)}&code=${code}`;
+    await sendEmail(email, "Reset your JobHub password", `Reset your password within 10 minutes: ${url}`);
+  }
+  return { message: "If this address is registered, a reset email has been sent" };
 };
 
-// Delete User
-const deleteUser = async (userId: string) => {
-  const user = (await User.findById(userId)) as IAMUser;
-  if (!user) throw new Error("User not found");
-
-  user.isDeleted = true;
+const resetPassword = async (emailInput: string, code: string, newPassword: string) => {
+  const user = await User.findOne({ email: emailKey(emailInput), isDeleted: { $ne: true } })
+    .select("+password +resetCodeHash");
+  if (!user || user.resetAttempts >= 5 || !user.resetExpiresAt || user.resetExpiresAt < new Date() ||
+      !codeMatches(user.resetCodeHash, codeHash("reset", emailInput, code))) {
+    if (user) { user.resetAttempts += 1; await user.save(); }
+    throw new AppError("Invalid or expired reset code", 400);
+  }
+  user.password = newPassword;
+  user.resetCodeHash = undefined;
+  user.resetExpiresAt = undefined;
+  user.resetAttempts = 0;
+  user.oneTimeCode = null;
   await user.save();
-
-  return { message: "User deleted successfully" };
+  await revokeAllSessions(user._id.toString());
+  return { message: "Password successfully reset. Please sign in again." };
 };
 
-// Logout
-const logout = (refreshToken: string) => {
-  return { message: "User logged out" };
+const resendVerificationEmail = async (emailInput: string) => {
+  const email = emailKey(emailInput);
+  const user = await User.findOne({ email });
+  if (user && !user.isDeleted && !user.isEmailVerified) {
+    const code = newCode();
+    user.verificationCodeHash = codeHash("verification", email, code);
+    user.verificationExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    user.verificationAttempts = 0;
+    await user.save();
+    const url = `${mainFrontendUrl()}/verify-email?email=${encodeURIComponent(email)}&code=${code}`;
+    await sendEmail(email, "Verify your JobHub account", `Verify within 10 minutes: ${url}`);
+  }
+  return { message: "If verification is pending, another email has been sent" };
 };
 
-const userService = {
-  register,
-  verifyEmail,
-  loginUser,
-  forgotPassword,
-  resetPassword,
-  resendVerificationEmail,
-  deleteUser,
-  logout,
+const deleteUser = async (userId: string) => {
+  const user = await User.findByIdAndUpdate(userId, { $set: { isDeleted: true } }, { new: true });
+  if (!user) throw new AppError("User not found", 404);
+  await revokeAllSessions(userId);
+  await Job.updateMany({ author: userId }, { $set: { isActive: false } });
+  await jobService.clearJobCache();
+  return { message: "Account disabled" };
 };
-
-export default userService;
+export default { register, verifyEmail, loginUser, forgotPassword, resetPassword, resendVerificationEmail, deleteUser };
