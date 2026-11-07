@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useRef, useCallback, useState } from "react";
+import { memo, useRef, useCallback, useState, useEffect } from "react";
 import {
   useForm,
   FormProvider,
@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { jobCategories } from "@/src/lib/jobCategories";
-import { useCreateJobMutation } from "@/src/redux/features/jobs/jobsApi";
+import { useCreateJobMutation, useUpdateJobMutation, useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 import { toast } from "sonner";
 import { Job } from "@/src/types";
 
@@ -240,9 +240,11 @@ const StepBasicInfo = memo(() => {
             Category *
           </label>
           <Select
-            onValueChange={(val) =>
-              setValue("category", val, { shouldValidate: true })
-            }
+            value={watch("category") || undefined}
+            onValueChange={(val) => {
+              setValue("category", val, { shouldValidate: true });
+              setValue("subcategory", "", { shouldValidate: true });
+            }}
           >
             <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue placeholder="Select Industry" />
@@ -266,6 +268,7 @@ const StepBasicInfo = memo(() => {
             Subcategory *
           </label>
           <Select
+            value={watch("subcategory") || undefined}
             disabled={!watchedCategory}
             onValueChange={(val) =>
               setValue("subcategory", val, { shouldValidate: true })
@@ -297,8 +300,8 @@ const StepBasicInfo = memo(() => {
             Work Arrangement *
           </label>
           <Select
-            defaultValue="onsite"
-            onValueChange={(val) => setValue("locationType", val)}
+            value={watch("locationType") || "onsite"}
+            onValueChange={(val) => setValue("locationType", val, { shouldValidate: true })}
           >
             <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
@@ -322,8 +325,8 @@ const StepBasicInfo = memo(() => {
             Job Type *
           </label>
           <Select
-            defaultValue="full-time"
-            onValueChange={(val) => setValue("type", val)}
+            value={watch("type") || "full-time"}
+            onValueChange={(val) => setValue("type", val, { shouldValidate: true })}
           >
             <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
@@ -370,7 +373,7 @@ StepBasicInfo.displayName = "StepBasicInfo";
 // ─── Step 2: Details ──────────────────────────────────────────────────────────
 
 const StepDetails = memo(() => {
-  const { register, setValue } = useFormContext<CreateJobFormValues>();
+  const { register, setValue, watch } = useFormContext<CreateJobFormValues>();
 
   return (
     <div className="animate-in fade-in space-y-8 duration-500">
@@ -380,8 +383,8 @@ const StepDetails = memo(() => {
             Experience Level *
           </label>
           <Select
-            defaultValue="entry"
-            onValueChange={(val) => setValue("experienceLevel", val)}
+            value={watch("experienceLevel") || "entry"}
+            onValueChange={(val) => setValue("experienceLevel", val, { shouldValidate: true })}
           >
             <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
@@ -445,8 +448,8 @@ const StepDetails = memo(() => {
             />
           </div>
           <Select
-            defaultValue="yearly"
-            onValueChange={(val) => setValue("salaryPeriod", val)}
+            value={watch("salaryPeriod") || "yearly"}
+            onValueChange={(val) => setValue("salaryPeriod", val, { shouldValidate: true })}
           >
             <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
@@ -720,11 +723,15 @@ ProgressBar.displayName = "ProgressBar";
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-const CreateJobPage = () => {
+const CreateJobPage = ({ jobId }: { jobId?: string }) => {
   const { user } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [createJob, { isLoading }] = useCreateJobMutation();
+  const [updateJob, { isLoading: isUpdating }] = useUpdateJobMutation();
+  const { data: editResponse, isFetching: isLoadingJob, isError: jobLoadError } = useGetJobByIdQuery(jobId || "", { skip: !jobId });
+  const [publication, setPublication] = useState<"published" | "scheduled">("published");
+  const [publishAt, setPublishAt] = useState("");
 
   const methods = useForm<CreateJobFormValues>({
     defaultValues: {
@@ -749,6 +756,42 @@ const CreateJobPage = () => {
   });
 
   const { handleSubmit } = methods;
+  useEffect(() => {
+    if (!jobId || !editResponse?.data) return;
+    const original = editResponse.data as unknown as Record<string, any>;
+    methods.reset({
+      title: original.title || "", category: original.category || "", subcategory: original.subcategory || "",
+      type: original.type || "full-time", location: original.location || "", locationType: original.locationType || "onsite",
+      salaryMin: original.salaryMin != null ? String(original.salaryMin) : "",
+      salaryMax: original.salaryMax != null ? String(original.salaryMax) : "",
+      salaryPeriod: original.salaryPeriod || "yearly", experienceLevel: original.experienceLevel || "entry",
+      description: original.description || "", requirements: original.requirements || [],
+      responsibilities: original.responsibilities || [], benefits: original.benefits || [], skills: original.skills || [],
+      applicationDeadline: original.applicationDeadline ? new Date(original.applicationDeadline).toISOString().slice(0,10) : "",
+      positions: original.positions != null ? String(original.positions) : "1",
+    });
+    if (original.status === "scheduled") setPublication("scheduled");
+    if (original.publishAt) {
+      const date = new Date(original.publishAt);
+      setPublishAt(new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0,16));
+    }
+  }, [editResponse, jobId, methods]);
+
+  const saveDraft = async () => {
+    const current = methods.getValues();
+    if (!current.title.trim()) { toast.error("Enter a title before saving a draft"); return; }
+    try {
+      const body = { ...current, title: current.title.trim(), status: "draft",
+        salaryMin: current.salaryMin.trim() ? Number(current.salaryMin) : undefined,
+        salaryMax: current.salaryMax.trim() ? Number(current.salaryMax) : undefined,
+        positions: current.positions.trim() ? Number(current.positions) : undefined,
+        applicationDeadline: current.applicationDeadline || undefined,
+      } as unknown as Partial<Job>;
+      if (jobId) await updateJob({ jobId, body }).unwrap();
+      else await createJob(body).unwrap();
+      toast.success("Draft saved"); router.push("/recruiter/jobs");
+    } catch (error: any) { toast.error(error?.data?.message || "Unable to save job draft"); }
+  };
 
   const nextStep = useCallback(
     () => setCurrentStep((p) => Math.min(p + 1, 4)),
@@ -759,23 +802,19 @@ const CreateJobPage = () => {
     [],
   );
 
-  const onSubmit = useCallback(
-    async (data: CreateJobFormValues) => {
-      try {
-        await createJob({
-          ...data,
-          salaryMin: data.salaryMin,
-          salaryMax: data.salaryMax,
-          positions: data.positions,
-        } as unknown as Job).unwrap();
-        toast.success("Job posted successfully!");
-        router.push("/recruiter/jobs");
-      } catch (error: any) {
-        toast.error(error?.data?.message || "Failed to create job");
+  const onSubmit = async (data: CreateJobFormValues) => {
+    try {
+      if (publication === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
+        toast.error("Choose a future publication date"); return;
       }
-    },
-    [createJob, router],
-  );
+      const body = { ...data, salaryMin: Number(data.salaryMin), salaryMax: Number(data.salaryMax),
+        positions: Number(data.positions), status: publication,
+        ...(publication === "scheduled" ? { publishAt: new Date(publishAt).toISOString() } : {}) } as unknown as Partial<Job>;
+      if (jobId) await updateJob({jobId,body}).unwrap(); else await createJob(body).unwrap();
+      toast.success(publication === "scheduled" ? "Job scheduled successfully" : "Job published successfully");
+      router.push("/recruiter/jobs");
+    } catch (error: any) { toast.error(error?.data?.message || "Unable to save job"); }
+  };
 
   if (!user) return null;
 
@@ -792,10 +831,10 @@ const CreateJobPage = () => {
                 <span>Opportunity Builder</span>
               </div>
               <h1 className="text-3xl font-black tracking-tight md:text-5xl">
-                Create Opportunity
+                {jobId ? "Edit Opportunity" : "Create Opportunity"}
               </h1>
               <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-white/75">
-                Build a polished job post with clear role details, compensation,
+                Build a complete job post with clear role details, compensation,
                 requirements, and review-ready publishing.
               </p>
             </div>
@@ -858,6 +897,8 @@ const CreateJobPage = () => {
           ))}
         </div>
 
+        {jobLoadError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">Unable to load this job for editing. Check your company permissions.</p>}
+        {isLoadingJob && <div className="h-20 animate-pulse rounded-lg bg-slate-100" aria-label="Loading job"/>}
         <ProgressBar currentStep={currentStep} />
 
         <FormProvider {...methods}>
@@ -879,6 +920,14 @@ const CreateJobPage = () => {
                 <StepReview />
               </div>
 
+              {currentStep === 4 && <fieldset className="mt-8 space-y-3 rounded-xl border border-[#d9e3ea] bg-[#f7f9fb] p-5">
+                <legend className="px-2 text-sm font-semibold text-[#163B5C]">Publication</legend>
+                <label className="mr-5 inline-flex items-center gap-2 text-sm text-slate-700"><input type="radio" name="publication" value="published" checked={publication==="published"} onChange={()=>setPublication("published")}/> Publish immediately</label>
+                <label className="inline-flex items-center gap-2 text-sm text-slate-700"><input type="radio" name="publication" value="scheduled" checked={publication==="scheduled"} onChange={()=>setPublication("scheduled")}/> Schedule publication</label>
+                {publication === "scheduled" && <label className="block text-sm text-slate-700">Publish on
+                  <input type="datetime-local" required className="mt-1 block w-full max-w-xs rounded-lg border border-slate-300 bg-white p-2" value={publishAt} onChange={e=>setPublishAt(e.target.value)}/>
+                  <span className="mt-1 block text-xs text-slate-500">The Phase 4 scheduler must be configured on the backend for automatic publication.</span></label>}
+              </fieldset>}
               {/* Navigation */}
               <div className="mt-16 flex flex-col-reverse gap-3 border-t border-[#163B5C]/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
                 <Button
@@ -891,6 +940,7 @@ const CreateJobPage = () => {
                   <ArrowLeft className="mr-3 h-5 w-5" /> Previous Step
                 </Button>
 
+                <Button type="button" variant="outline" disabled={isLoading || isUpdating || isLoadingJob || jobLoadError} onClick={() => void saveDraft()} className="h-12 rounded-xl border-[#163B5C]/20 px-5 text-[#163B5C]">Save draft</Button>
                 {currentStep < 4 ? (
                   <Button
                     type="button"
@@ -902,7 +952,7 @@ const CreateJobPage = () => {
                 ) : (
                   <Button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isLoading || isUpdating || isLoadingJob || jobLoadError}
                     className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-10 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:from-[#0C2C48] hover:to-[#3b5a71]"
                   >
                     {isLoading ? (
@@ -910,7 +960,7 @@ const CreateJobPage = () => {
                     ) : (
                       <CheckCircle className="mr-3 h-5 w-5" />
                     )}
-                    Publish Opportunity
+                    {publication === "scheduled" ? "Schedule Opportunity" : "Publish Opportunity"}
                   </Button>
                 )}
               </div>

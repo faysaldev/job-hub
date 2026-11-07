@@ -1,5 +1,6 @@
 "use client";
 
+import CandidateOffers from "@/src/components/hiring/CandidateOffers";
 import AppliedJobs from "@/src/components/JobSeeker/AppliedJobs";
 import JobSeekerLayout from "@/src/components/JobSeeker/JobSeekerLayout";
 import { useAuth } from "@/src/hooks/useAuth";
@@ -70,6 +71,7 @@ export default function SeekerApplicationsPage() {
           <Sparkles className="absolute -bottom-8 -right-8 h-40 w-40 text-white/5" />
         </section>
 
+        <CandidateOffers />
         <Card className="overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 shadow-2xl shadow-[#163B5C]/10 backdrop-blur pt-0">
           <div className="border-b border-[#E1E8EF]/70 bg-gradient-to-r from-[#163B5C]/8 to-[#516C83]/8 p-5 md:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

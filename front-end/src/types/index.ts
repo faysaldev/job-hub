@@ -171,6 +171,7 @@ export type ApplicationStatus =
   | "applied"
   | "under_review"
   | "interview"
+  | "offer"
   | "pending"
   | "reviewed"
   | "shortlisted"

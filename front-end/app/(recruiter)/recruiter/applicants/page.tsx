@@ -1,24 +1,4 @@
-import ApplicantsPage from "@/src/Page/Recruiter/ApplicantsPage";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-  title: "Recruiter Applicants | JobHub",
-  description:
-    "View and manage all candidate applications in one place. Review resumes, track progress, and connect with top talent for your open roles.",
-  keywords: [
-    "recruiter applicants",
-    "view applications",
-    "manage candidates",
-    "jobhub recruiter",
-    "applicant tracking",
-  ],
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
-
-export default function RecruiterApplicantsPage() {
-  return <ApplicantsPage />;
-}
+import type { Metadata } from "next";
+import ATSWorkspace from "@/src/components/hiring/ATSWorkspace";
+export const metadata: Metadata = { title: "Applicant tracking | JobHub", robots: { index: false, follow: false } };
+export default function Page() { return <ATSWorkspace/>; }

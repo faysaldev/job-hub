@@ -55,6 +55,8 @@ const navItems: NavItem[] = [
     icon: Calendar,
     label: "Interview Schedule",
   },
+  { href: "/recruiter/team", icon: Users, label: "Team" },
+  { href: "/recruiter/careers", icon: Building2, label: "Careers page" },
   {
     href: "/recruiter/company",
     icon: Building2,

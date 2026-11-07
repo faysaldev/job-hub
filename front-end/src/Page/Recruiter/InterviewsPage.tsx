@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import InterviewScorecards from "@/src/components/hiring/InterviewScorecards";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { useAuth } from "@/src/hooks/useAuth";
 import { useSocket } from "@/src/hooks/useSocket";
@@ -470,6 +471,7 @@ const InterviewsPage = () => {
 
   return (
     <RecruiterLayout>
+      <InterviewScorecards />
       <div className="mx-auto max-w-7xl space-y-8">
         <section className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
