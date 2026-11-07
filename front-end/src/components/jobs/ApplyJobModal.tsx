@@ -7,20 +7,16 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
 import { Textarea } from "@/src/components/ui/textarea";
-import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import {
   Send,
   Loader2,
   FileText,
   Link as LinkIcon,
-  Sparkles,
-  ArrowRight,
 } from "lucide-react";
 import { useApplyToJobMutation } from "@/src/redux/features/applications/applicationsApi";
 import {
@@ -56,11 +52,10 @@ export default function ApplyJobModal({
   const isSaved = savedJobIds?.includes(jobId);
   const [coverLetter, setCoverLetter] = useState("");
   const [resumeUrl, setResumeUrl] = useState("");
-  const [showBoostSection, setShowBoostSection] = useState(false);
-  const [paidAmount, setPaidAmount] = useState<string>("");
+  const [boostSelected, setBoostSelected] = useState(false);
 
   // API Queries and Mutations
-  const { data: profileResponse } = useGetSeekerProfileQuery();
+  const { data: profileResponse } = useGetSeekerProfileQuery(undefined, { skip: !isAuthenticated });
   const [applyToJob, { isLoading }] = useApplyToJobMutation();
 
   const router = useRouter();
@@ -98,35 +93,23 @@ export default function ApplyJobModal({
         job_id: jobId,
         cover_letter: coverLetter,
         resume_url: resumeUrl,
-        paid_amount: paidAmount ? Number(paidAmount) : undefined,
+        boost: boostSelected,
       }).unwrap()) as any;
       if (res?.data?.checkoutData?.checkoutUrl) {
         window.location.href = res?.data?.checkoutData?.checkoutUrl;
       } else {
-        toast.success("Application submitted successfully!");
+        if (res?.data?.paymentUnavailable) {
+          toast.warning("Application submitted, but the optional payment is unavailable.");
+        } else toast.success("Application submitted successfully!");
         setOpen(false);
         router.push("/applied-successfully");
         setCoverLetter("");
         setResumeUrl("");
-        setPaidAmount("");
-        setShowBoostSection(false);
+        setBoostSelected(false);
       }
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to submit application");
     }
-  };
-
-  const handleBoost = () => {
-    setShowBoostSection(true);
-  };
-
-  const handleConfirmBoost = () => {
-    if (!paidAmount || Number(paidAmount) <= 0) {
-      toast.error("Please enter a valid amount to boost your ranking");
-      return;
-    }
-    setShowBoostSection(false);
-    toast.success(`Boost of $${paidAmount} added to your application!`);
   };
 
   const handleApplyClick = () => {
@@ -157,11 +140,7 @@ export default function ApplyJobModal({
         <form onSubmit={handleApply} className="relative">
           {/* Top Section - Blurred when boosting */}
           <div
-            className={cn(
-              "transition-all duration-500",
-              showBoostSection &&
-                "blur-xl pointer-events-none opacity-30 scale-[0.98]",
-            )}
+            className="transition-all duration-300"
           >
             <div className="bg-gradient-to-br from-[#234C6A] to-[#456882] p-8 text-white">
               <DialogHeader>
@@ -264,137 +243,20 @@ export default function ApplyJobModal({
             </div>
           </div>
 
-          {/* Boost Section - Not blurred when active */}
-          <div className="px-8 py-6">
-            <div
-              className={cn(
-                "p-6 rounded-[32px] border transition-all duration-500 relative overflow-hidden",
-                showBoostSection
-                  ? "bg-white shadow-2xl border-amber-200 scale-105 z-10"
-                  : paidAmount
-                    ? "bg-emerald-50 border-emerald-100"
-                    : "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-100",
-              )}
-            >
-              {showBoostSection ? (
-                <div className="animate-in fade-in zoom-in-95 duration-300 space-y-5">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0 shadow-inner">
-                      <Sparkles className="h-6 w-6 text-amber-600 animate-pulse" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-black text-[#234C6A] uppercase tracking-widest">
-                        Boost Ranking
-                      </h4>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        Bid for {profile?.name || "Candidate"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black text-[#234C6A] uppercase tracking-widest ml-1">
-                      How much would you like to bid? ($)
-                    </Label>
-                    <div className="relative">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-gray-400">
-                        $
-                      </div>
-                      <Input
-                        type="number"
-                        placeholder="50"
-                        value={paidAmount}
-                        onChange={(e) => setPaidAmount(e.target.value)}
-                        className="h-12 pl-10 rounded-xl border-gray-100 bg-gray-50/50 focus:bg-white focus:border-amber-400 focus:ring-amber-400/10 text-lg font-black text-[#234C6A]"
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button
-                      type="button"
-                      onClick={handleConfirmBoost}
-                      className="flex-1 h-12 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-black text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
-                    >
-                      Confirm Bid
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => setShowBoostSection(false)}
-                      className="h-12 px-4 rounded-xl font-black text-gray-400 uppercase tracking-widest text-[10px]"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start gap-4">
-                  <div
-                    className={cn(
-                      "w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm",
-                      paidAmount ? "bg-emerald-100" : "bg-amber-100",
-                    )}
-                  >
-                    <Sparkles
-                      className={cn(
-                        "h-6 w-6",
-                        paidAmount ? "text-emerald-600" : "text-amber-600",
-                      )}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h4
-                      className={cn(
-                        "text-sm font-black uppercase tracking-widest",
-                        paidAmount ? "text-emerald-900" : "text-amber-900",
-                      )}
-                    >
-                      {paidAmount
-                        ? "Application Boosted!"
-                        : "Boost Your Application"}
-                    </h4>
-                    <p
-                      className={cn(
-                        "text-xs font-medium mt-1 mb-3",
-                        paidAmount
-                          ? "text-emerald-700/70"
-                          : "text-amber-800/70",
-                      )}
-                    >
-                      {paidAmount
-                        ? `You've added $${paidAmount} to rank higher in the recruiter's view.`
-                        : "Rank in the top section and get noticed 5x faster."}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleBoost}
-                      className={cn(
-                        "w-full h-10 text-xs font-black uppercase tracking-widest rounded-xl transition-all active:scale-95",
-                        paidAmount
-                          ? "bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-                          : "bg-white border-amber-200 text-amber-700 hover:bg-amber-100",
-                      )}
-                    >
-                      {paidAmount ? "Edit Boost Amount" : "Boost My Ranking"}
-                      <ArrowRight className="h-3 w-3 ml-2" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* Optional, server-priced checkout; no bids or ranking guarantees. */}
+          <div className="px-8 py-5">
+            <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 cursor-pointer">
+              <input type="checkbox" checked={boostSelected} onChange={(event) => setBoostSelected(event.target.checked)}
+                className="mt-1 h-4 w-4 accent-[#234C6A]" />
+              <span>
+                <span className="block text-sm font-semibold text-[#234C6A]">Optional application highlight</span>
+                <span className="block text-xs text-slate-600 mt-1">Only charged after confirmed Stripe checkout at the server-set price. It does not guarantee an interview or an offer.</span>
+              </span>
+            </label>
           </div>
 
-          {/* Footer - Blurred when boosting */}
-          <div
-            className={cn(
-              "px-8 pb-8 transition-all duration-500",
-              showBoostSection &&
-                "blur-xl pointer-events-none opacity-30 scale-[0.98]",
-            )}
-          >
+          {/* Footer */}
+          <div className="px-8 pb-8">
             <DialogFooter className="gap-3 sm:gap-0 pt-2 border-t border-gray-50 mt-2">
               <Button
                 type="button"

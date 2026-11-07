@@ -63,6 +63,11 @@ const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    // POST /auth/refresh - rotate HttpOnly refresh cookie
+    refresh: builder.mutation<{ data: { user: any; accessToken: string } }, void>({
+      query: () => ({ url: "/auth/refresh", method: "POST" }),
+    }),
+
     // POST /auth/logout
     logout: builder.mutation({
       query: () => ({ url: "/auth/logout", method: "POST" }),
@@ -87,6 +92,7 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useResendVerificationMutation,
+  useRefreshMutation,
   useLogoutMutation,
   useDeleteAccountMutation,
 } = authApi;

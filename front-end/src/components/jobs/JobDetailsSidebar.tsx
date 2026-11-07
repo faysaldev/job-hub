@@ -51,23 +51,6 @@ const JobDetailsSidebar = ({ job }: JobDetailsSidebarProps) => {
     }
   };
 
-  const handleApply = (resume: File | null, paymentAmount: number = 0) => {
-    if (resume) {
-      // In a real application, you would submit the application to the backend
-      toast({
-        title: "Application Submitted!",
-        description: paymentAmount > 0
-          ? `Your application for ${job.title} with payment of $${paymentAmount.toFixed(2)} has been submitted.`
-          : `Your application for ${job.title} has been submitted.`,
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Please upload a resume to apply for this job.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -78,7 +61,7 @@ const JobDetailsSidebar = ({ job }: JobDetailsSidebarProps) => {
             <DollarSign className="h-6 w-6" />
             {job.salary}
           </div>
-          <JobApplicationDialog jobTitle={job.title} onApply={handleApply} />
+          <JobApplicationDialog jobId={String(job.id)} jobTitle={job.title} companyName={job.company} />
           <Button
             variant="outline"
             className="w-full border-[#234C6A] text-[#234C6A] hover:bg-[#234C6A]/10"

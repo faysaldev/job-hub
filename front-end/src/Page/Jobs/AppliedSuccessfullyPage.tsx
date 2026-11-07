@@ -31,6 +31,8 @@ const SuccessContent = () => {
 
   const { data: paymentResponse, isLoading } = useGetPaymentDetailsQuery(sessionId || "", { skip: !sessionId });
   const paymentData = paymentResponse?.data;
+  const paymentConfirmed = !!sessionId && paymentData?.completed === true;
+  const paymentProcessing = !!sessionId && !paymentConfirmed;
 
   useEffect(() => {
     if (!isLoading) {
@@ -47,9 +49,9 @@ const SuccessContent = () => {
 
   const highlights = [
     { icon: ShieldCheck, label: "Security", value: "Verified", bg: "bg-blue-50", color: "text-blue-600" },
-    { icon: Zap, label: "Benefit", value: sessionId ? "5× Visibility" : "Direct Delivery", bg: "bg-amber-50", color: "text-amber-600" },
-    { icon: Trophy, label: "Status", value: sessionId ? "Top Listed" : "Submitted", bg: "bg-green-50", color: "text-green-600" },
-    { icon: Rocket, label: "Access", value: sessionId ? "Premium" : "Standard", bg: "bg-purple-50", color: "text-purple-600" },
+    { icon: Zap, label: "Benefit", value: paymentConfirmed ? "Verified highlight" : paymentProcessing ? "Payment pending" : "Direct delivery", bg: "bg-amber-50", color: "text-amber-600" },
+    { icon: Trophy, label: "Status", value: paymentConfirmed ? "Paid" : paymentProcessing ? "Awaiting confirmation" : "Submitted", bg: "bg-green-50", color: "text-green-600" },
+    { icon: Rocket, label: "Access", value: paymentConfirmed ? "Highlighted" : "Standard", bg: "bg-purple-50", color: "text-purple-600" },
   ];
 
   return (
@@ -68,26 +70,30 @@ const SuccessContent = () => {
               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-50 to-emerald-50 rounded-full -mr-32 -mt-32 opacity-60" />
               <div className="relative z-10 text-center space-y-8">
                 <div className="relative inline-block">
-                  <div className={`success-icon w-24 h-24 bg-gradient-to-br ${sessionId ? 'from-emerald-500 to-teal-600 shadow-emerald-500/25' : 'from-[#234C6A] to-[#456882] shadow-[#234C6A]/25'} rounded-3xl flex items-center justify-center shadow-xl mx-auto`}>
+                  <div className={`success-icon w-24 h-24 bg-gradient-to-br ${paymentConfirmed ? 'from-emerald-500 to-teal-600 shadow-emerald-500/25' : 'from-[#234C6A] to-[#456882] shadow-[#234C6A]/25'} rounded-3xl flex items-center justify-center shadow-xl mx-auto`}>
                     <CheckCircle2 className="h-12 w-12 text-white" />
                   </div>
                   <Sparkles className="sparkle absolute -top-4 -right-4 h-8 w-8 text-amber-400 opacity-0 scale-0" />
                   <Sparkles className="sparkle absolute -bottom-2 -left-6 h-6 w-6 text-blue-400 opacity-0 scale-0" />
                 </div>
                 <div className="space-y-3">
-                  <Badge className={`${sessionId ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} border-none px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest`}>
-                    {sessionId ? "Payment Confirmed" : "Application Submitted"}
+                  <Badge className={`${paymentConfirmed ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} border-none px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest`}>
+                    {paymentConfirmed ? "Stripe Payment Confirmed" : paymentProcessing ? "Payment Processing" : "Application Submitted"}
                   </Badge>
                   <h1 className="text-4xl font-black text-[#234C6A] tracking-tight leading-tight">
-                    {sessionId ? (
-                      <>Application Boost<br />Activated! 🎉</>
+                    {paymentConfirmed ? (
+                      <>Payment<br />Confirmed!</>
+                    ) : paymentProcessing ? (
+                      <>Application Saved<br />Payment Pending</>
                     ) : (
-                      <>Applied<br />Successfully! 🎉</>
+                      <>Applied<br />Successfully!</>
                     )}
                   </h1>
                   <p className="text-[#456882] font-medium text-lg max-w-sm mx-auto">
-                    {sessionId ? (
-                      "You're now pinned to the top of the recruiter's list. Get ready for callbacks!"
+                    {paymentConfirmed ? (
+                      "Your optional highlight payment is confirmed. It does not guarantee an interview or influence hiring decisions."
+                    ) : paymentProcessing ? (
+                      "Your application is submitted. Any optional paid highlight remains inactive until confirmed by Stripe."
                     ) : (
                       "Your application has been received by the recruiter. Keep track of updates on your dashboard."
                     )}
@@ -140,7 +146,7 @@ const SuccessContent = () => {
                   <div className="h-px bg-[#E3E3E3]" />
                   {[
                     { icon: CreditCard, label: "Transaction ID", value: paymentData?.sessionId ? `${paymentData.sessionId.slice(0, 20)}...` : "—" },
-                    { icon: Briefcase, label: "Payment Target", value: "Application Rank Boost" },
+                    { icon: Briefcase, label: "Payment Target", value: "Optional Application Highlight" },
                     { icon: Package, label: "Status", value: paymentData?.completed ? "Completed" : "Processing" },
                   ].map((row) => (
                     <div key={row.label} className="flex items-start gap-3">
@@ -197,10 +203,12 @@ const SuccessContent = () => {
                   </div>
                 </div>
                 <p className="text-sm text-blue-100/80 leading-relaxed">
-                  {sessionId ? (
-                    "Your application is pinned to the top. You'll receive a notification once the recruiter reviews your profile."
+                  {paymentConfirmed ? (
+                    "Your optional highlight is confirmed. The recruiter will evaluate your application normally."
+                  ) : paymentProcessing ? (
+                    "Stripe confirmation is pending. Your application was received regardless of payment status."
                   ) : (
-                    "Your application was successfully sent. We will notify you via email as soon as the recruiter takes action."
+                    "Your application was successfully sent. Check your dashboard for recruiter updates."
                   )}
                 </p>
               </div>

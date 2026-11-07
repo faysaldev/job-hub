@@ -313,7 +313,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                           </span>
                         )}
                       </div>
-                      {app.paid_amount > 0 && (
+                      {app.boostPaymentStatus === "paid" && app.paid_amount > 0 && (
                         <div className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full border-4 border-white bg-amber-400 shadow-sm">
                           <Star className="h-3 w-3 text-white fill-white" />
                         </div>
@@ -331,7 +331,7 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                           <StatusIcon className="h-3 w-3 mr-1" />
                           {statusConfig.label}
                         </Badge>
-                        {app.paid_amount > 0 && (
+                        {app.boostPaymentStatus === "paid" && app.paid_amount > 0 && (
                           <Badge className="rounded-full border-amber-200 bg-amber-50 text-[10px] font-black uppercase tracking-wider text-amber-700">
                             ${app.paid_amount} Boosted
                           </Badge>

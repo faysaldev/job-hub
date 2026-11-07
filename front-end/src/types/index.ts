@@ -168,6 +168,9 @@ export interface Job {
 // ---------- Applications ----------
 
 export type ApplicationStatus =
+  | "applied"
+  | "under_review"
+  | "interview"
   | "pending"
   | "reviewed"
   | "shortlisted"
@@ -178,6 +181,7 @@ export type ApplicationStatus =
   | "withdrawn";
 
 export interface Application {
+  _id: string;
   id: string;
   jobId: string;
   jobSeekerId: string;
@@ -188,6 +192,14 @@ export interface Application {
   companyName: string;
   status: ApplicationStatus;
   appliedDate: string;
+  createdAt: string;
+  job_id: any;
+  applicant: any;
+  paid_amount: number;
+  boostPaymentStatus?: "none" | "pending" | "paid" | "refunded";
+  resume_url?: string;
+  cover_letter?: string;
+  rejection_note?: string;
   updatedAt?: string;
   coverLetter?: string;
   resumeUrl?: string;

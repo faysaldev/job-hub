@@ -10,7 +10,7 @@ const applicationsApi = baseApi.injectEndpoints({
         job_id: string;
         cover_letter: string;
         resume_url: string;
-        paid_amount?: number;
+        boost?: boolean;
       }
     >({
       query: (body) => ({

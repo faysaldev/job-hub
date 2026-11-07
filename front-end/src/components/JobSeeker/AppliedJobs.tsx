@@ -211,7 +211,7 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
                         <span>{job.type}</span>
                       </div>
                     )}
-                    {app.paid_amount > 0 && (
+                    {app.boostPaymentStatus === "paid" && app.paid_amount > 0 && (
                       <div className="flex items-center gap-1.5 rounded-full border border-[#234C6A]/10 bg-[#234C6A]/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-[#234C6A]">
                         <Sparkles className="h-3 w-3" />
                         <span>${app.paid_amount} Priority</span>
