@@ -3,13 +3,21 @@ import { Types } from "mongoose";
 import { assertId, escapeRegex, paging } from "../../lib/query";
 import { assertOwnedPublicImage } from "../Asset/asset.services";
 import jobService from "../Jobs/job.services";
+import { companyForActor } from "./company.access";
+import { AppError } from "../../lib/errors";
+import CompanyMember from "./company.member.model";
 
 export const createCompanyService = async (
   companyData: Partial<ICompany>,
 ): Promise<ICompany> => {
-  if (await Company.exists({ userId: companyData.userId })) throw new Error("Company already exists");
+  if (await Company.exists({ userId: companyData.userId })) throw new AppError("Company already exists", 409);
+  if (await CompanyMember.exists({ userId: companyData.userId, status: "active" })) throw new AppError("Leave your existing team before creating a company", 409);
   if (companyData.companyLogo) await assertOwnedPublicImage(companyData.companyLogo, String(companyData.userId), "company-logo");
-  const company = new Company(companyData);
+  const name = String(companyData.companyName || "company");
+  const slug = name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "company";
+  const proposed = companyData.careersSlug || `${slug}-${String(companyData.userId).slice(-6).toLowerCase()}`;
+  if (await Company.exists({ careersSlug: proposed })) throw new AppError("Career-page address already taken", 409);
+  const company = new Company({ ...companyData, careersSlug: proposed });
   const created = await company.save();
   await jobService.clearJobCache();
   return created;
@@ -28,16 +36,23 @@ export const getCompanyService = async (
       select:
         "title type location locationType salaryMax salaryMin salaryPeriod",
     });
-  return company?.userId ? company : null;
+  if (!company?.userId) return null;
+  // Public company pages expose verification status, not internal reviewer notes.
+  const result = company.toObject();
+  if (result.verification) result.verification = { status: result.verification.status };
+  return result as ICompany;
 };
 
 export const getCompanyByUserIdService = async (
   userId: string,
 ): Promise<ICompany | null> => {
-  return await Company.findOne({ userId: new Types.ObjectId(userId) }).populate(
-    "userId",
-    "name email image role phoneNumber",
-  );
+  try {
+    const { company } = await companyForActor(userId);
+    return await Company.findById(company._id).populate("userId", "name email image role phoneNumber");
+  } catch (error) {
+    if (error instanceof AppError && error.statusCode === 403) return null;
+    throw error;
+  }
 };
 
 /** Single aggregate and facet: no inaccurate count after populate removes inactive accounts. */
@@ -62,7 +77,10 @@ export const getAllCompaniesService = async (query: any = {}): Promise<any> => {
     { $unwind: "$activeUser" },
     { $sort: { createdAt: -1 } },
     { $facet: {
-      rows: [{ $skip: skip }, { $limit: bounds.limit }, { $set: { userId: "$activeUser" } }, { $unset: "activeUser" }],
+      rows: [{ $skip: skip }, { $limit: bounds.limit }, { $set: { userId: "$activeUser" } },
+        { $project: { companyName: 1, companyLogo: 1, companySize: 1, industries: 1,
+          companyLocation: 1, website: 1, description: 1, careersSlug: 1,
+          careersEnabled: 1, createdAt: 1, userId: 1, "verification.status": 1 } }],
       meta: [{ $count: "total" }],
     } },
   ]);
@@ -87,9 +105,12 @@ export const updateCompanyByUserIdService = async (
   userId: string,
   companyData: Partial<ICompany>,
 ): Promise<ICompany | null> => {
+  const { company } = await companyForActor(userId, "company");
   if (companyData.companyLogo) await assertOwnedPublicImage(companyData.companyLogo, userId, "company-logo");
+  if (companyData.careersSlug && companyData.careersSlug !== company.careersSlug &&
+      await Company.exists({ careersSlug: companyData.careersSlug })) throw new AppError("Career-page address already taken", 409);
   const result = await Company.findOneAndUpdate(
-    { userId: new Types.ObjectId(userId) },
+    { _id: company._id },
     { $set: companyData },
     { new: true, runValidators: true },
   ).populate("userId", "name email image role phoneNumber");

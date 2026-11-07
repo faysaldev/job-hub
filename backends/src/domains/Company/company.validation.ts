@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 export const createCompanyValidation = z.object({
-  companyName: z.string().optional(),
+  companyName: z.string().trim().max(140).optional(),
+  careersSlug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).min(3).max(60).optional(),
+  careersHeadline: z.string().trim().max(140).optional(),
+  careersDescription: z.string().trim().max(3000).optional(),
+  careersEnabled: z.boolean().optional(),
   industries: z.string().optional(),
   companySize: z.string().optional(),
   companyLocation: z.string().optional(),
@@ -15,7 +19,11 @@ export const createCompanyValidation = z.object({
 });
 
 export const updateCompanyValidation = z.object({
-  companyName: z.string().optional(),
+  companyName: z.string().trim().max(140).optional(),
+  careersSlug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).min(3).max(60).optional(),
+  careersHeadline: z.string().trim().max(140).optional(),
+  careersDescription: z.string().trim().max(3000).optional(),
+  careersEnabled: z.boolean().optional(),
   industries: z.string().optional(),
   companySize: z.string().optional(),
   companyLocation: z.string().optional(),

@@ -5,7 +5,7 @@ const locationTypeSchema = z.enum(["remote", "onsite", "hybrid"]);
 const salaryPeriodSchema = z.enum(["hourly", "daily", "weekly", "monthly", "yearly"]);
 const experienceLevelSchema = z.enum(["entry", "junior", "mid", "senior", "lead"]);
 
-export const createJobValidation = z.object({
+const requiredJobSchema = z.object({
   title: z.string().min(1, "Job title is required"),
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().min(1, "Subcategory is required"),
@@ -28,6 +28,26 @@ export const createJobValidation = z.object({
   path: ["salaryMin"],
 });
 
+// Drafts retain partially completed fields without requiring a publish-ready record.
+const draftJobSchema = z.object({
+  status: z.literal("draft"), title: z.string().trim().min(1).max(140),
+  category: z.string().max(120).optional(), subcategory: z.string().max(120).optional(),
+  type: jobTypeSchema.optional(), location: z.string().max(180).optional(),
+  locationType: locationTypeSchema.optional(),
+  salaryMin: z.number().finite().nonnegative().optional(), salaryMax: z.number().finite().nonnegative().optional(),
+  salaryPeriod: salaryPeriodSchema.optional(), experienceLevel: experienceLevelSchema.optional(),
+  description: z.string().max(10000).optional(),
+  requirements: z.array(z.string().max(300)).max(80).optional(),
+  responsibilities: z.array(z.string().max(300)).max(80).optional(),
+  benefits: z.array(z.string().max(300)).max(80).optional(),
+  skills: z.array(z.string().max(100)).max(80).optional(),
+  positions: z.number().int().min(1).optional(), applicationDeadline: z.coerce.date().optional(),
+});
+export const createJobValidation = z.union([
+  requiredJobSchema.safeExtend({ status: z.enum(["published", "scheduled"]).optional(), publishAt: z.coerce.date().optional() }),
+  draftJobSchema,
+]);
+
 export const updateJobValidation = z.object({
   title: z.string().min(1, "Job title is required").optional(),
   category: z.string().min(1, "Category is required").optional(),
@@ -47,6 +67,8 @@ export const updateJobValidation = z.object({
   applicationDeadline: z.coerce.date().optional(),
   positions: z.coerce.number().int().min(1, "At least one position is required").optional(),
   isActive: z.boolean().optional(),
+  status: z.enum(["draft", "scheduled", "published", "closed"]).optional(),
+  publishAt: z.coerce.date().nullable().optional(),
 }).refine((data) => {
   if (data.salaryMin !== undefined && data.salaryMax !== undefined) {
     return data.salaryMin <= data.salaryMax;
@@ -94,3 +116,7 @@ const jobValidator = {
 };
 
 export default jobValidator;
+
+/** Re-check the *merged* document when a draft becomes publishable. */
+export const validateCompleteJob = (candidate: Record<string, unknown>) =>
+  requiredJobSchema.safeParse(candidate).success;

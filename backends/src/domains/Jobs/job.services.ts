@@ -4,6 +4,9 @@ import redis from "../../config/redis";
 import crypto from "crypto";
 import mongoose from "mongoose";
 import { escapeRegex, assertId } from "../../lib/query";
+import { companyForActor, jobForActor } from "../Company/company.access";
+import { validateCompleteJob } from "./job.validation";
+import { AppError } from "../../lib/errors";
 
 // Get all jobs with optional filters and Redis caching
 const getAllJobs = async (filters: any = {}) => {
@@ -26,7 +29,7 @@ const getAllJobs = async (filters: any = {}) => {
     // Continue with database query if cache fails
   }
 
-  const jobs = await Job.find({ ...filters, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }).sort({ createdAt: -1 }).limit(50).lean();
+  const jobs = await Job.find({ ...filters, status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }).sort({ createdAt: -1 }).limit(50).lean();
 
   try {
     // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
@@ -44,7 +47,13 @@ const getAllJobs = async (filters: any = {}) => {
 // Get job by ID with Redis caching
 const getJobById = async (jobId: string, requesterId?: string) => {
   assertId(jobId);
-  if (requesterId) return Job.findOne({ _id: jobId, $or: [{ isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }, { author: requesterId, isDeleted: { $ne: true } }] }).populate("author", "name image").populate("company", "companyName companyLogo");
+  if (requesterId) {
+    const workspace = await companyForActor(requesterId, "jobs").catch(() => null);
+    return Job.findOne({ _id: jobId, isDeleted: { $ne: true }, $or: [
+      { status: { $in: ["published", null] }, isActive: true, applicationDeadline: { $gte: new Date() } },
+      ...(workspace ? [{ $or: [{ companyId: workspace.company._id }, { author: workspace.company.userId }] }] : []),
+    ] }).populate("author", "name image").populate("company", "companyName companyLogo");
+  }
   const cacheKey = `job:${jobId}:v${await currentSearchVersion()}`;
 
   try {
@@ -60,7 +69,7 @@ const getJobById = async (jobId: string, requesterId?: string) => {
     // Continue with database query if cache fails
   }
 
-  const job = await Job.findOne({ _id: jobId, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
+  const job = await Job.findOne({ _id: jobId, status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
     .populate("author", "name image")
     .populate("company", "companyName companyLogo");
 
@@ -81,9 +90,12 @@ const getJobById = async (jobId: string, requesterId?: string) => {
 // Get jobs by author ID
 const getJobsByAuthorId = async (authorId: string, requesterId?: string) => {
   assertId(authorId);
-  return await Job.find({ author: authorId, isDeleted: { $ne: true }, ...(requesterId === authorId ? {} : { isActive: true, applicationDeadline: { $gte: new Date() } }) })
+  const workspace = requesterId ? await companyForActor(requesterId, "jobs").catch(() => null) : null;
+  const permitted = workspace?.company.userId.toString() === authorId;
+  return await Job.find({ author: authorId, isDeleted: { $ne: true }, ...(permitted ? {} :
+    { status: { $in: ["published", null] }, isActive: true, applicationDeadline: { $gte: new Date() } }) })
     .select(
-      "author title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive responsibilities requirements benefits positions",
+      "author companyId title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive responsibilities requirements benefits positions status publishAt",
     )
     .sort({ createdAt: -1 });
 };
@@ -99,39 +111,75 @@ const clearJobCache = async (jobId?: string) => {
   } catch { /* cache TTL also limits stale results */ }
 };
 
-// Create a new job
-const createJob = async (jobData: Partial<IJob>) => {
-  const job = new Job(jobData);
-  const savedJob = await job.save();
-
-  // Clear cache after creating a job
+// Company ownership is the durable tenancy boundary; author retains the original company owner ID.
+const getWorkspaceJobs = async (actorId: string, options: { status?: string; page?: unknown; limit?: unknown } = {}) => {
+  const { company } = await companyForActor(actorId, "jobs");
+  const page = Math.min(Math.max(Number(options.page) || 1, 1), 10000);
+  const limit = Math.min(Math.max(Number(options.limit) || 30, 1), 50);
+  const query: Record<string, unknown> = { isDeleted: { $ne: true },
+    $or: [{ companyId: company._id }, { author: company.userId }] };
+  if (options.status && ["draft", "scheduled", "published", "closed"].includes(options.status)) query.status = options.status;
+  else if (options.status) throw new AppError("Invalid job status", 400);
+  const [jobs, total] = await Promise.all([
+    Job.find(query).select("title status isActive publishAt applicationDeadline location type createdAt author companyId positions")
+      .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+    Job.countDocuments(query),
+  ]);
+  return { jobs, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+};
+const validateLifecycle = (doc: Record<string, any>) => {
+  const status = doc.status || "published";
+  if (status === "published" || status === "scheduled") {
+    if (!validateCompleteJob(doc)) throw new AppError("Complete all required job details before publishing", 400);
+    if (new Date(doc.applicationDeadline).getTime() <= Date.now()) throw new AppError("Job deadline must be in the future", 400);
+  }
+  if (status === "scheduled" && (!doc.publishAt || new Date(doc.publishAt).getTime() <= Date.now()))
+    throw new AppError("Scheduled publish time must be in the future", 400);
+};
+const createJob = async (data: Partial<IJob>, actorId: string) => {
+  const { company } = await companyForActor(actorId, "jobs");
+  const status = data.status || "published";
+  const record = { ...data, status, author: company.userId, companyId: company._id, createdBy: actorId,
+    isActive: status === "published", ...(status === "published" ? { publishedAt: new Date() } : {}) };
+  validateLifecycle(record);
+  const saved = await Job.create(record);
   await clearJobCache();
-
-  return savedJob;
+  return saved;
 };
-
-// Update job by ID
-const updateJob = async (jobId: string, updateData: Partial<IJob>, requesterId: string) => {
-  const updatedJob = await Job.findOneAndUpdate(
-    { _id: jobId, author: requesterId, isDeleted: { $ne: true } },
-    { $set: Object.fromEntries(Object.entries(updateData).filter(([key]) => key !== "author")) },
+const updateJob = async (id: string, updateData: Partial<IJob>, actorId: string) => {
+  const { job } = await jobForActor(id, actorId, "jobs");
+  const next = { ...job.toObject(), ...updateData } as Record<string, any>;
+  if (updateData.isActive !== undefined && updateData.status === undefined) {
+    next.status = updateData.isActive ? "published" : "closed";
+  }
+  // Only the explicit state transition changes publication; scheduled jobs remain hidden.
+  next.isActive = next.status === "published";
+  if (next.status === "published" && job.status !== "published") next.publishedAt = new Date();
+  validateLifecycle(next);
+  const update = { ...updateData, status: next.status, isActive: next.isActive,
+    ...(next.publishedAt ? { publishedAt: next.publishedAt } : {}),
+    ...(updateData.publishAt === null ? { publishAt: undefined } : {}) };
+  const updated = await Job.findOneAndUpdate({ _id: job._id, isDeleted: { $ne: true } },
+    { $set: Object.fromEntries(Object.entries(update).filter(([k, v]) =>
+      !["author", "companyId", "createdBy", "isDeleted", "_id"].includes(k) && v !== undefined)) },
     { new: true, runValidators: true });
-
-  // Clear cache after updating a job
-  if (updatedJob) await clearJobCache(jobId);
-
-  return updatedJob;
+  if (updated) await clearJobCache();
+  return updated;
 };
-
-// Delete job by ID
-const deleteJob = async (jobId: string, requesterId: string) => {
-  const deletedJob = await Job.findOneAndUpdate({ _id: jobId, author: requesterId, isDeleted: { $ne: true } },
-    { $set: { isDeleted: true, isActive: false } }, { new: true });
-
-  // Clear cache after deleting a job
-  if (deletedJob) await clearJobCache(jobId);
-
-  return deletedJob;
+const deleteJob = async (id: string, actorId: string) => {
+  const { job } = await jobForActor(id, actorId, "jobs");
+  const result = await Job.findOneAndUpdate({ _id: job._id, isDeleted: { $ne: true } },
+    { $set: { isDeleted: true, isActive: false, status: "closed" } }, { new: true });
+  if (result) await clearJobCache();
+  return result;
+};
+/** Must be invoked by a scheduler (see Phase 4 release guide); not on read requests. */
+const publishDueJobs = async () => {
+  const now = new Date();
+  const result = await Job.updateMany({ status: "scheduled", publishAt: { $lte: now }, applicationDeadline: { $gt: now }, isDeleted: { $ne: true } },
+    { $set: { status: "published", isActive: true, publishedAt: now } });
+  if (result.modifiedCount) await clearJobCache();
+  return result.modifiedCount;
 };
 
 // Search jobs with advanced filters and pagination with Redis caching
@@ -206,7 +254,7 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
   }
 
   // Build Query Conditions
-  const filterConditions: any[] = [{ isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }];
+  const filterConditions: any[] = [{ status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } }];
 
   if (searchTerm) {
     const searchRegex = { $regex: escapeRegex(searchTerm), $options: "i" };
@@ -361,6 +409,8 @@ const jobService = {
   seedJobs,
   clearJobCache,
   getJobsByAuthorId,
+  getWorkspaceJobs,
+  publishDueJobs,
 };
 
 export default jobService;

@@ -9,7 +9,7 @@ import { addActivityLogService } from "../Seeker/seeker.services";
 const ok = (res: Response, message: string, data: object, code = 200) => res.status(code).json(
   response({ message, status: "OK", statusCode: code, data }));
 const scheduleInterview = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const interview = await service.scheduleInterview({ ...req.body, interviewer: req.user!._id });
+  const interview = await service.scheduleInterview(req.body, req.user!._id);
   addActivityLogService(req.body.interviewee, "Interview scheduled for an application").catch(() => {});
   ok(res, "Interview scheduled", interview, 201);
 });
@@ -33,4 +33,8 @@ const rescheduleInterview = asyncHandler(async (req: ProtectedRequest, res: Resp
   const interview = await service.rescheduleInterview(req.params.interviewId, req.body, req.user!._id);
   ok(res, "Interview rescheduled", interview);
 });
-export default { scheduleInterview, getMyInterviews, updateStatus, hireCandidate, rescheduleInterview };
+const saveScorecard = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const result = await service.saveScorecard(req.params.interviewId, req.user!._id, req.body);
+  ok(res, "Scorecard saved", result!);
+});
+export default { scheduleInterview, getMyInterviews, updateStatus, hireCandidate, rescheduleInterview, saveScorecard };

@@ -17,8 +17,8 @@ export const createSeekerService = async (
 export const getSeekerService = async (id: string): Promise<ISeeker | null> => {
   assertId(id);
   // Public candidate pages do not reveal email, phone or resume URLs.
-  const seeker = await Seeker.findById(id)
-    .select("-resume -profileStrength")
+  const seeker = await Seeker.findOne({ _id: id, "privacy.profileVisibility": "public" })
+    .select("-resume -profileStrength -preferences")
     .populate({ path: "userId", select: "name image role",
       match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "seeker" } });
   return seeker?.userId ? seeker : null;
@@ -36,7 +36,7 @@ export const getSeekerByUserIdService = async (
 /** Stable count + page over only active, verified candidate accounts. */
 export const getAllSeekersService = async (query: any = {}) => {
   const { search, skills, location, experienceLevel, jobType, availability, totalExperience } = query;
-  const filters: any = {};
+  const filters: any = { "privacy.profileVisibility": "public", "privacy.searchable": true };
   if (skills) {
     const names = Array.isArray(skills) ? skills : String(skills).split(",").slice(0, 20).map((item) => item.trim());
     filters.skills = { $all: names };
@@ -91,6 +91,8 @@ export const updateSeekerByUserIdService = async (
   seekerData: Partial<ISeeker>,
 ): Promise<ISeeker | null> => {
   if (seekerData.resume?.resumeLink) await assertOwnedResume(seekerData.resume.resumeLink, userId);
+  if (seekerData.preferences?.expectedSalaryMin !== undefined && seekerData.preferences?.expectedSalaryMax !== undefined &&
+      seekerData.preferences.expectedSalaryMin > seekerData.preferences.expectedSalaryMax) throw new Error("Minimum expected salary exceeds maximum");
   return await Seeker.findOneAndUpdate(
     { userId: new Types.ObjectId(userId) },
     { $set: seekerData },

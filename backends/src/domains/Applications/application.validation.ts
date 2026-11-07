@@ -9,6 +9,14 @@ export const createApplicationValidation = z.object({
   // paid_amount deliberately omitted: applicants cannot choose their own charge.
 });
 export const applicationStatusValidation = z.object({
-  status: z.enum(["applied", "under_review", "interview", "rejected", "hired"]),
+  status: z.enum(["applied", "under_review", "shortlisted", "interview", "offer", "rejected", "hired"]),
   rejection_note: z.string().trim().max(2000).optional(),
 });
+
+export const atsActionValidation = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("stage"), status: z.enum(["under_review", "shortlisted", "interview", "hired", "rejected"]), note: z.string().trim().max(2000).optional() }),
+  z.object({ action: z.literal("note"), text: z.string().trim().min(1).max(3000) }),
+  z.object({ action: z.literal("offer"), salary: z.number().finite().nonnegative(), currency: z.string().regex(/^[A-Z]{3}$/),
+    message: z.string().trim().max(4000).optional(), expiresAt: z.coerce.date() }),
+  z.object({ action: z.literal("offer-response"), decision: z.enum(["accepted", "declined"]) }),
+]);

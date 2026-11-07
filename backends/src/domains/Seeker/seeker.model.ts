@@ -34,6 +34,8 @@ export interface ISocialProfiles {
 export interface ISeeker extends Document {
   userId: mongoose.Types.ObjectId;
   userLocation?: string;
+  privacy?: { profileVisibility: "private" | "public"; searchable: boolean; allowContact: boolean };
+  preferences?: { jobTypes?: string[]; locations?: string[]; expectedSalaryMin?: number; expectedSalaryMax?: number; willingToRelocate?: boolean };
   designation?: string;
   aboutMe?: string;
   skills: string[];
@@ -92,6 +94,11 @@ const seekerSchema = new mongoose.Schema(
       unique: true,
     },
     userLocation: { type: String },
+    privacy: { profileVisibility: { type: String, enum: ["private", "public"], default: "private" },
+      searchable: { type: Boolean, default: false }, allowContact: { type: Boolean, default: false } },
+    preferences: { jobTypes: [{ type: String, enum: ["full-time", "part-time", "contract", "internship", "freelance"] }],
+      locations: [{ type: String, maxlength: 120 }], expectedSalaryMin: { type: Number, min: 0 },
+      expectedSalaryMax: { type: Number, min: 0 }, willingToRelocate: { type: Boolean, default: false } },
     designation: { type: String },
     aboutMe: { type: String },
     skills: [{ type: String }],
@@ -123,6 +130,7 @@ const seekerSchema = new mongoose.Schema(
 );
 
 seekerSchema.index({ createdAt: -1 });
+seekerSchema.index({ "privacy.profileVisibility": 1, "privacy.searchable": 1, createdAt: -1 });
 seekerSchema.index({ experienceLevel: 1, createdAt: -1 });
 seekerSchema.index({ availability: 1, createdAt: -1 });
 export default mongoose.model<ISeeker>("Seeker", seekerSchema);

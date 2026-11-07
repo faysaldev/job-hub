@@ -11,7 +11,11 @@
     "phase3:migrate:dry": "node scripts/phase3-migrate-media.cjs --dry-run",
     "phase3:rollback:dry": "node scripts/phase3-rollback-media.cjs --dry-run",
     "phase3:static-check": "node scripts/phase3-static-check.cjs",
-    "phase3:live-smoke": "node scripts/phase3-live-smoke.cjs"
+    "phase3:live-smoke": "node scripts/phase3-live-smoke.cjs",
+    "phase4:preflight": "node scripts/phase4-preflight.cjs",
+    "phase4:indexes": "node scripts/phase4-build-indexes.cjs",
+    "phase4:static-check": "node scripts/phase4-static-check.cjs",
+    "phase4:scheduler": "node dist/scripts/phase4-scheduler.js"
   },
   "keywords": [],
   "author": "Faysal Mridha",

@@ -38,6 +38,12 @@ const socialProfilesSchema = z.object({
 
 export const createSeekerValidation = z.object({
   userLocation: z.string().optional(),
+  privacy: z.object({ profileVisibility: z.enum(["private", "public"]), searchable: z.boolean(),
+    allowContact: z.boolean() }).partial().optional(),
+  preferences: z.object({ jobTypes: z.array(z.enum(["full-time", "part-time", "contract", "internship", "freelance"])).max(5).optional(),
+    locations: z.array(z.string().max(120)).max(12).optional(), expectedSalaryMin: z.number().finite().min(0).optional(),
+    expectedSalaryMax: z.number().finite().min(0).optional(), willingToRelocate: z.boolean().optional() }).optional(),
+
   designation: z.string().optional(),
   aboutMe: z.string().optional(),
   skills: z.array(z.string()).optional(),
@@ -60,6 +66,12 @@ export const createSeekerValidation = z.object({
 
 export const updateSeekerValidation = z.object({
   userLocation: z.string().optional(),
+  privacy: z.object({ profileVisibility: z.enum(["private", "public"]), searchable: z.boolean(),
+    allowContact: z.boolean() }).partial().optional(),
+  preferences: z.object({ jobTypes: z.array(z.enum(["full-time", "part-time", "contract", "internship", "freelance"])).max(5).optional(),
+    locations: z.array(z.string().max(120)).max(12).optional(), expectedSalaryMin: z.number().finite().min(0).optional(),
+    expectedSalaryMax: z.number().finite().min(0).optional(), willingToRelocate: z.boolean().optional() }).optional(),
+
   designation: z.string().optional(),
   aboutMe: z.string().optional(),
   skills: z.array(z.string()).optional(),

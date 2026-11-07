@@ -12,6 +12,8 @@ export interface IInterview extends Document {
   type: "video" | "audio" | "in-person";
   status: "scheduled" | "completed" | "cancelled";
   note?: string;
+  scorecard?: { overall: number; recommendation: "strong_yes" | "yes" | "no" | "strong_no";
+    criteria: Array<{ label: string; score: number }>; feedback?: string; submittedAt?: Date; submittedBy?: Types.ObjectId };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -64,9 +66,13 @@ const interviewSchema = new Schema<IInterview>(
       enum: ["scheduled", "completed", "cancelled"],
       default: "scheduled",
     },
-    note: {
-      type: String,
-      trim: true,
+    note: { type: String, trim: true },
+    scorecard: {
+      overall: { type: Number, min: 1, max: 5 },
+      recommendation: { type: String, enum: ["strong_yes", "yes", "no", "strong_no"] },
+      criteria: [{ label: { type: String, trim: true, maxlength: 100 }, score: { type: Number, min: 1, max: 5 } }],
+      feedback: { type: String, maxlength: 3000 },
+      submittedAt: Date, submittedBy: { type: Schema.Types.ObjectId, ref: "User" },
     },
   },
   { timestamps: true }

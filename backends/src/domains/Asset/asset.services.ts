@@ -5,6 +5,7 @@ import Asset, { AssetKind, IAsset } from "./asset.model";
 import { bucketFor, firstBytes, head, publicAssetUrl, putBuffer, remove, signedPut, signedRead } from "./asset.storage";
 import Application from "../Applications/application.model";
 import Job from "../Jobs/job.model";
+import { companyForActor } from "../Company/company.access";
 import Conversation from "../Conversations/conversations.model";
 import Message from "../Messages/message.model";
 
@@ -120,7 +121,9 @@ export const getAssetAccess = async (assetId: string, actorId: string, role: str
   if (!permitted && asset.kind === "resume") {
     // One indexed application lookup + one job ownership lookup, not a potentially huge distinct list.
     const jobIds = await Application.distinct("job_id", { resume_url: assetReference(assetId), isWithdrawn: { $ne: true } });
-    permitted = Boolean(jobIds.length && await Job.exists({ _id: { $in: jobIds }, author: actorId, isDeleted: { $ne: true } }));
+    const membership = await companyForActor(actorId, "applications").catch(() => null);
+    permitted = Boolean(membership && jobIds.length && await Job.exists({ _id: { $in: jobIds },
+      $or: [{ author: membership.company.userId }, { companyId: membership.company._id }], isDeleted: { $ne: true } }));
   }
   if (!permitted && asset.kind === "attachment" && asset.conversationId) {
     permitted = Boolean((await Conversation.exists({ _id: asset.conversationId, participants: actorId })) &&

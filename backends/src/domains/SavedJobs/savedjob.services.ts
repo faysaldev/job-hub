@@ -13,7 +13,7 @@ const saveJob = async (userId: string, jobId: string) => {
   }
 
   // Verify that the job exists
-  const job = await Job.findOne({ _id: jobId, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } });
+  const job = await Job.findOne({ _id: jobId, status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } });
   if (!job) {
     throw new Error("Job not found");
   }

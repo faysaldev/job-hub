@@ -38,4 +38,8 @@ const deleteApplication = asyncHandler(async (req: ProtectedRequest, res: Respon
   const deleted = await service.deleteApplication(req.params.applicationId, req.user!._id);
   success(res, "Application withdrawn", deleted);
 });
-export default { createApplication, getUserApplications, getRecruiterApplications, updateApplicationStatus, deleteApplication };
+const updateATS = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const updated = await service.atsAction(req.params.applicationId, req.user!._id, req.user!.role, req.body);
+  success(res, "Application updated", updated);
+});
+export default { createApplication, getUserApplications, getRecruiterApplications, updateApplicationStatus, updateATS, deleteApplication };

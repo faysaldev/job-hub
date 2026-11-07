@@ -90,7 +90,7 @@ const getJobsByAuthorId = asyncHandler(async (req: Request, res: Response) => {
 const createJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const jobData = { ...req.body, author: req.user!._id };
 
-  const job = await jobService.createJob(jobData);
+  const job = await jobService.createJob(jobData, req.user!._id);
 
   res.status(httpStatus.CREATED).json(
     response({
@@ -136,7 +136,12 @@ const deleteJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   );
 });
 
+const getWorkspaceJobs = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const result = await jobService.getWorkspaceJobs(req.user!._id, req.query);
+  res.status(200).json(response({ message: "Workspace jobs retrieved", status: "OK", statusCode: 200, data: result }));
+});
 const jobController = {
+  getWorkspaceJobs,
   getAllJobs,
   getJobById,
   createJob,
