@@ -1,4 +1,5 @@
 "use client";
+import { SecureAssetLink } from "@/src/components/assets/SecureAssetLink";
 
 import { useEffect, useRef } from "react";
 import { Card } from "@/src/components/ui/card";
@@ -210,15 +211,13 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
                       </div>
                     )}
                     {app.resume_url && (
-                      <a
-                        href={app.resume_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <SecureAssetLink
+                        reference={app.resume_url}
                         className="flex items-center gap-1.5 rounded-full bg-[#516C83]/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-[#163B5C] transition-colors hover:bg-[#516C83]/15"
                       >
                         <FileText className="h-3 w-3" />
                         View Resume
-                      </a>
+                      </SecureAssetLink>
                     )}
                   </div>
 

@@ -87,11 +87,8 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const res = await uploadFile(formData).unwrap();
+      const res = await uploadFile({ file, kind: "company-logo" }).unwrap();
       if (res?.data?.url) {
         setLogoUrl(res.data.url);
         setValue("companyLogo", res.data.url, { shouldDirty: true });

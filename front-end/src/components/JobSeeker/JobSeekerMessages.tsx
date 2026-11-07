@@ -16,9 +16,13 @@ import {
   ChevronUp,
   Loader2,
   Search,
+  Paperclip,
+  FileText,
 } from "lucide-react";
 import { useDeleteConversationMutation } from "@/src/redux/features/conversations/conversationsApi";
 import { toast } from "sonner";
+import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
+import { SecureAssetLink } from "@/src/components/assets/SecureAssetLink";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -43,6 +47,7 @@ interface MsgItem {
   senderId: string;
   receiverId: string;
   content: string;
+  attachments?: Array<{ assetId: string; name: string; mimeType: string; size: number }>;
   isRead: boolean;
   createdAt: string;
 }
@@ -57,7 +62,7 @@ interface Pagination {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const JobSeekerMessages = ({ userId }: { userId: string }) => {
+const JobSeekerMessages = ({ userId, viewerRole = "seeker" }: { userId: string; viewerRole?: "seeker" | "recruiter" }) => {
   const socket = useSocket();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -104,6 +109,19 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [uploadFile, { isLoading: isUploadingFile }] = useUploadFileMutation();
+  const [attachment, setAttachment] = useState<{ assetId: string; fileName: string } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const handleAttachment = async (file?: File) => {
+    if (!file) return;
+    try {
+      const result = await uploadFile({ file, kind: "attachment" }).unwrap();
+      setAttachment({ assetId: result.data.assetId, fileName: result.data.fileName });
+      toast.success("Attachment uploaded securely");
+    } catch (error: any) {
+      toast.error(error?.data?.message || error?.error || "Attachment failed");
+    }
+  };
 
   const [deleteConversation] = useDeleteConversationMutation();
 
@@ -297,18 +315,20 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
   // ─── Send message ─────────────────────────────────────────────────────────
   const handleSendMessage = useCallback(() => {
     const content = messageInputRef.current?.value?.trim();
-    if (!content || !socket || !selectedConvId || !otherParticipant) return;
+    if ((!content && !attachment) || !socket || !selectedConvId || !otherParticipant) return;
 
     setIsSending(true);
     socket.emit("message:send", {
       conversationId: selectedConvId,
       receiverId: otherParticipant._id,
-      content,
+      content: content || "",
+      ...(attachment ? { attachments: [attachment.assetId] } : {}),
     });
 
     if (messageInputRef.current) messageInputRef.current.value = "";
+    setAttachment(null);
     setIsSending(false);
-  }, [socket, selectedConvId, otherParticipant]);
+  }, [socket, selectedConvId, otherParticipant, attachment]);
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -395,7 +415,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
             </p>
             <h3 className="flex items-center gap-2 font-black text-[#163B5C]">
               <MessageSquare className="h-5 w-5" />
-              Recruiter Chats
+              {viewerRole === "recruiter" ? "Candidate Chats" : "Recruiter Chats"}
             </h3>
           </div>
           <div className="relative flex items-center">
@@ -636,9 +656,15 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                               </div>
                             ) : (
                               <div className="flex items-end gap-3">
-                                <p className="text-sm leading-relaxed">
-                                  {msg.content}
-                                </p>
+                                <div className="min-w-0 space-y-2">
+                                  {msg.content && <p className="text-sm leading-relaxed">{msg.content}</p>}
+                                  {msg.attachments?.map((file) => (
+                                    <SecureAssetLink key={file.assetId} reference={`asset:${file.assetId}`}
+                                      className="flex items-center gap-2 rounded-lg border border-current/20 px-2 py-1.5 text-xs underline underline-offset-2">
+                                      <FileText className="h-4 w-4 shrink-0" /><span className="truncate">{file.name}</span>
+                                    </SecureAssetLink>
+                                  ))}
+                                </div>
                                 <div className="flex items-center gap-1.5 flex-shrink-0 mb-[-2px]">
                                   <span className="text-[9px] opacity-50">
                                     {formatTime(msg.createdAt)}
@@ -682,7 +708,18 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
 
             {/* Input */}
             <div className="flex-shrink-0 border-t border-[#E1E8EF]/70 bg-white p-4">
+              {attachment && <div className="mb-2 flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-700">
+                <FileText className="h-4 w-4" /> <span className="truncate">{attachment.fileName}</span>
+                <button type="button" onClick={() => setAttachment(null)} aria-label="Remove attachment" className="ml-auto"><X className="h-4 w-4" /></button>
+              </div>}
+              <input ref={fileRef} type="file" className="sr-only" accept=".jpg,.jpeg,.png,.webp,.pdf,.docx"
+                aria-label="Choose message attachment" onChange={(event) => { void handleAttachment(event.target.files?.[0]); event.target.value = ""; }}/>
+
               <div className="flex gap-2 rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-2 shadow-inner">
+                <button type="button" aria-label="Attach a private file" title="Attach a file" disabled={isUploadingFile || isSending}
+                  onClick={() => fileRef.current?.click()} className="rounded-xl p-2 text-[#163B5C] hover:bg-white focus-visible:ring-2 focus-visible:ring-[#163B5C]">
+                  {isUploadingFile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+                </button>
                 <input
                   ref={messageInputRef}
                   type="text"
@@ -692,7 +729,7 @@ const JobSeekerMessages = ({ userId }: { userId: string }) => {
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={isSending}
+                  disabled={isSending || isUploadingFile}
                   className="h-11 w-11 flex-shrink-0 rounded-2xl bg-[#163B5C] p-0 text-white hover:bg-[#0C2C48]"
                 >
                   <Send className="h-4 w-4" />

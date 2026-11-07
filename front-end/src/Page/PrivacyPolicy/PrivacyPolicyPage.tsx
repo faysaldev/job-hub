@@ -19,7 +19,7 @@ const sections = [
   { id: "sharing", title: "Who may see information", icon: ShieldCheck, details: [
     "A job application shares candidate information with the employer receiving that application.",
     "Publicly visible company profiles, job listings, and enabled candidate profiles may be viewed by other visitors.",
-    "JobHub uses service providers for hosting, storage, email, and payments; the current codebase integrates with Stripe and Cloudinary.",
+    "JobHub uses service providers for hosting, storage, email, and payments; the current codebase integrates with Stripe and Cloudflare R2; legacy Cloudinary links may remain during the staged migration.",
     "Do not put identity documents, passwords, or sensitive private details in a publicly visible profile or job description.",
   ] },
   { id: "security", title: "Security and retention", icon: LockKeyhole, details: [
@@ -29,7 +29,7 @@ const sections = [
   ] },
   { id: "payments", title: "Payments and third-party services", icon: CreditCard, details: [
     "Stripe handles payment checkout; payment-related information is processed according to Stripe's own terms and privacy notices.",
-    "Cloudinary currently handles uploaded images. A migration to Cloudflare R2 is planned separately.",
+    "New images and documents are stored in Cloudflare R2, with private resume access restricted to authorized users. Existing Cloudinary links may remain during migration.",
     "The platform may use session cookies and browser storage to maintain sign-in state and user preferences.",
   ] },
 ];

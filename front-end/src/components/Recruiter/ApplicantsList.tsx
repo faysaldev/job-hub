@@ -1,4 +1,5 @@
 "use client";
+import { SecureAssetLink } from "@/src/components/assets/SecureAssetLink";
 
 import { useState } from "react";
 import { Card } from "@/src/components/ui/card";
@@ -416,20 +417,11 @@ const ApplicantsList = ({ userId }: { userId: string }) => {
                     </div>
 
                     <div className="flex flex-wrap gap-3">
-                      <Button
-                        asChild
-                        variant="secondary"
-                        className="rounded-2xl border-none bg-[#163B5C]/5 font-black text-[#163B5C] hover:bg-[#163B5C]/10"
-                      >
-                        <a
-                          href={app.resume_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <FileText className="mr-2 h-4 w-4" /> View Resume
-                          <ArrowUpRight className="ml-2 h-4 w-4" />
-                        </a>
-                      </Button>
+                      <SecureAssetLink reference={app.resume_url}
+                        className="inline-flex items-center rounded-2xl bg-[#163B5C]/5 px-4 py-2 font-black text-[#163B5C] hover:bg-[#163B5C]/10 focus-visible:ring-2 focus-visible:ring-[#163B5C]">
+                        <FileText className="mr-2 h-4 w-4" /> View Resume
+                        <ArrowUpRight className="ml-2 h-4 w-4" />
+                      </SecureAssetLink>
                     </div>
 
                     {app.status === "under_review" && (

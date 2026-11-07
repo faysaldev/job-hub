@@ -274,21 +274,7 @@ export default function CandidateDetailsPage() {
                   </Badge>
                 )}
 
-                {(seeker.resume?.resumeLink || (typeof seeker.resume === "string" && seeker.resume)) && (
-                  <div className="space-y-3 border-t border-[#E1E8EF]/70 pt-5">
-                    <a
-                      href={seeker.resume?.resumeLink || seeker.resume}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full"
-                    >
-                      <Button className="h-11 w-full rounded-2xl bg-[#163B5C] hover:bg-[#163B5C]/90 font-black text-white transition duration-300 flex items-center justify-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        View Resume
-                      </Button>
-                    </a>
-                  </div>
-                )}
+                {/* Private resumes are available only through authenticated application access. */}
               </div>
             </Card>
 

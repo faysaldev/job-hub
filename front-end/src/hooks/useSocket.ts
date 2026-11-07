@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectToken } from "@/src/redux/features/auth/authSlice";
-import { initSocket, getSocket } from "@/src/lib/socket";
+import { initSocket, getSocket, disconnectSocket } from "@/src/lib/socket";
 import type { Socket } from "socket.io-client";
 
 /**
@@ -19,6 +19,8 @@ export function useSocket(): Socket | null {
 
   useEffect(() => {
     if (!token) {
+      // A restored/expired session must not keep a previous user's live socket.
+      disconnectSocket();
       setSocket(null);
       return;
     }

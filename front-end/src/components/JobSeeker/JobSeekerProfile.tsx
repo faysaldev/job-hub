@@ -19,6 +19,7 @@ import {
   useUpdateSeekerProfileMutation,
 } from "@/src/redux/features/seeker/seekerApi";
 import { useUpdateProfileMutation } from "@/src/redux/features/user/userApi";
+import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
 import { useAppSelector, useAppDispatch } from "@/src/redux/hooks";
 import {
   selectCurrentUser,
@@ -198,7 +199,8 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
   const [updateUserBasicInfo, { isLoading: isUpdatingUser }] =
     useUpdateProfileMutation();
 
-  const isSaving = isUpdatingSeeker || isCreating || isUpdatingUser;
+  const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
+  const isSaving = isUpdatingSeeker || isCreating || isUpdatingUser || isUploading;
   const profileData = (profileResponse as any)?.data;
 
   const methods = useForm<ProfileFormValues>({
@@ -296,13 +298,14 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
         data.phoneNumber !== currentUser?.phoneNumber ||
         imageState.file
       ) {
-        const formData = new FormData();
-        if (data.name !== currentUser?.name) formData.append("name", data.name);
-        if (data.phoneNumber !== currentUser?.phoneNumber)
-          formData.append("phoneNumber", data.phoneNumber);
-        if (imageState.file) formData.append("image", imageState.file);
-
-        const res = await updateUserBasicInfo(formData).unwrap();
+        const basicChanges: Record<string, string> = {};
+        if (data.name !== currentUser?.name) basicChanges.name = data.name;
+        if (data.phoneNumber !== currentUser?.phoneNumber) basicChanges.phoneNumber = data.phoneNumber;
+        if (imageState.file) {
+          const uploaded = await uploadFile({ file: imageState.file, kind: "avatar" }).unwrap();
+          basicChanges.image = uploaded.data.url;
+        }
+        const res = await updateUserBasicInfo(basicChanges).unwrap();
         if (res?.data && token) {
           dispatch(
             setUser({

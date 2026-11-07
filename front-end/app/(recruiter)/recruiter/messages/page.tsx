@@ -13,10 +13,6 @@ export const metadata: Metadata = {
     "jobhub recruiter",
     "message inbox",
   ],
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 export default function RecruiterMessagesPage() {

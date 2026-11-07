@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import gsap from "gsap";
 import JobSeekerLayout from "@/src/components/JobSeeker/JobSeekerLayout";
+import { useOpenAsset } from "@/src/components/assets/SecureAssetLink";
 import { useGetActivitiesQuery } from "@/src/redux/features/seeker/seekerApi";
 import { useGetSeekerDashboardStatsQuery } from "@/src/redux/features/generals/generalsApi";
 
@@ -71,6 +72,7 @@ function StatCard({ stat }: { stat: StatDef }) {
 }
 
 const JobSeekerDashboard = () => {
+  const { openAsset } = useOpenAsset();
   const { user, isAuthenticated } = useAuth();
   const rehydrated = useAppSelector(state => state.auth._persist?.rehydrated ?? false);
   const router = useRouter();
@@ -185,10 +187,7 @@ const JobSeekerDashboard = () => {
                 <Button
                   variant="outline"
                   className="h-12 rounded-2xl border-white/30 bg-transparent px-6 font-black text-white hover:bg-white/10"
-                  onClick={() =>
-                    apiStats?.resumeLink &&
-                    window.open(apiStats.resumeLink, "_blank")
-                  }
+                  onClick={() => { if (apiStats?.resumeLink) void openAsset(apiStats.resumeLink); }}
                   disabled={!apiStats?.resumeLink}
                 >
                   <FileText className="mr-2 h-4 w-4" />

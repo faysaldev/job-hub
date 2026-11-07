@@ -19,6 +19,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { useApplyToJobMutation } from "@/src/redux/features/applications/applicationsApi";
+import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
 import {
   useGetSeekerProfileQuery,
 } from "@/src/redux/features/seeker/seekerApi";
@@ -57,6 +58,19 @@ export default function ApplyJobModal({
   // API Queries and Mutations
   const { data: profileResponse } = useGetSeekerProfileQuery(undefined, { skip: !isAuthenticated });
   const [applyToJob, { isLoading }] = useApplyToJobMutation();
+  const [uploadFile, { isLoading: isUploadingResume }] = useUploadFileMutation();
+  const [uploadedResumeName, setUploadedResumeName] = useState("");
+  const handleResumeFile = async (file?: File) => {
+    if (!file) return;
+    try {
+      const uploaded = await uploadFile({ file, kind: "resume" }).unwrap();
+      setResumeUrl(uploaded.data.url);
+      setUploadedResumeName(uploaded.data.fileName);
+      toast.success("Resume uploaded privately");
+    } catch (error: any) {
+      toast.error(error?.data?.message || error?.error || "Unable to upload resume");
+    }
+  };
 
   const router = useRouter();
   const profile = (profileResponse as any)?.data;
@@ -74,7 +88,7 @@ export default function ApplyJobModal({
     e.preventDefault();
 
     if (!resumeUrl) {
-      toast.error("Resume URL is required");
+      toast.error("Upload a resume or select one from your profile");
       return;
     }
 
@@ -166,7 +180,7 @@ export default function ApplyJobModal({
                     Resume
                   </Label>
 
-                  {currentResumeUrl ? (
+                  {resumeUrl ? (
                     <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl border border-green-100 group/resume w-full min-w-0">
                       <div className="flex items-center gap-3 min-w-0 w-full">
                         <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -174,7 +188,7 @@ export default function ApplyJobModal({
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-black text-green-900 truncate">
-                            {currentResumeName}
+                            {uploadedResumeName || currentResumeName}
                           </p>
                           <p className="text-[10px] font-bold text-green-700/70 uppercase tracking-wider truncate">
                             Current resume on file
@@ -193,12 +207,18 @@ export default function ApplyJobModal({
                             No Resume Uploaded
                           </p>
                           <p className="text-[10px] font-bold text-red-700/70 uppercase tracking-wider truncate">
-                            Please upload a resume in your profile first
+                            Choose a PDF or DOCX file below
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[#163B5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#163B5C] focus-within:ring-2 focus-within:ring-[#163B5C]">
+                    <FileText className="h-4 w-4" /> {isUploadingResume ? "Uploading..." : "Upload or replace resume"}
+                    <input type="file" className="sr-only" disabled={isUploadingResume}
+                      accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={(event) => { void handleResumeFile(event.target.files?.[0]); event.target.value = ""; }} />
+                  </label>
                 </div>
 
                 <div className="space-y-2">

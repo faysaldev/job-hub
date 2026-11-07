@@ -15,7 +15,7 @@ const recruiterLinks = [
   { href: "/recruiter/jobs", label: "Job listings", icon: BriefcaseBusiness },
   { href: "/recruiter/create-job", label: "Create job", icon: Plus },
   { href: "/recruiter/applicants", label: "Applicants", icon: Users },
-  { href: "/recruiter/interviews", label: "Messages", icon: MessageSquare },
+  { href: "/recruiter/messages", label: "Messages", icon: MessageSquare },
   { href: "/recruiter/interview-schedule", label: "Interviews", icon: CalendarDays },
   { href: "/recruiter/company", label: "Company profile", icon: Building2 },
 ];
