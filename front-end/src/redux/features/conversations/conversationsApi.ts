@@ -18,6 +18,7 @@ const conversationsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      transformResponse: (response: { data: Conversation }) => response.data,
       invalidatesTags: ["conversations"],
     }),
 

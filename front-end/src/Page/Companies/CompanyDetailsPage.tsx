@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useGetSingleCompanyQuery } from "@/src/redux/features/company/companyApi";
+import { useGetFollowedCompaniesQuery, useSetCompanyFollowMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
+import { useAuth } from "@/src/hooks/useAuth";
 import {
   Building2,
   Globe,
@@ -21,6 +23,8 @@ import {
   Loader2,
   ArrowLeft,
   ArrowUpRight,
+  BellPlus,
+  BellOff,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/src/components/ui/badge";
@@ -33,6 +37,17 @@ import gsap from "gsap";
 
 const CompanyDetailsPage = () => {
   const { id } = useParams();
+  const { isJobSeeker, sessionChecked } = useAuth();
+  const { data: followedCompanies = [], isLoading: followingLoading } = useGetFollowedCompaniesQuery(undefined,
+    { skip: !sessionChecked || !isJobSeeker });
+  const [setFollow, { isLoading: updatingFollow }] = useSetCompanyFollowMutation();
+  const isFollowing = followedCompanies.includes(String(id));
+  const toggleFollow = async () => {
+    try {
+      await setFollow({ companyId: String(id), following: !isFollowing }).unwrap();
+      toast.success(isFollowing ? "Employer unfollowed" : "Employer followed. New job alerts are enabled.");
+    } catch (error: any) { toast.error(error?.data?.message || "Could not update employer follow"); }
+  };
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     data: response,
@@ -181,10 +196,10 @@ const CompanyDetailsPage = () => {
               {/* Title */}
               <div className="flex-1 space-y-5 text-center lg:text-left">
                 <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-                  <Badge className="flex items-center gap-2 rounded-full border-emerald-300/30 bg-emerald-400/15 px-3 py-1 text-xs font-black tracking-wider text-emerald-200">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+                  {company.verification?.status === "verified" && <Badge className="flex items-center gap-2 rounded-full border-emerald-300/30 bg-emerald-400/15 px-3 py-1 text-xs font-black tracking-wider text-emerald-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
                     Verified Employer
-                  </Badge>
+                  </Badge>}
                   <Badge className="rounded-full border-white/20 bg-white/10 px-3 py-1 text-xs font-black text-white">
                     {company.industries || "Company"}
                   </Badge>
@@ -192,6 +207,12 @@ const CompanyDetailsPage = () => {
                 <h1 className="text-4xl font-black tracking-tight text-white md:text-6xl">
                   {company.companyName}
                 </h1>
+                {isJobSeeker && <button type="button" onClick={() => void toggleFollow()}
+                  disabled={followingLoading || updatingFollow}
+                  aria-pressed={isFollowing} className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white px-4 py-2 text-sm font-semibold text-[#163B5C] disabled:opacity-60">
+                  {isFollowing ? <BellOff className="h-4 w-4"/> : <BellPlus className="h-4 w-4"/>}
+                  {isFollowing ? "Unfollow employer" : "Follow for new jobs"}
+                </button>}
                 <div className="flex flex-wrap items-center justify-center gap-4 text-base font-medium text-white/75 lg:justify-start">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-white/70" />

@@ -16,6 +16,15 @@ const savedJobsApi = baseApi.injectEndpoints({
     deleteSavedSearch: builder.mutation<unknown, string>({
       query: (id) => ({ url: `/saved-jobs/searches/${id}`, method: "DELETE" }), invalidatesTags: ["savedJobs"],
     }),
+    getFollowedCompanies: builder.query<string[], void>({
+      query: () => "/saved-jobs/companies",
+      transformResponse: (response: { data: string[] }) => response.data,
+      providesTags: ["savedJobs"],
+    }),
+    setCompanyFollow: builder.mutation<{ data: { companyId: string; following: boolean } }, { companyId: string; following: boolean }>({
+      query: ({ companyId, following }) => ({ url: `/saved-jobs/companies/${companyId}`, method: "PATCH", body: { following } }),
+      invalidatesTags: ["savedJobs"],
+    }),
     // POST /saved-jobs - Save a job
     saveJob: builder.mutation<SavedJob, { jobId: string }>({
       query: (body) => ({
@@ -48,6 +57,8 @@ const savedJobsApi = baseApi.injectEndpoints({
 
 export const {
   useGetSavedSearchesQuery,
+  useGetFollowedCompaniesQuery,
+  useSetCompanyFollowMutation,
   useCreateSavedSearchMutation,
   useUpdateSavedSearchMutation,
   useDeleteSavedSearchMutation,

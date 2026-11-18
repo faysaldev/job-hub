@@ -58,7 +58,7 @@ export const interviewsApi = baseApi.injectEndpoints({
     // PATCH /interviews/:interviewId/reschedule - Reschedule an interview
     rescheduleInterview: builder.mutation<
       Interview,
-      { interviewId: string; date: string; start_time: string; end_time: string }
+      { interviewId: string; date: string; start_time: string; end_time: string; timeZone?: string; meet_link?: string; interviewer?: string }
     >({
       query: ({ interviewId, ...data }) => ({
         url: `/interviews/${interviewId}/reschedule`,

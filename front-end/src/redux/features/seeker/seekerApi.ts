@@ -12,6 +12,9 @@ export interface ActivityLog {
   updatedAt: string;
 }
 
+export type CandidateEngagement = { status: "none" | "saved" | "shortlisted";
+  application: { id: string; status: string; jobId: string } | null;
+  canMessage: boolean; userId?: string };
 const seekerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // GET /job-seekers/activities - Get latest 5 activities
@@ -55,6 +58,16 @@ const seekerApi = baseApi.injectEndpoints({
       providesTags: (result, error, id) => [{ type: "jobSeekerProfile", id }],
     }),
 
+    getCandidateEngagement: builder.query<CandidateEngagement, string>({
+      query: (id) => `/job-seekers/${id}/engagement`,
+      transformResponse: (response: { data: CandidateEngagement }) => response.data,
+      providesTags: (result, error, id) => [{ type: "jobSeekerProfile", id }],
+    }),
+    updateCandidateEngagement: builder.mutation<{ data: { status: CandidateEngagement["status"] } },
+      { id: string; action: "save" | "shortlist" | "remove" }>({
+      query: ({ id, action }) => ({ url: `/job-seekers/${id}/engagement`, method: "PATCH", body: { action } }),
+      invalidatesTags: (result, error, { id }) => [{ type: "jobSeekerProfile", id }],
+    }),
     // GET /job-seekers/all - Get all seekers (Recruiter browsing)
     getAllSeekers: builder.query<any, any>({
       query: (params) => ({
@@ -85,6 +98,8 @@ export const {
   useGetSeekerProfileQuery,
   useGetSeekerByIdQuery,
   useGetAllSeekersQuery,
+  useGetCandidateEngagementQuery,
+  useUpdateCandidateEngagementMutation,
   useUpdateSeekerProfileMutation,
   useGetActivitiesQuery,
 } = seekerApi;

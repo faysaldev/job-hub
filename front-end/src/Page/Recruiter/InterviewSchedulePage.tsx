@@ -20,6 +20,8 @@ import {
   MapPin,
   MoreVertical,
   User,
+  Search,
+  Filter,
   Shield,
   Loader2,
   ArrowUpRight,
@@ -27,9 +29,11 @@ import {
 import { cn } from "@/src/lib/utils";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { useToast } from "@/src/hooks/use-toast";
+import { useGetTeamQuery } from "@/src/redux/features/hiring/hiringApi";
 import {
   useGetMyInterviewsQuery,
   useRescheduleInterviewMutation,
+  useUpdateInterviewStatusMutation,
 } from "@/src/redux/features/interviews/interviewsApi";
 
 export default function InterviewSchedulePage() {
@@ -54,34 +58,36 @@ export default function InterviewSchedulePage() {
 
   return (
     <RecruiterLayout>
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Pitch-Black Hero Header */}
-        <section className="relative overflow-hidden rounded-2xl bg-black p-6 sm:p-8 text-white border border-neutral-800 shadow-xs">
-          <div className="relative z-10 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="animate-in fade-in mx-auto max-w-7xl space-y-8 duration-700">
+        <section className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1 text-xs font-semibold text-neutral-300">
-                <Shield className="h-3.5 w-3.5 text-neutral-400" />
-                <span>Interview Calendar</span>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
+                <Shield className="h-4 w-4" />
+                <span>Recruiter Interview Calendar</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+              <h1 className="text-3xl font-black tracking-tight md:text-5xl">
                 Recruitment Schedule
               </h1>
-              <p className="mt-1 max-w-2xl text-xs sm:text-sm text-neutral-400">
-                Oversee candidate sessions, reschedule meetings, and launch video interviews.
+              <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-white/75">
+                Oversee candidate interviews, reschedule sessions, and launch
+                meetings from one organized calendar workspace.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {[
                 { label: "Upcoming", value: upcomingInterviews.length },
                 { label: "Complete", value: completedCount },
-                { label: "Cancelled", value: cancelledCount },
+                { label: "Canceled", value: cancelledCount },
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-xl border border-neutral-800 bg-neutral-900 px-3.5 py-2 text-center"
+                  className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-center backdrop-blur-sm"
                 >
-                  <p className="text-lg font-bold text-white">{item.value}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  <p className="text-2xl font-black">{item.value}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/65">
                     {item.label}
                   </p>
                 </div>
@@ -90,71 +96,71 @@ export default function InterviewSchedulePage() {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           {/* Sidebar Stats */}
-          <div className="space-y-4 lg:col-span-1">
-            <Card className="rounded-2xl border border-neutral-800 bg-black p-5 text-white shadow-xs">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-1">
+          <div className="space-y-6 lg:col-span-1">
+            <Card className="overflow-hidden rounded-3xl border-none bg-[#163B5C] p-6 text-white shadow-xl shadow-[#163B5C]/20">
+              <p className="mb-1 text-sm font-black uppercase tracking-widest text-white/60">
                 Scheduled Queue
               </p>
-              <p className="text-2xl font-black mb-3">
+              <p className="mb-5 text-4xl font-black">
                 {upcomingInterviews.length}
               </p>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {upcomingInterviews.slice(0, 3).map((interview: any) => (
                   <div
                     key={interview._id}
-                    className="flex items-center gap-2.5 rounded-xl border border-neutral-800 bg-neutral-900 p-2.5"
+                    className="flex items-center gap-3 rounded-2xl bg-white/10 p-3"
                   >
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-800 text-neutral-300 shrink-0">
-                      <Clock className="h-3.5 w-3.5" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+                      <Clock className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-white truncate">
+                      <p className="text-xs font-black">
                         {interview.start_time}
                       </p>
-                      <p className="text-[10px] text-neutral-400 truncate">
+                      <p className="max-w-[140px] truncate text-[10px] font-semibold text-white/65">
                         {interview.interviewee?.name || "Candidate"}
                       </p>
                     </div>
                   </div>
                 ))}
                 {!upcomingInterviews.length && (
-                  <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-3 text-xs text-neutral-400 text-center">
-                    No scheduled sessions.
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm font-semibold text-white/70">
+                    No scheduled sessions yet.
                   </div>
                 )}
               </div>
             </Card>
 
-            <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs">
-              <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-neutral-400">
-                Status Breakdown
+            <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+              <h3 className="mb-5 font-black text-[#163B5C]">
+                Status Overview
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
                   {
                     label: "Scheduled",
                     count: upcomingInterviews.length,
-                    color: "bg-black",
+                    color: "bg-[#163B5C]",
                   },
                   {
                     label: "Completed",
                     count: completedCount,
-                    color: "bg-emerald-600",
+                    color: "bg-emerald-500",
                   },
                   {
                     label: "Cancelled",
                     count: cancelledCount,
-                    color: "bg-neutral-300",
+                    color: "bg-red-500",
                   },
                 ].map((stat) => (
                   <div key={stat.label}>
-                    <div className="mb-1 flex items-center justify-between text-xs font-semibold">
-                      <span className="text-neutral-600">{stat.label}</span>
-                      <span className="text-neutral-900 font-bold">{stat.count}</span>
+                    <div className="mb-1.5 flex items-center justify-between text-sm font-black">
+                      <span className="text-[#516C83]">{stat.label}</span>
+                      <span className="text-[#163B5C]">{stat.count}</span>
                     </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-[#E1E8EF]">
                       <div
                         className={cn("h-full rounded-full", stat.color)}
                         style={{
@@ -173,38 +179,41 @@ export default function InterviewSchedulePage() {
           </div>
 
           {/* Main Schedule List */}
-          <div className="space-y-4 lg:col-span-3">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-[#eaecf0] bg-white py-16 shadow-xs">
-                <Loader2 className="h-6 w-6 animate-spin text-neutral-800" />
-                <p className="mt-2 text-xs font-medium text-neutral-500">
-                  Syncing your recruitment schedule...
-                </p>
-              </div>
-            ) : interviews.length > 0 ? (
-              interviews.map((interview: any) => (
-                <RecruiterInterviewCard
-                  key={interview._id}
-                  interview={interview}
-                  onReschedule={() => {
-                    setSelectedInterview(interview);
-                    setIsRescheduleOpen(true);
-                  }}
-                />
-              ))
-            ) : (
-              <Card className="rounded-2xl border border-dashed border-[#eaecf0] bg-white py-16 text-center shadow-xs">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
-                  <CalendarIcon className="h-7 w-7" />
+          <div className="space-y-6 lg:col-span-3">
+            <div className="space-y-4">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-[#163B5C]/10 bg-white py-20 shadow-sm">
+                  <Loader2 className="h-10 w-10 animate-spin text-[#163B5C]" />
+                  <p className="mt-4 font-medium text-[#516C83]">
+                    Syncing your recruitment schedule...
+                  </p>
                 </div>
-                <h3 className="text-base font-bold text-neutral-950">
-                  No Interviews Scheduled
-                </h3>
-                <p className="mx-auto mt-1 max-w-xs text-xs text-neutral-500">
-                  Your schedule is clear. Invitations will appear here once candidates confirm.
-                </p>
-              </Card>
-            )}
+              ) : interviews.length > 0 ? (
+                interviews.map((interview: any) => (
+                  <RecruiterInterviewCard
+                    key={interview._id}
+                    interview={interview}
+                    onReschedule={() => {
+                      setSelectedInterview(interview);
+                      setIsRescheduleOpen(true);
+                    }}
+                  />
+                ))
+              ) : (
+                <div className="rounded-3xl border-2 border-dashed border-[#163B5C]/15 bg-white py-24 text-center shadow-sm">
+                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#163B5C]/5">
+                    <CalendarIcon className="h-10 w-10 text-[#516C83]/35" />
+                  </div>
+                  <h3 className="text-2xl font-black text-[#163B5C]">
+                    No Interviews Scheduled
+                  </h3>
+                  <p className="mx-auto mt-2 max-w-sm text-[#516C83]">
+                    Your schedule is currently clear. Interviews will appear
+                    here once you coordinate with candidates.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -230,124 +239,152 @@ function RescheduleDialog({
   const { toast } = useToast();
   const [rescheduleInterview, { isLoading }] = useRescheduleInterviewMutation();
 
+  // Format date to YYYY-MM-DD for input
   const initialDate = interview
     ? new Date(interview.date).toISOString().split("T")[0]
     : "";
   const [date, setDate] = useState(initialDate);
   const [startTime, setStartTime] = useState(interview?.start_time || "");
   const [endTime, setEndTime] = useState(interview?.end_time || "");
+  const [timeZone, setTimeZone] = useState(interview?.timeZone || "UTC");
+  const [meetingLink, setMeetingLink] = useState(interview?.meet_link || "");
+  const [assignedInterviewer, setAssignedInterviewer] = useState(interview?.interviewer?._id || interview?.interviewer || "");
+  const { data: teamResponse } = useGetTeamQuery();
+  const workspace = teamResponse?.data.workspace;
 
+  // Reset state when interview changes or dialog opens
   useEffect(() => {
     if (interview) {
       setDate(new Date(interview.date).toISOString().split("T")[0]);
-      setStartTime(interview.start_time || "");
-      setEndTime(interview.end_time || "");
+      setStartTime(interview.start_time);
+      setEndTime(interview.end_time);
+      setTimeZone(interview.timeZone || "UTC");
+      setMeetingLink(interview.meet_link || "");
+      setAssignedInterviewer(interview.interviewer?._id || interview.interviewer || "");
     }
   }, [interview]);
 
   const handleReschedule = async () => {
-    if (!date || !startTime || !endTime) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all date and time fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    if (endTime <= startTime) return toast({ title: "Invalid time range", description: "End must be after start", variant: "destructive" });
     try {
       await rescheduleInterview({
         interviewId: interview._id,
         date,
         start_time: startTime,
         end_time: endTime,
+        timeZone,
+        meet_link: meetingLink,
+        ...(assignedInterviewer ? { interviewer: assignedInterviewer } : {}),
       }).unwrap();
 
       toast({
-        title: "Success",
-        description: "Interview rescheduled successfully.",
+        title: "Session Rescheduled",
+        description: "The interview time has been updated successfully.",
       });
       onClose();
-    } catch (err: any) {
+    } catch (error: any) {
       toast({
-        title: "Reschedule Failed",
-        description:
-          err?.data?.message ||
-          "Could not reschedule interview. Please try again.",
+        title: "Update Failed",
+        description: error?.data?.message || "Failed to reschedule the interview. Please try again.",
         variant: "destructive",
       });
     }
   };
 
+  if (!interview) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px] rounded-2xl border border-[#eaecf0] bg-white p-0 overflow-hidden shadow-xl">
-        <div className="bg-black p-5 text-white border-b border-neutral-800">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-white">
-              Reschedule Interview
-            </DialogTitle>
-          </DialogHeader>
-        </div>
+      <DialogContent className="overflow-hidden rounded-3xl border-none bg-white p-8 shadow-2xl sm:max-w-[425px]">
+        <DialogHeader className="mb-6">
+          <DialogTitle className="text-2xl font-black text-[#163B5C] tracking-tight">
+            Reschedule Session
+          </DialogTitle>
+          <p className="text-sm font-medium text-[#516C83]">
+            Updating session for{" "}
+            <span className="font-bold text-[#163B5C]">
+              {interview.interviewee?.name}
+            </span>
+          </p>
+        </DialogHeader>
 
-        <div className="p-5 space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="date" className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-              New Date
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#163B5C]/60">
+              Interview Date
             </Label>
             <Input
-              id="date"
               type="date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="h-9 rounded-xl border border-[#eaecf0] bg-white text-xs"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setDate(e.target.value)
+              }
+              className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] font-bold text-[#163B5C] focus:ring-[#163B5C]"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="startTime" className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#163B5C]/60">
                 Start Time
               </Label>
               <Input
-                id="startTime"
                 type="time"
                 value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="h-9 rounded-xl border border-[#eaecf0] bg-white text-xs"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setStartTime(e.target.value)
+                }
+                className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] font-bold text-[#163B5C] focus:ring-[#163B5C]"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="endTime" className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+            <div className="space-y-2">
+              <Label className="ml-1 text-xs font-black uppercase tracking-widest text-[#163B5C]/60">
                 End Time
               </Label>
               <Input
-                id="endTime"
                 type="time"
                 value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="h-9 rounded-xl border border-[#eaecf0] bg-white text-xs"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setEndTime(e.target.value)
+                }
+                className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] font-bold text-[#163B5C] focus:ring-[#163B5C]"
               />
             </div>
           </div>
+          <div className="space-y-2"><Label htmlFor="interview-timezone">IANA time zone</Label>
+            <Input id="interview-timezone" required value={timeZone} maxLength={64} onChange={e => setTimeZone(e.target.value)}
+              placeholder="e.g. Asia/Dhaka" list="reschedule-timezones" />
+            <datalist id="reschedule-timezones"><option value="UTC"/><option value="Asia/Dhaka"/><option value="America/New_York"/><option value="Europe/London"/></datalist>
+          </div>
+          <div className="space-y-2"><Label htmlFor="reschedule-meeting-link">Meeting URL (HTTPS, optional)</Label>
+            <Input id="reschedule-meeting-link" type="url" value={meetingLink} onChange={e => setMeetingLink(e.target.value)} placeholder="https://..." />
+          </div>
+          {workspace && <div className="space-y-2"><Label htmlFor="reschedule-interviewer">Assigned interviewer</Label>
+            <select id="reschedule-interviewer" value={assignedInterviewer} onChange={e => setAssignedInterviewer(e.target.value)}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm">
+              <option value={workspace.company.userId}>Company owner</option>
+              {workspace.members.filter(m => m.status === "active" && Boolean(m.userId)).map(m =>
+                <option key={m._id} value={m.userId}>{m.email} ({m.role})</option>)}
+            </select>
+          </div>}
         </div>
 
-        <DialogFooter className="bg-neutral-50 px-5 py-3 border-t border-neutral-100 gap-2">
+        <DialogFooter className="mt-8 gap-3 sm:gap-0">
           <Button
             variant="ghost"
             onClick={onClose}
-            className="h-8 rounded-xl px-4 text-xs font-bold uppercase tracking-wider text-neutral-600 hover:text-black"
+            className="flex-1 rounded-2xl font-black text-[#516C83] hover:bg-[#163B5C]/5 sm:flex-none"
           >
             Cancel
           </Button>
           <Button
             onClick={handleReschedule}
             disabled={isLoading}
-            className="h-8 rounded-xl bg-black px-4 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800"
+            className="h-12 flex-1 rounded-2xl bg-[#163B5C] px-8 font-black text-white shadow-lg shadow-[#163B5C]/20 transition-all hover:bg-[#516C83] active:scale-95 sm:flex-none"
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Updating...
               </>
             ) : (
@@ -367,94 +404,114 @@ function RecruiterInterviewCard({
   interview: any;
   onReschedule: () => void;
 }) {
+  const { toast } = useToast();
+  const [changeStatus, { isLoading: updating }] = useUpdateInterviewStatusMutation();
+  const canLaunch = typeof interview.meet_link === "string" && /^https:\/\//i.test(interview.meet_link);
   const handleLaunchSession = () => {
-    if (interview.meet_link) {
-      window.open(interview.meet_link, "_blank");
-    }
+    if (canLaunch) window.open(interview.meet_link, "_blank", "noopener,noreferrer");
+  };
+  const setStatus = async (status: "completed" | "cancelled") => {
+    if (status === "cancelled" && !window.confirm("Cancel this interview and notify the candidate?")) return;
+    try { await changeStatus({ interviewId: interview._id, status }).unwrap();
+      toast({ title: status === "completed" ? "Interview completed" : "Interview cancelled" });
+    } catch (error: any) { toast({ title: "Unable to update interview", description: error?.data?.message || "Please retry", variant: "destructive" }); }
   };
 
   return (
-    <Card className="rounded-2xl border border-[#eaecf0] bg-white p-4 sm:p-5 shadow-xs hover:shadow-md transition-all">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100">
-            {interview.interviewee?.image ? (
-              <img
-                src={interview.interviewee.image}
-                alt={interview.interviewee.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-neutral-500">
-                <User className="h-5 w-5" />
-              </div>
-            )}
+    <Card className="group relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-[#163B5C]/25 hover:shadow-xl hover:shadow-[#163B5C]/10">
+      <div className="p-6">
+        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-5">
+            <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] shadow-sm">
+              {interview.interviewee?.image ? (
+                <img
+                  src={interview.interviewee.image}
+                  alt={interview.interviewee.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#163B5C]/5 to-[#516C83]/5 text-[#163B5C]">
+                  <User className="h-6 w-6" />
+                </div>
+              )}
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-[#163B5C] transition-colors group-hover:text-[#516C83]">
+                {interview.job_id?.title || "Job Title"}
+              </h3>
+              <p className="text-sm font-medium text-[#516C83]">
+                Candidate:{" "}
+                <span className="font-bold text-[#163B5C]">
+                  {interview.interviewee?.name || "Unknown Candidate"}
+                </span>
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-bold text-neutral-950 truncate">
-              {interview.job_id?.title || "Job Position"}
-            </h3>
-            <p className="text-xs text-neutral-500 truncate">
-              Candidate:{" "}
-              <span className="font-semibold text-neutral-900">
-                {interview.interviewee?.name || "Candidate"}
+
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] px-4 py-2">
+              <CalendarIcon className="h-4 w-4 text-[#163B5C]" />
+              <span className="text-sm font-bold text-[#163B5C]">
+                {new Date(interview.date).toLocaleDateString(undefined, { timeZone: "UTC" })}
               </span>
-            </p>
+            </div>
+            <div className="flex items-center gap-2 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] px-4 py-2">
+              <Clock className="h-4 w-4 text-[#163B5C]" />
+              <span className="text-sm font-bold text-[#163B5C]">
+                {interview.start_time} ({interview.timeZone || "UTC"})
+              </span>
+            </div>
+            <Badge
+              className={cn(
+                "border-none px-3 py-1 rounded-xl text-[10px] font-black uppercase",
+                interview.status === "scheduled"
+                  ? "bg-emerald-50 text-emerald-700 shadow-sm shadow-emerald-100"
+                  : "bg-[#516C83]/10 text-[#516C83]",
+              )}
+            >
+              {interview.status}
+            </Badge>
+
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="flex items-center gap-1 rounded-md bg-[#f8fafc] px-2.5 py-1 text-xs font-medium text-neutral-700">
-            <CalendarIcon className="h-3.5 w-3.5 text-neutral-400" />
-            {new Date(interview.date).toLocaleDateString()}
-          </span>
-          <span className="flex items-center gap-1 rounded-md bg-[#f8fafc] px-2.5 py-1 text-xs font-medium text-neutral-700">
-            <Clock className="h-3.5 w-3.5 text-neutral-400" />
-            {interview.start_time}
-          </span>
-          <span
-            className={cn(
-              "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-              interview.status === "scheduled"
-                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                : "bg-neutral-100 text-neutral-600 border border-neutral-200",
+        <div className="mt-6 flex flex-col justify-between gap-4 border-t border-[#163B5C]/10 pt-6 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 text-sm text-[#516C83]">
+            {interview.type === "video" ? (
+              <Video className="h-4 w-4" />
+            ) : (
+              <MapPin className="h-4 w-4" />
             )}
-          >
-            {interview.status}
-          </span>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-neutral-100 pt-3">
-        <div className="flex items-center gap-1.5 text-xs text-neutral-500">
-          {interview.type === "video" ? (
-            <Video className="h-3.5 w-3.5 text-neutral-400" />
-          ) : (
-            <MapPin className="h-3.5 w-3.5 text-neutral-400" />
-          )}
-          <span className="font-medium capitalize">
-            {interview.type} Interview
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {interview.status === "scheduled" && (
-            <Button
-              variant="outline"
-              onClick={onReschedule}
-              className="h-8 rounded-lg border-neutral-300 text-neutral-700 text-[10px] font-bold uppercase tracking-wider px-3 hover:bg-neutral-50"
-            >
-              Reschedule
-            </Button>
-          )}
-          {interview.meet_link && interview.status === "scheduled" && (
-            <Button
-              onClick={handleLaunchSession}
-              className="h-8 rounded-lg bg-black px-3.5 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-neutral-800"
-            >
-              Launch Session
-              <ArrowUpRight className="ml-1 h-3 w-3" />
-            </Button>
-          )}
+            <span className="font-bold capitalize tracking-tight">
+              {interview.type} Interview
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            {interview.status === "scheduled" && (
+              <Button
+                variant="outline"
+                onClick={onReschedule}
+                className="h-10 rounded-2xl border-[#163B5C]/20 text-xs font-black text-[#163B5C] hover:bg-[#163B5C]/5"
+              >
+                Reschedule
+              </Button>
+            )}
+            {interview.status === "scheduled" && <>
+              <Button type="button" disabled={updating} variant="outline" onClick={() => void setStatus("completed")}
+                className="h-10 rounded-xl border-emerald-300 text-xs font-semibold text-emerald-700">Complete</Button>
+              <Button type="button" disabled={updating} variant="outline" onClick={() => void setStatus("cancelled")}
+                className="h-10 rounded-xl border-red-200 text-xs font-semibold text-red-700">Cancel interview</Button>
+            </>}
+            {canLaunch && interview.status === "scheduled" && (
+              <Button
+                onClick={handleLaunchSession}
+                className="h-10 rounded-2xl bg-[#163B5C] px-6 text-xs font-black text-white shadow-md transition-all hover:bg-[#516C83] active:scale-95"
+              >
+                Launch Session
+                <ArrowUpRight className="ml-2 h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </Card>

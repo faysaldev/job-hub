@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
@@ -21,10 +21,13 @@ import {
 import { cn } from "@/src/lib/utils";
 import gsap from "gsap";
 import JobSeekerLayout from "@/src/components/JobSeeker/JobSeekerLayout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/src/components/ui/dialog";
+import Link from "next/link";
 import { useGetMyInterviewsQuery } from "@/src/redux/features/interviews/interviewsApi";
 
 export default function JobSeekerInterviewsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [prepOpen, setPrepOpen] = useState(false);
   const { data: interviews = [], isLoading } = useGetMyInterviewsQuery({
     role: "interviewee",
   });
@@ -198,7 +201,7 @@ export default function JobSeekerInterviewsPage() {
                   Review your profile, resume, and role details before your next
                   session.
                 </p>
-                <Button className="mt-5 h-11 w-full rounded-2xl bg-white font-black text-[#163B5C] hover:bg-[#E1E8EF]">
+                <Button type="button" onClick={() => setPrepOpen(true)} className="mt-5 h-11 w-full rounded-2xl bg-white font-black text-[#163B5C] hover:bg-[#E1E8EF]">
                   View Prep Material
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -231,6 +234,27 @@ export default function JobSeekerInterviewsPage() {
             </Card>
           </aside>
         </div>
+        <Dialog open={prepOpen} onOpenChange={setPrepOpen}>
+          <DialogContent className="max-w-lg rounded-2xl bg-white p-6">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold text-[#163B5C]">Interview preparation</DialogTitle>
+              <DialogDescription>Use this checklist before your next scheduled interview.</DialogDescription>
+            </DialogHeader>
+            {upcomingInterviews[0] && <div className="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+              <strong>{(upcomingInterviews[0] as any).job_id?.title || "Your next interview"}</strong>
+              <p>{new Date((upcomingInterviews[0] as any).date).toLocaleDateString(undefined, { timeZone: "UTC" })}
+                {" · "}{(upcomingInterviews[0] as any).start_time}{" "}{(upcomingInterviews[0] as any).timeZone || "UTC"}</p>
+            </div>}
+            <ul className="list-disc space-y-2 pl-5 text-sm leading-6 text-slate-700">
+              <li>Review the job description, required skills, and the employer&apos;s public profile.</li>
+              <li>Prepare two recent projects with your role, decisions, and measurable outcomes.</li>
+              <li>Confirm your time zone, interview duration, and meeting link at least one day beforehand.</li>
+              <li>Test your microphone, camera, and connection for online interviews.</li>
+              <li>Prepare thoughtful questions about the team, expectations, and next steps.</li>
+            </ul>
+            <Link href="/job-seeker/profile" className="text-sm font-semibold text-[#163B5C] underline">Review your candidate profile</Link>
+          </DialogContent>
+        </Dialog>
       </div>
     </JobSeekerLayout>
   );
@@ -260,12 +284,10 @@ function InterviewCard({
         <div className="flex items-start gap-5">
           <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#163B5C]/10 text-[#163B5C]">
             <span className="text-[10px] font-black uppercase tracking-widest opacity-70">
-              {new Date(interview.date).toLocaleString("default", {
-                month: "short",
-              })}
+              {new Date(interview.date).toLocaleString("default", { month: "short", timeZone: "UTC" })}
             </span>
             <span className="text-2xl font-black leading-none">
-              {new Date(interview.date).getDate()}
+              {new Date(interview.date).getUTCDate()}
             </span>
           </div>
           <div>
@@ -287,7 +309,7 @@ function InterviewCard({
             <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-[#516C83]">
               <div className="flex items-center gap-1.5 rounded-full bg-[#F4F7F8] px-3 py-1.5">
                 <Clock className="h-4 w-4 text-[#163B5C]" />
-                {interview.start_time} - {interview.end_time}
+                {interview.start_time} - {interview.end_time} ({interview.timeZone || "UTC"})
               </div>
               <div className="flex items-center gap-1.5 rounded-full bg-[#F4F7F8] px-3 py-1.5">
                 {interview.type === "video" ? (
@@ -297,6 +319,7 @@ function InterviewCard({
                 )}
                 <span className="capitalize">{interview.type} Interview</span>
               </div>
+              {interview.startAt && <p className="mt-2 text-xs text-[#516C83]">Your local time: {new Date(interview.startAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}</p>}
             </div>
           </div>
         </div>

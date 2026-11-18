@@ -98,6 +98,7 @@ export interface CompanyProfile {
     phoneNumber?: string;
   };
   companyLogo?: string;
+  verification?: { status: "unverified" | "pending" | "verified" | "rejected" };
   companyName: string;
   industries: string;
   companySize: string;
@@ -226,6 +227,9 @@ export interface Interview {
   date: string;
   start_time: string;
   end_time: string;
+  timeZone?: string;
+  startAt?: string;
+  endAt?: string;
   meet_link?: string;
   type: "video" | "audio" | "in-person";
   status: "scheduled" | "completed" | "cancelled";

@@ -18,6 +18,8 @@ export interface ATSApplication {
   applicant: { _id: string; name: string; image?: string; email?: string };
   job_id: { _id: string; title: string; author: string };
   resume_url: string; cover_letter?: string; createdAt: string;
+  allowedTransitions?: Array<"under_review" | "shortlisted" | "interview" | "hired" | "rejected">;
+  boostPriority?: number;
   stageHistory?: Array<{ from?: string; to: string; note?: string; at: string }>;
   internalNotes?: Array<{ text: string; authorId: string; createdAt: string }>;
   offer?: { salary: number; currency: string; message?: string; expiresAt: string; status: "sent" | "accepted" | "declined" | "expired" };

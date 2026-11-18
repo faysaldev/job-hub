@@ -21,7 +21,8 @@ export default function ATSWorkspace() {
   const [selected, setSelected] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [offer, setOffer] = useState({ salary: "", currency: "USD", message: "", expiresAt: "" });
-  const [interview, setInterview] = useState({date:"",start_time:"09:00",end_time:"10:00",type:"video" as "video" | "audio" | "in-person",meet_link:"",interviewer:""});
+  const [interview, setInterview] = useState({ date: "", start_time: "09:00", end_time: "10:00",
+    timeZone: "UTC", type: "video" as "video" | "audio" | "in-person", meet_link: "", interviewer: "" });
   const { data: teamResponse } = useGetTeamQuery();
   const companyTeam = teamResponse?.data.workspace;
   const { data, isLoading, isError, refetch } = useGetRecruiterApplicationsQuery({ status: stage === "all" ? undefined : stage });
@@ -41,8 +42,9 @@ export default function ATSWorkspace() {
   };
   const scheduleInterview = async (event: React.FormEvent) => {
     event.preventDefault(); if (!current) return;
+    if (interview.end_time <= interview.start_time) return toast.error("End time must be after the start time");
     try { await schedule({ application_id: current._id, job_id: current.job_id._id, interviewee: current.applicant._id,
-      date: new Date(`${interview.date}T12:00:00`).toISOString(), start_time: interview.start_time, end_time: interview.end_time,
+      date: `${interview.date}T00:00:00.000Z`, start_time: interview.start_time, end_time: interview.end_time, timeZone: interview.timeZone,
       ...(interview.interviewer ? { interviewer: interview.interviewer } : {}),
       type: interview.type, meet_link: interview.meet_link }).unwrap(); toast.success("Interview scheduled"); }
     catch (error: any) { toast.error(error?.data?.message || "Unable to schedule interview"); }
@@ -65,7 +67,7 @@ export default function ATSWorkspace() {
           className={`w-full p-5 text-left hover:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700 ${selected===app._id ? "bg-blue-50" : ""}`}>
           <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate font-semibold text-[#163B5C]">{app.applicant?.name || "Candidate"}</p>
             <p className="mt-1 truncate text-sm text-slate-600">{app.job_id?.title || "Job"}</p></div><span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs capitalize text-slate-700">{statusText(app.status)}</span></div>
-          <p className="mt-2 text-xs text-slate-500">Applied {new Date(app.createdAt).toLocaleDateString()}</p>
+          <p className="mt-2 text-xs text-slate-500">Applied {new Date(app.createdAt).toLocaleDateString()}{app.boostPriority === 1 && <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 font-semibold text-blue-700">Highlighted</span>}</p>
         </button>)}</div>
       </section>
       <aside className="self-start rounded-xl border border-[#d9e3ea] bg-white p-5" aria-label="Application details">
@@ -76,9 +78,9 @@ export default function ATSWorkspace() {
           </header>
           {current.cover_letter && <div><h3 className="mb-2 text-sm font-semibold">Cover letter</h3><p className="max-h-32 overflow-y-auto whitespace-pre-wrap text-sm leading-6 text-slate-600">{current.cover_letter}</p></div>}
           {!(["hired","rejected"].includes(current.status)) && <div><h3 className="mb-2 text-sm font-semibold text-[#163B5C]">Advance application</h3>
-            <div className="flex flex-wrap gap-2">{(["under_review","shortlisted","interview","hired","rejected"] as const).filter(x=>x!==current.status).map(next=><button key={next} className={secondary} disabled={saving}
+            <div className="flex flex-wrap gap-2">{(current.allowedTransitions || []).map(next=><button key={next} className={secondary} disabled={saving}
               onClick={() => { if (next === "rejected" && !confirm("Reject this application?")) return; void action(current._id,{action:"stage",status:next}); }}>{statusText(next)}</button>)}</div>
-            <p className="mt-2 text-xs text-slate-500">Unavailable stage transitions are rejected by the server.</p>
+            {!current.allowedTransitions?.length && <p className="mt-2 text-xs text-slate-500">No further stage changes are permitted for this application.</p>}
           </div>}
           <div><h3 className="mb-2 text-sm font-semibold text-[#163B5C]">Private hiring notes</h3>
             <div className="space-y-2">{(current.internalNotes || []).map((n,i)=><p className="rounded-md bg-slate-50 p-3 text-sm text-slate-700" key={i}>{n.text}<span className="mt-1 block text-xs text-slate-400">{new Date(n.createdAt).toLocaleDateString()}</span></p>)}</div>
@@ -101,6 +103,12 @@ export default function ATSWorkspace() {
             <div className="grid grid-cols-2 gap-2"><label className="col-span-2 text-xs">Date<input required type="date" className={`${input} mt-1`} min={new Date().toISOString().slice(0,10)} value={interview.date} onChange={e=>setInterview({...interview,date:e.target.value})}/></label>
               <label className="text-xs">Start<input required type="time" className={`${input} mt-1`} value={interview.start_time} onChange={e=>setInterview({...interview,start_time:e.target.value})}/></label>
               <label className="text-xs">End<input required type="time" className={`${input} mt-1`} value={interview.end_time} onChange={e=>setInterview({...interview,end_time:e.target.value})}/></label></div>
+            <label className="block text-xs">Time zone (IANA, e.g. Asia/Dhaka)
+              <input className={`${input} mt-1`} required maxLength={64} value={interview.timeZone}
+                onChange={e => setInterview({...interview, timeZone: e.target.value})} list="jobhub-time-zones" />
+              <datalist id="jobhub-time-zones"><option value="UTC"/><option value="Asia/Dhaka"/><option value="America/New_York"/>
+                <option value="America/Los_Angeles"/><option value="Europe/London"/><option value="Asia/Dubai"/></datalist>
+            </label>
             <select aria-label="Interview type" className={input} value={interview.type} onChange={e=>setInterview({...interview,type:e.target.value as typeof interview.type})}><option value="video">Video</option><option value="audio">Audio</option><option value="in-person">In person</option></select>
             {companyTeam && <label className="text-xs font-medium text-slate-600">Assigned interviewer
               <select className={`${input} mt-1`} aria-label="Assigned interviewer" value={interview.interviewer}
