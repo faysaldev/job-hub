@@ -9,6 +9,9 @@ const mongoose = require("mongoose");
   const indexes = [
     ["authsessions", { expiresAt: 1 }, { expireAfterSeconds: 0 }],
     ["authsessions", { userId: 1, revokedAt: 1, createdAt: -1 }, {}],
+    ["mailoutboxes", { status: 1, availableAt: 1, leaseUntil: 1 }, {}],
+    ["mailoutboxes", { userId: 1, purpose: 1, createdAt: -1 }, {}],
+    ["mailoutboxes", { retainUntil: 1 }, { expireAfterSeconds: 0 }],
     ["applications", { job_id: 1, applicant: 1 }, { unique: true }],
     ["applications", { applicant: 1, createdAt: -1 }, {}],
     ["applications", { job_id: 1, status: 1, createdAt: -1 }, {}],

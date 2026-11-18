@@ -7,7 +7,7 @@ const read = (p) => fs.readFileSync(path.join(root, p), "utf8");
 const cases = [
   ["public signup role restricted", "domains/Auth/auth.validation.ts", /z\.enum\(\["seeker", "recruiter"\]\)/],
   ["auth cookies are HTTP only", "domains/Auth/auth.controller.ts", /httpOnly:\s*true/],
-  ["refresh session rotated atomically", "domains/Auth/auth.token.services.ts", /refreshHash:\s*hash\(oldRefresh\)/],
+  ["refresh session rotated atomically", "domains/Auth/auth.token.services.ts", /refreshHash:\s*oldHash/],
   ["refresh sessions are revocable", "domains/Auth/auth.token.services.ts", /revokedAt:\s*\{\s*\$exists:\s*false/],
   ["password excluded from user selection", "domains/User/user.model.ts", /select:\s*false/],
   ["user updates allowlisted", "domains/User/user.services.ts", /updateProfileValidation\.parse/],

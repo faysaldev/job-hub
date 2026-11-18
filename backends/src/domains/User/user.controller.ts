@@ -4,6 +4,7 @@ import { asyncHandler } from "../../lib/errorsHandle";
 import httpStatus from "http-status";
 import { response } from "../../lib/response";
 import { ProtectedRequest } from "../../types/protected-request";
+import { clearRefreshCookie } from "../Auth/auth.controller";
 
 const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
   const users = await userService.getAllUsers();
@@ -54,6 +55,7 @@ const changePassword = asyncHandler(
   async (req: ProtectedRequest, res: Response) => {
     const { oldPassword, currentPassword, newPassword } = req.body;
     await userService.changePassword(req.user?._id as string, oldPassword || currentPassword, newPassword);
+    clearRefreshCookie(res);
     res.status(httpStatus.OK).json(
       response({
         message: "Password changed successfully",
@@ -69,6 +71,7 @@ const deleteProfile = asyncHandler(
   async (req: ProtectedRequest, res: Response) => {
     const { password } = req.body;
     await userService.deleteProfile(req.user?._id as string, password);
+    clearRefreshCookie(res);
     res.status(httpStatus.OK).json(
       response({
         message: "Profile deleted successfully",

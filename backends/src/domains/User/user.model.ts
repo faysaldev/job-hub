@@ -15,9 +15,11 @@ export interface IAMUser extends Document {
   verificationCodeHash?: string;
   verificationExpiresAt?: Date;
   verificationAttempts: number;
+  verificationRequestedAt?: Date;
   resetCodeHash?: string;
   resetExpiresAt?: Date;
   resetAttempts: number;
+  resetRequestedAt?: Date;
   isEmailVerified: boolean;
   isResetPassword: boolean;
   fcmToken: string;
@@ -54,7 +56,6 @@ const userSchema = new Schema<IAMUser>(
     password: {
       type: String,
       required: true,
-      trim: true,
       select: false,
       minlength: 8,
       validate(value: string) {
@@ -79,9 +80,11 @@ const userSchema = new Schema<IAMUser>(
     verificationCodeHash: { type: String, select: false },
     verificationExpiresAt: { type: Date },
     verificationAttempts: { type: Number, default: 0 },
+    verificationRequestedAt: { type: Date },
     resetCodeHash: { type: String, select: false },
     resetExpiresAt: { type: Date },
     resetAttempts: { type: Number, default: 0 },
+    resetRequestedAt: { type: Date },
     isEmailVerified: { type: Boolean, default: false },
     isResetPassword: { type: Boolean, default: false },
     fcmToken: { type: String, default: null },
@@ -113,7 +116,7 @@ userSchema.virtual("seeker", {
 });
 
 userSchema.set("toJSON", { virtuals: true, transform(_doc, ret: Record<string, any>) {
-  for (const key of ["password", "oneTimeCode", "verificationCodeHash", "resetCodeHash", "verificationExpiresAt", "resetExpiresAt", "verificationAttempts", "resetAttempts", "fcmToken", "isDeleted", "suspendedAt", "suspensionReason", "suspendedBy"]) delete ret[key];
+  for (const key of ["password", "oneTimeCode", "verificationCodeHash", "resetCodeHash", "verificationExpiresAt", "resetExpiresAt", "verificationAttempts", "resetAttempts", "verificationRequestedAt", "resetRequestedAt", "fcmToken", "isDeleted", "suspendedAt", "suspensionReason", "suspendedBy"]) delete ret[key];
   return ret;
 } });
 userSchema.set("toObject", { virtuals: true });
