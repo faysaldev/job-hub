@@ -104,8 +104,8 @@ img, svg { max-width: 100%; }
 .jh-workspace-sidebar { width: 250px; flex: 0 0 250px; border-right: 1px solid var(--jh-border); background: white; padding: 22px 14px; }
 .jh-workspace-nav { display: grid; gap: 3px; }
 .jh-sidebar-link { display: flex; align-items: center; gap: 11px; min-height: 43px; border-radius: 9px; padding: 10px 12px; font-size: 14px; font-weight: 550; color: var(--jh-secondary); }
-.jh-sidebar-link:hover { color: var(--jh-primary); background: var(--jh-canvas); }
-.jh-sidebar-link[aria-current="page"] { color: var(--jh-primary); background: #e9f1f8; font-weight: 680; }
+.jh-sidebar-link:hover { color: #000000; background: #f3f4f6; }
+.jh-sidebar-link[aria-current="page"] { color: #000000; background: #f3f4f6; font-weight: 680; }
 .jh-sidebar-label { padding: 8px 12px; font-size: 11px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; color: #8999a7; }
 .jh-workspace-main { min-width: 0; flex: 1; }
 .jh-workspace-inner { width: min(100%, 1450px); margin: 0 auto; padding: 28px clamp(16px, 3vw, 42px) 72px; }
