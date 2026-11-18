@@ -14,7 +14,7 @@ export interface BillingDashboard {
   invoices: { _id: string; amountPaidCents: number; currency: string; invoiceUrl?: string; paidAt: string; planKey: string; planVersion: number }[];
   promotions: { _id: string; jobId: string; durationDays: number; status: string; source: string; startsAt?: string; endsAt?: string }[];
 }
-export type BillingAction = { action: "checkout"; planKey: string } | { action: "portal" } |
+export type BillingAction = { action: "checkout" | "upgrade"; planKey: string } | { action: "portal" } |
   { action: "sponsor"; jobId: string; durationDays: 7|30; payment: "credit"|"stripe"; requestId: string };
 export type ManagePlanAction = { action: "publish"|"hide" } |
   { action: "duplicate"; newKey: string; newName: string } |

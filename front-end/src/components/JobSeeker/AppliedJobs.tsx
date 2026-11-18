@@ -24,11 +24,25 @@ import { TableLoading } from "@/src/components/feedback/LoadingStates";
 import { ErrorState } from "@/src/components/feedback/StateViews";
 import gsap from "gsap";
 import { useGetUserApplicationsQuery } from "@/src/redux/features/applications/applicationsApi";
+import { useCreateCheckoutSessionMutation, useGetBoostOfferQuery } from "@/src/redux/features/stripe/stripeApi";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { truncate } from "@/src/lib/truncate";
 
 const AppliedJobs = ({ userId }: { userId: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { data: applications = [], isLoading, isError, refetch } = useGetUserApplicationsQuery();
+  const { data: priceData } = useGetBoostOfferQuery();
+  const [startCheckout, { isLoading: checkoutLoading }] = useCreateCheckoutSessionMutation();
+  const router = useRouter();
+  const retryHighlight = async (applicationId: string) => {
+    try {
+      const { data } = await startCheckout({ applicationId }).unwrap();
+      if (data.checkoutUrl) window.location.assign(data.checkoutUrl);
+      else if (data.status === "verifying") router.push(`/applied-successfully?session_id=${encodeURIComponent(data.sessionId)}`);
+      else toast.error("Checkout is unavailable. Your Standard application remains active.");
+    } catch (error: any) { toast.error(error?.data?.message || "Could not reopen checkout. Your Standard application is saved."); }
+  };
 
   useEffect(() => {
     if (!isLoading && applications.length > 0) {
@@ -207,9 +221,18 @@ const AppliedJobs = ({ userId }: { userId: string }) => {
                     {app.boostPaymentStatus === "paid" && app.paid_amount > 0 && (
                       <div className="flex items-center gap-1.5 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-[#163B5C]">
                         <Sparkles className="h-3 w-3" />
-                        <span>${app.paid_amount} Priority</span>
+                        <span>Highlighted · ${app.paid_amount.toFixed(2)}</span>
                       </div>
                     )}
+                    {app.boostPaymentStatus !== "paid" && app.boostPaymentStatus !== "refunded" &&
+                      priceData?.data.available && typeof priceData.data.priceCents === "number" && (
+                        <button type="button" onClick={() => void retryHighlight(app._id)} disabled={checkoutLoading}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-[#163B5C]/20 bg-white px-3 py-1.5 text-xs font-semibold text-[#163B5C] hover:bg-slate-50 disabled:opacity-50">
+                          <Sparkles className="h-3 w-3" />{checkoutLoading ? "Opening…" :
+                            `${app.boostPaymentStatus === "pending" ? "Resume highlight checkout" : "Add optional highlight"} · $${(priceData.data.priceCents / 100).toFixed(2)}`}
+                        </button>
+                      )}
+                    {app.boostPaymentStatus === "refunded" && <span className="text-xs text-rose-700">Highlight payment reversed</span>}
                     {app.resume_url && (
                       <SecureAssetLink
                         reference={app.resume_url}

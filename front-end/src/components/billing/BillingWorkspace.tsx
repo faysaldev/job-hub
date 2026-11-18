@@ -17,11 +17,16 @@ export default function BillingWorkspace() {
   const [act] = useBillingActionMutation();
   const profile = data?.data;
   const owner = profile?.teamRole === "owner";
-  const execute = async (action: { action: "checkout"; planKey: string } | { action: "portal" }) => {
-    setBusy(action.action === "checkout" ? action.planKey : "portal");
+  const currentPrice = profile?.plan.priceCents || 0;
+  const execute = async (action: { action: "checkout" | "upgrade"; planKey: string } | { action: "portal" }) => {
+    setBusy(action.action !== "portal" ? action.planKey : "portal");
     try {
       const result = await act(action).unwrap();
       const destination = result.data.checkoutUrl || result.data.portalUrl;
+      if (!destination && result.data.status === "verifying") {
+        toast.success("Upgrade requested. New seats and quotas appear after Stripe verifies the invoice.");
+        await refetch(); setBusy(""); return;
+      }
       if (!destination) throw new Error("No secure redirect was returned");
       // Redirect to Stripe-hosted checkout/portal. Returning does not grant access.
       window.location.assign(destination);
@@ -58,6 +63,8 @@ export default function BillingWorkspace() {
     </section>}
     <section className="space-y-4" aria-labelledby="plan-heading"><div><h2 id="plan-heading" className="text-xl font-semibold text-[#163B5C]">Choose your plan</h2>
       <p className="mt-1 text-sm text-slate-600">Monthly prices in USD. All limits are enforced on the server.</p></div>
+      {!plansLoading && (plansData?.data.plans || []).filter(plan => plan.priceCents !== null && plan.priceCents > 0 && !plan.enterprise).length === 0 &&
+        <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Paid plans are not yet published. Contact the platform administrator to enable upgrades.</p>}
       {plansLoading ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[1,2,3].map(i=><div key={i} className="h-64 animate-pulse rounded-xl bg-slate-100"/>)}</div> :
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{(plansData?.data.plans || []).map(plan => {
         const current = profile?.plan.key === plan.key && profile?.plan.version === plan.version;
@@ -74,8 +81,9 @@ export default function BillingWorkspace() {
           <div className="mt-auto pt-6">{plan.enterprise ? <p className="text-xs text-slate-600">Contact the platform administrator for an enterprise contract.</p> :
             current ? <span className="block rounded-lg bg-slate-100 px-4 py-2.5 text-center text-sm text-slate-600">Your current plan</span> :
             plan.priceCents === 0 ? <span className="block rounded-lg bg-slate-100 px-4 py-2.5 text-center text-sm text-slate-600">Included by default</span> :
-            <button className={`${primary} w-full`} disabled={!owner || !!busy || !profile || profile.subscription.paid} onClick={() => execute({ action: "checkout", planKey: plan.key })}>
-              {busy === plan.key ? "Opening checkout…" : profile?.subscription.paid ? "Manage current plan first" : `Choose ${plan.name}`}
+            <button className={`${primary} w-full`} disabled={!owner || !!busy || !profile || (profile.subscription.paid && (plan.priceCents || 0) <= currentPrice)}
+              onClick={() => execute({ action: profile?.subscription.paid ? "upgrade" : "checkout", planKey: plan.key })}>
+              {busy === plan.key ? "Processing…" : profile?.subscription.paid ? (plan.priceCents || 0) > currentPrice ? `Upgrade to ${plan.name}` : "Contact support to downgrade" : `Choose ${plan.name}`}
             </button>}
           </div>
         </article>;

@@ -19,6 +19,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { useApplyToJobMutation } from "@/src/redux/features/applications/applicationsApi";
+import { useGetBoostOfferQuery } from "@/src/redux/features/stripe/stripeApi";
 import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
 import {
   useGetSeekerProfileQuery,
@@ -54,6 +55,11 @@ export default function ApplyJobModal({
   const [coverLetter, setCoverLetter] = useState("");
   const [resumeUrl, setResumeUrl] = useState("");
   const [boostSelected, setBoostSelected] = useState(false);
+  const { data: boostPrice, isFetching: boostPriceLoading, isError: boostPriceError } = useGetBoostOfferQuery(undefined, { skip: !open });
+  const boostOffer = boostPrice?.data;
+  const canBoost = !!boostOffer?.available && !boostPriceError;
+  const formattedBoostPrice = canBoost && typeof boostOffer?.priceCents === "number" ?
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(boostOffer.priceCents / 100) : null;
 
   // API Queries and Mutations
   const { data: profileResponse } = useGetSeekerProfileQuery(undefined, { skip: !isAuthenticated });
@@ -102,6 +108,10 @@ export default function ApplyJobModal({
       return;
     }
 
+    if (boostSelected && !canBoost) {
+      toast.error("Highlight pricing is unavailable. Uncheck the highlight option to submit a Standard application.");
+      return;
+    }
     try {
       const res = (await applyToJob({
         job_id: jobId,
@@ -110,10 +120,12 @@ export default function ApplyJobModal({
         boost: boostSelected,
       }).unwrap()) as any;
       if (res?.data?.checkoutData?.checkoutUrl) {
-        window.location.href = res?.data?.checkoutData?.checkoutUrl;
+        window.location.assign(res.data.checkoutData.checkoutUrl);
+      } else if (res?.data?.checkoutData?.status === "verifying" && res?.data?.checkoutData?.sessionId) {
+        router.push(`/applied-successfully?session_id=${encodeURIComponent(res.data.checkoutData.sessionId)}`);
       } else {
         if (res?.data?.paymentUnavailable) {
-          toast.warning("Application submitted, but the optional payment is unavailable.");
+          toast.warning(res?.data?.paymentMessage || "Application submitted as Standard. Optional payment is unavailable.");
         } else toast.success("Application submitted successfully!");
         setOpen(false);
         router.push("/applied-successfully");
@@ -141,170 +153,166 @@ export default function ApplyJobModal({
         onClick={handleApplyClick}
         disabled={isApplied}
         className={cn(
-          "w-full h-10 rounded-xl font-bold uppercase tracking-wider text-xs mb-3 group transition-all",
+          "w-full h-12 rounded-xl font-semibold mb-4 group transition-all",
           isApplied
-            ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
-            : "bg-black hover:bg-neutral-800 text-white shadow-xs"
+            ? "bg-gray-300 text-gray-500 cursor-not-allowed hover:from-transparent hover:to-transparent"
+            : "bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white"
         )}
       >
-        <Send className="h-3.5 w-3.5 mr-2 group-hover:translate-x-0.5 transition-transform" />
+        <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
         {isApplied ? "Already Applied" : "Apply Now"}
       </Button>
-      <DialogContent className="w-[95vw] sm:max-w-[600px] bg-white rounded-2xl border border-[#eaecf0] shadow-xl p-0 overflow-hidden">
+      <DialogContent className="w-[95vw] sm:max-w-[620px] md:max-w-[680px] bg-white rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
         <form onSubmit={handleApply} className="relative">
-          <div className="bg-black p-6 text-white border-b border-neutral-800">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-black tracking-tight flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span className="break-words max-w-full">Apply for {jobTitle}</span>
-                {isSaved && (
-                  <span className="w-fit flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-200">
-                    ★ Saved
-                  </span>
-                )}
-              </DialogTitle>
-              <DialogDescription className="text-neutral-400 text-xs font-medium break-words">
-                at {companyName}
-              </DialogDescription>
-            </DialogHeader>
-          </div>
+          {/* Top Section - Blurred when boosting */}
+          <div
+            className="transition-all duration-300"
+          >
+            <div className="bg-gradient-to-br from-[#163B5C] to-[#516C83] p-8 text-white">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black tracking-tight flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <span className="break-words max-w-full">Apply for {jobTitle}</span>
+                  {isSaved && (
+                    <span className="w-fit flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-xs font-black uppercase tracking-wider text-white">
+                      ★ Saved
+                    </span>
+                  )}
+                </DialogTitle>
+                <DialogDescription className="text-blue-100/80 font-medium break-words">
+                  at {companyName}
+                </DialogDescription>
+              </DialogHeader>
+            </div>
 
-          <div className="p-6 space-y-5 max-h-[50vh] overflow-y-auto">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider">
-                  <LinkIcon className="h-3.5 w-3.5" />
-                  Resume
-                </Label>
+            <div className="p-8 pb-0 space-y-6 max-h-[45vh] overflow-y-auto">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-black text-[#163B5C] flex items-center gap-2 uppercase tracking-widest">
+                    <LinkIcon className="h-4 w-4" />
+                    Resume
+                  </Label>
 
-                {resumeUrl ? (
-                  <div className="flex items-center justify-between p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 w-full min-w-0">
-                    <div className="flex items-center gap-3 min-w-0 w-full">
-                      <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-                        <FileText className="h-4 w-4 text-emerald-700" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-emerald-900 truncate">
-                          {uploadedResumeName || currentResumeName}
-                        </p>
-                        <p className="text-[10px] font-semibold text-emerald-700/80 uppercase tracking-wider truncate">
-                          Current resume on file
-                        </p>
+                  {resumeUrl ? (
+                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl border border-green-100 group/resume w-full min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 w-full">
+                        <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <FileText className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-black text-green-900 truncate">
+                            {uploadedResumeName || currentResumeName}
+                          </p>
+                          <p className="text-[10px] font-bold text-green-700/70 uppercase tracking-wider truncate">
+                            Current resume on file
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between p-3.5 bg-neutral-50 rounded-xl border border-neutral-200 w-full min-w-0">
-                    <div className="flex items-center gap-3 min-w-0 w-full">
-                      <div className="w-9 h-9 rounded-lg bg-neutral-200 flex items-center justify-center shrink-0">
-                        <FileText className="h-4 w-4 text-neutral-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-neutral-900 truncate">
-                          No Resume Uploaded
-                        </p>
-                        <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider truncate">
-                          Choose a PDF or DOCX file below
-                        </p>
+                  ) : (
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-2xl border border-red-100 animate-in fade-in duration-300 w-full min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 w-full">
+                        <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                          <FileText className="h-5 w-5 text-red-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-black text-red-900 truncate">
+                            No Resume Uploaded
+                          </p>
+                          <p className="text-[10px] font-bold text-red-700/70 uppercase tracking-wider truncate">
+                            Choose a PDF or DOCX file below
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-neutral-300 bg-white hover:bg-neutral-50 px-3.5 py-1.5 text-xs font-semibold text-neutral-800 transition-colors">
-                  <FileText className="h-3.5 w-3.5" /> {isUploadingResume ? "Uploading..." : "Upload or replace resume"}
-                  <input
-                    type="file"
-                    className="sr-only"
-                    disabled={isUploadingResume}
-                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    onChange={(event) => {
-                      void handleResumeFile(event.target.files?.[0]);
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
-              </div>
+                  )}
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[#163B5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#163B5C] focus-within:ring-2 focus-within:ring-[#163B5C]">
+                    <FileText className="h-4 w-4" /> {isUploadingResume ? "Uploading..." : "Upload or replace resume"}
+                    <input type="file" className="sr-only" disabled={isUploadingResume}
+                      accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={(event) => { void handleResumeFile(event.target.files?.[0]); event.target.value = ""; }} />
+                  </label>
+                </div>
 
-              <div className="space-y-2">
-                <Label
-                  htmlFor="coverLetter"
-                  className="text-xs font-bold text-neutral-900 flex items-center gap-2 uppercase tracking-wider"
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  Cover Letter
-                </Label>
-                <Textarea
-                  id="coverLetter"
-                  placeholder="Why are you a great fit? (Min 150 chars, Max 1300 chars)"
-                  value={coverLetter}
-                  onChange={(e) => setCoverLetter(e.target.value)}
-                  maxLength={1300}
-                  className="min-h-[140px] max-h-[200px] overflow-y-auto rounded-xl border-[#eaecf0] focus:border-black focus:ring-black/10 p-4 leading-relaxed text-xs sm:text-sm"
-                  required
-                />
-                <div className="flex justify-between items-center px-1">
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-wider ${
-                      coverLetter.length < 150
-                        ? "text-red-500"
-                        : coverLetter.length > 1300
-                          ? "text-red-500"
-                          : "text-emerald-600"
-                    }`}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="coverLetter"
+                    className="text-sm font-black text-[#163B5C] flex items-center gap-2 uppercase tracking-widest"
                   >
-                    {coverLetter.length < 150
-                      ? `${150 - coverLetter.length} more chars needed`
-                      : coverLetter.length > 1300
-                        ? "Limit exceeded"
-                        : "Requirement met"}
-                  </span>
-                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
-                    {coverLetter.length} / 1300 max
-                  </p>
+                    <FileText className="h-4 w-4" />
+                    Cover Letter
+                  </Label>
+                  <Textarea
+                    id="coverLetter"
+                    placeholder="Why are you a great fit? (Min 150 chars, Max 1300 chars)"
+                    value={coverLetter}
+                    onChange={(e) => setCoverLetter(e.target.value)}
+                    maxLength={1300}
+                    className="min-h-[180px] max-h-[220px] overflow-y-auto rounded-2xl border-[#E1E8EF] focus:border-[#163B5C] focus:ring-[#163B5C]/10 p-5 leading-relaxed font-medium"
+                    required
+                  />
+                  <div className="flex justify-between items-center px-1">
+                    <span
+                      className={`text-[10px] font-black uppercase tracking-widest ${
+                        coverLetter.length < 150
+                          ? "text-red-500"
+                          : coverLetter.length > 1300
+                            ? "text-red-500"
+                            : "text-emerald-500"
+                      }`}
+                    >
+                      {coverLetter.length < 150
+                        ? `${150 - coverLetter.length} more needed`
+                        : coverLetter.length > 1300
+                          ? "Limit exceeded"
+                          : "Requirement met"}
+                    </span>
+                    <p className="text-[10px] font-black text-[#516C83] uppercase tracking-widest">
+                      {coverLetter.length} / 1300 max
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Optional highlight checkout */}
-          <div className="px-6 py-3 border-t border-neutral-100">
-            <label className="flex items-start gap-3 rounded-xl border border-neutral-200 bg-[#f8fafc] p-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={boostSelected}
+          {/* Optional, server-priced checkout; no bids or ranking guarantees. */}
+          <div className="px-8 py-5">
+            <label className={`flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 ${canBoost ? "cursor-pointer" : "opacity-75"}`}>
+              <input type="checkbox" checked={boostSelected} disabled={!canBoost || boostPriceLoading}
                 onChange={(event) => setBoostSelected(event.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-black rounded"
-              />
+                className="mt-1 h-4 w-4 accent-[#163B5C]" />
               <span>
-                <span className="block text-xs font-bold text-neutral-900">Optional application highlight</span>
-                <span className="block text-[11px] text-neutral-500 mt-0.5">
-                  Direct highlight charged after Stripe checkout. Does not guarantee an interview.
+                <span className="block text-sm font-semibold text-[#163B5C]">Optional application highlight</span>
+                <span className="mt-1 block text-sm font-semibold text-[#163B5C]" aria-live="polite">
+                  {boostPriceLoading ? "Checking price…" : formattedBoostPrice ? `${formattedBoostPrice} USD, one-time` : "Highlight unavailable — Standard applications remain free"}
                 </span>
+                <span className="block text-xs text-slate-600 mt-1">You can review payment in secure Stripe Checkout. Highlight activates only after verified payment; it does not guarantee an interview or an offer.</span>
               </span>
             </label>
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100">
-            <DialogFooter className="gap-2 sm:gap-2">
+          <div className="px-8 pb-8">
+            <DialogFooter className="gap-3 sm:gap-0 pt-2 border-t border-gray-50 mt-2">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setOpen(false)}
-                className="rounded-xl h-9 px-4 text-neutral-600 hover:text-black font-bold uppercase tracking-wider text-xs"
+                className="rounded-xl h-14 px-8 text-[#516C83] font-black uppercase tracking-widest text-xs"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || coverLetter.length < 150 || coverLetter.length > 1300 || !resumeUrl}
-                className="rounded-xl h-9 px-5 bg-black text-white hover:bg-neutral-800 font-bold uppercase tracking-wider text-xs shadow-xs min-w-[150px] disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading || coverLetter.length < 150 || coverLetter.length > 1300 || !resumeUrl || (boostSelected && !canBoost)}
+                className="rounded-2xl h-14 px-10 bg-[#163B5C] text-white hover:bg-[#0C2C48] font-black text-sm shadow-xl shadow-blue-900/10 min-w-[180px] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <>
-                    <Send className="h-3.5 w-3.5 mr-1.5" />
-                    Submit Application
+                    <Send className="h-5 w-5 mr-2" />
+                    {boostSelected ? "Submit & continue to payment" : "Submit Standard application"}
                   </>
                 )}
               </Button>

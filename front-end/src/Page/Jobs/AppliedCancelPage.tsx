@@ -1,14 +1,11 @@
 "use client";
 
 import { useEffect, useRef, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import {
-  AlertTriangle,
-  ArrowRight,
-  HelpCircle,
-  AlertCircle,
-  ShieldCheck,
-  ChevronRight,
-  Headphones,
+  XCircle, ArrowRight, RefreshCw, HelpCircle,
+  AlertCircle, ShieldAlert, Sparkles, ReceiptText,
+  CreditCard, Briefcase, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
@@ -17,115 +14,135 @@ import gsap from "gsap";
 import Link from "next/link";
 
 const CancelContent = () => {
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from(".animate-in", {
         opacity: 0,
-        y: 20,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: "power2.out",
+        y: 30,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: "power3.out",
+      });
+      gsap.from(".cancel-icon", {
+        scale: 0,
+        rotate: 180,
+        duration: 1,
+        ease: "back.out(1.7)",
+        delay: 0.2,
       });
     }, containerRef);
     return () => ctx.revert();
   }, []);
 
   const highlights = [
-    { icon: ShieldCheck, label: "Safety", value: "Standard Submission", color: "text-neutral-900" },
-    { icon: HelpCircle, label: "Support", value: "Help Center Open", color: "text-neutral-900" },
-    { icon: AlertCircle, label: "Status", value: "Standard Delivery", color: "text-neutral-900" },
+    { icon: ShieldAlert, label: "Safety", value: "Standard", bg: "bg-rose-50", color: "text-rose-600" },
+    { icon: HelpCircle, label: "Support", value: "24/7 Available", bg: "bg-blue-50", color: "text-blue-600" },
+    { icon: AlertCircle, label: "Status", value: "Standard Application", bg: "bg-amber-50", color: "text-amber-600" },
   ];
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#f8fafc] py-12 px-4 flex items-center justify-center">
-      <div className="max-w-4xl w-full">
-        <div className="grid md:grid-cols-5 gap-6 items-start">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-[#E1E8EF] via-white to-[#E1E8EF] py-16 px-4 relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 -left-48 w-96 h-96 bg-rose-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-[#516C83]/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-5xl mx-auto relative">
+        <div className="grid md:grid-cols-5 gap-8 items-start">
           {/* Main Card */}
-          <div className="md:col-span-3 space-y-4">
-            <Card className="animate-in border border-[#eaecf0] shadow-xs rounded-2xl p-8 sm:p-10 bg-white text-center space-y-6">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 border border-amber-200 text-amber-600">
-                <AlertTriangle className="h-8 w-8" />
-              </div>
-
-              <div className="space-y-2">
-                <Badge className="bg-amber-50 text-amber-800 border border-amber-200/80 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                  Payment Cancelled
-                </Badge>
-                <h1 className="text-2xl sm:text-3xl font-black text-neutral-950 tracking-tight leading-snug">
-                  Application Submitted <br className="hidden sm:inline" />without Boost
-                </h1>
-                <p className="text-xs sm:text-sm text-neutral-500 max-w-md mx-auto leading-relaxed">
-                  Your standard application was successfully delivered to the recruiter. However, your optional highlight payment was cancelled.
-                </p>
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
-                <Link href="/job-seeker/applications" className="flex-1">
-                  <Button className="w-full h-10 rounded-xl bg-black hover:bg-neutral-800 text-white font-bold uppercase tracking-wider text-xs shadow-xs">
-                    Track Application
-                    <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
-                  </Button>
-                </Link>
-                <Link href="/job" className="flex-1">
-                  <Button variant="outline" className="w-full h-10 rounded-xl border-neutral-300 text-neutral-700 hover:bg-neutral-50 font-bold uppercase tracking-wider text-xs">
-                    Return to Job Board
-                  </Button>
-                </Link>
+          <div className="md:col-span-3 space-y-5">
+            <Card className="animate-in border border-white/60 shadow-2xl rounded-3xl p-10 bg-white/80 backdrop-blur-xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-500 to-amber-500" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-50 to-amber-50 rounded-full -mr-32 -mt-32 opacity-60" />
+              <div className="relative z-10 text-center space-y-8">
+                <div className="relative inline-block">
+                  <div className="cancel-icon w-24 h-24 bg-gradient-to-br from-rose-500 to-red-600 rounded-3xl flex items-center justify-center shadow-xl shadow-rose-500/25 mx-auto">
+                    <XCircle className="h-12 w-12 text-white" />
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <Badge className="bg-rose-100 text-rose-700 border-none px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+                    Payment Cancelled or Failed
+                  </Badge>
+                  <h1 className="text-4xl font-black text-[#163B5C] tracking-tight leading-tight">
+                    Application Submitted<br />as Standard
+                  </h1>
+                  <p className="text-[#516C83] font-medium text-base max-w-md mx-auto leading-relaxed">
+                    Your Standard application remains on file. No paid highlight is active; review your applications to retry securely.
+                  </p>
+                </div>
+                <div className="pt-4 flex flex-col gap-3">
+                  <Link href="/job-seeker/applications">
+                    <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white font-black shadow-xl shadow-[#163B5C]/20 transition-all active:scale-95">
+                      Track Standard Application
+                      <ArrowRight className="h-5 w-5 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link href="/job">
+                    <Button variant="ghost" className="w-full h-12 rounded-xl font-semibold text-[#516C83] hover:text-[#163B5C] hover:bg-[#163B5C]/5">
+                      Return to Job Board
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </Card>
 
-            <div className="animate-in grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="animate-in grid grid-cols-1 sm:grid-cols-3 gap-3">
               {highlights.map((h) => (
-                <div key={h.label} className="bg-white border border-[#eaecf0] p-3 rounded-xl shadow-xs flex flex-col items-center text-center gap-1">
-                  <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center">
-                    <h.icon className="h-4 w-4 text-neutral-700" />
+                <div key={h.label} className="bg-white/80 backdrop-blur-sm border border-white/40 p-4 rounded-2xl shadow-md flex flex-col items-center text-center gap-2">
+                  <div className={`w-10 h-10 rounded-xl ${h.bg} flex items-center justify-center`}>
+                    <h.icon className={`h-5 w-5 ${h.color}`} />
                   </div>
-                  <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">{h.label}</p>
-                  <p className="text-xs font-bold text-neutral-900">{h.value}</p>
+                  <p className="text-[10px] font-black text-[#516C83] uppercase tracking-widest">{h.label}</p>
+                  <p className="text-sm font-bold text-[#163B5C]">{h.value}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right Column: FAQ & Support */}
-          <div className="md:col-span-2 space-y-4">
-            <Card className="animate-in border border-[#eaecf0] shadow-xs rounded-2xl p-6 bg-white">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 mb-4 flex items-center gap-2">
-                <HelpCircle className="h-4 w-4 text-neutral-600" />
-                Frequently Asked
+          {/* Sidebar */}
+          <div className="md:col-span-2 space-y-5">
+            <Card className="animate-in border border-white/40 shadow-xl rounded-3xl p-8 bg-white/70 backdrop-blur-xl">
+              <h2 className="text-lg font-black text-[#163B5C] mb-6 flex items-center gap-3">
+                <HelpCircle className="h-5 w-5 text-[#516C83]" />
+                Common Payment Issues
               </h2>
-              <div className="space-y-3.5">
+              <div className="space-y-4">
                 {[
-                  { q: "Was my card charged?", a: "No. If a transaction fails or is cancelled, no funds are captured." },
-                  { q: "Is my job application active?", a: "Yes. Your application is saved and submitted to the employer as a standard applicant." },
-                  { q: "Can I highlight later?", a: "You can manage applications from your Job Seeker dashboard at any time." },
+                  { q: "Was my card charged?", a: "A canceled checkout normally does not charge you. Review your Stripe receipt or contact support if you see a charge." },
+                  { q: "Is my job application active?", a: "Yes! Your application is active and sent to the recruiter as a standard application." },
+                  { q: "Can I try to boost again later?", a: "Yes, open My Applications and choose Add optional highlight when available." },
                 ].map((item, idx) => (
                   <div key={idx} className="space-y-1">
-                    <h3 className="text-xs font-bold text-neutral-900 flex items-start gap-1.5">
-                      <ChevronRight className="h-3.5 w-3.5 text-neutral-400 shrink-0 mt-0.5" />
+                    <h4 className="text-xs font-bold text-[#163B5C] flex items-center gap-1.5">
+                      <ChevronRight className="h-3.5 w-3.5 text-rose-500 flex-shrink-0" />
                       {item.q}
-                    </h3>
-                    <p className="text-[11px] text-neutral-500 leading-normal pl-5">{item.a}</p>
+                    </h4>
+                    <p className="text-xs text-[#516C83] leading-relaxed pl-5">{item.a}</p>
                   </div>
                 ))}
               </div>
             </Card>
 
-            <Card className="animate-in border border-neutral-800 shadow-xs rounded-2xl p-5 bg-black text-white">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-white">
-                  <Headphones className="h-4 w-4" />
+            <Card className="animate-in border-none shadow-xl rounded-3xl p-8 bg-gradient-to-br from-rose-900/90 to-rose-950 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-8 -mt-8 blur-2xl" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-11 h-11 rounded-2xl bg-white/15 flex items-center justify-center">
+                    <RefreshCw className="h-5 w-5 animate-spin-slow" />
+                  </div>
+                  <div>
+                    <h3 className="font-black">Need Help?</h3>
+                    <p className="text-xs text-rose-200">Instant Support Support</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-xs text-white">Need Support?</h3>
-                  <p className="text-[10px] text-neutral-400">We are here to help</p>
-                </div>
+                <p className="text-xs text-rose-100/80 leading-relaxed">
+                  If you faced technical issues during check out, please try again or contact our support team. Your career matters to us.
+                </p>
               </div>
-              <p className="text-xs text-neutral-300 leading-relaxed">
-                If you experienced technical issues during checkout, you can re-attempt or reach out through our contact page.
-              </p>
             </Card>
           </div>
         </div>
@@ -136,13 +153,12 @@ const CancelContent = () => {
 
 export default function AppliedCancelPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-neutral-700 border-t-white rounded-full animate-spin" />
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#163B5C] via-[#2d5a7a] to-[#516C83] flex flex-col items-center justify-center p-4">
+        <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mb-6" />
+        <h2 className="text-xl font-bold text-white animate-pulse">Loading Details...</h2>
+      </div>
+    }>
       <CancelContent />
     </Suspense>
   );

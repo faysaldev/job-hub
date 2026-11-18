@@ -3,14 +3,14 @@ export type TeamRole = "owner" | "admin" | "recruiter" | "interviewer";
 export interface TeamMember {
   _id: string; email: string; role: TeamRole; status: "invited" | "active" | "removed";
   companyId?: { _id: string; companyName?: string; careersSlug?: string } | string;
-  userId?: string;
+  userId?: string; expiresAt?: string;
 }
 export interface CompanyWorkspace {
   _id: string; userId: string; companyName?: string; careersSlug?: string; careersHeadline?: string;
   careersDescription?: string; careersEnabled?: boolean;
   verification?: { status: "unverified" | "pending" | "verified" | "rejected" };
 }
-export interface TeamResponse { workspace: null | { company: CompanyWorkspace; teamRole: TeamRole; members: TeamMember[] }; invitations: TeamMember[] }
+export interface TeamResponse { workspace: null | { company: CompanyWorkspace; teamRole: TeamRole; members: TeamMember[]; capacity: { teamSeats: number; limit: number } }; invitations: TeamMember[] }
 export interface Envelope<T> { data: T; message: string; status: string }
 export type ApplicationStage = "applied" | "under_review" | "shortlisted" | "interview" | "offer" | "hired" | "rejected";
 export interface ATSApplication {
