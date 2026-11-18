@@ -27,6 +27,7 @@ import {
   BellOff,
 } from "lucide-react";
 import Link from "next/link";
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
@@ -359,11 +360,7 @@ const CompanyDetailsPage = () => {
                               </span>
                               <span className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2">
                                 <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-                                $
-                                {(Number(job.salaryMin || 0) / 1000).toFixed(0)}
-                                k - $
-                                {(Number(job.salaryMax || 0) / 1000).toFixed(0)}
-                                k
+                                {formatJobSalary(job.salaryMin, job.salaryMax, job.salaryPeriod, true)}
                               </span>
                             </div>
                           </div>

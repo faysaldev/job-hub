@@ -1,4 +1,5 @@
 "use client";
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 
 import { memo, useRef, useCallback, useState, useEffect } from "react";
 import {
@@ -667,11 +668,7 @@ const StepReview = memo(() => {
                 Compensation
               </p>
               <p className="text-3xl font-black">
-                ${parseInt(salaryMin || "0").toLocaleString()} - $
-                {parseInt(salaryMax || "0").toLocaleString()}
-              </p>
-              <p className="text-sm font-bold opacity-70">
-                per {(salaryPeriod || "year").replace("ly", "")}
+                {formatJobSalary(Number(salaryMin || 0), Number(salaryMax || 0), salaryPeriod)}
               </p>
             </div>
           </div>
@@ -937,6 +934,10 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
         toast.error("Choose a future publication date"); return;
       }
       setPublishError("");
+      if (Number(data.salaryMin) === 0 && Number(data.salaryMax) === 0) {
+        methods.setError("salaryMax", { type: "validate", message: "Enter a real salary range; $0-$0 cannot be published" });
+        setCurrentStep(2); return;
+      }
       if (Number(data.salaryMin) > Number(data.salaryMax)) {
         methods.setError("salaryMax", { type: "validate", message: "Maximum salary must be at least the minimum" });
         setCurrentStep(2); return;

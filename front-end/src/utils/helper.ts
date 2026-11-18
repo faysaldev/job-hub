@@ -1,3 +1,4 @@
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 export function formatDate(dateStr: string) {
   if (!dateStr) return "";
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -49,10 +50,5 @@ export function formatRelativeTime(dateStr?: string) {
 }
 
 export function formatSalary(min?: number, max?: number, period?: string) {
-  if (!min || !max) return "Salary disclosed";
-  const compact = (value: number) =>
-    value >= 1000 ? `$${Math.round(value / 1000)}k` : `$${value}`;
-  const periodLabel =
-    period === "hourly" ? "/hr" : period === "yearly" ? "/yr" : "/mo";
-  return `${compact(min)} - ${compact(max)}${periodLabel}`;
+  return formatJobSalary(min, max, period, true);
 }

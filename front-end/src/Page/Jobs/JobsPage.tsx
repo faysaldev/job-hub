@@ -4,6 +4,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Header from "@/src/components/common/Header";
+import Link from "next/link";
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 import { TableLoading } from "@/src/components/feedback/LoadingStates";
 import { ErrorState } from "@/src/components/feedback/StateViews";
 import Footer from "@/src/components/common/Footer";
@@ -80,17 +82,6 @@ function timeAgo(dateString: string): string {
   return `${Math.floor(diff / 31536000)}y ago`;
 }
 
-function formatSalary(min: number, max: number, period: string): string {
-  const fmt = (n: number) =>
-    n >= 1000 ? `$${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k` : `$${n}`;
-  const periodLabel: Record<string, string> = {
-    monthly: "/mo",
-    yearly: "/yr",
-    hourly: "/hr",
-  };
-  return `${fmt(min)} – ${fmt(max)}${periodLabel[period] ?? ""}`;
-}
-
 const TYPE_COLORS: Record<string, string> = {
   "full-time": "bg-[#163B5C]/10 text-[#163B5C] border-[#163B5C]/10",
   "part-time": "bg-[#516C83]/10 text-[#163B5C] border-[#516C83]/10",
@@ -109,11 +100,6 @@ const LOCATION_COLORS: Record<string, string> = {
 
 const JobCard = memo(({ job }: { job: ApiJob }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const router = useRouter();
-
-  const handleClick = useCallback(() => {
-    router.push(`/job/${job._id}`);
-  }, [router, job._id]);
 
   const deadlineDate = useMemo(
     () =>
@@ -133,13 +119,8 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
   }, [job.applicationDeadline]);
 
   return (
-    <div
-      onClick={handleClick}
-      onKeyDown={(event) => { if (event.key === "Enter" && event.target === event.currentTarget) handleClick(); }}
-      role="link"
-      tabIndex={0}
-      aria-label={`View ${job.title} at ${job.company?.companyName || "company"}`}
-      className="job-card-item group relative cursor-pointer overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10"
+    <article
+      className="job-card-item group relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10"
     >
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83] scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
 
@@ -163,7 +144,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="truncate text-lg font-black tracking-tight text-[#163B5C] transition-colors group-hover:text-[#516C83]">
-                  {job.title}
+                  <Link href={`/job/${job._id}`} className="rounded outline-offset-4 focus-visible:outline-2 focus-visible:outline-[#163B5C]">{job.title}</Link>
                 </h3>
                 {job.isSponsored && <span className="mt-1 inline-flex rounded border border-[#bed2e4] bg-blue-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#214b6b]">Sponsored</span>}
                 <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#516C83]">
@@ -172,9 +153,9 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
                 </p>
               </div>
 
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E1E8EF]/50 text-[#516C83] transition group-hover:bg-[#163B5C] group-hover:text-white">
+              <Link href={`/job/${job._id}`} aria-label={`View details for ${job.title}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E1E8EF]/50 text-[#516C83] transition hover:bg-[#163B5C] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#163B5C]">
                 <ChevronRight className="h-5 w-5" />
-              </div>
+              </Link>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 mt-3">
@@ -192,7 +173,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 text-xs font-bold text-[#163B5C]">
                 <DollarSign className="h-3 w-3" />
-                {formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}
+                {formatJobSalary(job.salaryMin, job.salaryMax, job.salaryPeriod, true)}
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-[#E1E8EF]/55 px-3 py-1 text-xs font-semibold text-[#516C83]">
                 <Users className="h-3 w-3" />
@@ -261,7 +242,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
           </span>
         </div>
       </div>
-    </div>
+    </article>
   );
 });
 JobCard.displayName = "JobCard";

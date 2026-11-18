@@ -20,7 +20,7 @@ const cases = [
   ["messages scoped to sender", "domains/Messages/message.services.ts", /senderId:\s*actorId/],
   ["message cache checked after member auth", "config/socketio.ts", /ensureParticipant\(id, userId\)/],
   ["stripe webhook signature checked", "domains/Stripe/stripe.controller.ts", /webhooks\.constructEvent/],
-  ["stripe price determined on server", "domains/Stripe/stripe.controller.ts", /APPLICATION_BOOST_PRICE_CENTS/],
+  ["stripe price determined on server", "domains/Stripe/payment.policy.ts", /process\.env\.APPLICATION_BOOST_PRICE_CENTS/],
   ["stripe webhook mounted before JSON", "server.ts", /express\.raw\([\s\S]*?app\.use\(express\.json/],
   ["CORS is explicit allowlist", "config/cors.ts", /allowedOrigins\.has\(origin\)/],
   ["login protected by rate limiter", "domains/Auth/auth.route.ts", /authRate/],

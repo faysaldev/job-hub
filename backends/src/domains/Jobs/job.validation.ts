@@ -57,6 +57,7 @@ const full = z.object({
   applicationDeadline: z.coerce.date(), positions: numeric(1).pipe(z.number().int()),
 }).superRefine((job, context) => {
   if (job.salaryMin > job.salaryMax) context.addIssue({ code: "custom", path: ["salaryMax"], message: "Maximum salary must be at least the minimum" });
+  if (job.salaryMin === 0 && job.salaryMax === 0) context.addIssue({ code: "custom", path: ["salaryMax"], message: "Enter a real salary range or explicitly use a supported unpaid role type; $0-$0 cannot be published" });
 });
 
 /** Check a fully merged record, not just fields sent by the edit form. */

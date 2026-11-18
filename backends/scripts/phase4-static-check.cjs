@@ -7,7 +7,7 @@ const checks = [
   ["team membership company boundary", "domains/Company/company.workspace.ts", /member\.companyId\.toString\(\)/],
   ["team member cannot invite own role", "domains/Company/company.workspace.ts", /teamRole !== "owner"/],
   ["jobs protected by company membership", "domains/Jobs/job.services.ts", /companyForActor\(actorId, "jobs"\)/],
-  ["draft jobs not public", "domains/Jobs/job.services.ts", /status: \{ \$in: \["published", null\] \}/],
+  ["draft jobs not public", "domains/Jobs/job.lifecycle.ts", /status: \{ \$in: \["published", null\] \}/],
   ["private applicants scoped to applications permission", "domains/Applications/application.services.ts", /companyForActor\(actorId, "applications"\)/],
   ["candidate responses remove private internal notes", "domains/Applications/application.services.ts", /select\("-internalNotes -stageHistory\.note"\)/],
   ["offer acceptance requires current unexpired offer", "domains/Applications/application.services.ts", /"offer\.expiresAt": \{ \$gt: new Date\(\) \}/],

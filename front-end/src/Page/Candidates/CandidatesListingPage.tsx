@@ -10,17 +10,18 @@ import {
   Search,
   MapPin,
   Briefcase,
+  Star,
   User,
+  Globe,
+  CheckCircle,
   Clock,
+  Users,
   Sparkles,
   ArrowRight,
-  ShieldCheck,
+  Shield,
   SlidersHorizontal,
-  Globe,
 } from "lucide-react";
 import { useGetAllSeekersQuery } from "@/src/redux/features/seeker/seekerApi";
-import Header from "@/src/components/common/Header";
-import Footer from "@/src/components/common/Footer";
 import gsap from "gsap";
 import { ErrorState } from "@/src/components/feedback/StateViews";
 
@@ -56,17 +57,17 @@ function FilterGroup({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="space-y-2.5">
-      <h4 className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+    <div className="space-y-3">
+      <h4 className="text-xs font-black uppercase tracking-widest text-[#516C83]">
         {title}
       </h4>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {options.map((opt) => {
           const checked = active === opt.value;
           return (
             <label
               key={opt.value}
-              className="group flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-neutral-50"
+              className="group flex cursor-pointer items-center gap-3 rounded-2xl px-2 py-2 transition-colors hover:bg-[#163B5C]/5"
             >
               <input
                 type="checkbox"
@@ -75,16 +76,12 @@ function FilterGroup({
                 onChange={() => onChange(opt.value)}
               />
               <div
-                className={`flex h-4 w-4 items-center justify-center rounded border transition-all ${
-                  checked ? "border-black bg-black text-white" : "border-neutral-300 group-hover:border-neutral-400"
-                }`}
+                className={`flex h-5 w-5 items-center justify-center rounded-lg border-2 transition-all duration-200 ${checked ? "border-[#163B5C] bg-[#163B5C]" : "border-[#E1E8EF] group-hover:border-[#163B5C]/50"}`}
               >
-                {checked && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                {checked && <div className="h-2 w-2 rounded-full bg-white" />}
               </div>
               <span
-                className={`text-xs transition-colors ${
-                  checked ? "font-bold text-neutral-950" : "font-medium text-neutral-600 group-hover:text-neutral-900"
-                }`}
+                className={`text-sm transition-colors ${checked ? "font-black text-[#163B5C]" : "font-semibold text-[#516C83] group-hover:text-[#163B5C]"}`}
               >
                 {opt.label}
               </span>
@@ -99,95 +96,102 @@ function FilterGroup({
 function CandidateCard({ candidate }: { candidate: any }) {
   const skills: string[] = candidate.skills || [];
   return (
-    <Card className="group relative overflow-hidden rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs transition-all hover:shadow-md">
-      <div className="flex flex-col sm:flex-row items-start gap-4">
-        <div className="h-14 w-14 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100 shrink-0">
-          <img
-            src={
-              candidate.userId?.image ||
-              `https://api.dicebear.com/7.x/initials/svg?seed=${candidate.userId?.name || "U"}`
-            }
-            alt={candidate.userId?.name}
-            className="h-full w-full object-cover"
-          />
-        </div>
+    <Card className="group relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10">
+      <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-[#163B5C] to-[#516C83] transition-transform duration-300 group-hover:scale-x-100" />
+      <div className="p-6 pb-0">
+        <div className="flex flex-col items-start gap-6 md:flex-row">
+          <div className="relative shrink-0">
+            <div className="h-24 w-24 overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-[#163B5C]/5 p-1 shadow-sm transition-transform duration-300 group-hover:scale-105">
+              <img
+                src={
+                  candidate.userId?.image ||
+                  `https://api.dicebear.com/7.x/initials/svg?seed=${candidate.userId?.name || "U"}`
+                }
+                alt={candidate.userId?.name}
+                className="h-full w-full rounded-[1.25rem] object-cover"
+              />
+            </div>
 
-        <div className="flex-1 min-w-0 w-full space-y-2.5">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <Link href={`/candidates/${candidate._id}`}>
-                <h3 className="text-sm font-bold text-neutral-950 group-hover:text-black transition-colors truncate">
+          </div>
+
+          <div className="flex-1 space-y-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h3 className="text-xl font-black tracking-tight text-[#163B5C] transition-colors group-hover:text-[#516C83]">
                   {candidate.userId?.name || "Anonymous Candidate"}
                 </h3>
-              </Link>
-              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400 truncate">
-                {candidate.designation || "Professional"}
-              </p>
+                <p className="mt-1 font-semibold text-[#516C83]">
+                  {candidate.designation || "Professional"}
+                </p>
+              </div>
+              <Badge className="self-start rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 text-xs font-black capitalize text-[#163B5C]">
+                {candidate.experienceLevel || "Professional"}
+              </Badge>
             </div>
-            <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[10px] font-semibold text-neutral-700 capitalize">
-              {candidate.experienceLevel || "Professional"}
-            </span>
-          </div>
 
-          <div className="flex flex-wrap gap-2 text-xs text-neutral-600">
-            {candidate.userLocation && (
-              <span className="flex items-center gap-1 rounded-md bg-[#f8fafc] px-2 py-0.5 text-[11px] font-medium">
-                <MapPin className="h-3 w-3 text-neutral-400" />
-                {candidate.userLocation}
-              </span>
-            )}
-            {candidate.totalExperience && (
-              <span className="flex items-center gap-1 rounded-md bg-[#f8fafc] px-2 py-0.5 text-[11px] font-medium">
-                <Briefcase className="h-3 w-3 text-neutral-400" />
-                {candidate.totalExperience} exp
-              </span>
-            )}
-            {candidate.availability && (
-              <span className="flex items-center gap-1 rounded-md bg-[#f8fafc] px-2 py-0.5 text-[11px] font-medium">
-                <Clock className="h-3 w-3 text-neutral-400" />
-                {candidate.availability.replace("-", " ")}
-              </span>
-            )}
-            {candidate.jobType && (
-              <span className="flex items-center gap-1 rounded-md bg-[#f8fafc] px-2 py-0.5 text-[11px] font-medium capitalize">
-                <Globe className="h-3 w-3 text-neutral-400" />
-                {candidate.jobType}
-              </span>
-            )}
-          </div>
-
-          {candidate.aboutMe && (
-            <p className="line-clamp-2 text-xs text-neutral-500 leading-relaxed">
-              {candidate.aboutMe}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between gap-3 pt-1">
-            <div className="flex flex-wrap gap-1.5">
-              {skills.slice(0, 4).map((s) => (
-                <span
-                  key={s}
-                  className="rounded-md bg-[#f3f4f6] text-neutral-600 text-[10px] font-medium px-2 py-0.5"
-                >
-                  {s}
+            <div className="flex flex-wrap gap-2 text-sm text-[#516C83]">
+              {candidate.userLocation && (
+                <span className="flex items-center gap-1.5 rounded-full bg-[#F4F7F8] px-3 py-1.5 font-semibold">
+                  <MapPin className="h-4 w-4 text-[#163B5C]" />
+                  {candidate.userLocation}
                 </span>
-              ))}
-              {skills.length > 4 && (
-                <span className="rounded-md bg-[#f3f4f6] text-neutral-400 text-[10px] font-medium px-1.5 py-0.5">
-                  +{skills.length - 4}
+              )}
+              {candidate.totalExperience && (
+                <span className="flex items-center gap-1.5 rounded-full bg-[#F4F7F8] px-3 py-1.5 font-semibold">
+                  <Briefcase className="h-4 w-4 text-[#163B5C]" />
+                  {candidate.totalExperience} exp
+                </span>
+              )}
+              {candidate.availability && (
+                <span className="flex items-center gap-1.5 rounded-full bg-[#F4F7F8] px-3 py-1.5 font-semibold">
+                  <Clock className="h-4 w-4 text-[#163B5C]" />
+                  {candidate.availability.replace("-", " ")}
+                </span>
+              )}
+              {candidate.jobType && (
+                <span className="flex items-center gap-1.5 rounded-full bg-[#F4F7F8] px-3 py-1.5 font-semibold">
+                  <Globe className="h-4 w-4 text-[#163B5C]" />
+                  {candidate.jobType}
                 </span>
               )}
             </div>
 
-            <Link href={`/candidates/${candidate._id}`}>
-              <Button
-                className="h-8 rounded-lg bg-black text-white hover:bg-neutral-800 text-[10px] font-bold uppercase tracking-wider px-3.5"
-              >
-                View Profile
-                <ArrowRight className="ml-1 h-3 w-3" />
-              </Button>
-            </Link>
+            {candidate.aboutMe && (
+              <p className="line-clamp-2 text-sm leading-7 text-[#516C83]/85">
+                {candidate.aboutMe}
+              </p>
+            )}
+
+            {skills.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {skills.slice(0, 5).map((s) => (
+                  <Badge
+                    key={s}
+                    className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 text-xs font-bold text-[#163B5C]"
+                  >
+                    {s}
+                  </Badge>
+                ))}
+                {skills.length > 5 && (
+                  <Badge className="rounded-full border-none bg-[#E1E8EF]/80 px-3 py-1 text-xs font-bold text-[#516C83]">
+                    +{skills.length - 5}
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
+        </div>
+
+        <div className="mt-6 flex flex-col justify-end gap-3 border-t border-[#E1E8EF]/70 pt-3 sm:flex-row sm:items-center">
+          <Link href={`/candidates/${candidate._id}`}>
+            <Button
+              variant="outline"
+              className="h-11 rounded-2xl border-[#163B5C]/20 px-6 font-black text-[#163B5C] hover:bg-[#163B5C]/5"
+            >
+              View Profile
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </div>
     </Card>
@@ -205,12 +209,19 @@ export default function CandidatesListingPage() {
     totalExperience: "",
     location: "",
   });
+  const [sortBy, setSortBy] = useState("newest");
 
   const { data: seekersData, isLoading, isError, refetch } = useGetAllSeekersQuery({
     search: searchQuery,
     ...filters,
   });
   const seekers = seekersData?.data?.seekers || [];
+
+  const sortedSeekers = [...seekers].sort((a, b) =>
+    sortBy === "job-type"
+      ? (a.jobType || "").localeCompare(b.jobType || "")
+      : 0,
+  );
 
   const handleFilterChange = (key: string, value: string) =>
     setFilters((prev) => ({
@@ -234,152 +245,171 @@ export default function CandidatesListingPage() {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".candidate-card-item",
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power2.out" },
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, ease: "power2.out" },
       );
     }, containerRef);
     return () => ctx.revert();
-  }, [seekers.length]);
+  }, [sortedSeekers.length]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
-      <Header />
+    <div className="min-h-screen flex flex-col jobhub-page-bg">
+      <section className="relative overflow-hidden bg-[#163B5C] pt-32 pb-28 md:pt-40 md:pb-32">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="absolute left-8 top-28 hidden h-28 w-64 rotate-[-8deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
+          <div className="absolute bottom-14 right-10 hidden h-32 w-72 rotate-[7deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
+        </div>
 
-      {/* Hero Header */}
-      <section className="relative overflow-hidden bg-black text-white pt-14 pb-20 border-b border-neutral-800 text-center">
-        <div className="container mx-auto px-4 relative z-10 max-w-4xl">
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1 text-xs font-semibold text-neutral-300">
-            <Sparkles className="h-3.5 w-3.5 text-neutral-400" />
-            <span>Discover Exceptional Talent</span>
-          </div>
-          <h1 className="mx-auto mb-2 text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-            Find qualified candidates for your next role.
-          </h1>
-          <p className="mx-auto max-w-xl text-xs sm:text-sm text-neutral-400 mb-6">
-            Search candidates by role, availability, location, and technical skill sets.
-          </p>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="mx-auto max-w-5xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
+              <Sparkles className="h-4 w-4" />
+              <span>Discover Exceptional Talent</span>
+            </div>
+            <h1 className="mx-auto max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+              Find qualified candidates for your next great hire.
+            </h1>
+            <p className="mx-auto mt-5 max-w-2xl text-lg font-medium leading-8 text-white/75">
+              Browse candidate profiles by role, availability, location,
+              experience, and work preference in a premium recruiter experience.
+            </p>
 
-          <div className="mx-auto max-w-2xl rounded-2xl border border-neutral-800 bg-neutral-900 p-2 shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <Input
-                  placeholder="Search by name, role, or skills..."
-                  aria-label="Search candidates"
-                  className="h-9 border-0 bg-transparent pl-9 text-xs text-white placeholder:text-neutral-500 focus-visible:ring-0"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && setSearchQuery(searchInput)
-                  }
-                />
+            <div className="mx-auto mt-10 max-w-4xl">
+              <div className="rounded-3xl border border-white/15 bg-white/95 p-3 shadow-2xl shadow-black/15 backdrop-blur-xl">
+                <div className="flex flex-col gap-3 md:flex-row">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#516C83]" />
+                    <Input
+                      placeholder="Search by name, role, or skills..."
+                      aria-label="Search candidates"
+                      className="h-14 rounded-2xl border-transparent bg-[#F4F7F8] pl-12 text-base text-[#163B5C] placeholder:text-[#516C83]/55 focus:border-[#163B5C]/15 focus:bg-white focus:ring-2 focus:ring-[#163B5C]/10"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && setSearchQuery(searchInput)
+                      }
+                    />
+                  </div>
+                  <Button
+                    onClick={() => setSearchQuery(searchInput)}
+                    className="h-14 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-8 font-black text-white shadow-lg shadow-[#163B5C]/20 transition-all hover:from-[#0C2C48] hover:to-[#3b5a71] active:scale-[0.99]"
+                  >
+                    Search Talent
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
               </div>
-              <Button
-                onClick={() => setSearchQuery(searchInput)}
-                className="h-8 rounded-xl bg-white text-black hover:bg-neutral-100 text-xs font-bold uppercase tracking-wider px-4"
-              >
-                Search Talent
-              </Button>
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {[
+                { icon: Shield, label: "Candidate Profiles" },
+                { icon: Clock, label: "Availability Signals" },
+                { icon: Briefcase, label: "Role-Based Search" },
+              ].map(({ icon: Icon, label }) => (
+                <div
+                  key={label}
+                  className="rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-wide text-white/90 backdrop-blur-sm"
+                >
+                  <Icon className="mr-2 inline h-4 w-4" />
+                  {label}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Main Content Layout */}
-      <main id="main-content" className="container mx-auto max-w-5xl px-4 py-10 flex-1" ref={containerRef}>
-        <div className="flex flex-col gap-6 lg:flex-row">
-          {/* Filters Sidebar */}
-          <aside className="shrink-0 space-y-4 lg:w-64">
-            <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs">
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-neutral-100">
-                <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-4 w-4 text-neutral-700" />
-                  <h3 className="font-bold text-xs uppercase tracking-wider text-neutral-900">Filters</h3>
+      <div role="region" aria-label="Candidate search results" id="main-content" className="container mx-auto flex-1 px-6 py-14" ref={containerRef}>
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <aside className="shrink-0 space-y-6 lg:w-80">
+            <Card className="overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 shadow-xl shadow-[#163B5C]/8 backdrop-blur pt-0">
+              <div className="border-b border-[#E1E8EF]/70 bg-gradient-to-r from-[#163B5C]/8 to-[#516C83]/8 p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C] text-white">
+                      <SlidersHorizontal className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-black text-[#163B5C]">Filters</h3>
+                      <p className="text-xs font-semibold text-[#516C83]">
+                        Narrow your talent pool
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={clearFilters}
+                    className="rounded-xl px-3 py-2 text-xs font-black text-[#516C83] transition-colors hover:bg-[#163B5C]/10 hover:text-[#163B5C]"
+                  >
+                    Clear
+                  </button>
                 </div>
-                <button
-                  onClick={clearFilters}
-                  className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 hover:text-black transition-colors"
-                >
-                  Clear
-                </button>
               </div>
-
-              <div className="space-y-4">
+              <div className="space-y-6 divide-y divide-[#E1E8EF]/70 p-5">
                 <FilterGroup
                   title="Experience Level"
                   options={FILTER_OPTIONS.experienceLevel}
                   active={filters.experienceLevel}
                   onChange={(v) => handleFilterChange("experienceLevel", v)}
                 />
-                <FilterGroup
-                  title="Availability"
-                  options={FILTER_OPTIONS.availability}
-                  active={filters.availability}
-                  onChange={(v) => handleFilterChange("availability", v)}
-                />
-                <FilterGroup
-                  title="Work Preference"
-                  options={FILTER_OPTIONS.jobType}
-                  active={filters.jobType}
-                  onChange={(v) => handleFilterChange("jobType", v)}
-                />
+                <div className="pt-6">
+                  <FilterGroup
+                    title="Availability"
+                    options={FILTER_OPTIONS.availability}
+                    active={filters.availability}
+                    onChange={(v) => handleFilterChange("availability", v)}
+                  />
+                </div>
+                <div className="pt-6">
+                  <FilterGroup
+                    title="Job Preference"
+                    options={FILTER_OPTIONS.jobType}
+                    active={filters.jobType}
+                    onChange={(v) => handleFilterChange("jobType", v)}
+                  />
+                </div>
               </div>
             </Card>
 
-            <Card className="rounded-2xl border border-neutral-800 bg-black p-5 text-white shadow-xs">
-              <h3 className="text-xs font-bold text-white mb-1">Hiring for a role?</h3>
-              <p className="text-[11px] text-neutral-400 leading-normal mb-3">
-                Post positions and manage candidate pipelines from your employer dashboard.
-              </p>
-              <Link href="/auth">
-                <Button className="w-full h-8 rounded-lg bg-white text-black hover:bg-neutral-100 text-[10px] font-bold uppercase tracking-wider">
-                  Get Started
-                </Button>
-              </Link>
-            </Card>
+            <div className="jh-panel p-6"><h3 className="font-semibold text-[#162839]">Hiring for a role?</h3><p className="mt-2 text-sm leading-6 text-[#66798a]">Create a recruiter account to manage applications, interviews and your company profile.</p><Link href="/auth" className="jh-button mt-5">Get started <ArrowRight size={16}/></Link></div>
           </aside>
 
-          {/* Results Area */}
           <div className="flex-1">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-neutral-900">
-                {isLoading ? "Searching..." : `${seekers.length} Candidates Available`}
-              </h2>
-            </div>
-
             {isLoading ? (
-              <div className="space-y-3">
+              <div className="space-y-5">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-36 rounded-2xl border border-[#eaecf0] bg-white animate-pulse"
+                    className="h-56 animate-pulse rounded-3xl border border-[#163B5C]/10 bg-white/80 shadow-sm"
                   />
                 ))}
               </div>
             ) : isError ? (
               <ErrorState description="Candidate profiles could not be loaded." onRetry={() => void refetch()} />
-            ) : seekers.length > 0 ? (
-              <div className="space-y-3">
-                {seekers.map((s: any) => (
+            ) : sortedSeekers.length > 0 ? (
+              <div className="space-y-5">
+                {sortedSeekers.map((s: any) => (
                   <div key={s._id} className="candidate-card-item">
                     <CandidateCard candidate={s} />
                   </div>
                 ))}
               </div>
             ) : (
-              <Card className="rounded-2xl border border-dashed border-[#eaecf0] bg-white p-12 text-center shadow-xs">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
-                  <User className="h-7 w-7" />
+              <Card className="rounded-3xl border border-dashed border-[#163B5C]/20 bg-white/80 p-12 text-center shadow-sm">
+                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#163B5C]/10">
+                  <User className="h-9 w-9 text-[#163B5C]/50" />
                 </div>
-                <h3 className="text-base font-bold text-neutral-950">
+                <h3 className="mb-2 text-2xl font-black text-[#163B5C]">
                   No candidates found
                 </h3>
-                <p className="mx-auto mt-1 max-w-xs text-xs text-neutral-500">
-                  Try adjusting your search criteria or resetting filters.
+                <p className="mx-auto max-w-sm text-[#516C83]">
+                  Try adjusting your search or filters to discover more talent.
                 </p>
                 <Button
                   variant="outline"
-                  className="mt-4 rounded-xl border-neutral-300 text-xs font-bold uppercase tracking-wider text-neutral-700 hover:bg-neutral-50"
+                  className="mt-6 rounded-2xl border-[#163B5C]/20 font-black text-[#163B5C] hover:bg-[#163B5C]/5"
                   onClick={clearFilters}
                 >
                   Clear Filters
@@ -388,9 +418,7 @@ export default function CandidatesListingPage() {
             )}
           </div>
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }

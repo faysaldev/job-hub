@@ -3,7 +3,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const ts = require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript');
+let ts;
+try { ts = require('typescript'); }
+catch { ts = require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript'); }
 const sourceRoot = path.resolve(__dirname,'../src');
 const load = (relative, deps) => {
   const source = fs.readFileSync(path.join(sourceRoot,relative),'utf8');

@@ -39,7 +39,12 @@
     "phase2:check": "node --test tests/phase2-job-lifecycle.test.cjs tests/phase6-static.test.cjs",
     "phase2:reconcile": "node scripts/phase2-reconcile-jobs.cjs",
     "phase4:payments-check": "node --test tests/phase4-payments.test.cjs tests/phase4-safety.test.cjs",
-    "phase4:plans-preflight": "node scripts/phase4-plans-preflight.cjs"
+    "phase4:plans-preflight": "node scripts/phase4-plans-preflight.cjs",
+    "phase6:release-test": "node --test tests/phase6-release.test.cjs",
+    "phase6:qa-gate": "node scripts/phase6-evidence-gate.cjs",
+    "phase6:job-data-audit": "node scripts/phase6-audit-job-data.cjs",
+    "phase6:offline-test": "node --test tests/phase1-auth-static.test.cjs tests/phase2-job-lifecycle.test.cjs tests/phase3-asset-policy.test.cjs tests/phase4-payments.test.cjs tests/phase4-safety.test.cjs tests/phase5-hiring.test.cjs tests/phase6-static.test.cjs tests/phase6-release.test.cjs tests/phase6-backup.test.cjs",
+    "phase6:isolated-publish-test": "node --test tests/phase6-isolated-publishing.test.cjs"
   },
   "keywords": [],
   "author": "Faysal Mridha",

@@ -28,7 +28,7 @@ const checks = [
  ['Company lock for quotas', /withCompanyQuotaLock/.test(entitlements) && /withTransaction/.test(entitlements)],
  ['Published-job quota enforcement', /requireJobSlot\(company, session\)/.test(job)],
  ['Team seat quota enforcement', /requireTeamSeat\(String\(company\._id\), session\)/.test(workspace)],
- ['Sponsored ranking uses expiration', /\$gt: \["\$sponsoredUntil", new Date\(\)\]/.test(job)],
+ ['Sponsored ranking uses expiration', /\$gt:\s*\["\$sponsoredUntil",\s*now\]/.test(job)],
  ['SponsoredUntil cannot be set by job editor', /"sponsoredUntil"/.test(job)],
  ['Platform admin route guard', /requireRoles\("admin"\)/.test(planRoutes)],
  ['Single recruiter billing action route', /router\.post\("\/actions"/.test(planRoutes)],

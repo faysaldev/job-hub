@@ -2,28 +2,25 @@ import SavedJob from "./savedjob.model";
 import Job from "../Jobs/job.model";
 import redis from "../../config/redis";
 import { assertId } from "../../lib/query";
+import { publicJobFilter } from "../Jobs/job.lifecycle";
+import { AppError } from "../../lib/errors";
 
-// Save a job for a user
+// Idempotent bookmark mutation: a retry or a second browser tab cannot create duplicates.
 const saveJob = async (userId: string, jobId: string) => {
   assertId(jobId, "job ID");
-  // Check if the job already exists in user's saved jobs
-  const existingSavedJob = await SavedJob.findOne({ userId, jobId });
-  if (existingSavedJob) {
-    throw new Error("Job is already saved by this user");
+  const jobExists = await Job.exists({ _id: jobId, ...publicJobFilter() });
+  if (!jobExists) throw new AppError("This job is no longer available to save", 404);
+  let result;
+  try {
+    result = await SavedJob.findOneAndUpdate({ userId, jobId },
+      { $setOnInsert: { userId, jobId } }, { upsert: true, new: true, setDefaultsOnInsert: true });
+  } catch (error: any) {
+    if (error?.code !== 11000) throw error;
+    // The unique (userId, jobId) index may win in another request.
+    result = await SavedJob.findOne({ userId, jobId });
+    if (!result) throw error;
   }
-
-  // Verify that the job exists
-  const job = await Job.findOne({ _id: jobId, status: { $in: ["published", null] }, isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } });
-  if (!job) {
-    throw new Error("Job not found");
-  }
-
-  const savedJob = new SavedJob({ userId, jobId });
-  const result = await savedJob.save();
-
-  // Clear user's saved jobs cache
   await clearUserSavedJobsCache(userId);
-
   return result;
 };
 
@@ -43,7 +40,7 @@ const getUserSavedJobs = async (userId: string) => {
         (!item.jobId?.applicationDeadline || new Date(item.jobId.applicationDeadline).getTime() >= Date.now()))) return rows;
     }
   } catch (error) {
-    console.log("Error fetching from Redis cache:", error);
+    console.warn("Saved jobs cache read unavailable; querying MongoDB");
     // Continue with database query if cache fails
   }
 
@@ -60,7 +57,7 @@ const getUserSavedJobs = async (userId: string) => {
     // Store the result in Redis with an expiration time (300 seconds = 5 minutes)
     await redis.setex(cacheKey, 60, JSON.stringify(savedJobs));
   } catch (error) {
-    console.log("Error storing to Redis cache:", error);
+    console.warn("Saved jobs cache write unavailable");
     // Continue anyway even if caching fails
   }
 
@@ -91,7 +88,7 @@ const clearUserSavedJobsCache = async (userId: string) => {
     const version = (await redis.get("jobhub:search:version")) || "1";
     await redis.del(`userSavedJobs:${userId}:v${version}`);
   } catch (error) {
-    console.log("Error clearing user saved jobs cache:", error);
+    console.warn("Saved jobs cache invalidation unavailable");
   }
 };
 

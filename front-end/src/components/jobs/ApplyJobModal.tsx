@@ -29,11 +29,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/src/lib/utils";
 import { useAuth } from "@/src/hooks/useAuth";
-import { useAppSelector } from "@/src/redux/hooks";
-import {
-  selectAppliedJobIds,
-  selectSavedJobIds,
-} from "@/src/redux/features/generals/generalsSlice";
+import { useGetAppliedJobIdsQuery, useGetSavedJobIdsQuery } from "@/src/redux/features/generals/generalsApi";
 
 interface ApplyJobModalProps {
   jobId: string;
@@ -48,10 +44,11 @@ export default function ApplyJobModal({
 }: ApplyJobModalProps) {
   const [open, setOpen] = useState(false);
   const { isAuthenticated } = useAuth();
-  const appliedJobIds = useAppSelector(selectAppliedJobIds);
-  const savedJobIds = useAppSelector(selectSavedJobIds);
-  const isApplied = appliedJobIds?.includes(jobId);
-  const isSaved = savedJobIds?.includes(jobId);
+  // Fetch real persisted state. The old Redux ID arrays were never populated.
+  const { data: appliedJobIds = [], isFetching: checkingApplications } = useGetAppliedJobIdsQuery(undefined, { skip: !isAuthenticated });
+  const { data: savedJobIds = [] } = useGetSavedJobIdsQuery(undefined, { skip: !isAuthenticated });
+  const isApplied = appliedJobIds.includes(jobId);
+  const isSaved = savedJobIds.includes(jobId);
   const [coverLetter, setCoverLetter] = useState("");
   const [resumeUrl, setResumeUrl] = useState("");
   const [boostSelected, setBoostSelected] = useState(false);
@@ -93,6 +90,7 @@ export default function ApplyJobModal({
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isLoading || isApplied || checkingApplications) return;
     if (!resumeUrl) {
       toast.error("Upload a resume or select one from your profile");
       return;
@@ -151,7 +149,8 @@ export default function ApplyJobModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <Button
         onClick={handleApplyClick}
-        disabled={isApplied}
+        disabled={isApplied || (isAuthenticated && checkingApplications)}
+        aria-label={isApplied ? "Already applied to this job" : "Apply for this job"}
         className={cn(
           "w-full h-12 rounded-xl font-semibold mb-4 group transition-all",
           isApplied
@@ -160,7 +159,7 @@ export default function ApplyJobModal({
         )}
       >
         <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
-        {isApplied ? "Already Applied" : "Apply Now"}
+        {isApplied ? "Applied" : isAuthenticated && checkingApplications ? "Checking application..." : "Apply Now"}
       </Button>
       <DialogContent className="w-[95vw] sm:max-w-[620px] md:max-w-[680px] bg-white rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
         <form onSubmit={handleApply} className="relative">

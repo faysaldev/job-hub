@@ -37,11 +37,11 @@ const getJobById = async (jobId: string, requesterId?: string) => {
     if (workspace) {
       const ownJob = await Job.findOne({ _id: jobId, isDeleted: { $ne: true } });
       if (ownJob && isWorkspaceJob(ownJob, workspace.company))
-        return ownJob.populate([{ path: "author", select: "name image" }, { path: "company", select: "companyName companyLogo" }]);
+        return ownJob.populate([{ path: "author", select: "name image" }, { path: "company", select: "companyName companyLogo industries website companyLocation verification.status" }]);
     }
   }
   const job = await Job.findOne({ _id: jobId, ...publicJobFilter() }).select("-pendingDraft")
-    .populate("author", "name image").populate("company", "companyName companyLogo");
+    .populate("author", "name image").populate("company", "companyName companyLogo industries website companyLocation verification.status");
   return job;
 };
 

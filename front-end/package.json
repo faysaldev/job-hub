@@ -12,7 +12,8 @@
     "phase1:session-test": "node --test tests/phase1-session.test.cjs",
     "phase2:check": "node --test tests/phase2-wizard-static.test.cjs",
     "phase3:check": "node --test tests/phase3-assets.test.cjs tests/phase2-wizard-static.test.cjs",
-    "phase4:checkout-check": "node --test tests/phase4-checkout.test.cjs"
+    "phase4:checkout-check": "node --test tests/phase4-checkout.test.cjs",
+    "phase6:check": "node --experimental-strip-types --test tests/phase6-presentation.test.cjs tests/phase5-workflows.test.cjs"
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.3.3",

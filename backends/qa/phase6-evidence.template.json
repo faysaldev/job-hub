@@ -1,0 +1,193 @@
+{
+  "environment": "staging-isolated",
+  "frontendCommit": "",
+  "backendCommit": "",
+  "verifiedAt": "",
+  "cases": {
+    "S-01": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-02": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-03": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-04": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-05": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-06": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-07": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-08": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-09": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-10": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-11": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "S-12": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-01": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-02": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-03": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-04": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-05": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-06": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-07": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-08": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-09": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-10": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-11": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-12": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-13": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-14": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-15": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-16": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-17": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-18": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-19": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "R-20": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "F-01": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "F-02": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "F-03": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "F-04": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    },
+    "F-05": {
+      "status": "not_run",
+      "evidence": [],
+      "notes": ""
+    }
+  }
+}

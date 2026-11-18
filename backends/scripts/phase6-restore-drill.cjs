@@ -3,9 +3,9 @@
  * Never restores to the source database. Never defaults to running a destructive command.
  */
 require('dotenv').config();
-const { createHash, timingSafeEqual } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
-const { existsSync, readFileSync, statSync } = require('node:fs');
+const { existsSync, statSync } = require('node:fs');
+const { verifyReceipt } = require('./phase6-backup-integrity.cjs');
 const path = require('node:path');
 const archive = process.env.PHASE6_RESTORE_ARCHIVE;
 const sourceDb = process.env.PHASE6_SOURCE_DB;
@@ -21,11 +21,9 @@ if (process.env.DATABASE_URL && drillUri === process.env.DATABASE_URL) fail('Dri
 const archiveName = path.resolve(archive);
 const checksumPath = `${archiveName}.sha256`;
 if (!existsSync(checksumPath)) fail('Cannot verify archive without its .sha256 manifest');
-const expected = readFileSync(checksumPath, 'utf8').split(/\s+/)[0].toLowerCase();
-if (!/^[a-f0-9]{64}$/.test(expected)) fail('Invalid checksum');
-const calculated = createHash('sha256').update(readFileSync(archiveName)).digest('hex');
-if (!timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(calculated, 'hex'))) fail('Archive hash mismatch');
-console.log(`Archive integrity verified. bytes=${statSync(archiveName).size} sha256=${calculated}`);
+(async () => {
+const receipt = await verifyReceipt(checksumPath).catch(() => fail('Backup checksum or manifest is invalid'));
+console.log(`Archive integrity verified. bytes=${receipt.bytes} sha256=${receipt.checksum}`);
 console.log(`Source namespace: ${sourceDb}.*; isolated restore namespace: ${drillDb}.*`);
 if (!restore) { console.log('Dry run only. Add --restore and PHASE6_RESTORE_APPROVED=YES to execute.'); process.exit(0); }
 if (process.env.PHASE6_RESTORE_APPROVED !== 'YES') fail('Set PHASE6_RESTORE_APPROVED=YES');
@@ -36,3 +34,5 @@ try {
   ], { stdio: ['ignore', 'ignore', 'pipe'], timeout: 30 * 60 * 1000 });
   console.log('Isolated restore command succeeded. Verify collections/counts and application read paths before approving deployment.');
 } catch { console.error('Isolated restore failed. Check MongoDB tools, archive namespaces, URI and permissions.'); process.exitCode = 1; }
+
+})().catch(() => { console.error('Isolated restore verification failed'); process.exitCode = 1; });
