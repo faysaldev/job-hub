@@ -54,7 +54,7 @@ export const billingDashboard = async (actorId: string) => {
     subscription: { status: mayViewFinances ? (account?.stripeStatus || "free") : (paid ? "active" : "free"),
       paidThrough: mayViewFinances ? (account?.paidThrough || null) : null,
       cancelAtPeriodEnd: mayViewFinances ? (account?.cancelAtPeriodEnd || false) : false, paid },
-    usage: { ...usage, limits: entitlement.limits }, invoices,
+    usage: { ...usage, limits: entitlement.limits, quotaOverage: Math.max(0, usage.activeJobs - entitlement.limits.activeJobs) }, invoices,
     promotions: promotions.map(p => ({ ...p, status: p.status === "active" && p.endsAt && p.endsAt <= new Date() ? "expired" : p.status })) };
 };
 

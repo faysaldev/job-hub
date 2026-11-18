@@ -1,4 +1,5 @@
 import Company, { ICompany } from "./company.model";
+import { publicJobFilter } from "../Jobs/job.lifecycle";
 import { Types } from "mongoose";
 import { assertId, escapeRegex, paging } from "../../lib/query";
 import { assertOwnedPublicImage } from "../Asset/asset.services";
@@ -32,7 +33,7 @@ export const getCompanyService = async (
       match: { isDeleted: { $ne: true }, isEmailVerified: true, role: "recruiter" } })
     .populate({
       path: "jobs",
-      match: { isActive: true, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } },
+      match: publicJobFilter(),
       select:
         "title type location locationType salaryMax salaryMin salaryPeriod",
     });

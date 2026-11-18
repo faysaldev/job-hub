@@ -33,10 +33,15 @@ test('suspended accounts cannot log in, refresh or use access token', () => {
 });
 test('moderation cannot be bypassed by editing or scheduler', () => {
   has('domains/Jobs/job.services.ts', /current\.moderation\?\.status === "blocked"/);
-  const checks = (src('domains/Jobs/job.services.ts').match(/"moderation\.status": \{ \$ne: "blocked" \}/g) || []).length;
-  assert.ok(checks >= 4, `expected 4 public/scheduled filters, got ${checks}`);
+  // Phase 2 centralizes public eligibility and quota eligibility in one policy.
+  has('domains/Jobs/job.lifecycle.ts', /export const publicJobFilter/);
+  has('domains/Jobs/job.lifecycle.ts', /export const quotaJobFilter/);
+  const policy = src('domains/Jobs/job.lifecycle.ts');
+  assert.ok((policy.match(/"moderation\.status": \{ \$ne: "blocked" \}/g) || []).length >= 2);
+  has('domains/Jobs/job.services.ts', /publicJobFilter\(now\)/);
+  has('domains/Jobs/job.services.ts', /applicationDeadline: \{ \$gt: now \}/);
   has('domains/Applications/application.services.ts', /"moderation\.status": \{ \$ne: "blocked" \}/);
-  has('domains/Company/company.workspace.ts', /"moderation\.status": \{ \$ne: "blocked" \}/);
+  has('domains/Company/company.workspace.ts', /publicJobFilter\(\)/);
 });
 test('private R2 objects do not have admin bypass and company files use membership', () => {
   has('domains/Asset/asset.services.ts', /let permitted = asset\.owner\.toString\(\) === actorId/);

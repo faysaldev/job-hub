@@ -10,6 +10,7 @@ import CompanyMember from "./company.member.model";
 import { companyForActor } from "./company.access";
 import User from "../User/user.model";
 import Job from "../Jobs/job.model";
+import { publicJobFilter } from "../Jobs/job.lifecycle";
 import jobService from "../Jobs/job.services";
 import { requireTeamSeat, withCompanyQuotaLock } from "../Billing/billing.entitlements";
 
@@ -97,7 +98,7 @@ const careersPage = asyncHandler(async (req: ProtectedRequest, res: Response) =>
     .select("companyName companyLogo careersSlug careersHeadline careersDescription companyLocation website verification.status userId").lean();
   if (!company) throw new AppError("Careers page not found", 404);
   const jobs = await Job.find({ $or: [{ companyId: company._id }, { author: company.userId }],
-    status: { $in: ["published", null] }, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
+    ...publicJobFilter() })
     .select("title type location locationType salaryMin salaryMax salaryPeriod applicationDeadline experienceLevel createdAt")
     .sort({ createdAt: -1 }).limit(50).lean();
   ok(res, { company, jobs });

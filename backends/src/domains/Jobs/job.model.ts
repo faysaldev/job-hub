@@ -8,6 +8,8 @@ export interface IJob extends Document {
   createdBy?: Types.ObjectId;
   status: "draft" | "scheduled" | "published" | "closed";
   publishAt?: Date;
+  /** Staged edits never mutate a published/scheduled public snapshot until published. */
+  pendingDraft?: Record<string, unknown>;
   publishedAt?: Date;
   title: string;
   category: string;
@@ -42,6 +44,7 @@ const jobSchema = new Schema<IJob>(
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     status: { type: String, enum: ["draft", "scheduled", "published", "closed"], default: "published" },
     publishAt: { type: Date },
+    pendingDraft: { type: Schema.Types.Mixed, default: undefined },
     publishedAt: { type: Date },
     title: {
       type: String,
@@ -150,6 +153,10 @@ jobSchema.index({ companyId: 1, status: 1, createdAt: -1 });
 jobSchema.index({ status: 1, publishAt: 1, isDeleted: 1 });
 jobSchema.index({ isActive: 1, isDeleted: 1, createdAt: -1 });
 jobSchema.index({ isActive: 1, isDeleted: 1, applicationDeadline: 1, createdAt: -1 });
+// Phase 2: public eligibility + company/legacy quota reads share indexed predicates.
+jobSchema.index({ status: 1, isActive: 1, isDeleted: 1, applicationDeadline: 1, createdAt: -1 });
+jobSchema.index({ companyId: 1, isDeleted: 1, status: 1, applicationDeadline: 1 });
+jobSchema.index({ author: 1, isDeleted: 1, status: 1, applicationDeadline: 1 });
 jobSchema.index({ author: 1, isActive: 1, isDeleted: 1, applicationDeadline: 1 });
 jobSchema.index({ category: 1, type: 1, locationType: 1 });
 jobSchema.index({ sponsoredUntil: -1, createdAt: -1 });

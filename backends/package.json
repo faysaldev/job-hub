@@ -33,7 +33,9 @@
     "phase6:performance": "node scripts/phase6-performance.cjs",
     "phase6:regression": "node scripts/phase6-regression.cjs",
     "phase6:source-audit": "node scripts/phase6-source-audit.cjs",
-    "phase6:unit-check": "node --test tests/phase6-validation.test.cjs"
+    "phase6:unit-check": "node --test tests/phase6-validation.test.cjs",
+    "phase2:check": "node --test tests/phase2-job-lifecycle.test.cjs tests/phase6-static.test.cjs",
+    "phase2:reconcile": "node scripts/phase2-reconcile-jobs.cjs"
   },
   "keywords": [],
   "author": "Faysal Mridha",
