@@ -27,6 +27,7 @@ import {
   Check,
   Loader2,
   Search,
+  MoreVertical,
 } from "lucide-react";
 import { useDeleteConversationMutation } from "@/src/redux/features/conversations/conversationsApi";
 import { useGetRecruiterApplicationsQuery } from "@/src/redux/features/applications/applicationsApi";

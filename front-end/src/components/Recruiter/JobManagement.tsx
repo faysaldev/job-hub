@@ -1,3 +1,4 @@
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { toast } from "@/src/hooks/use-toast";

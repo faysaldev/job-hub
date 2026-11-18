@@ -49,7 +49,7 @@ const getRecruiterApplications = async (actorId: string, filters: any = {}, isAd
     .populate("job_id", "title location type author companyId").sort({ boostPriority: -1, createdAt: -1 })
     .skip((bounds.page - 1) * bounds.limit).limit(bounds.limit).lean();
   return applications.map((application) => ({ ...application,
-    allowedTransitions: allowedATSStages(String(application.status), application.offer?.status),
+    allowedTransitions: allowedATSStages(String(application.status), application.offer?.status ?? undefined),
   }));
 };
 
