@@ -55,6 +55,7 @@ interface ApiJob {
   isActive: boolean;
   isSponsored?: boolean;
   sponsoredUntil?: string;
+  bannerUrl?: string;
   createdAt: string;
   company: {
     _id: string;
@@ -242,6 +243,8 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
             )}
           </div>
         </div>
+
+        {job.bannerUrl && <img src={job.bannerUrl} alt={`Banner for ${job.title}`} loading="lazy" className="mt-4 h-36 w-full rounded-xl object-cover" />}
 
         {/* Footer row */}
         <div className="mt-5 flex flex-col gap-2 border-t border-[#E1E8EF]/70 pt-4 sm:flex-row sm:items-center sm:justify-between">

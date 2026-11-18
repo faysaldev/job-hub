@@ -20,6 +20,7 @@ import {
 } from "@/src/redux/features/seeker/seekerApi";
 import { useUpdateProfileMutation } from "@/src/redux/features/user/userApi";
 import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
+import { assetErrorMessage } from "@/src/lib/assetUpload";
 import { useAppSelector, useAppDispatch } from "@/src/redux/hooks";
 import {
   selectCurrentUser,
@@ -181,6 +182,7 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
   const [imageState, setImageState] = useState<{
     file: File | null;
     preview: string | null;
+    uploadedUrl?: string;
   }>({
     file: null,
     preview: null,
@@ -233,7 +235,8 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
 
   // Populate form once data arrives
   useEffect(() => {
-    if (!profileData && !currentUser) return;
+    // Avoid wiping in-progress edits when a separate user/profile request refetches.
+    if (editing || (!profileData && !currentUser)) return;
     const data = profileData || {};
     reset({
       name: currentUser?.name || "",
@@ -279,99 +282,78 @@ const JobSeekerProfile = ({ userId }: JobSeekerProfileProps) => {
     });
     if (currentUser?.image)
       setImageState({ file: null, preview: currentUser.image });
-  }, [profileData, currentUser, reset]);
+  }, [profileData, currentUser, reset, editing]);
 
   const handleImageChange = useCallback((file: File, preview: string) => {
     setImageState({ file, preview });
   }, []);
 
   const toggleEdit = useCallback(() => {
-    if (editing) reset(); // revert
+    if (editing) {
+      reset();
+      setImageState({ file: null, preview: currentUser?.image || null });
+    }
     setEditing((v) => !v);
-  }, [editing, reset]);
+  }, [editing, reset, currentUser?.image]);
 
   const onSubmit = async (data: ProfileFormValues) => {
+    // Save personal details independently of image storage. A failed upload must
+    // never roll back a successful text update or wipe the form.
     try {
-      // Update user basic info if changed
-      if (
-        data.name !== currentUser?.name ||
-        data.phoneNumber !== currentUser?.phoneNumber ||
-        imageState.file
-      ) {
-        const basicChanges: Record<string, string> = {};
-        if (data.name !== currentUser?.name) basicChanges.name = data.name;
-        if (data.phoneNumber !== currentUser?.phoneNumber) basicChanges.phoneNumber = data.phoneNumber;
-        if (imageState.file) {
-          const uploaded = await uploadFile({ file: imageState.file, kind: "avatar" }).unwrap();
-          basicChanges.image = uploaded.data.url;
-        }
-        const res = await updateUserBasicInfo(basicChanges).unwrap();
-        if (res?.data && token) {
-          dispatch(
-            setUser({
-              user: { ...res.data, id: res.data.id || res.data._id },
-              token,
-            }),
-          );
-        }
+      const basicChanges: Record<string, string> = {};
+      if (data.name !== currentUser?.name) basicChanges.name = data.name;
+      if (data.phoneNumber !== currentUser?.phoneNumber) basicChanges.phoneNumber = data.phoneNumber;
+      if (Object.keys(basicChanges).length) {
+        const updated = await updateUserBasicInfo(basicChanges).unwrap();
+        if (updated?.data && token) dispatch(setUser({ user: { ...updated.data, id: updated.data.id || updated.data._id }, token }));
       }
 
-      // Build seeker profile payload
       const seekerProfileData = {
-        userLocation: data.location,
-        designation: data.headline,
-        aboutMe: data.bio,
-        skills: data.skills,
-        totalExperience: data.totalExperience,
-        experienceLevel: data.experienceLevel,
-        availability: data.availability,
-        jobType: data.jobType,
-        socialProfiles: data.socialProfiles,
+        userLocation: data.location, designation: data.headline, aboutMe: data.bio,
+        skills: data.skills, totalExperience: data.totalExperience,
+        experienceLevel: data.experienceLevel, availability: data.availability,
+        jobType: data.jobType, socialProfiles: data.socialProfiles,
         recentProjects: data.recentProjects,
         workExperiences: data.experience?.map((exp) => ({
-          position: exp.title,
-          durationFrom: exp.startDate,
+          position: exp.title, durationFrom: exp.startDate,
           durationTo: exp.current ? "Present" : exp.endDate,
-          companyName: exp.company,
-          responsibilities: [exp.description],
+          companyName: exp.company, responsibilities: [exp.description],
         })),
         educations: data.education?.map((edu) => ({
-          school: edu.institution,
-          degree: edu.degree,
+          school: edu.institution, degree: edu.degree,
           year: `${edu.startDate} - ${edu.endDate || "Present"}`,
         })),
         resume: { resumeName: "Resume", resumeLink: data.resume || "" },
         portfolio: data.website,
-        profileStrength: calculateProfileStrength(
-          {
-            designation: data.headline,
-            aboutMe: data.bio,
-            userLocation: data.location,
-            skills: data.skills,
-            workExperiences: data.experience,
-            educations: data.education,
-            recentProjects: data.recentProjects,
-            resume: { resumeLink: data.resume },
-            portfolio: data.website,
-            socialProfiles: data.socialProfiles,
-          },
-          currentUser,
-        ),
+        profileStrength: calculateProfileStrength({
+          designation: data.headline, aboutMe: data.bio, userLocation: data.location,
+          skills: data.skills, workExperiences: data.experience, educations: data.education,
+          recentProjects: data.recentProjects, resume: { resumeLink: data.resume },
+          portfolio: data.website, socialProfiles: data.socialProfiles,
+        }, currentUser),
       };
-
-      if (profileResponse) {
-        await updateSeekerProfile(seekerProfileData as any).unwrap();
-        toast.success("Profile updated successfully!");
-      } else {
-        await createProfile(seekerProfileData as any).unwrap();
-        toast.success("Profile created successfully!");
-      }
-
-      setEditing(false);
-      setImageState((prev) => ({ ...prev, file: null }));
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to save profile");
+      if (profileData?._id) await updateSeekerProfile(seekerProfileData as any).unwrap();
+      else await createProfile(seekerProfileData as any).unwrap();
+    } catch (error: unknown) {
+      toast.error(assetErrorMessage(error, "Unable to save profile details. Your edits are still here."));
+      return;
     }
+
+    if (imageState.file) {
+      try {
+        const imageUrl = imageState.uploadedUrl || (await uploadFile({ file: imageState.file, kind: "avatar" }).unwrap()).data.url;
+        setImageState(previous => ({ ...previous, uploadedUrl: imageUrl }));
+        const updated = await updateUserBasicInfo({ image: imageUrl }).unwrap();
+        if (updated?.data && token) dispatch(setUser({ user: { ...updated.data, id: updated.data.id || updated.data._id }, token }));
+        setImageState({ file: null, preview: imageUrl });
+      } catch (error: unknown) {
+        toast.warning(`Other profile changes were saved, but the photo was not: ${assetErrorMessage(error, "Try again")}`);
+        // Keep editing and the selected file, so Save Changes retries only what failed.
+        return;
+      }
+    }
+    setEditing(false);
+    toast.success("Profile saved successfully");
   };
 
   if (isFetching) {

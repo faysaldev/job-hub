@@ -1,12 +1,13 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { ExternalLink, Mail, Briefcase, Upload } from "lucide-react";
 import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
+import { assetErrorMessage, validateAssetFile } from "@/src/lib/assetUpload";
 import { useOpenAsset } from "@/src/components/assets/SecureAssetLink";
 import { toast } from "sonner";
 import { ProfileFormValues } from "@/src/types";
@@ -22,13 +23,17 @@ const ResumePortfolioSection = memo(
     const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
     const { openAsset } = useOpenAsset();
     const selectedResume = watch("resume");
+    const [uploadedName, setUploadedName] = useState("");
     const uploadResume = async (file?: File) => {
       if (!file) return;
+      const issue = validateAssetFile(file, "resume");
+      if (issue) { toast.error(issue); return; }
       try {
         const result = await uploadFile({ file, kind: "resume" }).unwrap();
         setValue("resume", result.data.url, { shouldDirty: true, shouldValidate: true });
+        setUploadedName(result.data.fileName || file.name);
         toast.success("Resume stored securely. Save your profile to attach it.");
-      } catch (error: any) { toast.error(error?.data?.message || error?.error || "Resume upload failed"); }
+      } catch (error: any) { toast.error(assetErrorMessage(error, "Resume upload failed")); }
     };
 
     return (
@@ -54,7 +59,7 @@ const ResumePortfolioSection = memo(
                   accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   onChange={(event) => { void uploadResume(event.target.files?.[0]); event.target.value = ""; }} />
               </label>
-              {selectedResume?.startsWith("asset:") && <p className="text-xs text-[#516C83]">Private document ready to save</p>}
+              {selectedResume?.startsWith("asset:") && <p className="text-xs text-[#516C83]">Private document ready to save{uploadedName ? `: ${uploadedName}` : ""}</p>}
               <label className="text-xs text-[#516C83]">Or keep an existing HTTPS resume link</label>
               <Input
                 {...register("resume")}

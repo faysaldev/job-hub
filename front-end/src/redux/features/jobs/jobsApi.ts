@@ -9,7 +9,7 @@ export interface SearchJobsData {
 }
 export interface WorkspaceJob {
   _id: string; title: string; status?: string; isActive: boolean; publishAt?: string;
-  applicationDeadline?: string; location?: string; sponsoredUntil?: string;
+  applicationDeadline?: string; location?: string; sponsoredUntil?: string; bannerUrl?: string;
   createdAt: string; hasDraftChanges?: boolean; expired?: boolean;
 }
 export interface WorkspaceJobsData {

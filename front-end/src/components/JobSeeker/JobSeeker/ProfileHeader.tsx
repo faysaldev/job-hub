@@ -10,6 +10,8 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { cn } from "@/src/lib/utils";
 import { ProfileFormValues } from "@/src/types";
+import { validateAssetFile } from "@/src/lib/assetUpload";
+import { toast } from "sonner";
 
 interface ProfileHeaderProps {
   editing: boolean;
@@ -36,6 +38,9 @@ const ProfileHeader = memo(
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      e.target.value = "";
+      const issue = validateAssetFile(file, "avatar");
+      if (issue) { toast.error(issue); return; }
       const reader = new FileReader();
       reader.onloadend = () => onImageChange(file, reader.result as string);
       reader.readAsDataURL(file);
@@ -51,7 +56,7 @@ const ProfileHeader = memo(
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept="image/*"
+              accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
               className="hidden"
             />
             <div

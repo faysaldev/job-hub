@@ -1,140 +1,146 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Card } from "@/src/components/ui/card";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { Label } from "@/src/components/ui/label";
+import { Textarea } from "@/src/components/ui/textarea";
+import { toast } from "sonner";
 import {
+  Upload,
   Building2,
   Globe,
   MapPin,
   Users,
   Briefcase,
-  Upload,
-  Save,
   Loader2,
+  Save,
   Sparkles,
 } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
-import { Textarea } from "@/src/components/ui/textarea";
 import { Badge } from "@/src/components/ui/badge";
-import { Card } from "@/src/components/ui/card";
-import { toast } from "sonner";
 import {
-  useCreateCompanyMutation,
-  useGetCompanyByUserIdQuery,
+  useGetCompanyQuery,
   useUpdateCompanyMutation,
+  useCreateCompanyMutation,
 } from "@/src/redux/features/company/companyApi";
 import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
+import { assetErrorMessage, validateAssetFile } from "@/src/lib/assetUpload";
 
-interface CompanyFormValues {
+type CompanyFormValues = {
+  companyLogo: string;
   companyName: string;
-  companyLocation: string;
   industries: string;
   companySize: string;
-  description: string;
+  companyLocation: string;
   website: string;
-  companyLogo?: string;
-}
+  description: string;
+};
 
 const CompanyProfile = ({ userId }: { userId: string }) => {
-  const {
-    data: companyResponse,
-    isLoading: isFetching,
-  } = useGetCompanyByUserIdQuery(userId);
-
-  const [createCompany, { isLoading: isCreating }] = useCreateCompanyMutation();
+  const { data: companyResponse, isLoading: isFetching } = useGetCompanyQuery();
   const [updateCompany, { isLoading: isUpdating }] = useUpdateCompanyMutation();
+  const [createCompany, { isLoading: isCreating }] = useCreateCompanyMutation();
   const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
 
   const [logoUrl, setLogoUrl] = useState<string>("");
-
-  const company = companyResponse?.data;
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [pendingLogo, setPendingLogo] = useState<File | null>(null);
+  const [logoError, setLogoError] = useState<string>("");
+  useEffect(() => () => { if (logoPreview) URL.revokeObjectURL(logoPreview); }, [logoPreview]);
 
   const {
     register,
     handleSubmit,
+    reset,
     setValue,
     watch,
     formState: { isDirty },
   } = useForm<CompanyFormValues>({
     defaultValues: {
+      companyLogo: "",
       companyName: "",
-      companyLocation: "",
       industries: "",
       companySize: "1-10",
-      description: "",
+      companyLocation: "",
       website: "",
-      companyLogo: "",
+      description: "",
     },
   });
 
   const watchedValues = watch();
 
   useEffect(() => {
-    if (company) {
-      setValue("companyName", company.companyName || "");
-      setValue("companyLocation", company.companyLocation || "");
-      setValue("industries", company.industries || "");
-      setValue("companySize", company.companySize || "1-10");
-      setValue("description", company.description || "");
-      setValue("website", company.website || "");
-      if (company.companyLogo) {
-        setLogoUrl(company.companyLogo);
-        setValue("companyLogo", company.companyLogo);
-      }
+    if (companyResponse?.data) {
+      const data = companyResponse.data;
+      const formattedData = {
+        companyLogo: data.companyLogo || "",
+        companyName: data.companyName || "",
+        industries: data.industries || "",
+        companySize: data.companySize || "1-10",
+        companyLocation: data.companyLocation || "",
+        website: data.website || "",
+        description: data.description || "",
+      };
+      reset(formattedData);
+      setLogoUrl(data.companyLogo || "");
     }
-  }, [company, setValue]);
+  }, [companyResponse, reset]);
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
-      return;
-    }
-
+  const uploadLogo = async (file: File) => {
     try {
-      const response = await uploadFile({ file, kind: "logo" }).unwrap();
-      const uploadedUrl = response.data?.url;
-      if (uploadedUrl) {
-        setLogoUrl(uploadedUrl);
-        setValue("companyLogo", uploadedUrl, { shouldDirty: true });
-        toast.success("Logo uploaded successfully");
-      }
-    } catch {
-      toast.error("Failed to upload logo");
+      const response = await uploadFile({ file, kind: "company-logo" }).unwrap();
+      if (!response.data.url) throw new Error("Storage did not return a logo URL");
+      setLogoUrl(response.data.url);
+      setValue("companyLogo", response.data.url, { shouldDirty: true });
+      setPendingLogo(null);
+      setLogoPreview("");
+      setLogoError("");
+      toast.success("Logo uploaded. Save your company profile to publish it.");
+    } catch (error: unknown) {
+      const reason = assetErrorMessage(error, "Logo upload failed. Try again.");
+      setLogoError(reason);
+      toast.error(reason);
     }
+  };
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const issue = validateAssetFile(file, "company-logo");
+    if (issue) { setLogoError(issue); toast.error(issue); return; }
+    setLogoError("");
+    setPendingLogo(file);
+    setLogoPreview(URL.createObjectURL(file));
+    void uploadLogo(file);
   };
 
   const onSubmit = async (data: CompanyFormValues) => {
     try {
       const payload = {
         ...data,
-        companyLogo: logoUrl || data.companyLogo,
+        companyLogo: logoUrl, // Ensure latest logo is used
       };
 
-      if (company?._id) {
-        await updateCompany({
-          companyId: company._id,
-          body: payload,
-        }).unwrap();
-        toast.success("Company profile updated!");
+      if (companyResponse?.data) {
+        await updateCompany(payload).unwrap();
+        toast.success(pendingLogo ? "Company details saved; logo still needs uploading" : "Company profile updated successfully!");
       } else {
         await createCompany(payload).unwrap();
-        toast.success("Company profile created!");
+        toast.success(pendingLogo ? "Company created; logo still needs uploading" : "Company profile created successfully!");
       }
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to save profile");
+    } catch (error: any) {
+      toast.error(assetErrorMessage(error, "Failed to save company profile"));
     }
   };
 
   if (isFetching) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-[#eaecf0] bg-white py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-neutral-800" />
-        <p className="mt-2 text-xs font-medium text-neutral-500">
+      <div className="flex flex-col items-center justify-center rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-[#163B5C]" />
+        <p className="mt-3 text-sm font-medium text-[#516C83]">
           Loading company profile...
         </p>
       </div>
@@ -143,236 +149,262 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h3 className="text-base font-bold text-neutral-950">
-            Company Identity
-          </h3>
-          <p className="text-xs text-neutral-500">
-            Define your employer brand across JobHub
-          </p>
-        </div>
+      <Card className="relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white p-6 shadow-sm md:p-8">
+        <div className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-[#163B5C] to-[#516C83]" />
 
-        <Button
-          type="submit"
-          disabled={isUpdating || isCreating || !isDirty}
-          className="h-9 rounded-xl bg-black hover:bg-neutral-800 text-white font-bold uppercase tracking-wider text-xs px-5 shadow-xs disabled:opacity-50"
-        >
-          {isUpdating || isCreating ? (
-            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Save className="mr-1.5 h-3.5 w-3.5" />
-          )}
-          Save Changes
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left: Logo & Live Preview */}
-        <div className="space-y-5 lg:col-span-4">
-          <div className="space-y-2">
-            <Label className="block text-xs font-bold uppercase tracking-wider text-neutral-900">
-              Company Logo
-            </Label>
-            <div className="group relative mx-auto flex aspect-square w-full max-w-[200px] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#eaecf0] bg-[#f8fafc] transition-colors hover:border-neutral-400">
-              {logoUrl ? (
-                <img
-                  src={logoUrl}
-                  alt="Company logo"
-                  className="h-full w-full object-contain p-2"
-                />
-              ) : (
-                <div className="p-4 text-center">
-                  <Upload className="mx-auto mb-1.5 h-8 w-8 text-neutral-400" />
-                  <p className="text-[11px] font-medium text-neutral-500">
-                    PNG, JPG up to 5MB
-                  </p>
-                </div>
-              )}
-
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
-                <Input
-                  id="logo-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                  disabled={isUploading}
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => document.getElementById("logo-upload")?.click()}
-                  className="rounded-xl bg-white text-black hover:bg-neutral-100 text-xs font-bold uppercase tracking-wider h-8 px-3"
-                >
-                  {isUploading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    "Change Logo"
-                  )}
-                </Button>
-              </div>
+        <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+          <div className="flex items-center gap-4">
+            <div className="rounded-2xl bg-[#163B5C]/10 p-3">
+              <Building2 className="h-6 w-6 text-[#163B5C]" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-[#163B5C]">
+                Company Identity
+              </h2>
+              <p className="font-medium text-[#516C83]">
+                Define your brand presence
+              </p>
             </div>
           </div>
 
-          <div className="rounded-xl border border-neutral-100 bg-[#f8fafc] p-4 space-y-3">
-            <h4 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-              <Sparkles className="h-3.5 w-3.5 text-neutral-500" />
-              Live Preview
-            </h4>
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-white border border-neutral-200 p-1.5 shrink-0">
-                {logoUrl ? (
-                  <img src={logoUrl} alt="" className="h-full w-full object-contain" />
+          <Button
+            type="submit"
+            disabled={isUpdating || isCreating || isUploading || (!isDirty && !pendingLogo)}
+            className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-8 font-black text-white shadow-lg shadow-[#163B5C]/15 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50"
+          >
+            {isUpdating || isCreating ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            Save Changes
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
+          {/* Left: Branding & Preview */}
+          <div className="space-y-8 lg:col-span-4">
+            <div className="group relative">
+              <Label className="mb-3 block text-sm font-black text-[#163B5C]">
+                Company Logo
+              </Label>
+              <div className="group relative mx-auto flex aspect-square w-full max-w-[240px] items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-[#163B5C]/15 bg-[#F6F8FB] transition-colors group-hover:border-[#163B5C]/40">
+                {(logoPreview || logoUrl) ? (
+                  <img
+                    src={logoPreview || logoUrl}
+                    alt="Company logo"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 ) : (
-                  <Building2 className="h-4 w-4 text-neutral-500" />
+                  <div className="p-6 text-center">
+                    <Upload className="mx-auto mb-2 h-10 w-10 text-[#516C83]/40" />
+                    <p className="text-xs font-semibold text-[#516C83]/60">
+                      JPEG, PNG or WebP up to 5 MB
+                    </p>
+                  </div>
                 )}
+
+                <div className="absolute inset-0 flex items-center justify-center bg-[#163B5C]/55 opacity-0 transition-opacity group-hover:opacity-100">
+                  <Input
+                    id="logo-upload"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                    disabled={isUploading}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => document.getElementById("logo-upload")?.click()}
+                    className="rounded-2xl bg-white/90 font-black text-[#163B5C] hover:bg-white"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Change Logo"
+                    )}
+                  </Button>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-bold text-neutral-900">
-                  {watchedValues.companyName || "Your Company Name"}
-                </p>
-                <p className="text-[11px] text-neutral-500 truncate">
-                  {watchedValues.industries || "Industry"}
-                </p>
-              </div>
+              {isUploading && <p role="status" className="mt-2 text-xs text-[#516C83]">Uploading logo securely to R2…</p>}
+              {logoError && <div role="alert" className="mt-2 space-y-2 text-xs text-red-700">
+                <p>Logo not saved: {logoError}</p>
+                {pendingLogo && <Button type="button" variant="outline" disabled={isUploading} onClick={() => void uploadLogo(pendingLogo)}>Retry upload</Button>}
+              </div>}
             </div>
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              <Badge
-                variant="secondary"
-                className="rounded-md border-neutral-200 bg-white px-2 py-0.5 text-[10px] text-neutral-600 font-medium"
-              >
-                <Users className="mr-1 h-3 w-3" />
-                {watchedValues.companySize}
-              </Badge>
-              <Badge
-                variant="secondary"
-                className="rounded-md border-neutral-200 bg-white px-2 py-0.5 text-[10px] text-neutral-600 font-medium"
-              >
-                <MapPin className="mr-1 h-3 w-3" />
-                {watchedValues.companyLocation || "Location"}
-              </Badge>
+
+            <div className="rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-6">
+              <h4 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-[#163B5C]">
+                <Sparkles className="h-4 w-4" />
+                Live Preview
+              </h4>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-sm">
+                    {(logoPreview || logoUrl) ? (
+                      <img src={logoPreview || logoUrl} alt="" className="object-contain" />
+                    ) : (
+                      <Building2 className="h-5 w-5 text-[#516C83]" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="line-clamp-1 text-sm font-black text-[#163B5C]">
+                      {watchedValues.companyName || "Your Company Name"}
+                    </p>
+                    <p className="text-xs font-medium text-[#516C83]">
+                      {watchedValues.industries || "Industry"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full border-[#163B5C]/10 bg-white px-2 py-1 text-[10px] text-[#516C83]"
+                  >
+                    <Users className="mr-1 h-3 w-3" />{" "}
+                    {watchedValues.companySize}
+                  </Badge>
+                  <Badge
+                    variant="secondary"
+                    className="rounded-full border-[#163B5C]/10 bg-white px-2 py-1 text-[10px] text-[#516C83]"
+                  >
+                    <MapPin className="mr-1 h-3 w-3" />{" "}
+                    {watchedValues.companyLocation || "Location"}
+                  </Badge>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Right: Form Fields */}
-        <div className="space-y-4 lg:col-span-8">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="companyName"
-                className="text-xs font-bold uppercase tracking-wider text-neutral-900"
-              >
-                Company Name
-              </Label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <Input
-                  id="companyName"
-                  {...register("companyName", { required: true })}
-                  placeholder="e.g. Acme Corporation"
-                  className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="industries"
-                className="text-xs font-bold uppercase tracking-wider text-neutral-900"
-              >
-                Industry
-              </Label>
-              <div className="relative">
-                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <Input
-                  id="industries"
-                  {...register("industries", { required: true })}
-                  placeholder="e.g. Software & Cloud"
-                  className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="companySize"
-                className="text-xs font-bold uppercase tracking-wider text-neutral-900"
-              >
-                Company Size
-              </Label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <select
-                  id="companySize"
-                  {...register("companySize")}
-                  className="flex h-10 w-full appearance-none rounded-xl border border-[#eaecf0] bg-white py-1.5 pl-9 pr-3 text-xs sm:text-sm font-medium text-neutral-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          {/* Right: Form Fields */}
+          <div className="space-y-6 lg:col-span-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="companyName"
+                  className="text-sm font-black text-[#163B5C]"
                 >
-                  <option value="1-10">1-10 employees</option>
-                  <option value="11-50">11-50 employees</option>
-                  <option value="51-200">51-200 employees</option>
-                  <option value="201-500">201-500 employees</option>
-                  <option value="501-1000">501-1000 employees</option>
-                  <option value="1000+">1000+ employees</option>
-                </select>
+                  Company Name
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#516C83]">
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                  <Input
+                    id="companyName"
+                    {...register("companyName", { required: true })}
+                    placeholder="e.g. TechCorp Inc."
+                    className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-11 font-medium focus:border-[#163B5C] focus:ring-[#163B5C]/5"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="companyLocation"
-                className="text-xs font-bold uppercase tracking-wider text-neutral-900"
-              >
-                Location
-              </Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <Input
-                  id="companyLocation"
-                  {...register("companyLocation", { required: true })}
-                  placeholder="e.g. San Francisco, CA"
-                  className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
+              <div className="space-y-2">
+                <Label
+                  htmlFor="industries"
+                  className="text-sm font-black text-[#163B5C]"
+                >
+                  Industries
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#516C83]">
+                    <Briefcase className="h-4 w-4" />
+                  </div>
+                  <Input
+                    id="industries"
+                    {...register("industries", { required: true })}
+                    placeholder="e.g. Information Technology"
+                    className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-11 font-medium focus:border-[#163B5C] focus:ring-[#163B5C]/5"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="companySize"
+                  className="text-sm font-black text-[#163B5C]"
+                >
+                  Company Size
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#516C83]">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <select
+                    id="companySize"
+                    {...register("companySize")}
+                    className="flex h-12 w-full appearance-none rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] py-2 pl-11 pr-3 text-sm font-medium focus:border-[#163B5C] focus:outline-none focus:ring-2 focus:ring-[#163B5C]/5"
+                  >
+                    <option value="1-10">1-10 employees</option>
+                    <option value="11-50">11-50 employees</option>
+                    <option value="51-200">51-200 employees</option>
+                    <option value="201-500">201-500 employees</option>
+                    <option value="501-1000">501-1000 employees</option>
+                    <option value="1000+">1000+ employees</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="companyLocation"
+                  className="text-sm font-black text-[#163B5C]"
+                >
+                  Location
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#516C83]">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                  <Input
+                    id="companyLocation"
+                    {...register("companyLocation", { required: true })}
+                    placeholder="e.g. San Francisco, CA"
+                    className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-11 font-medium focus:border-[#163B5C] focus:ring-[#163B5C]/5"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label
+                  htmlFor="website"
+                  className="text-sm font-black text-[#163B5C]"
+                >
+                  Website
+                </Label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#516C83]">
+                    <Globe className="h-4 w-4" />
+                  </div>
+                  <Input
+                    id="website"
+                    {...register("website")}
+                    placeholder="https://techcorp.com"
+                    className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-11 font-medium focus:border-[#163B5C] focus:ring-[#163B5C]/5"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label
+                  htmlFor="description"
+                  className="text-sm font-black text-[#163B5C]"
+                >
+                  About Company
+                </Label>
+                <Textarea
+                  id="description"
+                  {...register("description", { required: true })}
+                  placeholder="We build great software..."
+                  rows={6}
+                  className="rounded-3xl border-[#163B5C]/10 bg-[#F6F8FB] p-4 font-medium focus:border-[#163B5C] focus:ring-[#163B5C]/5"
                 />
               </div>
-            </div>
-
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label
-                htmlFor="website"
-                className="text-xs font-bold uppercase tracking-wider text-neutral-900"
-              >
-                Website
-              </Label>
-              <div className="relative">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <Input
-                  id="website"
-                  {...register("website")}
-                  placeholder="https://company.com"
-                  className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label
-                htmlFor="description"
-                className="text-xs font-bold uppercase tracking-wider text-neutral-900"
-              >
-                About Company
-              </Label>
-              <Textarea
-                id="description"
-                {...register("description", { required: true })}
-                placeholder="Describe your company culture, mission, and products..."
-                rows={5}
-                className="rounded-xl border border-[#eaecf0] bg-white p-3.5 text-xs sm:text-sm font-medium leading-relaxed focus:border-black focus:ring-1 focus:ring-black"
-              />
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </form>
   );
 };

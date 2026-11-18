@@ -24,15 +24,13 @@ import {
   Award,
   Loader2,
   CalendarDays,
-  ShieldCheck,
-  ExternalLink,
+  Shield,
 } from "lucide-react";
 import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 import { useSaveJobMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
 import { toast } from "sonner";
 import ApplyJobModal from "@/src/components/jobs/ApplyJobModal";
 import ReportJobButton from "@/src/components/jobs/ReportJobButton";
-import { CompanyBrandIcon } from "@/src/components/jobs/JobCard";
 import gsap from "gsap";
 import { selectSavedJobIds } from "@/src/redux/features/generals/generalsSlice";
 import { useSelector } from "react-redux";
@@ -40,6 +38,7 @@ import { useSelector } from "react-redux";
 interface PopulatedJob {
   _id: string;
   title: string;
+  bannerUrl?: string;
   company:
     | string
     | {
@@ -79,12 +78,12 @@ const JobDetailsPage = () => {
       const ctx = gsap.context(() => {
         gsap.fromTo(
           ".jd-card",
-          { opacity: 0, y: 16 },
+          { opacity: 0, y: 24 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.45,
-            stagger: 0.06,
+            duration: 0.55,
+            stagger: 0.08,
             ease: "power2.out",
           },
         );
@@ -95,16 +94,17 @@ const JobDetailsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+      <div className="min-h-screen flex flex-col jobhub-page-bg">
         <Header />
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="rounded-2xl border border-[#eaecf0] bg-white p-10 text-center shadow-xs max-w-sm w-full">
-            <div className="w-10 h-10 border-2 border-neutral-300 border-t-black rounded-full animate-spin mx-auto mb-4" />
-            <p className="font-bold text-neutral-900 text-sm">Loading job details...</p>
-            <p className="mt-1 text-xs text-neutral-500">Preparing the role overview</p>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="rounded-3xl border border-[#163B5C]/10 bg-white/90 p-10 text-center shadow-xl">
+            <div className="w-16 h-16 border-4 border-[#163B5C]/20 border-t-[#163B5C] rounded-full animate-spin mx-auto mb-4" />
+            <p className="font-bold text-[#163B5C]">Loading job details...</p>
+            <p className="mt-1 text-sm text-[#516C83]">
+              Preparing the role overview
+            </p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -130,8 +130,6 @@ const JobDetailsPage = () => {
       })
     : job.posted || "Recently";
 
-  const isSaved = savedJobIds?.includes(job._id);
-
   const handleSave = async () => {
     try {
       await saveJob({ jobId: details }).unwrap();
@@ -153,173 +151,188 @@ const JobDetailsPage = () => {
       /* ignore */
     }
   };
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div className="min-h-screen flex flex-col jobhub-page-bg">
       <Header />
 
-      {/* Hero Header matching pitch-black theme */}
-      <section className="relative overflow-hidden bg-black text-white pt-8 pb-24 border-b border-neutral-800">
-        <div className="container mx-auto max-w-6xl px-4 relative z-10">
+      {/* Hero */}
+      <div className="relative overflow-hidden bg-[#163B5C] pt-10 pb-36">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="absolute left-10 top-28 hidden h-28 w-56 rotate-[-8deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
+          <div className="absolute bottom-16 right-10 hidden h-32 w-64 rotate-[8deg] rounded-[2rem] border border-white/10 bg-white/5 lg:block" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <Link
             href="/job"
-            className="mb-6 inline-flex items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-white"
+            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/80 transition-colors hover:text-white"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to Jobs
+            <ArrowLeft className="h-4 w-4" /> Back to Jobs
           </Link>
 
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="flex items-start gap-4 sm:gap-5">
-              <CompanyBrandIcon
-                companyName={companyName}
-                logoUrl={companyLogo}
-                id={job._id}
-                className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl shrink-0"
-              />
+          {job.bannerUrl && <img src={job.bannerUrl} alt={`Banner for ${job.title}`} className="mb-8 h-52 w-full rounded-3xl object-cover" />}
 
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-2.5">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400">
-                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div className="flex items-start gap-5">
+              <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm">
+                {companyLogo ? (
+                  <img
+                    src={companyLogo}
+                    alt={companyName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Building2 className="h-10 w-10 text-white" />
+                )}
+              </div>
+
+              <div>
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <Badge className="rounded-full border border-emerald-300/20 bg-emerald-400/15 text-emerald-100">
+                    <span className="w-2 h-2 bg-green-400 rounded-full mr-1.5 animate-pulse inline-block" />
                     Actively Hiring
-                  </span>
-                  <Badge className="rounded-full bg-neutral-800 text-neutral-200 border-neutral-700 capitalize text-[11px] font-medium px-2.5 py-0.5">
+                  </Badge>
+                  <Badge className="rounded-full bg-white/10 text-white border-white/20 capitalize">
                     {job.type}
                   </Badge>
                   {job.locationType && (
-                    <Badge className="rounded-full bg-neutral-800 text-neutral-200 border-neutral-700 capitalize text-[11px] font-medium px-2.5 py-0.5">
+                    <Badge className="rounded-full bg-white/10 text-white border-white/20 capitalize">
                       {job.locationType}
                     </Badge>
                   )}
                 </div>
-
-                <h1 className="mb-3 max-w-3xl text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+                <h1 className="mb-4 max-w-4xl text-3xl font-black tracking-tight text-white md:text-5xl">
                   {job.title}
                 </h1>
-
-                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs font-medium text-neutral-300">
-                  <span className="flex items-center gap-1.5 rounded-lg bg-neutral-900 border border-neutral-800 px-2.5 py-1 text-white">
-                    <Building2 className="h-3.5 w-3.5 text-neutral-400" />
+                <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-white/80">
+                  <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
+                    <Building2 className="h-4 w-4" />
                     {companyName}
                   </span>
-                  <span className="flex items-center gap-1.5 rounded-lg bg-neutral-900 border border-neutral-800 px-2.5 py-1">
-                    <MapPin className="h-3.5 w-3.5 text-neutral-400" />
+                  <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
+                    <MapPin className="h-4 w-4" />
                     {job.location}
                   </span>
-                  <span className="flex items-center gap-1.5 rounded-lg bg-neutral-900 border border-neutral-800 px-2.5 py-1 font-semibold text-neutral-100">
-                    <DollarSign className="h-3.5 w-3.5 text-neutral-400" />
+                  <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
+                    <DollarSign className="h-4 w-4" />
                     {salaryRange}
                   </span>
-                  <span className="flex items-center gap-1.5 rounded-lg bg-neutral-900 border border-neutral-800 px-2.5 py-1 text-neutral-400">
-                    <CalendarDays className="h-3.5 w-3.5" />
+                  <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
+                    <CalendarDays className="h-4 w-4" />
                     Posted {postedDate}
                   </span>
                   {job.positions && (
-                    <span className="flex items-center gap-1.5 rounded-lg bg-neutral-900 border border-neutral-800 px-2.5 py-1 text-neutral-300">
-                      <Users className="h-3.5 w-3.5 text-neutral-400" />
-                      {job.positions} {job.positions === 1 ? "opening" : "openings"}
+                    <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
+                      <Users className="h-4 w-4" />
+                      {job.positions}{" "}
+                      {job.positions === 1 ? "opening" : "openings"}
                     </span>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-2.5 flex-wrap self-start shrink-0 pt-1">
+            <div className="flex gap-3 flex-wrap">
               <Button
                 variant="outline"
-                className={`h-9 rounded-xl border-neutral-700 bg-neutral-900 text-neutral-200 text-xs font-bold uppercase tracking-wider hover:bg-neutral-800 hover:text-white ${
-                  isSaved ? "border-red-500/30 text-red-400 bg-red-500/10" : ""
+                className={`rounded-xl border-white/25 bg-white/10 text-white hover:bg-white/15 ${
+                  savedJobIds?.includes(job._id)
+                    ? "opacity-75 cursor-not-allowed"
+                    : ""
                 }`}
                 onClick={handleSave}
-                disabled={isSaving || isSaved}
+                disabled={isSaving || savedJobIds?.includes(job._id)}
               >
                 {isSaving ? (
-                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Heart
-                    className={`h-3.5 w-3.5 mr-1.5 ${
-                      isSaved ? "fill-red-400 text-red-400" : ""
+                    className={`h-4 w-4 mr-2 ${
+                      savedJobIds?.includes(job._id) ? "fill-white" : ""
                     }`}
                   />
                 )}
-                {isSaving ? "Saving..." : isSaved ? "Saved" : "Save"}
+                {isSaving
+                  ? "Saving..."
+                  : savedJobIds?.includes(job._id)
+                    ? "Saved"
+                    : "Save"}
               </Button>
               <Button
                 variant="outline"
-                className="h-9 rounded-xl border-neutral-700 bg-neutral-900 text-neutral-200 text-xs font-bold uppercase tracking-wider hover:bg-neutral-800 hover:text-white"
+                className="rounded-xl border-white/25 bg-white/10 text-white hover:bg-white/15"
                 onClick={handleShare}
               >
-                <Share2 className="h-3.5 w-3.5 mr-1.5" /> Share
+                <Share2 className="h-4 w-4 mr-2" /> Share
               </Button>
             </div>
           </div>
-
-          <div className="mt-4 pt-4 border-t border-neutral-800/80">
-            <ReportJobButton jobId={job._id} />
-          </div>
+          <ReportJobButton jobId={job._id} />
         </div>
-      </section>
+      </div>
 
-      {/* Main Content */}
-      <main
+      {/* Content */}
+      <div
         ref={containerRef}
-        className="container mx-auto max-w-6xl px-4 -mt-12 relative z-20 pb-16 flex-1"
+        className="container mx-auto px-4 -mt-20 relative z-20 pb-16"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column: Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Required Skills */}
-            {job.skills && job.skills.length > 0 && (
-              <Card className="jd-card rounded-2xl border border-[#eaecf0] bg-white p-6 shadow-xs">
-                <h2 className="mb-4 flex items-center gap-2.5 text-base font-bold text-neutral-900">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
-                    <Sparkles className="h-4 w-4" />
-                  </span>
-                  Required Skills
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {job.skills.map((skill, i) => (
-                    <span
-                      key={i}
-                      className="rounded-md bg-[#f3f4f6] text-neutral-700 px-3 py-1 text-xs font-medium border border-neutral-200/50"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </Card>
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left */}
+          <div className="lg:col-span-2 space-y-5">
+            {/* Skills */}
+            <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-6 shadow-sm backdrop-blur">
+              <h3 className="mb-4 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                  <Sparkles className="h-5 w-5 text-[#163B5C]" />
+                </span>
+                Required Skills
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {job.skills.map((skill, i) => (
+                  <Badge
+                    key={i}
+                    className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-4 py-1.5 font-bold text-[#163B5C] transition-colors hover:bg-[#163B5C]/10"
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </Card>
 
-            {/* About This Role */}
-            <Card className="jd-card rounded-2xl border border-[#eaecf0] bg-white p-6 sm:p-7 shadow-xs">
-              <h2 className="mb-4 flex items-center gap-2.5 text-base font-bold text-neutral-900">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
-                  <Briefcase className="h-4 w-4" />
+            {/* Description */}
+            <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
+              <h3 className="mb-4 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                  <Briefcase className="h-5 w-5 text-[#163B5C]" />
                 </span>
                 About This Role
-              </h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-neutral-600">
+              </h3>
+              <p className="whitespace-pre-line leading-8 text-[#516C83]">
                 {job.description}
               </p>
             </Card>
 
             {/* Responsibilities */}
             {job.responsibilities && job.responsibilities.length > 0 && (
-              <Card className="jd-card rounded-2xl border border-[#eaecf0] bg-white p-6 sm:p-7 shadow-xs">
-                <h2 className="mb-4 flex items-center gap-2.5 text-base font-bold text-neutral-900">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
-                    <CheckCircle className="h-4 w-4" />
+              <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
+                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                    <CheckCircle className="h-5 w-5 text-[#163B5C]" />
                   </span>
-                  Key Responsibilities
-                </h2>
-                <ul className="space-y-2.5">
+                  Responsibilities
+                </h3>
+                <ul className="space-y-3">
                   {job.responsibilities.map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-3 rounded-xl bg-[#f8fafc] border border-neutral-100 p-3.5 text-xs sm:text-sm text-neutral-700 leading-normal"
+                      className="flex items-start gap-3 rounded-2xl bg-[#F6F8FB] p-4 text-[#516C83]"
                     >
-                      <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{item}</span>
+                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#163B5C]/10">
+                        <CheckCircle className="h-3.5 w-3.5 text-[#163B5C]" />
+                      </div>
+                      {item}
                     </li>
                   ))}
                 </ul>
@@ -328,44 +341,48 @@ const JobDetailsPage = () => {
 
             {/* Requirements */}
             {job.requirements && job.requirements.length > 0 && (
-              <Card className="jd-card rounded-2xl border border-[#eaecf0] bg-white p-6 sm:p-7 shadow-xs">
-                <h2 className="mb-4 flex items-center gap-2.5 text-base font-bold text-neutral-900">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
-                    <Award className="h-4 w-4" />
+              <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
+                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                    <Award className="h-5 w-5 text-[#163B5C]" />
                   </span>
                   Requirements
-                </h2>
-                <ul className="space-y-2.5">
+                </h3>
+                <ul className="space-y-3">
                   {job.requirements.map((item, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-3 rounded-xl bg-[#f8fafc] border border-neutral-100 p-3.5 text-xs sm:text-sm text-neutral-700 leading-normal"
+                      className="flex items-start gap-3 rounded-2xl bg-[#F6F8FB] p-4 text-[#516C83]"
                     >
-                      <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{item}</span>
+                      <div className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#163B5C]/10">
+                        <CheckCircle className="h-3.5 w-3.5 text-[#163B5C]" />
+                      </div>
+                      {item}
                     </li>
                   ))}
                 </ul>
               </Card>
             )}
 
-            {/* Benefits & Perks */}
+            {/* Benefits */}
             {job.benefits && job.benefits.length > 0 && (
-              <Card className="jd-card rounded-2xl border border-[#eaecf0] bg-white p-6 sm:p-7 shadow-xs">
-                <h2 className="mb-4 flex items-center gap-2.5 text-base font-bold text-neutral-900">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
-                    <Award className="h-4 w-4" />
+              <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-7 shadow-sm backdrop-blur">
+                <h3 className="mb-5 flex items-center gap-2 text-xl font-black text-[#163B5C]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C]/10">
+                    <Award className="h-5 w-5 text-[#163B5C]" />
                   </span>
                   Benefits & Perks
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {job.benefits.map((b, i) => (
                     <div
                       key={i}
-                      className="flex items-start gap-2.5 rounded-xl bg-[#f8fafc] border border-neutral-100 p-3.5 text-xs sm:text-sm font-medium text-neutral-800"
+                      className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4"
                     >
-                      <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{b}</span>
+                      <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+                      <span className="text-sm font-semibold text-[#163B5C]">
+                        {b}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -373,54 +390,51 @@ const JobDetailsPage = () => {
             )}
           </div>
 
-          {/* Right Column: Apply & Overview */}
-          <div className="space-y-6">
-            {/* Apply Action Card */}
-            <Card className="jd-card sticky top-20 overflow-hidden rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-6 shadow-xs">
-              <div className="mb-4 flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white">
-                  <Briefcase className="h-5 w-5" />
+          {/* Right */}
+          <div className="space-y-5">
+            {/* Apply */}
+            <Card className="jd-card sticky top-24 overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-xl shadow-[#163B5C]/10 backdrop-blur">
+              <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
+              <div className="mb-5 mt-2 flex items-start gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#163B5C] text-white">
+                  <Briefcase className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-neutral-900">
+                  <h3 className="text-xl font-black text-[#163B5C]">
                     Apply for this Position
                   </h3>
-                  <p className="mt-0.5 text-xs text-neutral-500">
-                    Join {companyName} and take the next step.
+                  <p className="mt-1 text-sm text-[#516C83]">
+                    Join {companyName} and be part of an amazing team.
                   </p>
                 </div>
               </div>
-
               <ApplyJobModal
                 jobId={job._id}
                 jobTitle={job.title}
                 companyName={companyName}
               />
-
-              <div className="mt-3 text-center">
-                <span className="inline-block rounded-full bg-neutral-100 px-3 py-1 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
-                  Direct recruiter delivery
+              <div className="mt-4 text-center">
+                <span className="rounded-full bg-[#E1E8EF]/60 px-3 py-1.5 text-xs font-semibold text-[#516C83]">
+                  LinkedIn Apply - Coming Soon
                 </span>
               </div>
-
-              <div className="mt-5 pt-4 border-t border-neutral-100 space-y-2">
+              <div className="mt-5 pt-5 border-t border-[#E1E8EF]/50 space-y-3">
                 {[
                   {
                     label: "Openings",
                     value: job.positions
                       ? `${job.positions} position${job.positions !== 1 ? "s" : ""}`
-                      : "1 position",
+                      : "N/A",
                   },
                   { label: "Posted", value: postedDate },
-                  { label: "Job Type", value: job.type },
-                  { label: "Salary", value: salaryRange },
+                  { label: "Type", value: job.type },
                 ].map((row) => (
                   <div
                     key={row.label}
-                    className="flex items-center justify-between rounded-xl bg-[#f8fafc] px-3.5 py-2.5 text-xs"
+                    className="flex items-center justify-between rounded-2xl bg-[#F6F8FB] px-4 py-3 text-sm"
                   >
-                    <span className="text-neutral-500 font-medium">{row.label}</span>
-                    <span className="font-bold capitalize text-neutral-900">
+                    <span className="text-[#516C83]">{row.label}</span>
+                    <span className="font-bold capitalize text-[#163B5C]">
                       {row.value}
                     </span>
                   </div>
@@ -428,65 +442,69 @@ const JobDetailsPage = () => {
               </div>
             </Card>
 
-            {/* Company Info */}
-            <Card className="jd-card rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-6 shadow-xs">
-              <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-neutral-400">
-                About the Company
+            {/* Company */}
+            <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white/90 p-6 shadow-sm backdrop-blur">
+              <h3 className="mb-4 text-lg font-black text-[#163B5C]">
+                About {companyName}
               </h3>
               <div className="flex items-center gap-3 mb-4">
-                <CompanyBrandIcon
-                  companyName={companyName}
-                  logoUrl={companyLogo}
-                  id={job._id}
-                  className="h-12 w-12 rounded-xl shrink-0"
-                />
-                <div className="min-w-0">
-                  <p className="font-bold text-neutral-900 truncate text-sm">
-                    {companyName}
-                  </p>
-                  <p className="text-xs text-neutral-500">Hiring Organization</p>
+                <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#163B5C] to-[#516C83]">
+                  {companyLogo ? (
+                    <img
+                      src={companyLogo}
+                      alt={companyName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Building2 className="h-6 w-6 text-white" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-black text-[#163B5C]">{companyName}</p>
+                  <p className="text-sm text-[#516C83]">Technology Company</p>
                 </div>
               </div>
-
-              <div className="space-y-2 text-xs text-neutral-600 mb-4">
-                <div className="flex items-center gap-2 rounded-xl bg-[#f8fafc] px-3.5 py-2.5">
-                  <ShieldCheck className="h-4 w-4 text-neutral-700 shrink-0" />
-                  <span>Verified employer</span>
+              <div className="mb-5 space-y-2 text-sm text-[#516C83]">
+                <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
+                  <Shield className="h-4 w-4 text-[#163B5C]" /> Verified
+                  employer
                 </div>
-                <div className="flex items-center gap-2 rounded-xl bg-[#f8fafc] px-3.5 py-2.5">
-                  <MapPin className="h-4 w-4 text-neutral-700 shrink-0" />
-                  <span className="truncate">{job.location}</span>
+                <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
+                  <Globe className="h-4 w-4 text-[#163B5C]" /> www.
+                  {companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.com
+                </div>
+                <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
+                  <MapPin className="h-4 w-4 text-[#163B5C]" /> {job.location}
                 </div>
               </div>
-
               {companyId && (
                 <Link
                   href={`/company/${companyId}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-black hover:text-neutral-600 transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-bold text-[#163B5C] hover:underline"
                 >
-                  <Clock className="h-3.5 w-3.5" /> View Company Profile
+                  <Clock className="h-4 w-4" /> View Company Profile
                 </Link>
               )}
             </Card>
 
-            {/* Similar Jobs Callout */}
-            <Card className="jd-card rounded-2xl border border-neutral-800 bg-black p-6 text-white shadow-xs">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-white">
-                <Sparkles className="h-5 w-5" />
+            {/* Similar Jobs */}
+            <Card className="jd-card rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] p-6 text-white shadow-xl shadow-[#163B5C]/15">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+                <Sparkles className="h-6 w-6" />
               </div>
-              <h3 className="mb-1 text-sm font-bold text-white">More Jobs Like This</h3>
-              <p className="mb-4 text-xs leading-relaxed text-neutral-400">
-                Explore similar positions matching your profile and background.
+              <h3 className="mb-2 text-lg font-black">More Jobs Like This</h3>
+              <p className="mb-4 text-sm leading-6 text-white/70">
+                Explore similar positions that match your profile.
               </p>
               <Link href="/job">
-                <Button className="w-full h-9 rounded-xl bg-white text-black hover:bg-neutral-100 text-xs font-bold uppercase tracking-wider">
+                <Button className="w-full rounded-xl bg-white font-black text-[#163B5C] hover:bg-white/90">
                   Browse Similar Jobs
                 </Button>
               </Link>
             </Card>
           </div>
         </div>
-      </main>
+      </div>
 
       <Footer />
     </div>

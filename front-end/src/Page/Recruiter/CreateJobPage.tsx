@@ -37,6 +37,7 @@ import {
   Loader2,
   Shield,
   BarChart3,
+  ImagePlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { jobCategories } from "@/src/lib/jobCategories";
@@ -44,11 +45,14 @@ import { useCreateJobMutation, useUpdateJobMutation, useGetJobByIdQuery } from "
 import { toast } from "sonner";
 import { Job } from "@/src/types";
 import { apiFieldErrors, apiErrorMessage } from "@/src/lib/apiErrors";
+import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
+import { assetErrorMessage, validateAssetFile } from "@/src/lib/assetUpload";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type CreateJobFormValues = {
   title: string;
+  bannerUrl: string;
   category: string;
   subcategory: string;
   type: string;
@@ -209,6 +213,60 @@ const ListManager = memo(
   },
 );
 ListManager.displayName = "ListManager";
+
+/** Optional public image; uses the same three asset operations as logos and resumes. */
+const JobBannerUpload = ({ onUploadingChange }: { onUploadingChange: (value: boolean) => void }) => {
+  const { setValue } = useFormContext<CreateJobFormValues>();
+  const currentUrl = useWatch<CreateJobFormValues, "bannerUrl">({ name: "bannerUrl" });
+  const [uploadFile, { isLoading }] = useUploadFileMutation();
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [localPreview, setLocalPreview] = useState("");
+  const [error, setError] = useState("");
+  useEffect(() => () => { if (localPreview) URL.revokeObjectURL(localPreview); }, [localPreview]);
+  const send = async (file: File) => {
+    onUploadingChange(true);
+    setError("");
+    try {
+      const response = await uploadFile({ file, kind: "job-banner" }).unwrap();
+      setValue("bannerUrl", response.data.url, { shouldDirty: true, shouldValidate: true });
+      setPendingFile(null);
+      setLocalPreview("");
+      toast.success("Job banner ready. It will appear after you save the job.");
+    } catch (failure: unknown) {
+      const message = assetErrorMessage(failure, "Unable to upload job banner");
+      setError(message);
+      toast.error(message);
+    } finally { onUploadingChange(false); }
+  };
+  const select = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const issue = validateAssetFile(file, "job-banner");
+    if (issue) { setError(issue); return; }
+    setPendingFile(file);
+    setLocalPreview(URL.createObjectURL(file));
+    void send(file);
+  };
+  return (
+    <div className="mt-8 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5">
+      <p className="mb-2 flex items-center gap-2 text-sm font-black text-[#163B5C]"><ImagePlus className="h-4 w-4" />Job banner (optional)</p>
+      <p className="mb-4 text-xs text-[#516C83]">JPEG, PNG or WebP up to 5 MB. The banner is public after publishing.</p>
+      {(localPreview || currentUrl) && <img src={localPreview || currentUrl} alt="Job banner preview" className="mb-3 h-40 w-full rounded-xl object-cover" />}
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="cursor-pointer rounded-lg border border-[#163B5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#163B5C] focus-within:ring-2 focus-within:ring-[#163B5C]">
+          {isLoading ? "Uploading..." : "Choose banner"}
+          <input type="file" className="sr-only" disabled={isLoading}
+            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={select} />
+        </label>
+        {currentUrl && !pendingFile && <button type="button" onClick={() => setValue("bannerUrl", "", { shouldDirty: true })} className="text-xs font-semibold text-red-700">Remove banner</button>}
+        {pendingFile && error && <Button type="button" variant="outline" disabled={isLoading} onClick={() => void send(pendingFile)}>Retry upload</Button>}
+      </div>
+      {error && <p role="alert" className="mt-2 text-xs text-red-700">Banner not saved: {error}</p>}
+      {pendingFile && !error && <p role="status" className="mt-2 text-xs text-[#516C83]">Uploading to R2…</p>}
+    </div>
+  );
+};
 
 // ─── Step 1: Basic Info ───────────────────────────────────────────────────────
 
@@ -543,6 +601,7 @@ StepRequirements.displayName = "StepRequirements";
 const StepReview = memo(() => {
   // Each useWatch subscribes only to its field — zero cross-field re-renders
   const title = useWatch<CreateJobFormValues, "title">({ name: "title" });
+  const bannerUrl = useWatch<CreateJobFormValues, "bannerUrl">({ name: "bannerUrl" });
   const type = useWatch<CreateJobFormValues, "type">({ name: "type" });
   const experienceLevel = useWatch<CreateJobFormValues, "experienceLevel">({
     name: "experienceLevel",
@@ -584,6 +643,7 @@ const StepReview = memo(() => {
   return (
     <div className="animate-in fade-in space-y-10 duration-500">
       {/* Hero card */}
+      {bannerUrl && <img src={bannerUrl} alt="Job banner" className="h-44 w-full rounded-2xl object-cover" />}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#163B5C] to-[#516C83] p-8 text-white shadow-2xl shadow-[#163B5C]/20 md:p-10">
         <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[3rem] bg-white/10" />
         <div className="relative space-y-6">
@@ -765,10 +825,12 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
   const [publishAt, setPublishAt] = useState("");
   const [publishError, setPublishError] = useState("");
   const [hasStagedDraft, setHasStagedDraft] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState(false);
 
   const methods = useForm<CreateJobFormValues>({
     defaultValues: {
       title: "",
+      bannerUrl: "",
       category: "",
       subcategory: "",
       type: "full-time",
@@ -795,7 +857,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
     const original = { ...saved, ...(saved.pendingDraft || {}) };
     setHasStagedDraft(!!saved.pendingDraft);
     methods.reset({
-      title: original.title || "", category: original.category || "", subcategory: original.subcategory || "",
+      title: original.title || "", bannerUrl: original.bannerUrl || "", category: original.category || "", subcategory: original.subcategory || "",
       type: original.type || "full-time", location: original.location || "", locationType: original.locationType || "onsite",
       salaryMin: original.salaryMin != null ? String(original.salaryMin) : "",
       salaryMax: original.salaryMax != null ? String(original.salaryMax) : "",
@@ -827,6 +889,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
   };
 
   const saveDraft = async () => {
+    if (bannerUploading) { toast.error("Finish uploading the banner before saving"); return; }
     const current = methods.getValues();
     if (!current.title.trim()) { toast.error("Enter a title before saving a draft"); return; }
     try {
@@ -868,6 +931,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
   );
 
   const onSubmit = async (data: CreateJobFormValues) => {
+    if (bannerUploading) { toast.error("Finish uploading the banner before publishing"); return; }
     try {
       if (publication === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
         toast.error("Choose a future publication date"); return;
@@ -987,6 +1051,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
               {/* Mount all steps but hide inactive — avoids RHF field unmount/remount */}
               <div className={currentStep === 1 ? "block" : "hidden"}>
                 <StepBasicInfo />
+                <JobBannerUpload onUploadingChange={setBannerUploading} />
               </div>
               <div className={currentStep === 2 ? "block" : "hidden"}>
                 <StepDetails />
@@ -1018,7 +1083,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
                   <ArrowLeft className="mr-3 h-5 w-5" /> Previous Step
                 </Button>
 
-                <Button type="button" variant="outline" disabled={isLoading || isUpdating || isLoadingJob || jobLoadError} onClick={() => void saveDraft()} className="h-12 rounded-xl border-[#163B5C]/20 px-5 text-[#163B5C]">Save draft</Button>
+                <Button type="button" variant="outline" disabled={isLoading || isUpdating || isLoadingJob || jobLoadError || bannerUploading} onClick={() => void saveDraft()} className="h-12 rounded-xl border-[#163B5C]/20 px-5 text-[#163B5C]">Save draft</Button>
                 {currentStep < 4 ? (
                   <Button
                     type="button"
@@ -1030,7 +1095,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
                 ) : (
                   <Button
                     type="submit"
-                    disabled={isLoading || isUpdating || isLoadingJob || jobLoadError}
+                    disabled={isLoading || isUpdating || isLoadingJob || jobLoadError || bannerUploading}
                     className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-10 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:from-[#0C2C48] hover:to-[#3b5a71]"
                   >
                     {isLoading ? (

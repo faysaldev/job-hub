@@ -13,6 +13,7 @@ export interface DiscoveryJob {
   salaryPeriod?: string;
   createdAt?: string;
   company?: { companyName?: string; companyLogo?: string };
+  bannerUrl?: string;
 }
 
 export interface DiscoveryPayload {
