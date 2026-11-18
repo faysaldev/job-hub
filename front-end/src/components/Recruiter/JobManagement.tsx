@@ -1,3 +1,4 @@
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { toast } from "@/src/hooks/use-toast";
@@ -158,8 +159,6 @@ const JobManagement = ({ userId }: { userId: string }) => {
             const deadline = job.applicationDeadline
               ? new Date(job.applicationDeadline).toLocaleDateString()
               : "Not set";
-            const salaryMin = Number(job.salaryMin || 0).toLocaleString();
-            const salaryMax = Number(job.salaryMax || 0).toLocaleString();
 
             return (
               <Card
@@ -196,7 +195,7 @@ const JobManagement = ({ userId }: { userId: string }) => {
                       <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-3 py-2">
                         <DollarSign className="h-4 w-4 text-[#163B5C]" />
                         <span>
-                          {salaryMin} - {salaryMax} {job.salaryPeriod}
+                          {formatJobSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-3 py-2">

@@ -26,6 +26,7 @@ import {
   useCreateCompanyMutation,
 } from "@/src/redux/features/company/companyApi";
 import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
+import { assetErrorMessage, validateAssetFile } from "@/src/lib/assetUpload";
 
 type CompanyFormValues = {
   companyLogo: string;
@@ -44,6 +45,10 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
   const [uploadFile, { isLoading: isUploading }] = useUploadFileMutation();
 
   const [logoUrl, setLogoUrl] = useState<string>("");
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [pendingLogo, setPendingLogo] = useState<File | null>(null);
+  const [logoError, setLogoError] = useState<string>("");
+  useEffect(() => () => { if (logoPreview) URL.revokeObjectURL(logoPreview); }, [logoPreview]);
 
   const {
     register,
@@ -83,22 +88,33 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
     }
   }, [companyResponse, reset]);
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const uploadLogo = async (file: File) => {
     try {
-      const res = await uploadFile({ file, kind: "company-logo" }).unwrap();
-      if (res?.data?.url) {
-        setLogoUrl(res.data.url);
-        setValue("companyLogo", res.data.url, { shouldDirty: true });
-        toast.success("Image uploaded successfully");
-      } else {
-        throw new Error("Invalid response from server");
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to upload logo");
+      const response = await uploadFile({ file, kind: "company-logo" }).unwrap();
+      if (!response.data.url) throw new Error("Storage did not return a logo URL");
+      setLogoUrl(response.data.url);
+      setValue("companyLogo", response.data.url, { shouldDirty: true });
+      setPendingLogo(null);
+      setLogoPreview("");
+      setLogoError("");
+      toast.success("Logo uploaded. Save your company profile to publish it.");
+    } catch (error: unknown) {
+      const reason = assetErrorMessage(error, "Logo upload failed. Try again.");
+      setLogoError(reason);
+      toast.error(reason);
     }
+  };
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const issue = validateAssetFile(file, "company-logo");
+    if (issue) { setLogoError(issue); toast.error(issue); return; }
+    setLogoError("");
+    setPendingLogo(file);
+    setLogoPreview(URL.createObjectURL(file));
+    void uploadLogo(file);
   };
 
   const onSubmit = async (data: CompanyFormValues) => {
@@ -110,13 +126,13 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
 
       if (companyResponse?.data) {
         await updateCompany(payload).unwrap();
-        toast.success("Company profile updated successfully!");
+        toast.success(pendingLogo ? "Company details saved; logo still needs uploading" : "Company profile updated successfully!");
       } else {
         await createCompany(payload).unwrap();
-        toast.success("Company profile created successfully!");
+        toast.success(pendingLogo ? "Company created; logo still needs uploading" : "Company profile created successfully!");
       }
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to save profile");
+      toast.error(assetErrorMessage(error, "Failed to save company profile"));
     }
   };
 
@@ -153,7 +169,7 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
 
           <Button
             type="submit"
-            disabled={isUpdating || isCreating || !isDirty}
+            disabled={isUpdating || isCreating || isUploading || (!isDirty && !pendingLogo)}
             className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-8 font-black text-white shadow-lg shadow-[#163B5C]/15 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50"
           >
             {isUpdating || isCreating ? (
@@ -173,9 +189,9 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                 Company Logo
               </Label>
               <div className="group relative mx-auto flex aspect-square w-full max-w-[240px] items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-[#163B5C]/15 bg-[#F6F8FB] transition-colors group-hover:border-[#163B5C]/40">
-                {logoUrl ? (
+                {(logoPreview || logoUrl) ? (
                   <img
-                    src={logoUrl}
+                    src={logoPreview || logoUrl}
                     alt="Company logo"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -183,7 +199,7 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                   <div className="p-6 text-center">
                     <Upload className="mx-auto mb-2 h-10 w-10 text-[#516C83]/40" />
                     <p className="text-xs font-semibold text-[#516C83]/60">
-                      PNG, JPG up to 5MB
+                      JPEG, PNG or WebP up to 5 MB
                     </p>
                   </div>
                 )}
@@ -192,7 +208,7 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                   <Input
                     id="logo-upload"
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                     onChange={handleLogoUpload}
                     className="hidden"
                     disabled={isUploading}
@@ -211,6 +227,11 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
                   </Button>
                 </div>
               </div>
+              {isUploading && <p role="status" className="mt-2 text-xs text-[#516C83]">Uploading logo securely to R2…</p>}
+              {logoError && <div role="alert" className="mt-2 space-y-2 text-xs text-red-700">
+                <p>Logo not saved: {logoError}</p>
+                {pendingLogo && <Button type="button" variant="outline" disabled={isUploading} onClick={() => void uploadLogo(pendingLogo)}>Retry upload</Button>}
+              </div>}
             </div>
 
             <div className="rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-6">
@@ -221,8 +242,8 @@ const CompanyProfile = ({ userId }: { userId: string }) => {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white p-2 shadow-sm">
-                    {logoUrl ? (
-                      <img src={logoUrl} alt="" className="object-contain" />
+                    {(logoPreview || logoUrl) ? (
+                      <img src={logoPreview || logoUrl} alt="" className="object-contain" />
                     ) : (
                       <Building2 className="h-5 w-5 text-[#516C83]" />
                     )}

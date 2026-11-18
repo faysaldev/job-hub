@@ -26,18 +26,23 @@ import {
   CalendarDays,
   Shield,
 } from "lucide-react";
-import { useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
-import { useSaveJobMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
+import { useGetJobByIdQuery, useGetJobsQuery } from "@/src/redux/features/jobs/jobsApi";
+import { useSaveJobMutation, useDeleteSavedJobMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
+import { useGetSavedJobIdsQuery } from "@/src/redux/features/generals/generalsApi";
+import { formatJobSalary, relatedJobs } from "@/src/lib/jobPresentation";
+import { useAuth } from "@/src/hooks/useAuth";
 import { toast } from "sonner";
 import ApplyJobModal from "@/src/components/jobs/ApplyJobModal";
 import ReportJobButton from "@/src/components/jobs/ReportJobButton";
 import gsap from "gsap";
-import { selectSavedJobIds } from "@/src/redux/features/generals/generalsSlice";
-import { useSelector } from "react-redux";
+
 
 interface PopulatedJob {
   _id: string;
   title: string;
+  category?: string;
+  subcategory?: string;
+  bannerUrl?: string;
   company:
     | string
     | {
@@ -45,6 +50,10 @@ interface PopulatedJob {
         userId?: string;
         companyName: string;
         companyLogo?: string;
+        industries?: string;
+        companyLocation?: string;
+        website?: string;
+        verification?: { status?: string };
       };
   location: string;
   type: string;
@@ -63,14 +72,48 @@ interface PopulatedJob {
   benefits?: string[];
 }
 
+/** Uses the existing public search endpoint; never shows an empty recommendation card. */
+function RelatedJobsCard({ job }: { job: PopulatedJob }) {
+  const { data, isFetching, isError } = useGetJobsQuery({ limit: 24 });
+  const candidates = relatedJobs(job, data?.data?.jobs || [], 3);
+  return (
+    <Card className="jd-card rounded-3xl border border-[#163B5C]/10 bg-white p-6 shadow-sm">
+      <h3 className="mb-2 flex items-center gap-2 text-lg font-black text-[#163B5C]">
+        <Sparkles className="h-5 w-5" /> Similar opportunities
+      </h3>
+      <p className="mb-4 text-sm text-[#516C83]">Other open roles you may want to explore.</p>
+      {isFetching && !data ? <p role="status" className="text-sm text-[#516C83]">Finding related positions…</p> : null}
+      {isError ? <p role="status" className="mb-3 text-sm text-[#516C83]">Recommendations are temporarily unavailable.</p> : null}
+      {!isFetching && !isError && candidates.length === 0 ? (
+        <p className="mb-3 text-sm text-[#516C83]">No other open roles are available right now.</p>
+      ) : null}
+      <ul className="space-y-2">
+        {candidates.map(candidate => (
+          <li key={candidate._id || candidate.id}>
+            <Link href={`/job/${candidate._id || candidate.id}`} className="block rounded-xl border border-[#163B5C]/10 p-3 transition-colors hover:bg-[#F6F8FB] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#163B5C]">
+              <span className="block text-sm font-bold text-[#163B5C]">{candidate.title}</span>
+              <span className="mt-1 block text-xs text-[#516C83]">{candidate.location || candidate.locationType || 'Location not specified'} · {formatJobSalary(candidate.salaryMin, candidate.salaryMax, candidate.salaryPeriod, true)}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Link href="/job" className="mt-4 inline-flex text-sm font-bold text-[#163B5C] underline underline-offset-4 hover:text-[#516C83]">
+        Browse all jobs
+      </Link>
+    </Card>
+  );
+}
+
 const JobDetailsPage = () => {
   const params = useParams();
   const details = params?.details as string;
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { data: apiResponse, isLoading, error } = useGetJobByIdQuery(details);
+  const { data: apiResponse, isLoading, error, refetch } = useGetJobByIdQuery(details);
+  const { isAuthenticated } = useAuth();
+  const { data: savedJobIds = [], isFetching: loadingSavedState } = useGetSavedJobIdsQuery(undefined, { skip: !isAuthenticated });
   const [saveJob, { isLoading: isSaving }] = useSaveJobMutation();
-  const savedJobIds = useSelector(selectSavedJobIds);
+  const [deleteSavedJob, { isLoading: isRemoving }] = useDeleteSavedJobMutation();
 
   useEffect(() => {
     if (!isLoading) {
@@ -108,8 +151,28 @@ const JobDetailsPage = () => {
     );
   }
 
+  if (error) {
+    // A network outage or 503 is not a missing job. Offer a real recovery action.
+    const status = "status" in error ? error.status : undefined;
+    if (status === 404) notFound();
+    return (
+      <div className="min-h-screen flex flex-col jobhub-page-bg">
+        <Header />
+        <main className="flex-1 mx-auto flex max-w-xl flex-col items-center justify-center px-5 py-24 text-center" role="alert">
+          <Briefcase className="mb-5 h-12 w-12 text-[#516C83]" aria-hidden="true" />
+          <h1 className="text-2xl font-black text-[#163B5C]">Job details are temporarily unavailable</h1>
+          <p className="mt-3 text-[#516C83]">Your connection or the jobs service may be unavailable. You can retry without losing your place.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button onClick={() => void refetch()} className="bg-[#163B5C] text-white">Try again</Button>
+            <Button asChild variant="outline"><Link href="/job">Browse jobs</Link></Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   const job = apiResponse?.data as PopulatedJob | undefined;
-  if (error || !job) notFound();
+  if (!job) notFound();
 
   const companyObj = typeof job.company === "object" ? job.company : null;
   const companyName =
@@ -117,10 +180,7 @@ const JobDetailsPage = () => {
     (typeof job.company === "string" ? job.company : "Unknown Company");
   const companyLogo = companyObj?.companyLogo;
   const companyId = companyObj?._id;
-  const salaryRange =
-    job.salaryMin && job.salaryMax
-      ? `$${job.salaryMin.toLocaleString()} - $${job.salaryMax.toLocaleString()} / ${job.salaryPeriod || "monthly"}`
-      : job.salary || "Not specified";
+  const salaryRange = formatJobSalary(job.salaryMin, job.salaryMax, job.salaryPeriod);
   const postedDate = job.createdAt
     ? new Date(job.createdAt).toLocaleDateString("en-US", {
         month: "short",
@@ -129,12 +189,23 @@ const JobDetailsPage = () => {
       })
     : job.posted || "Recently";
 
+  const isSaved = savedJobIds.includes(job._id);
   const handleSave = async () => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in as a seeker to save this role.");
+      return;
+    }
+    if (loadingSavedState || isSaving || isRemoving) return;
     try {
-      await saveJob({ jobId: details }).unwrap();
-      toast.success("Job saved!");
+      if (isSaved) {
+        await deleteSavedJob(job._id).unwrap();
+        toast.success("Removed from your saved jobs");
+      } else {
+        await saveJob({ jobId: job._id }).unwrap();
+        toast.success("Job saved");
+      }
     } catch (e: any) {
-      toast.error(e?.data?.message || "Failed to save job.");
+      toast.error(e?.data?.message || "Unable to update saved jobs. Please try again.");
     }
   };
 
@@ -170,6 +241,8 @@ const JobDetailsPage = () => {
           >
             <ArrowLeft className="h-4 w-4" /> Back to Jobs
           </Link>
+
+          {job.bannerUrl && <img src={job.bannerUrl} alt={`Banner for ${job.title}`} className="mb-8 h-52 w-full rounded-3xl object-cover" />}
 
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex items-start gap-5">
@@ -235,27 +308,23 @@ const JobDetailsPage = () => {
               <Button
                 variant="outline"
                 className={`rounded-xl border-white/25 bg-white/10 text-white hover:bg-white/15 ${
-                  savedJobIds?.includes(job._id)
-                    ? "opacity-75 cursor-not-allowed"
-                    : ""
+                  isSaved ? "border-white/50" : ""
                 }`}
                 onClick={handleSave}
-                disabled={isSaving || savedJobIds?.includes(job._id)}
+                disabled={isSaving || isRemoving || (isAuthenticated && loadingSavedState)}
+                aria-pressed={isSaved}
+                aria-label={isSaved ? "Remove from saved jobs" : "Save this job"}
               >
-                {isSaving ? (
+                {isSaving || isRemoving || (isAuthenticated && loadingSavedState) ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Heart
                     className={`h-4 w-4 mr-2 ${
-                      savedJobIds?.includes(job._id) ? "fill-white" : ""
+                      isSaved ? "fill-white" : ""
                     }`}
                   />
                 )}
-                {isSaving
-                  ? "Saving..."
-                  : savedJobIds?.includes(job._id)
-                    ? "Saved"
-                    : "Save"}
+                {isSaving ? "Saving..." : isRemoving ? "Removing..." : (isAuthenticated && loadingSavedState) ? "Checking..." : isSaved ? "Saved · Remove" : "Save"}
               </Button>
               <Button
                 variant="outline"
@@ -458,20 +527,22 @@ const JobDetailsPage = () => {
                 </div>
                 <div>
                   <p className="font-black text-[#163B5C]">{companyName}</p>
-                  <p className="text-sm text-[#516C83]">Technology Company</p>
+                  {companyObj?.industries && <p className="text-sm text-[#516C83]">{companyObj.industries}</p>}
                 </div>
               </div>
               <div className="mb-5 space-y-2 text-sm text-[#516C83]">
+                {companyObj?.verification?.status === "verified" && (
+                  <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
+                    <Shield className="h-4 w-4 text-[#163B5C]" /> Verified employer
+                  </div>
+                )}
+                {companyObj?.website && /^https?:\/\//i.test(companyObj.website) && (
+                  <a href={companyObj.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3 text-[#163B5C] underline underline-offset-2">
+                    <Globe className="h-4 w-4" /> Company website
+                  </a>
+                )}
                 <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
-                  <Shield className="h-4 w-4 text-[#163B5C]" /> Verified
-                  employer
-                </div>
-                <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
-                  <Globe className="h-4 w-4 text-[#163B5C]" /> www.
-                  {companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.com
-                </div>
-                <div className="flex items-center gap-2 rounded-2xl bg-[#F6F8FB] px-4 py-3">
-                  <MapPin className="h-4 w-4 text-[#163B5C]" /> {job.location}
+                  <MapPin className="h-4 w-4 text-[#163B5C]" /> {companyObj?.companyLocation || job.location}
                 </div>
               </div>
               {companyId && (
@@ -484,21 +555,8 @@ const JobDetailsPage = () => {
               )}
             </Card>
 
-            {/* Similar Jobs */}
-            <Card className="jd-card rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] p-6 text-white shadow-xl shadow-[#163B5C]/15">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
-                <Sparkles className="h-6 w-6" />
-              </div>
-              <h3 className="mb-2 text-lg font-black">More Jobs Like This</h3>
-              <p className="mb-4 text-sm leading-6 text-white/70">
-                Explore similar positions that match your profile.
-              </p>
-              <Link href="/job">
-                <Button className="w-full rounded-xl bg-white font-black text-[#163B5C] hover:bg-white/90">
-                  Browse Similar Jobs
-                </Button>
-              </Link>
-            </Card>
+            {/* Related open roles share the public /job search; no separate API. */}
+            <RelatedJobsCard job={job} />
           </div>
         </div>
       </div>

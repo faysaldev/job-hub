@@ -3,15 +3,16 @@ import { defineConfig, devices } from "@playwright/test";
 /** Phase 6 read-only browser smoke tests against a running frontend + staging backend. */
 export default defineConfig({
   testDir: "./e2e",
-  testMatch: "phase6.spec.ts",
+  testMatch: ["phase6.spec.ts", "phase6-authenticated.spec.ts"],
   timeout: 25_000,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [ ["list"], ["junit", { outputFile: "test-results/phase6.xml" }] ] : "list",
-  webServer: {
-    command: "pnpm start -p 3005",
+  // An explicitly supplied staging URL must not start or mutate a local server.
+  webServer: process.env.PHASE6_WEB_URL ? undefined : {
+    command: "npm run start -- -p 3005",
     url: "http://127.0.0.1:3005",
     reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
+    timeout: 60_000,
   },
   use: {
     baseURL: process.env.PHASE6_WEB_URL || "http://127.0.0.1:3005",

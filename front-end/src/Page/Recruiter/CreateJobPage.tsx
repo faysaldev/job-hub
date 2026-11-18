@@ -1,4 +1,5 @@
 "use client";
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 
 import { memo, useRef, useCallback, useState, useEffect } from "react";
 import {
@@ -37,17 +38,22 @@ import {
   Loader2,
   Shield,
   BarChart3,
+  ImagePlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { jobCategories } from "@/src/lib/jobCategories";
 import { useCreateJobMutation, useUpdateJobMutation, useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 import { toast } from "sonner";
 import { Job } from "@/src/types";
+import { apiFieldErrors, apiErrorMessage } from "@/src/lib/apiErrors";
+import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
+import { assetErrorMessage, validateAssetFile } from "@/src/lib/assetUpload";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type CreateJobFormValues = {
   title: string;
+  bannerUrl: string;
   category: string;
   subcategory: string;
   type: string;
@@ -110,10 +116,14 @@ const ListManager = memo(
       const val = inputRef.current?.value.trim();
       if (!val) return;
       const current = getValues(name) || [];
-      if (!current.includes(val)) {
-        setValue(name, [...current, val], { shouldDirty: true });
-        if (inputRef.current) inputRef.current.value = "";
+      const entries = name === "skills" ? val.split(/[,\n]+/) : [val];
+      const next = [...current];
+      for (const entry of entries) {
+        const item = entry.trim();
+        if (item && !next.some(existing => existing.toLowerCase() === item.toLowerCase())) next.push(item);
       }
+      setValue(name, next, { shouldDirty: true, shouldValidate: true });
+      if (inputRef.current) inputRef.current.value = "";
     }, [getValues, name, setValue]);
 
     const handleRemove = useCallback(
@@ -205,6 +215,60 @@ const ListManager = memo(
 );
 ListManager.displayName = "ListManager";
 
+/** Optional public image; uses the same three asset operations as logos and resumes. */
+const JobBannerUpload = ({ onUploadingChange }: { onUploadingChange: (value: boolean) => void }) => {
+  const { setValue } = useFormContext<CreateJobFormValues>();
+  const currentUrl = useWatch<CreateJobFormValues, "bannerUrl">({ name: "bannerUrl" });
+  const [uploadFile, { isLoading }] = useUploadFileMutation();
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [localPreview, setLocalPreview] = useState("");
+  const [error, setError] = useState("");
+  useEffect(() => () => { if (localPreview) URL.revokeObjectURL(localPreview); }, [localPreview]);
+  const send = async (file: File) => {
+    onUploadingChange(true);
+    setError("");
+    try {
+      const response = await uploadFile({ file, kind: "job-banner" }).unwrap();
+      setValue("bannerUrl", response.data.url, { shouldDirty: true, shouldValidate: true });
+      setPendingFile(null);
+      setLocalPreview("");
+      toast.success("Job banner ready. It will appear after you save the job.");
+    } catch (failure: unknown) {
+      const message = assetErrorMessage(failure, "Unable to upload job banner");
+      setError(message);
+      toast.error(message);
+    } finally { onUploadingChange(false); }
+  };
+  const select = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const issue = validateAssetFile(file, "job-banner");
+    if (issue) { setError(issue); return; }
+    setPendingFile(file);
+    setLocalPreview(URL.createObjectURL(file));
+    void send(file);
+  };
+  return (
+    <div className="mt-8 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5">
+      <p className="mb-2 flex items-center gap-2 text-sm font-black text-[#163B5C]"><ImagePlus className="h-4 w-4" />Job banner (optional)</p>
+      <p className="mb-4 text-xs text-[#516C83]">JPEG, PNG or WebP up to 5 MB. The banner is public after publishing.</p>
+      {(localPreview || currentUrl) && <img src={localPreview || currentUrl} alt="Job banner preview" className="mb-3 h-40 w-full rounded-xl object-cover" />}
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="cursor-pointer rounded-lg border border-[#163B5C]/20 bg-white px-4 py-2 text-sm font-semibold text-[#163B5C] focus-within:ring-2 focus-within:ring-[#163B5C]">
+          {isLoading ? "Uploading..." : "Choose banner"}
+          <input type="file" className="sr-only" disabled={isLoading}
+            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={select} />
+        </label>
+        {currentUrl && !pendingFile && <button type="button" onClick={() => setValue("bannerUrl", "", { shouldDirty: true })} className="text-xs font-semibold text-red-700">Remove banner</button>}
+        {pendingFile && error && <Button type="button" variant="outline" disabled={isLoading} onClick={() => void send(pendingFile)}>Retry upload</Button>}
+      </div>
+      {error && <p role="alert" className="mt-2 text-xs text-red-700">Banner not saved: {error}</p>}
+      {pendingFile && !error && <p role="status" className="mt-2 text-xs text-[#516C83]">Uploading to R2…</p>}
+    </div>
+  );
+};
+
 // ─── Step 1: Basic Info ───────────────────────────────────────────────────────
 
 const StepBasicInfo = memo(() => {
@@ -261,36 +325,25 @@ const StepBasicInfo = memo(() => {
               ))}
             </SelectContent>
           </Select>
+          {errors.category && <p role="alert" className="text-xs text-red-600">{errors.category.message}</p>}
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-black text-[#163B5C]">
             Subcategory *
           </label>
-          <Select
-            value={watch("subcategory") || undefined}
+          <select
+            aria-label="Job subcategory"
+            value={watch("subcategory") || ""}
             disabled={!watchedCategory}
-            onValueChange={(val) =>
-              setValue("subcategory", val, { shouldValidate: true })
-            }
+            onChange={(event) => setValue("subcategory", event.target.value, { shouldValidate: true, shouldDirty: true })}
+            className="h-14 w-full rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] px-6 text-sm font-medium text-[#163B5C] focus-visible:outline-2 focus-visible:outline-blue-700 disabled:opacity-50"
           >
-            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
-              <SelectValue placeholder="Specialization" />
-            </SelectTrigger>
-            <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
-              {jobCategories
-                .find((c) => c.id === watchedCategory)
-                ?.subcategories.map((sub) => (
-                  <SelectItem
-                    key={sub.id}
-                    value={sub.id}
-                    className="rounded-xl focus:bg-[#163B5C]/5"
-                  >
-                    {sub.name}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+            <option value="">Choose a specialization</option>
+            {jobCategories.find(c => c.id === watchedCategory)?.subcategories.map(sub =>
+              <option key={sub.id} value={sub.id}>{sub.name}</option>)}
+          </select>
+          {errors.subcategory && <p role="alert" className="text-xs text-red-600">{errors.subcategory.message}</p>}
         </div>
       </div>
 
@@ -373,7 +426,7 @@ StepBasicInfo.displayName = "StepBasicInfo";
 // ─── Step 2: Details ──────────────────────────────────────────────────────────
 
 const StepDetails = memo(() => {
-  const { register, setValue, watch } = useFormContext<CreateJobFormValues>();
+  const { register, setValue, watch, formState: { errors } } = useFormContext<CreateJobFormValues>();
 
   return (
     <div className="animate-in fade-in space-y-8 duration-500">
@@ -417,10 +470,11 @@ const StepDetails = memo(() => {
             <Users className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
             <Input
               type="number"
-              {...register("positions", { required: true, min: 1 })}
+              {...register("positions", { required: "Enter a position count", min: { value: 1, message: "At least one opening is required" } })}
               className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
             />
           </div>
+          {errors.positions && <p role="alert" className="text-xs text-red-600">{errors.positions.message}</p>}
         </div>
       </div>
 
@@ -467,6 +521,8 @@ const StepDetails = memo(() => {
             </SelectContent>
           </Select>
         </div>
+        {errors.salaryMin && <p role="alert" className="text-xs text-red-600">Minimum salary: {errors.salaryMin.message}</p>}
+        {errors.salaryMax && <p role="alert" className="text-xs text-red-600">Maximum salary: {errors.salaryMax.message}</p>}
       </div>
 
       <div className="space-y-2">
@@ -481,6 +537,8 @@ const StepDetails = memo(() => {
             className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
           />
         </div>
+        <p className="text-xs text-[#516C83]">Applications close at 11:59 PM in your local time on this date.</p>
+        {errors.applicationDeadline && <p role="alert" className="text-xs text-red-600">{errors.applicationDeadline.message}</p>}
       </div>
 
       <div className="space-y-2">
@@ -492,6 +550,7 @@ const StepDetails = memo(() => {
           placeholder="Paint a picture of the ideal candidate and the impact they'll make..."
           className="min-h-[250px] resize-none rounded-3xl border-[#163B5C]/10 bg-[#F6F8FB] p-8 font-medium leading-relaxed"
         />
+        {errors.description && <p role="alert" className="text-xs text-red-600">{errors.description.message}</p>}
       </div>
     </div>
   );
@@ -500,8 +559,11 @@ StepDetails.displayName = "StepDetails";
 
 // ─── Step 3: Requirements ─────────────────────────────────────────────────────
 
-const StepRequirements = memo(() => (
-  <div className="animate-in fade-in space-y-10 duration-500">
+const StepRequirements = memo(() => {
+  const { formState: { errors } } = useFormContext<CreateJobFormValues>();
+  return <div className="animate-in fade-in space-y-10 duration-500">
+    {errors.requirements && <p role="alert" className="text-xs text-red-600">Requirements: {errors.requirements.message}</p>}
+    {errors.skills && <p role="alert" className="text-xs text-red-600">Skills: {errors.skills.message}</p>}
     <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
       <ListManager
         name="requirements"
@@ -520,7 +582,7 @@ const StepRequirements = memo(() => (
       <ListManager
         name="skills"
         label="Technical Skills"
-        placeholder="e.g. TypeScript, GraphQL"
+        placeholder="TypeScript, GraphQL (commas create separate skills)"
         variant="badge"
       />
       <ListManager
@@ -530,8 +592,8 @@ const StepRequirements = memo(() => (
         icon={Sparkles}
       />
     </div>
-  </div>
-));
+  </div>;
+});
 StepRequirements.displayName = "StepRequirements";
 
 // ─── Step 4: Review ───────────────────────────────────────────────────────────
@@ -540,6 +602,7 @@ StepRequirements.displayName = "StepRequirements";
 const StepReview = memo(() => {
   // Each useWatch subscribes only to its field — zero cross-field re-renders
   const title = useWatch<CreateJobFormValues, "title">({ name: "title" });
+  const bannerUrl = useWatch<CreateJobFormValues, "bannerUrl">({ name: "bannerUrl" });
   const type = useWatch<CreateJobFormValues, "type">({ name: "type" });
   const experienceLevel = useWatch<CreateJobFormValues, "experienceLevel">({
     name: "experienceLevel",
@@ -573,10 +636,15 @@ const StepReview = memo(() => {
     name: "requirements",
   });
   const skills = useWatch<CreateJobFormValues, "skills">({ name: "skills" });
+  const responsibilities = useWatch<CreateJobFormValues, "responsibilities">({ name: "responsibilities" });
+  const benefits = useWatch<CreateJobFormValues, "benefits">({ name: "benefits" });
+  const category = useWatch<CreateJobFormValues, "category">({ name: "category" });
+  const subcategory = useWatch<CreateJobFormValues, "subcategory">({ name: "subcategory" });
 
   return (
     <div className="animate-in fade-in space-y-10 duration-500">
       {/* Hero card */}
+      {bannerUrl && <img src={bannerUrl} alt="Job banner" className="h-44 w-full rounded-2xl object-cover" />}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#163B5C] to-[#516C83] p-8 text-white shadow-2xl shadow-[#163B5C]/20 md:p-10">
         <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[3rem] bg-white/10" />
         <div className="relative space-y-6">
@@ -585,6 +653,7 @@ const StepReview = memo(() => {
               <h3 className="text-3xl font-black tracking-tight md:text-4xl">
                 {title || "Untitled Position"}
               </h3>
+              <p className="text-sm text-white/80">{jobCategories.find(cat => cat.id === category)?.name || category} · {jobCategories.find(cat => cat.id === category)?.subcategories.find(sub => sub.id === subcategory)?.name || subcategory}</p>
               <div className="flex flex-wrap gap-3">
                 <Badge className="bg-white/20 text-white border-none backdrop-blur-md rounded-lg">
                   {type}
@@ -599,11 +668,7 @@ const StepReview = memo(() => {
                 Compensation
               </p>
               <p className="text-3xl font-black">
-                ${parseInt(salaryMin || "0").toLocaleString()} - $
-                {parseInt(salaryMax || "0").toLocaleString()}
-              </p>
-              <p className="text-sm font-bold opacity-70">
-                per {(salaryPeriod || "year").replace("ly", "")}
+                {formatJobSalary(Number(salaryMin || 0), Number(salaryMax || 0), salaryPeriod)}
               </p>
             </div>
           </div>
@@ -652,6 +717,14 @@ const StepReview = memo(() => {
             </div>
           </div>
 
+          <div className="space-y-4">
+            <h4 className="text-lg font-black text-[#163B5C]">Responsibilities</h4>
+            {responsibilities?.length ? <ul className="list-disc space-y-1 pl-5 text-sm text-[#516C83]">{responsibilities.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="text-sm text-slate-500">Not specified</p>}
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-lg font-black text-[#163B5C]">Benefits & Perks</h4>
+            {benefits?.length ? <ul className="list-disc space-y-1 pl-5 text-sm text-[#516C83]">{benefits.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="text-sm text-slate-500">Not specified</p>}
+          </div>
           <div className="space-y-4">
             <h4 className="text-lg font-black text-[#163B5C]">Core Skills</h4>
             <div className="flex flex-wrap gap-2">
@@ -721,6 +794,21 @@ const ProgressBar = memo(({ currentStep }: { currentStep: number }) => {
 });
 ProgressBar.displayName = "ProgressBar";
 
+// Date-only inputs represent the recruiter's local calendar day, not midnight UTC.
+const localDeadlineToISO = (date: string) => date ? new Date(`${date}T23:59:59.999`).toISOString() : undefined;
+const localDateValue = (iso?: string) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return Number.isFinite(date.getTime()) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : "";
+};
+const FIELD_STEPS: Record<string, number> = {
+  title: 1, category: 1, subcategory: 1, type: 1, location: 1, locationType: 1,
+  salaryMin: 2, salaryMax: 2, salaryPeriod: 2, experienceLevel: 2,
+  description: 2, positions: 2, applicationDeadline: 2,
+  requirements: 3, responsibilities: 3, skills: 3, benefits: 3,
+  publishAt: 4, status: 4,
+};
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const CreateJobPage = ({ jobId }: { jobId?: string }) => {
@@ -732,10 +820,14 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
   const { data: editResponse, isFetching: isLoadingJob, isError: jobLoadError } = useGetJobByIdQuery(jobId || "", { skip: !jobId });
   const [publication, setPublication] = useState<"published" | "scheduled">("published");
   const [publishAt, setPublishAt] = useState("");
+  const [publishError, setPublishError] = useState("");
+  const [hasStagedDraft, setHasStagedDraft] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState(false);
 
   const methods = useForm<CreateJobFormValues>({
     defaultValues: {
       title: "",
+      bannerUrl: "",
       category: "",
       subcategory: "",
       type: "full-time",
@@ -758,26 +850,43 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
   const { handleSubmit } = methods;
   useEffect(() => {
     if (!jobId || !editResponse?.data) return;
-    const original = editResponse.data as unknown as Record<string, any>;
+    const saved = editResponse.data as unknown as Record<string, any>;
+    const original = { ...saved, ...(saved.pendingDraft || {}) };
+    setHasStagedDraft(!!saved.pendingDraft);
     methods.reset({
-      title: original.title || "", category: original.category || "", subcategory: original.subcategory || "",
+      title: original.title || "", bannerUrl: original.bannerUrl || "", category: original.category || "", subcategory: original.subcategory || "",
       type: original.type || "full-time", location: original.location || "", locationType: original.locationType || "onsite",
       salaryMin: original.salaryMin != null ? String(original.salaryMin) : "",
       salaryMax: original.salaryMax != null ? String(original.salaryMax) : "",
       salaryPeriod: original.salaryPeriod || "yearly", experienceLevel: original.experienceLevel || "entry",
       description: original.description || "", requirements: original.requirements || [],
       responsibilities: original.responsibilities || [], benefits: original.benefits || [], skills: original.skills || [],
-      applicationDeadline: original.applicationDeadline ? new Date(original.applicationDeadline).toISOString().slice(0,10) : "",
+      applicationDeadline: localDateValue(original.applicationDeadline),
       positions: original.positions != null ? String(original.positions) : "1",
     });
-    if (original.status === "scheduled") setPublication("scheduled");
-    if (original.publishAt) {
-      const date = new Date(original.publishAt);
+    if (saved.status === "scheduled") setPublication("scheduled");
+    if (saved.publishAt) {
+      const date = new Date(saved.publishAt);
       setPublishAt(new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0,16));
     }
   }, [editResponse, jobId, methods]);
 
+  const showApiErrors = (error: unknown) => {
+    const fields = apiFieldErrors(error);
+    const entries = Object.entries(fields);
+    if (entries.length) {
+      for (const [field, message] of entries) {
+        if (field in FIELD_STEPS) methods.setError(field as keyof CreateJobFormValues,
+          { type: "server", message: String(message) });
+      }
+      setCurrentStep(FIELD_STEPS[entries[0][0]] || 4);
+      setPublishError(entries.map(([field, message]) => `${field}: ${message}`).join(". "));
+    } else setPublishError(apiErrorMessage(error, "Unable to save job"));
+    toast.error(apiErrorMessage(error, "Please correct the highlighted fields"));
+  };
+
   const saveDraft = async () => {
+    if (bannerUploading) { toast.error("Finish uploading the banner before saving"); return; }
     const current = methods.getValues();
     if (!current.title.trim()) { toast.error("Enter a title before saving a draft"); return; }
     try {
@@ -785,35 +894,67 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
         salaryMin: current.salaryMin.trim() ? Number(current.salaryMin) : undefined,
         salaryMax: current.salaryMax.trim() ? Number(current.salaryMax) : undefined,
         positions: current.positions.trim() ? Number(current.positions) : undefined,
-        applicationDeadline: current.applicationDeadline || undefined,
+        applicationDeadline: localDeadlineToISO(current.applicationDeadline),
       } as unknown as Partial<Job>;
       if (jobId) await updateJob({ jobId, body }).unwrap();
       else await createJob(body).unwrap();
-      toast.success("Draft saved"); router.push("/recruiter/jobs");
-    } catch (error: any) { toast.error(error?.data?.message || "Unable to save job draft"); }
+      toast.success(jobId ? "Draft changes saved — publish when ready" : "Draft saved"); router.push("/recruiter/jobs");
+    } catch (error: unknown) { showApiErrors(error); }
   };
 
-  const nextStep = useCallback(
-    () => setCurrentStep((p) => Math.min(p + 1, 4)),
-    [],
-  );
+  const nextStep = async () => {
+    const fieldGroups: Record<number, Array<keyof CreateJobFormValues>> = {
+      1: ["title", "location"],
+      2: ["salaryMin", "salaryMax", "applicationDeadline", "description", "positions"],
+      3: ["requirements", "skills"],
+    };
+    let valid = await methods.trigger(fieldGroups[currentStep] || []);
+    if (currentStep === 1 && (!methods.getValues("category") || !methods.getValues("subcategory"))) {
+      if (!methods.getValues("category")) methods.setError("category", { message: "Select a category" });
+      if (!methods.getValues("subcategory")) methods.setError("subcategory", { message: "Select a subcategory" });
+      valid = false;
+    }
+    if (currentStep === 3 && (!methods.getValues("requirements")?.length || !methods.getValues("skills")?.length)) {
+      if (!methods.getValues("requirements")?.length) methods.setError("requirements", { message: "Add a requirement" });
+      if (!methods.getValues("skills")?.length) methods.setError("skills", { message: "Add a skill" });
+      valid = false;
+    }
+    if (valid) setCurrentStep(step => Math.min(step + 1, 4));
+    else toast.error("Complete the required fields before continuing");
+  };
   const prevStep = useCallback(
     () => setCurrentStep((p) => Math.max(p - 1, 1)),
     [],
   );
 
   const onSubmit = async (data: CreateJobFormValues) => {
+    if (bannerUploading) { toast.error("Finish uploading the banner before publishing"); return; }
     try {
       if (publication === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
         toast.error("Choose a future publication date"); return;
       }
-      const body = { ...data, salaryMin: Number(data.salaryMin), salaryMax: Number(data.salaryMax),
+      setPublishError("");
+      if (Number(data.salaryMin) === 0 && Number(data.salaryMax) === 0) {
+        methods.setError("salaryMax", { type: "validate", message: "Enter a real salary range; $0-$0 cannot be published" });
+        setCurrentStep(2); return;
+      }
+      if (Number(data.salaryMin) > Number(data.salaryMax)) {
+        methods.setError("salaryMax", { type: "validate", message: "Maximum salary must be at least the minimum" });
+        setCurrentStep(2); return;
+      }
+      if (!data.category || !data.subcategory || !data.requirements?.length || !data.skills?.length) {
+        setPublishError("Category, subcategory, requirements and skills are required.");
+        setCurrentStep(!data.category || !data.subcategory ? 1 : 3); return;
+      }
+      if (!data.applicationDeadline) { methods.setError("applicationDeadline", { message: "Choose a deadline" }); setCurrentStep(2); return; }
+      const body = { ...data, applicationDeadline: localDeadlineToISO(data.applicationDeadline),
+        salaryMin: Number(data.salaryMin), salaryMax: Number(data.salaryMax),
         positions: Number(data.positions), status: publication,
         ...(publication === "scheduled" ? { publishAt: new Date(publishAt).toISOString() } : {}) } as unknown as Partial<Job>;
       if (jobId) await updateJob({jobId,body}).unwrap(); else await createJob(body).unwrap();
       toast.success(publication === "scheduled" ? "Job scheduled successfully" : "Job published successfully");
       router.push("/recruiter/jobs");
-    } catch (error: any) { toast.error(error?.data?.message || "Unable to save job"); }
+    } catch (error: unknown) { showApiErrors(error); }
   };
 
   if (!user) return null;
@@ -897,6 +1038,8 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
           ))}
         </div>
 
+        {hasStagedDraft && <p role="status" className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">You have private draft changes. The existing public listing remains unchanged until you publish these edits.</p>}
+        {publishError && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">{publishError}</div>}
         {jobLoadError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">Unable to load this job for editing. Check your company permissions.</p>}
         {isLoadingJob && <div className="h-20 animate-pulse rounded-lg bg-slate-100" aria-label="Loading job"/>}
         <ProgressBar currentStep={currentStep} />
@@ -909,6 +1052,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
               {/* Mount all steps but hide inactive — avoids RHF field unmount/remount */}
               <div className={currentStep === 1 ? "block" : "hidden"}>
                 <StepBasicInfo />
+                <JobBannerUpload onUploadingChange={setBannerUploading} />
               </div>
               <div className={currentStep === 2 ? "block" : "hidden"}>
                 <StepDetails />
@@ -926,7 +1070,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
                 <label className="inline-flex items-center gap-2 text-sm text-slate-700"><input type="radio" name="publication" value="scheduled" checked={publication==="scheduled"} onChange={()=>setPublication("scheduled")}/> Schedule publication</label>
                 {publication === "scheduled" && <label className="block text-sm text-slate-700">Publish on
                   <input type="datetime-local" required className="mt-1 block w-full max-w-xs rounded-lg border border-slate-300 bg-white p-2" value={publishAt} onChange={e=>setPublishAt(e.target.value)}/>
-                  <span className="mt-1 block text-xs text-slate-500">The Phase 4 scheduler must be configured on the backend for automatic publication.</span></label>}
+                  <span className="mt-1 block text-xs text-slate-500">Times use your local timezone. The existing backend scheduler must run to publish scheduled jobs.</span></label>}
               </fieldset>}
               {/* Navigation */}
               <div className="mt-16 flex flex-col-reverse gap-3 border-t border-[#163B5C]/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
@@ -940,7 +1084,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
                   <ArrowLeft className="mr-3 h-5 w-5" /> Previous Step
                 </Button>
 
-                <Button type="button" variant="outline" disabled={isLoading || isUpdating || isLoadingJob || jobLoadError} onClick={() => void saveDraft()} className="h-12 rounded-xl border-[#163B5C]/20 px-5 text-[#163B5C]">Save draft</Button>
+                <Button type="button" variant="outline" disabled={isLoading || isUpdating || isLoadingJob || jobLoadError || bannerUploading} onClick={() => void saveDraft()} className="h-12 rounded-xl border-[#163B5C]/20 px-5 text-[#163B5C]">Save draft</Button>
                 {currentStep < 4 ? (
                   <Button
                     type="button"
@@ -952,7 +1096,7 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
                 ) : (
                   <Button
                     type="submit"
-                    disabled={isLoading || isUpdating || isLoadingJob || jobLoadError}
+                    disabled={isLoading || isUpdating || isLoadingJob || jobLoadError || bannerUploading}
                     className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-10 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:from-[#0C2C48] hover:to-[#3b5a71]"
                   >
                     {isLoading ? (

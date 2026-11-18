@@ -22,8 +22,6 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { useGetAllSeekersQuery } from "@/src/redux/features/seeker/seekerApi";
-import Header from "@/src/components/common/Header";
-import Footer from "@/src/components/common/Footer";
 import gsap from "gsap";
 import { ErrorState } from "@/src/components/feedback/StateViews";
 
@@ -256,7 +254,6 @@ export default function CandidatesListingPage() {
 
   return (
     <div className="min-h-screen flex flex-col jobhub-page-bg">
-      <Header />
       <section className="relative overflow-hidden bg-[#163B5C] pt-32 pb-28 md:pt-40 md:pb-32">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:64px_64px]" />
@@ -325,7 +322,7 @@ export default function CandidatesListingPage() {
         </div>
       </section>
 
-      <main id="main-content" className="container mx-auto flex-1 px-6 py-14" ref={containerRef}>
+      <div role="region" aria-label="Candidate search results" id="main-content" className="container mx-auto flex-1 px-6 py-14" ref={containerRef}>
         <div className="flex flex-col gap-8 lg:flex-row">
           <aside className="shrink-0 space-y-6 lg:w-80">
             <Card className="overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 shadow-xl shadow-[#163B5C]/8 backdrop-blur pt-0">
@@ -421,8 +418,7 @@ export default function CandidatesListingPage() {
             )}
           </div>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 }

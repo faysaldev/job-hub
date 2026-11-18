@@ -6,23 +6,15 @@ import { INotification } from "./notifications.model";
  * Create a new notification
  */
 export const createNotification = async (input: {
-  title: string;
-  link: string;
-  sender: string | Types.ObjectId;
-  receiver: string | Types.ObjectId;
+  title: string; link: string; sender: string | Types.ObjectId;
+  receiver: string | Types.ObjectId; dedupeKey?: string;
 }): Promise<INotification> => {
-  try {
-    const { title, link, sender, receiver } = input;
-
-    const notification = new Notification({
-      title,
-      link,
-      sender,
-      receiver,
-    });
-
-    return await notification.save();
-  } catch (error) {
+  try { return await Notification.create(input); }
+  catch (error: any) {
+    if (error?.code === 11000 && input.dedupeKey) {
+      const previous = await Notification.findOne({ dedupeKey: input.dedupeKey }).select("+dedupeKey");
+      if (previous) return previous;
+    }
     throw error;
   }
 };

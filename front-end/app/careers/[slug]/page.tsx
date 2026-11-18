@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 import { notFound } from "next/navigation";
 interface PublicCompany { _id: string; companyName?: string; companyLogo?: string; careersHeadline?: string; careersDescription?: string;
   companyLocation?: string; website?: string; verification?: { status?: string } }
@@ -35,7 +36,7 @@ export default async function Page({params}: {params: Promise<{slug:string}>}) {
       {!jobs.length && <p className="rounded-xl border border-slate-200 bg-white p-8 text-sm text-slate-600">No open positions at the moment. Check back for future opportunities.</p>}
       <div className="grid gap-4 sm:grid-cols-2">{jobs.map(job=><article className="rounded-xl border border-slate-200 bg-white p-6" key={job._id}>
         <h3 className="text-lg font-semibold">{job.title}</h3><p className="mt-2 text-sm text-slate-600">{job.location} · {job.locationType} · {job.type}</p>
-        {job.salaryMin!=null && job.salaryMax!=null && <p className="mt-2 text-sm text-slate-600">{job.salaryMin.toLocaleString()}–{job.salaryMax.toLocaleString()} / {job.salaryPeriod || "year"}</p>}
+        <p className="mt-2 text-sm text-slate-600">{formatJobSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}</p>
         <Link href={`/job/${job._id}`} className="mt-5 inline-block rounded-lg bg-[#163B5C] px-4 py-2 text-sm font-semibold text-white hover:bg-[#315c7b]">View opportunity</Link>
       </article>)}</div>
     </section></main>;

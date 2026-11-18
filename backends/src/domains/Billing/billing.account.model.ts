@@ -11,15 +11,15 @@ const snapshotSchema = new Schema<PlanSnapshot>({
 export interface IBillingAccount extends Document {
   _id: Types.ObjectId; companyId: Types.ObjectId;
   stripeCustomerId?: string; stripeSubscriptionId?: string; stripeStatus?: string;
-  snapshot?: PlanSnapshot; paidThrough?: Date; lastPaidInvoiceId?: string; cancelAtPeriodEnd?: boolean;
-  pendingCheckoutSessionId?: string; checkoutPendingUntil?: Date;
+  snapshot?: PlanSnapshot; paidThrough?: Date; lastPaidInvoiceId?: string; lastPaidInvoicePaidAt?: Date; cancelAtPeriodEnd?: boolean;
+  pendingCheckoutSessionId?: string; pendingCheckoutPlanId?: string; checkoutPendingUntil?: Date;
 }
 const schema = new Schema<IBillingAccount>({
   companyId: { type: Schema.Types.ObjectId, ref: "Company", required: true, unique: true },
   stripeCustomerId: { type: String }, stripeSubscriptionId: { type: String },
   stripeStatus: { type: String, enum: ["incomplete", "incomplete_expired", "trialing", "active", "past_due", "unpaid", "canceled", "paused"] },
-  snapshot: { type: snapshotSchema }, paidThrough: Date, lastPaidInvoiceId: String, cancelAtPeriodEnd: { type: Boolean, default: false },
-  pendingCheckoutSessionId: String, checkoutPendingUntil: Date,
+  snapshot: { type: snapshotSchema }, paidThrough: Date, lastPaidInvoiceId: String, lastPaidInvoicePaidAt: Date, cancelAtPeriodEnd: { type: Boolean, default: false },
+  pendingCheckoutSessionId: String, pendingCheckoutPlanId: String, checkoutPendingUntil: Date,
 }, { timestamps: true });
 schema.index({ stripeCustomerId: 1 }, { unique: true, sparse: true });
 schema.index({ stripeSubscriptionId: 1 }, { unique: true, sparse: true });

@@ -18,14 +18,17 @@ import {
 interface SignUpFormProps {
   loading: boolean;
   handleSignUp: (e: React.FormEvent<HTMLFormElement>) => void;
+  error?: string;
+  fieldErrors?: Record<string, string>;
 }
 
-const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
+const SignUpForm = ({ loading, handleSignUp, error, fieldErrors = {} }: SignUpFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState("seeker");
 
   return (
     <form onSubmit={handleSignUp} className="space-y-4">
+      {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
       <div className="space-y-2">
         <Label
           htmlFor="name"
@@ -37,6 +40,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="name"
+            aria-invalid={!!fieldErrors.name}
             name="name"
             placeholder="Enter your full name"
             required
@@ -44,6 +48,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           />
         </div>
       </div>
+      {fieldErrors.name && <p role="alert" className="text-xs text-red-700">{fieldErrors.name}</p>}
       <div className="space-y-2">
         <Label
           htmlFor="signup-email"
@@ -55,6 +60,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="signup-email"
+            aria-invalid={!!fieldErrors.email}
             name="signup-email"
             type="email"
             placeholder="Enter your email"
@@ -63,6 +69,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           />
         </div>
       </div>
+      {fieldErrors.email && <p role="alert" className="text-xs text-red-700">{fieldErrors.email}</p>}
       <div className="space-y-2">
         <Label
           htmlFor="phone"
@@ -74,6 +81,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="phone"
+            aria-invalid={!!fieldErrors.phoneNumber}
             name="phone"
             type="tel"
             placeholder="Your contact number"
@@ -82,6 +90,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           />
         </div>
       </div>
+      {fieldErrors.phoneNumber && <p role="alert" className="text-xs text-red-700">{fieldErrors.phoneNumber}</p>}
       <div className="space-y-2">
         <Label
           htmlFor="signup-password"
@@ -93,6 +102,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="signup-password"
+            aria-invalid={!!fieldErrors.password}
             name="signup-password"
             minLength={8}
             maxLength={128}
@@ -115,6 +125,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
           </button>
         </div>
       </div>
+      {fieldErrors.password && <p role="alert" className="text-xs text-red-700">{fieldErrors.password}</p>}
       <div className="space-y-2">
         <Label className="text-[#163B5C] font-semibold text-sm tracking-wide">
           I am a

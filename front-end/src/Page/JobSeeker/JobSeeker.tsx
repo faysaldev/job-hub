@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/src/hooks/useAuth";
-import { useAppSelector } from "@/src/redux/hooks";
 import {
   Briefcase,
   Calendar,
@@ -73,8 +72,7 @@ function StatCard({ stat }: { stat: StatDef }) {
 
 const JobSeekerDashboard = () => {
   const { openAsset } = useOpenAsset();
-  const { user, isAuthenticated } = useAuth();
-  const rehydrated = useAppSelector(state => state.auth._persist?.rehydrated ?? false);
+  const { user, isAuthenticated, sessionChecked: rehydrated } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 

@@ -68,10 +68,10 @@ const CancelContent = () => {
                     Payment Cancelled or Failed
                   </Badge>
                   <h1 className="text-4xl font-black text-[#163B5C] tracking-tight leading-tight">
-                    Application Submited<br />without Boost ⚠️
+                    Application Submitted<br />as Standard
                   </h1>
                   <p className="text-[#516C83] font-medium text-base max-w-md mx-auto leading-relaxed">
-                    Don&apos;t worry! Your standard application was **successfully submitted** to the recruiter. However, your profile rank boost payment was not completed.
+                    Your Standard application remains on file. No paid highlight is active; review your applications to retry securely.
                   </p>
                 </div>
                 <div className="pt-4 flex flex-col gap-3">
@@ -112,9 +112,9 @@ const CancelContent = () => {
               </h2>
               <div className="space-y-4">
                 {[
-                  { q: "Was my card charged?", a: "No. If a transaction fails or is cancelled, no funds are captured." },
+                  { q: "Was my card charged?", a: "A canceled checkout normally does not charge you. Review your Stripe receipt or contact support if you see a charge." },
                   { q: "Is my job application active?", a: "Yes! Your application is active and sent to the recruiter as a standard application." },
-                  { q: "Can I try to boost again later?", a: "Yes, you can upgrade your application status to Premium from your Dashboard." },
+                  { q: "Can I try to boost again later?", a: "Yes, open My Applications and choose Add optional highlight when available." },
                 ].map((item, idx) => (
                   <div key={idx} className="space-y-1">
                     <h4 className="text-xs font-bold text-[#163B5C] flex items-center gap-1.5">

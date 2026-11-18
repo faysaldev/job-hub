@@ -29,10 +29,13 @@ const SuccessContent = () => {
   const sessionId = searchParams.get("session_id");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { data: paymentResponse, isLoading } = useGetPaymentDetailsQuery(sessionId || "", { skip: !sessionId });
+  const { data: paymentResponse, isLoading, isError, refetch } = useGetPaymentDetailsQuery(sessionId || "", {
+    skip: !sessionId, pollingInterval: sessionId ? 5000 : 0, refetchOnMountOrArgChange: true,
+  });
   const paymentData = paymentResponse?.data;
   const paymentConfirmed = !!sessionId && paymentData?.completed === true;
-  const paymentProcessing = !!sessionId && !paymentConfirmed;
+  const paymentRejected = paymentData?.checkoutStatus === "expired" || paymentData?.benefitStatus === "refunded";
+  const paymentProcessing = !!sessionId && !paymentConfirmed && !paymentRejected && !isError;
 
   useEffect(() => {
     if (!isLoading) {
@@ -48,9 +51,9 @@ const SuccessContent = () => {
   if (isLoading) return <LoadingScreen />;
 
   const highlights = [
-    { icon: ShieldCheck, label: "Security", value: "Verified", bg: "bg-blue-50", color: "text-blue-600" },
-    { icon: Zap, label: "Benefit", value: paymentConfirmed ? "Verified highlight" : paymentProcessing ? "Payment pending" : "Direct delivery", bg: "bg-amber-50", color: "text-amber-600" },
-    { icon: Trophy, label: "Status", value: paymentConfirmed ? "Paid" : paymentProcessing ? "Awaiting confirmation" : "Submitted", bg: "bg-green-50", color: "text-green-600" },
+    { icon: ShieldCheck, label: "Security", value: "Hosted checkout", bg: "bg-blue-50", color: "text-blue-600" },
+    { icon: Zap, label: "Benefit", value: paymentConfirmed ? "Verified highlight" : paymentProcessing ? "Webhook pending" : "Standard application", bg: "bg-amber-50", color: "text-amber-600" },
+    { icon: Trophy, label: "Status", value: paymentConfirmed ? "Activated" : paymentProcessing ? "Awaiting confirmation" : "Submitted", bg: "bg-green-50", color: "text-green-600" },
     { icon: Rocket, label: "Access", value: paymentConfirmed ? "Highlighted" : "Standard", bg: "bg-purple-50", color: "text-purple-600" },
   ];
 
@@ -78,7 +81,7 @@ const SuccessContent = () => {
                 </div>
                 <div className="space-y-3">
                   <Badge className={`${paymentConfirmed ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'} border-none px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest`}>
-                    {paymentConfirmed ? "Stripe Payment Confirmed" : paymentProcessing ? "Payment Processing" : "Application Submitted"}
+                    {paymentConfirmed ? "Highlight Activated" : paymentProcessing ? "Awaiting Payment Verification" : "Standard Application"}
                   </Badge>
                   <h1 className="text-4xl font-black text-[#163B5C] tracking-tight leading-tight">
                     {paymentConfirmed ? (
@@ -95,11 +98,12 @@ const SuccessContent = () => {
                     ) : paymentProcessing ? (
                       "Your application is submitted. Any optional paid highlight remains inactive until confirmed by Stripe."
                     ) : (
-                      "Your application has been received by the recruiter. Keep track of updates on your dashboard."
+                      isError ? "Payment verification is temporarily unavailable. Check your applications or retry." : "Your Standard application has been received; no paid highlight is currently active."
                     )}
                   </p>
                 </div>
                 <div className="pt-4 flex flex-col gap-3">
+                  {sessionId && (isError || paymentProcessing) && <Button variant="outline" onClick={() => void refetch()} className="w-full">Check payment status again</Button>}
                   <Link href="/job-seeker/applications">
                     <Button className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white font-black shadow-xl shadow-[#163B5C]/20 transition-all active:scale-95">
                       Track Application Status
@@ -138,7 +142,7 @@ const SuccessContent = () => {
                 </h2>
                 <div className="space-y-5">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#516C83] font-medium text-sm">Amount Paid</span>
+                    <span className="text-[#516C83] font-medium text-sm">Checkout amount</span>
                     <span className="text-2xl font-black text-[#163B5C]">
                       ${paymentData?.amountTotal?.toFixed(2) ?? "—"}
                     </span>
@@ -147,7 +151,7 @@ const SuccessContent = () => {
                   {[
                     { icon: CreditCard, label: "Transaction ID", value: paymentData?.sessionId ? `${paymentData.sessionId.slice(0, 20)}...` : "—" },
                     { icon: Briefcase, label: "Payment Target", value: "Optional Application Highlight" },
-                    { icon: Package, label: "Status", value: paymentData?.completed ? "Completed" : "Processing" },
+                    { icon: Package, label: "Status", value: paymentConfirmed ? "Highlighted" : paymentRejected ? "Not active" : "Awaiting verified webhook" },
                   ].map((row) => (
                     <div key={row.label} className="flex items-start gap-3">
                       <div className="w-9 h-9 rounded-xl bg-[#E1E8EF]/50 flex items-center justify-center flex-shrink-0">

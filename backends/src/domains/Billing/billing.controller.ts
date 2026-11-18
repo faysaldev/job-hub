@@ -17,6 +17,7 @@ export const planInput = z.object({
 }).strict();
 const actions = z.discriminatedUnion("action", [
   z.object({ action: z.literal("checkout"), planKey: z.string().regex(/^[a-z][a-z0-9-]{1,39}$/) }).strict(),
+  z.object({ action: z.literal("upgrade"), planKey: z.string().regex(/^[a-z][a-z0-9-]{1,39}$/) }).strict(),
   z.object({ action: z.literal("portal") }).strict(),
   z.object({ action: z.literal("sponsor"), jobId: z.string().regex(/^[a-fA-F0-9]{24}$/),
     durationDays: z.union([z.literal(7), z.literal(30)]), payment: z.enum(["credit", "stripe"]), requestId: z.uuid() }).strict(),
@@ -32,6 +33,7 @@ const dashboard = asyncHandler(async (req: ProtectedRequest, res: Response) => o
 const action = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const body = actions.parse(req.body);
   if (body.action === "checkout") return ok(res, await billing.subscribeCheckout(req.user!._id, req.user!.email, body.planKey), "Checkout created");
+  if (body.action === "upgrade") return ok(res, await billing.upgradeSubscription(req.user!._id, body.planKey), "Upgrade processed");
   if (body.action === "portal") return ok(res, await billing.portalSession(req.user!._id), "Portal created");
   return ok(res, await billing.sponsor(req.user!._id, body), "Promotion initiated");
 });

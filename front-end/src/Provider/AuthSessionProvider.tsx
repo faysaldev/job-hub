@@ -1,40 +1,60 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
-import { selectCurrentUser, selectToken, setUser, logout } from "@/src/redux/features/auth/authSlice";
-import { useRefreshMutation } from "@/src/redux/features/auth/authApi";
-import { useAppDispatch } from "@/src/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/src/redux/hooks";
+import { setSessionChecked, sessionExpired, setUser } from "@/src/redux/features/auth/authSlice";
+import { requestSessionRefresh, sessionGeneration } from "@/src/lib/authSession";
+import { baseApi } from "@/src/redux/baseApi/baseApi";
+
+const RENEW_INTERVAL_MS = 12 * 60_000;
 
 export default function AuthSessionProvider({ children }: { children: React.ReactNode }) {
-  const user = useSelector(selectCurrentUser);
-  const token = useSelector(selectToken);
   const dispatch = useAppDispatch();
-  const [refresh] = useRefreshMutation();
-  const bootstrapped = useRef<string | null>(null);
+  const rehydrated = useAppSelector(state => state.auth._persist?.rehydrated ?? false);
+  const sessionChecked = useAppSelector(state => state.auth.sessionChecked);
+  const token = useAppSelector(state => state.auth.token);
+  const cachedUser = useAppSelector(state => state.auth.user);
+  const started = useRef(false);
+
   useEffect(() => {
-    // Re-check persisted access tokens on each browser load. A 15-minute JWT
-    // can expire while the browser is closed; the HttpOnly refresh cookie remains
-    // authoritative. Avoid duplicate refreshes during React StrictMode effects.
-    if (!user?._id || !token || bootstrapped.current === user._id) return;
-    bootstrapped.current = user._id;
-    refresh().unwrap().then((result) => {
-      if (result.data?.user && result.data.accessToken) {
-        dispatch(setUser({ user: result.data.user, token: result.data.accessToken }));
-      }
+    if (!rehydrated || started.current) return;
+    started.current = true;
+    // Purge legacy auth data from older releases (the access JWT is memory-only now).
+    try { localStorage.removeItem("token"); localStorage.removeItem("user"); } catch {}
+    const generation = sessionGeneration();
+    requestSessionRefresh().then(({ user, accessToken }) => {
+      if (generation === sessionGeneration()) dispatch(setUser({ user, token: accessToken }));
     }).catch((error: { status?: number }) => {
-      if (error?.status === 401 || error?.status === 403) dispatch(logout());
+      if (generation !== sessionGeneration()) return;
+      // On an ordinary anonymous visit there is no session cookie. No alert needed.
+      if (error?.status === 401) {
+        if (cachedUser) dispatch(sessionExpired("Your session expired. Please sign in again."));
+        else dispatch(setSessionChecked());
+      }
+      else dispatch(sessionExpired("Unable to restore the session. Check your connection and sign in again."));
+      dispatch(baseApi.util.resetApiState());
+    }).finally(() => {
+      if (generation === sessionGeneration()) dispatch(setSessionChecked());
     });
-  }, [user?._id, !!token, refresh, dispatch]);
+  }, [rehydrated, dispatch, cachedUser]);
+
   useEffect(() => {
-    if (!user || !token) return;
-    const interval = window.setInterval(() => {
-      refresh().unwrap().then((result) => {
-        if (result.data?.user && result.data.accessToken) dispatch(setUser({ user: result.data.user, token: result.data.accessToken }));
+    if (!sessionChecked || !token) return;
+    const refresh = () => {
+      const generation = sessionGeneration();
+      void requestSessionRefresh().then(({ user, accessToken }) => {
+        if (generation === sessionGeneration()) dispatch(setUser({ user, token: accessToken }));
       }).catch((error: { status?: number }) => {
-        if (error?.status === 401 || error?.status === 403) dispatch(logout());
+        if (generation !== sessionGeneration()) return;
+        if (error.status === 401 || error.status === 403) {
+          dispatch(sessionExpired("Your session expired. Please sign in again."));
+          dispatch(baseApi.util.resetApiState());
+        }
       });
-    }, 12 * 60 * 1000);
-    return () => window.clearInterval(interval);
-  }, [user?._id, !!token, refresh, dispatch]);
+    };
+    const interval = window.setInterval(refresh, RENEW_INTERVAL_MS);
+    const onFocus = () => { if (document.visibilityState === "visible") refresh(); };
+    document.addEventListener("visibilitychange", onFocus);
+    return () => { window.clearInterval(interval); document.removeEventListener("visibilitychange", onFocus); };
+  }, [sessionChecked, !!token, dispatch]);
   return <>{children}</>;
 }

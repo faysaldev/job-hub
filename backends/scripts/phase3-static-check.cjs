@@ -9,7 +9,7 @@ const tests = [
   ["Distinct public/private R2 buckets", () => get("src/domains/Asset/asset.storage.ts").includes("publicBucket === privateBucket")],
   ["Private key not selected by default", () => get("src/domains/Asset/asset.model.ts").includes("select: false")],
   ["Upload signed, immutable, bounded TTL", () => get("src/domains/Asset/asset.storage.ts").includes('IfNoneMatch: "*"') && get("src/domains/Asset/asset.storage.ts").includes("expiresIn: 90")],
-  ["Upload confirmed by R2 object size, MIME and magic", () => ["await head(", "firstBytes(", "matchesSignature(", "ContentLength", "ContentType"].every((t) => get("src/domains/Asset/asset.services.ts").includes(t))],
+  ["Upload confirmed by R2 object size, MIME and magic", () => ["await head(", "firstBytes(", "matchesFileSignature(", "ContentLength", "ContentType"].every((t) => get("src/domains/Asset/asset.services.ts").includes(t))],
   ["Private read endpoint requires auth", () => get("src/domains/Asset/asset.route.ts").includes("router.use(authMiddleware)") && get("src/domains/Asset/asset.route.ts").includes('router.get("/:id/access"')],
   ["Resume authorization checks company membership", () => get("src/domains/Asset/asset.services.ts").includes("Application.distinct") && get("src/domains/Asset/asset.services.ts").includes("companyForActor(actorId, \"applications\")") && get("src/domains/Asset/asset.services.ts").includes("membership.company.userId")],
   ["Message authorization checks membership and reference", () => get("src/domains/Asset/asset.services.ts").includes("Conversation.exists") && get("src/domains/Asset/asset.services.ts").includes('"attachments.assetId"')],

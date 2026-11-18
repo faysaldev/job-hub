@@ -39,33 +39,11 @@ const createConversation = asyncHandler(async (req: ProtectedRequest, res: Respo
     throw new AppError("Cannot create conversation with the same user", httpStatus.BAD_REQUEST);
   }
 
-  let conversation = await conversationService.findConversationByParticipantsService(
-    participantsArray,
-    userId
-  );
-
-  if (conversation) {
-    res.status(httpStatus.OK).json(
-      response({
-        message: "Conversation already exists",
-        status: "OK",
-        statusCode: httpStatus.OK,
-        data: conversation,
-      })
-    );
-    return;
-  }
-
-  conversation = await conversationService.createConversationService(participantsArray, userId);
-
-  res.status(httpStatus.CREATED).json(
-    response({
-      message: "Conversation created successfully",
-      status: "OK",
-      statusCode: httpStatus.CREATED,
-      data: conversation,
-    })
-  );
+  // Always authorize via the service, even when a thread already exists.
+  // Previously the early "found" branch could disclose conversations to revoked teammates.
+  const conversation = await conversationService.createConversationService(participantsArray, userId);
+  res.status(httpStatus.OK).json(response({ message: "Conversation ready", status: "OK",
+    statusCode: httpStatus.OK, data: conversation }));
 });
 
 const deleteConversation = asyncHandler(async (req: ProtectedRequest, res: Response) => {

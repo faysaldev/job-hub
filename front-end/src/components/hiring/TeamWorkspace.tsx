@@ -17,9 +17,13 @@ export default function TeamWorkspace() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Exclude<TeamRole,"owner">>("recruiter");
   const current = data?.data.workspace;
+  const seats = current?.capacity;
+  const seatsFull = !!seats && seats.teamSeats >= seats.limit;
+  const isResend = !!current?.members.some(member => member.email === email.trim().toLowerCase() &&
+    member.status === "invited" && (!member.expiresAt || new Date(member.expiresAt) > new Date()));
   const handleInvite = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    try { await invite({ email: email.trim(), role }).unwrap(); setEmail(""); toast.success("Invitation created. The recipient can accept it after signing in."); }
+    try { await invite({ email: email.trim(), role }).unwrap(); setEmail(""); toast.success("Invitation queued. They can accept after receiving the email and verifying a recruiter account."); }
     catch (error: any) { toast.error(error?.data?.message || "Unable to invite teammate"); }
   };
   const change = async (id: string, action: "accept" | "remove" | "role", nextRole?: Exclude<TeamRole,"owner">) => {
@@ -58,17 +62,21 @@ export default function TeamWorkspace() {
             catch (error: any) { toast.error(error?.data?.message || "Complete company details before requesting verification"); }
           }}>Request review</button>}
       </div></div>
+      {(["owner", "admin"].includes(current.teamRole)) && seats && <div role="status" className={`rounded-xl border p-4 text-sm ${seatsFull ? "border-amber-200 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-700"}`}>
+        <p className="font-semibold">Team capacity: {seats.teamSeats} / {seats.limit} reserved seats (includes owner and pending invites)</p>
+        {seatsFull && <p className="mt-2">Your current plan has no available seats. <Link href="/recruiter/billing" className="font-semibold underline">Compare plans with more team seats</Link> or remove an outstanding invitation.</p>}
+      </div>}
       {["owner", "admin"].includes(current.teamRole) && <form onSubmit={handleInvite} className="rounded-xl border border-[#d9e3ea] bg-white p-5">
         <h2 className="mb-4 flex items-center gap-2 font-semibold text-[#163B5C]"><UserPlus size={19} /> Invite a teammate</h2>
         <div className="grid gap-3 sm:grid-cols-[1fr_180px_auto]"><label className="text-sm font-medium">Email address<input required type="email" className={`${field} mt-1`} value={email} onChange={e => setEmail(e.target.value)} placeholder="recruiter@company.com" /></label>
           <label className="text-sm font-medium">Company role<select className={`${field} mt-1`} value={role} onChange={e => setRole(e.target.value as Exclude<TeamRole,"owner">)}>
             <option value="recruiter">Recruiter</option><option value="interviewer">Interviewer</option>{current.teamRole === "owner" && <option value="admin">Admin</option>}
-          </select></label><button disabled={inviting} className={`${button} self-end`}>Send invite</button></div>
+          </select></label><button disabled={inviting || (seatsFull && !isResend)} className={`${button} self-end`}>{inviting ? "Queuing…" : isResend ? "Resend invite" : "Send invite"}</button></div>
       </form>}
       <section className="overflow-x-auto rounded-xl border border-[#d9e3ea] bg-white"><h2 className="p-5 text-lg font-semibold text-[#163B5C]">Members and outstanding invitations</h2>
         <table className="w-full min-w-[580px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-5 py-3">Email</th><th className="px-5 py-3">Role</th><th className="px-5 py-3">Access</th><th className="px-5 py-3 text-right">Action</th></tr></thead>
           <tbody>{current.members.map(member => <tr key={member._id} className="border-t border-slate-100"><td className="px-5 py-4">{member.email}</td>
-            <td className="px-5 py-4 capitalize">{member.role}</td><td className="px-5 py-4 capitalize">{member.status}</td>
+            <td className="px-5 py-4 capitalize">{member.role}</td><td className="px-5 py-4 capitalize">{member.status === "invited" && member.expiresAt && new Date(member.expiresAt) <= new Date() ? "Expired" : member.status}</td>
             <td className="px-5 py-4 text-right">{["owner","admin"].includes(current.teamRole) && (current.teamRole === "owner" || member.role !== "admin") &&
               <div className="flex justify-end gap-2"><select aria-label={`Role for ${member.email}`} className="rounded border border-slate-300 px-2" value={member.role} disabled={managing}
                 onChange={event => change(member._id,"role",event.target.value as Exclude<TeamRole,"owner">)}>

@@ -47,8 +47,10 @@ const normalizeError = (error: unknown): AppError => {
     const keyValue = (error as any).keyValue;
     const field = Object.keys(keyValue || {})[0] || "field";
     return new AppError(
-      `Duplicate value for ${field}. Please use another value.`,
-      httpStatus.CONFLICT
+      `This ${field} is already in use.`,
+      httpStatus.CONFLICT,
+      true,
+      [{ field, message: "Already in use" }],
     );
   }
 
@@ -78,7 +80,7 @@ const formatErrorResponse = (error: AppError): ErrorResponse => {
   const response: ErrorResponse = {
     code: error.statusCode,
     status: error.status,
-    message: error.message,
+    message: error.isOperational || isDevelopment ? error.message : "Internal server error",
   };
 
   if (error.errors && error.errors.length > 0) {

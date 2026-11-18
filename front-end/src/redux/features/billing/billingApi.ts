@@ -10,11 +10,11 @@ export interface BillingDashboard {
   company: { id: string; name?: string }; teamRole: "owner"|"admin"|"recruiter"|"interviewer";
   plan: { key: string; version: number; name: string; limits: PlanLimits; priceCents: number; currency: "usd" };
   subscription: { status: string; paidThrough: string|null; paid: boolean; cancelAtPeriodEnd?: boolean };
-  usage: { activeJobs: number; teamSeats: number; creditBalance: number; limits: PlanLimits };
+  usage: { activeJobs: number; openJobs?: number; scheduledJobs?: number; publishedJobs?: number; quotaOverage?: number; teamSeats: number; creditBalance: number; limits: PlanLimits };
   invoices: { _id: string; amountPaidCents: number; currency: string; invoiceUrl?: string; paidAt: string; planKey: string; planVersion: number }[];
   promotions: { _id: string; jobId: string; durationDays: number; status: string; source: string; startsAt?: string; endsAt?: string }[];
 }
-export type BillingAction = { action: "checkout"; planKey: string } | { action: "portal" } |
+export type BillingAction = { action: "checkout" | "upgrade"; planKey: string } | { action: "portal" } |
   { action: "sponsor"; jobId: string; durationDays: 7|30; payment: "credit"|"stripe"; requestId: string };
 export type ManagePlanAction = { action: "publish"|"hide" } |
   { action: "duplicate"; newKey: string; newName: string } |

@@ -4,11 +4,16 @@ import setUpSocketIO from "./config/socketio";
 import { assertAuthSecrets } from "./domains/Auth/auth.token.services";
 import app from "./server";
 import http from "node:http";
+import { assertMailConfigured, verifyMailConnection } from "./lib/mail.service";
+import { startMailOutboxWorker } from "./lib/mail.outbox";
 
 /** Do not accept HTTP or Socket.IO requests before the database is ready. */
 const main = async () => {
   assertAuthSecrets();
+  if (process.env.NODE_ENV === "production" || process.env.MAIL_REQUIRED === "true") assertMailConfigured();
   await connectionToDb();
+  if (process.env.MAIL_VERIFY_ON_STARTUP === "true") await verifyMailConnection();
+  startMailOutboxWorker();
   const server = http.createServer(app);
   setUpSocketIO(server);
   const port = PORT || 3001;

@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-export type AssetKind = "avatar" | "company-logo" | "resume" | "attachment";
+export type AssetKind = "avatar" | "company-logo" | "job-banner" | "resume" | "attachment";
 export type AssetStatus = "pending" | "ready";
 export interface IAsset extends Document {
   _id: Types.ObjectId;
@@ -14,6 +14,7 @@ export interface IAsset extends Document {
   mimeType: string;
   size: number;
   conversationId?: Types.ObjectId;
+  companyId?: Types.ObjectId;
   expiresAt?: Date;
   legacyUrl?: string;
   createdAt: Date;
@@ -21,7 +22,7 @@ export interface IAsset extends Document {
 
 const assetSchema = new Schema<IAsset>({
   owner: { type: Schema.Types.ObjectId, ref: "User", required: true, immutable: true },
-  kind: { type: String, enum: ["avatar", "company-logo", "resume", "attachment"], required: true, immutable: true },
+  kind: { type: String, enum: ["avatar", "company-logo", "job-banner", "resume", "attachment"], required: true, immutable: true },
   status: { type: String, enum: ["pending", "ready"], default: "pending" },
   visibility: { type: String, enum: ["public", "private"], required: true, immutable: true },
   bucket: { type: String, required: true, immutable: true, select: false },
@@ -30,6 +31,7 @@ const assetSchema = new Schema<IAsset>({
   mimeType: { type: String, required: true, immutable: true },
   size: { type: Number, required: true, min: 1, immutable: true },
   conversationId: { type: Schema.Types.ObjectId, ref: "Conversation" },
+  companyId: { type: Schema.Types.ObjectId, ref: "Company", immutable: true },
   // Pending upload permits expire automatically; finalized objects must unset this field.
   expiresAt: { type: Date },
   legacyUrl: { type: String, select: false },
@@ -37,4 +39,5 @@ const assetSchema = new Schema<IAsset>({
 assetSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 assetSchema.index({ owner: 1, kind: 1, createdAt: -1 });
 assetSchema.index({ conversationId: 1, status: 1 });
+assetSchema.index({ companyId: 1, kind: 1, status: 1 });
 export default mongoose.model<IAsset>("Asset", assetSchema);

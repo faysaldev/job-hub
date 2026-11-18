@@ -73,7 +73,7 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
     <div className="space-y-6">
       {/* OTP Input Section */}
       <div className="text-center">
-        <div className="flex justify-center gap-3">
+        <div className="flex justify-center gap-2.5">
           {otp.map((digit, index) => (
             <Input
               key={index}
@@ -85,26 +85,26 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
               onChange={(e) => handleOtpChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={index === 0 ? handlePaste : undefined}
-              className={`w-12 h-14 text-2xl font-bold text-center rounded-xl transition-all duration-300 ${
+              className={`w-11 h-13 text-xl font-bold text-center rounded-xl transition-all shadow-2xs ${
                 digit
-                  ? "border-2 border-[#163B5C] bg-[#163B5C]/5 text-[#163B5C]"
-                  : "border-2 border-[#163B5C]/20 bg-[#E1E8EF]/30"
-              } focus:outline-none focus:ring-2 focus:ring-[#163B5C] focus:border-[#163B5C]`}
+                  ? "border-2 border-black bg-black/5 text-black"
+                  : "border border-[#eaecf0] bg-white text-neutral-900"
+              } focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black`}
             />
           ))}
         </div>
-        <p className="text-sm text-[#516C83] mt-3">
-          Tip: You can paste the code directly
+        <p className="text-xs text-neutral-500 mt-2.5">
+          Tip: You can paste the 6-digit code directly
         </p>
       </div>
 
       {/* Timer Section */}
       <div className="flex items-center justify-center">
         {timeLeft > 0 ? (
-          <div className="flex items-center gap-3 px-4 py-2 bg-[#E1E8EF]/50 rounded-xl">
-            <Clock className="h-5 w-5 text-[#516C83]" />
-            <span className="text-[#163B5C] font-medium">
-              Resend available in <span className="font-bold">{formatTime(timeLeft)}</span>
+          <div className="flex items-center gap-2 px-3.5 py-1.5 bg-neutral-100 rounded-lg text-xs font-medium text-neutral-700">
+            <Clock className="h-4 w-4 text-neutral-500" />
+            <span>
+              Resend available in <strong className="font-bold text-black">{formatTime(timeLeft)}</strong>
             </span>
           </div>
         ) : (
@@ -112,9 +112,9 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
             onClick={onResend}
             disabled={loading}
             variant="ghost"
-            className="text-[#163B5C] hover:bg-[#163B5C]/10"
+            className="text-xs font-semibold text-black hover:bg-neutral-100 rounded-lg"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
             Resend Verification Code
           </Button>
         )}
@@ -122,17 +122,17 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
 
       {/* Verify Button */}
       <Button
-        className={`w-full h-12 rounded-xl font-semibold transition-all duration-300 ${
+        className={`w-full h-11 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-2xs ${
           isComplete
-            ? "bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white shadow-lg hover:shadow-xl"
-            : "bg-[#163B5C]/20 text-[#163B5C]/50 cursor-not-allowed"
+            ? "bg-black hover:bg-neutral-800 text-white cursor-pointer"
+            : "bg-neutral-200 text-neutral-400 cursor-not-allowed"
         }`}
         onClick={handleVerify}
         disabled={loading || !isComplete}
       >
         {loading ? (
           <span className="flex items-center gap-2">
-            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
@@ -140,17 +140,17 @@ const OTPVerification = ({ email, onVerify, onResend, loading, timeLeft }: OTPVe
           </span>
         ) : (
           <span className="flex items-center justify-center gap-2">
-            <ShieldCheck className="h-5 w-5" />
+            <ShieldCheck className="h-4 w-4" />
             Verify Code
           </span>
         )}
       </Button>
 
       {/* Security Note */}
-      <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
-        <Sparkles className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-green-700">
-          This code expires in 10 minutes for security purposes.
+      <div className="flex items-start gap-2.5 p-3 bg-neutral-50 border border-[#eaecf0] rounded-xl text-xs text-neutral-600">
+        <Sparkles className="h-4 w-4 text-neutral-500 flex-shrink-0 mt-0.5" />
+        <p>
+          This verification code expires in 10 minutes for your account security.
         </p>
       </div>
     </div>

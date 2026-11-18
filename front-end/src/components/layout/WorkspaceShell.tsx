@@ -3,10 +3,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bell, BriefcaseBusiness, Building2, CalendarDays, FileText, LayoutDashboard, Menu, MessageSquare, Plus, UserRound, Users, CreditCard, X } from "lucide-react";
+import { Bell, BriefcaseBusiness, Building2, CalendarDays, FileText, LayoutDashboard, Menu, MessageSquare, Plus, UserRound, Users, CreditCard, Settings, X } from "lucide-react";
 import Header from "@/src/components/common/Header";
 import { useAuth } from "@/src/hooks/useAuth";
-import { useAppSelector } from "@/src/redux/hooks";
 import { WorkspaceLoading } from "@/src/components/feedback/LoadingStates";
 
 type WorkspaceRole = "recruiter" | "seeker";
@@ -22,6 +21,7 @@ const recruiterLinks = [
   { href: "/recruiter/interview-schedule", label: "Interviews", icon: CalendarDays },
   { href: "/recruiter/company", label: "Company profile", icon: Building2 },
   { href: "/recruiter/billing", label: "Plans & billing", icon: CreditCard },
+  { href: "/recruiter/settings", label: "Account settings", icon: Settings },
 ];
 const seekerLinks = [
   { href: "/job-seeker", label: "Overview", icon: LayoutDashboard },
@@ -32,20 +32,20 @@ const seekerLinks = [
   { href: "/job-seeker/messages", label: "Messages", icon: MessageSquare },
   { href: "/job-seeker/interviews", label: "Interviews", icon: CalendarDays },
   { href: "/job-seeker/profile", label: "My profile", icon: UserRound },
+  { href: "/job-seeker/settings", label: "Account settings", icon: Settings },
 ];
 
 export default function WorkspaceShell({ role, children }: { role: WorkspaceRole; children: ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
-  const rehydrated = useAppSelector(state => state.auth._persist?.rehydrated ?? false);
+  const { user, isAuthenticated, sessionChecked } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => { setMobileOpen(false); }, [pathname]);
   useEffect(() => {
-    if (!rehydrated) return;
+    if (!sessionChecked) return;
     if (user && user.role !== role) router.replace(user.role === "recruiter" ? "/recruiter" : user.role === "seeker" ? "/job-seeker" : "/");
     else if (!isAuthenticated) router.replace("/auth");
-  }, [isAuthenticated, rehydrated, role, router, user]);
+  }, [isAuthenticated, sessionChecked, role, router, user]);
   useEffect(() => {
     if (!mobileOpen) return;
     const close = (event: KeyboardEvent) => { if (event.key === "Escape") setMobileOpen(false); };
@@ -53,7 +53,7 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
     return () => document.removeEventListener("keydown", close);
   }, [mobileOpen]);
 
-  if (!rehydrated || !user || user.role !== role) return <WorkspaceLoading />;
+  if (!sessionChecked || !isAuthenticated || !user || user.role !== role) return <WorkspaceLoading />;
   const nav = role === "recruiter" ? recruiterLinks : seekerLinks;
   return (
     <div className="jobhub-workspace">

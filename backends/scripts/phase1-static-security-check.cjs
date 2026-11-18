@@ -7,7 +7,7 @@ const read = (p) => fs.readFileSync(path.join(root, p), "utf8");
 const cases = [
   ["public signup role restricted", "domains/Auth/auth.validation.ts", /z\.enum\(\["seeker", "recruiter"\]\)/],
   ["auth cookies are HTTP only", "domains/Auth/auth.controller.ts", /httpOnly:\s*true/],
-  ["refresh session rotated atomically", "domains/Auth/auth.token.services.ts", /refreshHash:\s*hash\(oldRefresh\)/],
+  ["refresh session rotated atomically", "domains/Auth/auth.token.services.ts", /refreshHash:\s*oldHash/],
   ["refresh sessions are revocable", "domains/Auth/auth.token.services.ts", /revokedAt:\s*\{\s*\$exists:\s*false/],
   ["password excluded from user selection", "domains/User/user.model.ts", /select:\s*false/],
   ["user updates allowlisted", "domains/User/user.services.ts", /updateProfileValidation\.parse/],
@@ -20,7 +20,7 @@ const cases = [
   ["messages scoped to sender", "domains/Messages/message.services.ts", /senderId:\s*actorId/],
   ["message cache checked after member auth", "config/socketio.ts", /ensureParticipant\(id, userId\)/],
   ["stripe webhook signature checked", "domains/Stripe/stripe.controller.ts", /webhooks\.constructEvent/],
-  ["stripe price determined on server", "domains/Stripe/stripe.controller.ts", /APPLICATION_BOOST_PRICE_CENTS/],
+  ["stripe price determined on server", "domains/Stripe/payment.policy.ts", /process\.env\.APPLICATION_BOOST_PRICE_CENTS/],
   ["stripe webhook mounted before JSON", "server.ts", /express\.raw\([\s\S]*?app\.use\(express\.json/],
   ["CORS is explicit allowlist", "config/cors.ts", /allowedOrigins\.has\(origin\)/],
   ["login protected by rate limiter", "domains/Auth/auth.route.ts", /authRate/],

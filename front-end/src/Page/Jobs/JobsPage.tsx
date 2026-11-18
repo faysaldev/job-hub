@@ -4,6 +4,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Header from "@/src/components/common/Header";
+import Link from "next/link";
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 import { TableLoading } from "@/src/components/feedback/LoadingStates";
 import { ErrorState } from "@/src/components/feedback/StateViews";
 import Footer from "@/src/components/common/Footer";
@@ -55,6 +57,7 @@ interface ApiJob {
   isActive: boolean;
   isSponsored?: boolean;
   sponsoredUntil?: string;
+  bannerUrl?: string;
   createdAt: string;
   company: {
     _id: string;
@@ -79,17 +82,6 @@ function timeAgo(dateString: string): string {
   return `${Math.floor(diff / 31536000)}y ago`;
 }
 
-function formatSalary(min: number, max: number, period: string): string {
-  const fmt = (n: number) =>
-    n >= 1000 ? `$${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k` : `$${n}`;
-  const periodLabel: Record<string, string> = {
-    monthly: "/mo",
-    yearly: "/yr",
-    hourly: "/hr",
-  };
-  return `${fmt(min)} – ${fmt(max)}${periodLabel[period] ?? ""}`;
-}
-
 const TYPE_COLORS: Record<string, string> = {
   "full-time": "bg-[#163B5C]/10 text-[#163B5C] border-[#163B5C]/10",
   "part-time": "bg-[#516C83]/10 text-[#163B5C] border-[#516C83]/10",
@@ -108,11 +100,6 @@ const LOCATION_COLORS: Record<string, string> = {
 
 const JobCard = memo(({ job }: { job: ApiJob }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const router = useRouter();
-
-  const handleClick = useCallback(() => {
-    router.push(`/job/${job._id}`);
-  }, [router, job._id]);
 
   const deadlineDate = useMemo(
     () =>
@@ -132,13 +119,8 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
   }, [job.applicationDeadline]);
 
   return (
-    <div
-      onClick={handleClick}
-      onKeyDown={(event) => { if (event.key === "Enter" && event.target === event.currentTarget) handleClick(); }}
-      role="link"
-      tabIndex={0}
-      aria-label={`View ${job.title} at ${job.company?.companyName || "company"}`}
-      className="job-card-item group relative cursor-pointer overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10"
+    <article
+      className="job-card-item group relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/90 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10"
     >
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83] scale-x-0 transition-transform duration-300 group-hover:scale-x-100" />
 
@@ -162,7 +144,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="truncate text-lg font-black tracking-tight text-[#163B5C] transition-colors group-hover:text-[#516C83]">
-                  {job.title}
+                  <Link href={`/job/${job._id}`} className="rounded outline-offset-4 focus-visible:outline-2 focus-visible:outline-[#163B5C]">{job.title}</Link>
                 </h3>
                 {job.isSponsored && <span className="mt-1 inline-flex rounded border border-[#bed2e4] bg-blue-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#214b6b]">Sponsored</span>}
                 <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-[#516C83]">
@@ -171,9 +153,9 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
                 </p>
               </div>
 
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E1E8EF]/50 text-[#516C83] transition group-hover:bg-[#163B5C] group-hover:text-white">
+              <Link href={`/job/${job._id}`} aria-label={`View details for ${job.title}`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E1E8EF]/50 text-[#516C83] transition hover:bg-[#163B5C] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#163B5C]">
                 <ChevronRight className="h-5 w-5" />
-              </div>
+              </Link>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 mt-3">
@@ -191,7 +173,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 text-xs font-bold text-[#163B5C]">
                 <DollarSign className="h-3 w-3" />
-                {formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod)}
+                {formatJobSalary(job.salaryMin, job.salaryMax, job.salaryPeriod, true)}
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-[#E1E8EF]/55 px-3 py-1 text-xs font-semibold text-[#516C83]">
                 <Users className="h-3 w-3" />
@@ -243,6 +225,8 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
           </div>
         </div>
 
+        {job.bannerUrl && <img src={job.bannerUrl} alt={`Banner for ${job.title}`} loading="lazy" className="mt-4 h-36 w-full rounded-xl object-cover" />}
+
         {/* Footer row */}
         <div className="mt-5 flex flex-col gap-2 border-t border-[#E1E8EF]/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <span className="flex items-center gap-1 text-xs font-semibold text-[#516C83]/70">
@@ -258,7 +242,7 @@ const JobCard = memo(({ job }: { job: ApiJob }) => {
           </span>
         </div>
       </div>
-    </div>
+    </article>
   );
 });
 JobCard.displayName = "JobCard";
@@ -373,8 +357,8 @@ const Jobs = () => {
     jobCategories.map((cat) => ({
       id: cat.id,
       label: cat.name,
-      checked: false,
-      count: cat.count,
+      checked: cat.id === searchParams.get("category"),
+      count: 0,
     })),
   );
   const [subcategoryFilters, setSubcategoryFilters] = useState<
@@ -417,7 +401,7 @@ const Jobs = () => {
     [experienceLevels],
   );
   const activeSalaryRanges = useMemo(
-    () => salaryRanges.filter((s) => s.checked).map((s) => `${s.min}-${s.max}`).join(","),
+    () => salaryRanges.filter((s) => s.checked).map((s) => s.id).join(","),
     [salaryRanges],
   );
   const activeCompanySizes = useMemo(
@@ -432,7 +416,9 @@ const Jobs = () => {
   // ── API Query (server-side search + pagination) ───────────────────────────
   const { data: searchJobsData, isFetching, isError, refetch } = useSearchJobsQuery({
     search: searchTerm,
-    location: locationTerm || undefined,
+    location: /^remote$/i.test(locationTerm.trim()) ? undefined : locationTerm || undefined,
+    locationType: /^remote$/i.test(locationTerm.trim()) ? "remote" : undefined,
+    applicantCounts: applicantCountFilters.filter(option => option.checked).map(option => option.id).join(",") || undefined,
     category: selectedCategory || undefined,
     subcategory: selectedSubcategory || undefined,
     type: activeJobTypes || undefined,
@@ -458,8 +444,15 @@ const Jobs = () => {
     [searchJobsData],
   );
 
-  // ── Client-side filters (applied on top of API results) ───────────────────
-  // delegated entirely to backend
+  const categoryCounts = searchJobsData?.data?.facets?.categories ?? [];
+  const subcategoryCounts = searchJobsData?.data?.facets?.subcategories ?? [];
+  const categoriesForDisplay = categoryFilters.map(category => ({ ...category,
+    count: categoryCounts.find(value => value.category === category.id)?.count ?? 0,
+    checked: category.id === selectedCategory }));
+  const subcategoriesForDisplay = subcategoryFilters.map(sub => ({ ...sub,
+    count: subcategoryCounts.find(value => value.subcategory === sub.id)?.count ?? 0,
+    checked: sub.id === selectedSubcategory }));
+  // All active filters are evaluated server-side before pagination.
   const filteredJobs = apiJobs;
 
   // ── URL helpers ───────────────────────────────────────────────────────────
@@ -486,7 +479,7 @@ const Jobs = () => {
             id: sub.id,
             label: sub.name,
             checked: sub.id === selectedSubcategory,
-            count: sub.count,
+            count: 0,
           })),
         );
       }
@@ -510,10 +503,10 @@ const Jobs = () => {
   // ── Active filter count ───────────────────────────────────────────────────
   const activeFilterCount = useMemo(
     () =>
-      categoryFilters.filter((c) => c.checked).length +
-      subcategoryFilters.filter((s) => s.checked).length +
-      jobTypes.filter((t) => !t.checked).length +
-      experienceLevels.filter((e) => !e.checked).length +
+      (selectedCategory ? 1 : 0) +
+      (selectedSubcategory ? 1 : 0) +
+      jobTypes.filter((t) => t.checked).length +
+      experienceLevels.filter((e) => e.checked).length +
       salaryRanges.filter((s) => s.checked).length +
       companySizeFilters.filter((c) => c.checked).length +
       postedDateFilters.filter((d) => d.checked).length +
@@ -527,6 +520,8 @@ const Jobs = () => {
       companySizeFilters,
       postedDateFilters,
       applicantCountFilters,
+      selectedCategory,
+      selectedSubcategory,
     ],
   );
 
@@ -582,7 +577,7 @@ const Jobs = () => {
     (id: string) => {
       const isChecked = categoryFilters.find((c) => c.id === id)?.checked;
       setCategoryFilters((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, checked: !c.checked } : c)),
+        prev.map((c) => ({ ...c, checked: !isChecked && c.id === id })),
       );
       if (!isChecked) {
         setSelectedCategory(id);
@@ -602,7 +597,7 @@ const Jobs = () => {
     (id: string) => {
       const isChecked = subcategoryFilters.find((s) => s.id === id)?.checked;
       setSubcategoryFilters((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, checked: !s.checked } : s)),
+        prev.map((s) => ({ ...s, checked: !isChecked && s.id === id })),
       );
       if (!isChecked) {
         setSelectedSubcategory(id);
@@ -709,8 +704,8 @@ const Jobs = () => {
                     onJobTypeChange={handleJobTypeChange}
                     onExperienceChange={handleExperienceChange}
                     onSalaryChange={handleSalaryChange}
-                    categories={categoryFilters}
-                    subcategories={subcategoryFilters}
+                    categories={categoriesForDisplay}
+                    subcategories={subcategoriesForDisplay}
                     companySizeFilters={companySizeFilters}
                     postedDateFilters={postedDateFilters}
                     applicantCountFilters={applicantCountFilters}

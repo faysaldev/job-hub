@@ -29,9 +29,11 @@ import {
 import { cn } from "@/src/lib/utils";
 import RecruiterLayout from "@/src/components/Recruiter/RecruiterLayout";
 import { useToast } from "@/src/hooks/use-toast";
+import { useGetTeamQuery } from "@/src/redux/features/hiring/hiringApi";
 import {
   useGetMyInterviewsQuery,
   useRescheduleInterviewMutation,
+  useUpdateInterviewStatusMutation,
 } from "@/src/redux/features/interviews/interviewsApi";
 
 export default function InterviewSchedulePage() {
@@ -244,6 +246,11 @@ function RescheduleDialog({
   const [date, setDate] = useState(initialDate);
   const [startTime, setStartTime] = useState(interview?.start_time || "");
   const [endTime, setEndTime] = useState(interview?.end_time || "");
+  const [timeZone, setTimeZone] = useState(interview?.timeZone || "UTC");
+  const [meetingLink, setMeetingLink] = useState(interview?.meet_link || "");
+  const [assignedInterviewer, setAssignedInterviewer] = useState(interview?.interviewer?._id || interview?.interviewer || "");
+  const { data: teamResponse } = useGetTeamQuery();
+  const workspace = teamResponse?.data.workspace;
 
   // Reset state when interview changes or dialog opens
   useEffect(() => {
@@ -251,16 +258,23 @@ function RescheduleDialog({
       setDate(new Date(interview.date).toISOString().split("T")[0]);
       setStartTime(interview.start_time);
       setEndTime(interview.end_time);
+      setTimeZone(interview.timeZone || "UTC");
+      setMeetingLink(interview.meet_link || "");
+      setAssignedInterviewer(interview.interviewer?._id || interview.interviewer || "");
     }
   }, [interview]);
 
   const handleReschedule = async () => {
+    if (endTime <= startTime) return toast({ title: "Invalid time range", description: "End must be after start", variant: "destructive" });
     try {
       await rescheduleInterview({
         interviewId: interview._id,
         date,
         start_time: startTime,
         end_time: endTime,
+        timeZone,
+        meet_link: meetingLink,
+        ...(assignedInterviewer ? { interviewer: assignedInterviewer } : {}),
       }).unwrap();
 
       toast({
@@ -268,10 +282,10 @@ function RescheduleDialog({
         description: "The interview time has been updated successfully.",
       });
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Update Failed",
-        description: "Failed to reschedule the interview. Please try again.",
+        description: error?.data?.message || "Failed to reschedule the interview. Please try again.",
         variant: "destructive",
       });
     }
@@ -337,6 +351,22 @@ function RescheduleDialog({
               />
             </div>
           </div>
+          <div className="space-y-2"><Label htmlFor="interview-timezone">IANA time zone</Label>
+            <Input id="interview-timezone" required value={timeZone} maxLength={64} onChange={e => setTimeZone(e.target.value)}
+              placeholder="e.g. Asia/Dhaka" list="reschedule-timezones" />
+            <datalist id="reschedule-timezones"><option value="UTC"/><option value="Asia/Dhaka"/><option value="America/New_York"/><option value="Europe/London"/></datalist>
+          </div>
+          <div className="space-y-2"><Label htmlFor="reschedule-meeting-link">Meeting URL (HTTPS, optional)</Label>
+            <Input id="reschedule-meeting-link" type="url" value={meetingLink} onChange={e => setMeetingLink(e.target.value)} placeholder="https://..." />
+          </div>
+          {workspace && <div className="space-y-2"><Label htmlFor="reschedule-interviewer">Assigned interviewer</Label>
+            <select id="reschedule-interviewer" value={assignedInterviewer} onChange={e => setAssignedInterviewer(e.target.value)}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm">
+              <option value={workspace.company.userId}>Company owner</option>
+              {workspace.members.filter(m => m.status === "active" && Boolean(m.userId)).map(m =>
+                <option key={m._id} value={m.userId}>{m.email} ({m.role})</option>)}
+            </select>
+          </div>}
         </div>
 
         <DialogFooter className="mt-8 gap-3 sm:gap-0">
@@ -374,10 +404,17 @@ function RecruiterInterviewCard({
   interview: any;
   onReschedule: () => void;
 }) {
+  const { toast } = useToast();
+  const [changeStatus, { isLoading: updating }] = useUpdateInterviewStatusMutation();
+  const canLaunch = typeof interview.meet_link === "string" && /^https:\/\//i.test(interview.meet_link);
   const handleLaunchSession = () => {
-    if (interview.meet_link) {
-      window.open(interview.meet_link, "_blank");
-    }
+    if (canLaunch) window.open(interview.meet_link, "_blank", "noopener,noreferrer");
+  };
+  const setStatus = async (status: "completed" | "cancelled") => {
+    if (status === "cancelled" && !window.confirm("Cancel this interview and notify the candidate?")) return;
+    try { await changeStatus({ interviewId: interview._id, status }).unwrap();
+      toast({ title: status === "completed" ? "Interview completed" : "Interview cancelled" });
+    } catch (error: any) { toast({ title: "Unable to update interview", description: error?.data?.message || "Please retry", variant: "destructive" }); }
   };
 
   return (
@@ -415,13 +452,13 @@ function RecruiterInterviewCard({
             <div className="flex items-center gap-2 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] px-4 py-2">
               <CalendarIcon className="h-4 w-4 text-[#163B5C]" />
               <span className="text-sm font-bold text-[#163B5C]">
-                {new Date(interview.date).toLocaleDateString()}
+                {new Date(interview.date).toLocaleDateString(undefined, { timeZone: "UTC" })}
               </span>
             </div>
             <div className="flex items-center gap-2 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] px-4 py-2">
               <Clock className="h-4 w-4 text-[#163B5C]" />
               <span className="text-sm font-bold text-[#163B5C]">
-                {interview.start_time}
+                {interview.start_time} ({interview.timeZone || "UTC"})
               </span>
             </div>
             <Badge
@@ -434,13 +471,7 @@ function RecruiterInterviewCard({
             >
               {interview.status}
             </Badge>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="rounded-full hover:bg-[#163B5C]/5"
-            >
-              <MoreVertical className="h-5 w-5 text-[#516C83]" />
-            </Button>
+
           </div>
         </div>
 
@@ -465,7 +496,13 @@ function RecruiterInterviewCard({
                 Reschedule
               </Button>
             )}
-            {interview.meet_link && interview.status === "scheduled" && (
+            {interview.status === "scheduled" && <>
+              <Button type="button" disabled={updating} variant="outline" onClick={() => void setStatus("completed")}
+                className="h-10 rounded-xl border-emerald-300 text-xs font-semibold text-emerald-700">Complete</Button>
+              <Button type="button" disabled={updating} variant="outline" onClick={() => void setStatus("cancelled")}
+                className="h-10 rounded-xl border-red-200 text-xs font-semibold text-red-700">Cancel interview</Button>
+            </>}
+            {canLaunch && interview.status === "scheduled" && (
               <Button
                 onClick={handleLaunchSession}
                 className="h-10 rounded-2xl bg-[#163B5C] px-6 text-xs font-black text-white shadow-md transition-all hover:bg-[#516C83] active:scale-95"

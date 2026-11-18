@@ -26,6 +26,7 @@ import { cn } from "@/src/lib/utils";
 import gsap from "gsap";
 import { useSocket } from "@/src/hooks/useSocket";
 import Link from "next/link";
+import { safeNotificationHref } from "@/src/lib/notificationLinks";
 import { toast } from "sonner";
 
 interface NotifSender {
@@ -348,7 +349,7 @@ const NotificationsPage = () => {
                           )}
                         >
                           {n.link ? (
-                            <Link href={n.link} className="hover:underline">
+                            <Link href={safeNotificationHref(n.link)} className="hover:underline">
                               {n.title}
                             </Link>
                           ) : (

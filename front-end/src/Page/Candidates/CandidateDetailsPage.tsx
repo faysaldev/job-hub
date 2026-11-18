@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
@@ -23,8 +23,13 @@ import {
   Mail,
   CalendarDays,
   FileText,
+  Bookmark,
+  MessageCircle,
 } from "lucide-react";
-import { useGetSeekerByIdQuery } from "@/src/redux/features/seeker/seekerApi";
+import { useGetSeekerByIdQuery, useGetCandidateEngagementQuery, useUpdateCandidateEngagementMutation } from "@/src/redux/features/seeker/seekerApi";
+import { useCreateConversationMutation } from "@/src/redux/features/conversations/conversationsApi";
+import { useAuth } from "@/src/hooks/useAuth";
+import { toast } from "sonner";
 import { formatDate, formatEduYear } from "@/src/utils/helper";
 
 const SOCIAL_CONFIG = [
@@ -81,13 +86,32 @@ function SectionHeading({
 
 export default function CandidateDetailsPage() {
   const params = useParams();
+  const router = useRouter();
+  const candidateId = params?.id as string;
+  const { isRecruiter, sessionChecked } = useAuth();
+  const { data: engagement, isError: engagementError } = useGetCandidateEngagementQuery(candidateId,
+    { skip: !candidateId || !sessionChecked || !isRecruiter });
+  const [updateEngagement, { isLoading: managing }] = useUpdateCandidateEngagementMutation();
+  const [createConversation, { isLoading: startingConversation }] = useCreateConversationMutation();
+  const changeEngagement = async (action: "save" | "shortlist" | "remove") => {
+    try {
+      await updateEngagement({ id: candidateId, action }).unwrap();
+      toast.success(action === "remove" ? "Removed from your talent list" : action === "save" ? "Candidate saved" : "Added to company talent shortlist");
+    } catch (error: any) { toast.error(error?.data?.message || "Could not update candidate"); }
+  };
+  const startConversation = async () => {
+    if (!engagement?.canMessage || !engagement.userId) return;
+    try {
+      await createConversation({ participants: engagement.userId }).unwrap();
+      router.push("/recruiter/messages");
+    } catch (error: any) { toast.error(error?.data?.message || "Messaging unavailable for this candidate"); }
+  };
   const {
     data: response,
     isLoading,
     error,
   } = useGetSeekerByIdQuery(params?.id as string);
   const seeker = response?.data;
-  console.log("seeker", seeker);
   if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col jobhub-page-bg">
@@ -166,6 +190,26 @@ export default function CandidateDetailsPage() {
                 experience, availability, and project history in one focused
                 recruiter view.
               </p>
+              {isRecruiter && <div className="mt-5 flex flex-wrap items-center gap-2" aria-label="Candidate actions">
+                {engagementError ? <p className="rounded-lg bg-white/10 p-3 text-sm text-white/80">Join or create an authorized company workspace to manage candidates.</p> : <>
+                  <button type="button" disabled={managing || !engagement} onClick={() => void changeEngagement(engagement?.status === "none" ? "save" : "remove")}
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white px-4 py-2 text-sm font-semibold text-[#163B5C] disabled:opacity-60">
+                    <Bookmark className="h-4 w-4" /> {engagement?.status === "none" ? "Save candidate" : "Remove from talent list"}
+                  </button>
+                  <button type="button" disabled={managing || !engagement || engagement.status === "shortlisted"}
+                    onClick={() => void changeEngagement("shortlist")}
+                    className="rounded-xl border border-white/30 bg-white/15 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                    {engagement?.status === "shortlisted" ? "On talent shortlist" : "Shortlist talent"}
+                  </button>
+                  {engagement?.canMessage && <button type="button" disabled={startingConversation} onClick={() => void startConversation()}
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/15 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                    <MessageCircle className="h-4 w-4" /> Message
+                  </button>}
+                  {engagement && !engagement.canMessage && <span className="text-xs text-white/75">Direct messaging requires an application and contact permission.</span>}
+                  {engagement?.application && <Link href="/recruiter/applicants" className="rounded-xl border border-white/30 px-4 py-2 text-sm font-semibold text-white">Manage job application</Link>}
+                </>}
+                <p className="w-full text-xs text-white/70">Talent shortlisting is a company bookmark; job application stages are managed in Applicant Tracking.</p>
+              </div>}
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:w-[520px]">

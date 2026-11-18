@@ -1,19 +1,14 @@
 import mongoose from "mongoose";
+import { companyForActor } from "../Company/company.access";
+import { getUsage, currentEntitlement } from "../Billing/billing.entitlements";
+import { jobOwnerFilter, publicJobFilter } from "../Jobs/job.lifecycle";
+import Interview from "../Interviews/interviews.model";
 import Job from "../Jobs/job.model";
 import Notification from "../Notifications/notifications.model";
 import SavedJob from "../SavedJobs/savedjob.model";
 import Application from "../Applications/application.model";
 import Seeker from "../Seeker/seeker.model";
 import Contact, { IContact } from "./contact.model";
-
-// Simple in-memory cache
-interface CacheEntry {
-  data: any;
-  timestamp: number;
-}
-
-const cache: Record<string, CacheEntry> = {};
-const CACHE_DURATION = 2 * 60 * 1000; // two minutes
 
 const getHeaderStats = async (userId: string) => {
   const [unreadNotificationsCount, savedJobsCount] = await Promise.all([
@@ -31,122 +26,55 @@ const getHeaderStats = async (userId: string) => {
   };
 };
 
-const getCategoryStats = async () => {
-  const cacheKey = "category_stats";
-  const now = Date.now();
+/** Use the same public eligibility policy as /job and careers. Never cache
+ * aggregate counts independently of the job mutation version. */
+const getCategoryStats = async () => Job.aggregate([
+  { $match: publicJobFilter() },
+  { $match: { category: { $type: "string", $ne: "" } } },
+  { $group: { _id: "$category", count: { $sum: 1 } } },
+  { $project: { _id: 0, category: "$_id", count: 1 } },
+  { $sort: { count: -1 } },
+]);
+const getSubcategoryStats = async () => Job.aggregate([
+  { $match: publicJobFilter() },
+  { $match: { subcategory: { $type: "string", $ne: "" } } },
+  { $group: { _id: "$subcategory", count: { $sum: 1 } } },
+  { $project: { _id: 0, subcategory: "$_id", count: 1 } },
+  { $sort: { count: -1 } },
+]);
 
-  if (cache[cacheKey] && now - cache[cacheKey].timestamp < CACHE_DURATION) {
-    return cache[cacheKey].data;
-  }
-
-  const stats = await Job.aggregate([
-    { $match: { isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } } },
-    {
-      $group: {
-        _id: "$category",
-        count: { $sum: 1 },
-      },
-    },
-    {
-      $project: {
-        category: "$_id",
-        count: 1,
-        _id: 0,
-      },
-    },
-    { $sort: { count: -1 } },
+/** Homepage: same first six jobs and sponsored ordering as /job. */
+const getDiscoveryJobs = async () => {
+  const now = new Date();
+  return Job.aggregate([
+    { $match: publicJobFilter(now) },
+    { $addFields: { isSponsored: { $gt: ["$sponsoredUntil", now] } } },
+    { $sort: { isSponsored: -1, createdAt: -1, _id: -1 } }, { $limit: 6 },
+    { $project: { author: 1, title: 1, type: 1, location: 1, locationType: 1,
+      salaryMin: 1, salaryMax: 1, salaryPeriod: 1, applicationDeadline: 1, createdAt: 1, isSponsored: 1, bannerUrl: 1 } },
+    { $lookup: { from: "companies", localField: "author", foreignField: "userId", as: "company",
+      pipeline: [{ $project: { companyName: 1, companyLogo: 1 } }] } },
+    { $unwind: { path: "$company", preserveNullAndEmptyArrays: true } },
   ]);
-
-  cache[cacheKey] = { data: stats, timestamp: now };
-  return stats;
 };
-
-const getSubcategoryStats = async () => {
-  const cacheKey = "subcategory_stats";
-  const now = Date.now();
-
-  if (cache[cacheKey] && now - cache[cacheKey].timestamp < CACHE_DURATION) {
-    return cache[cacheKey].data;
-  }
-
-  const stats = await Job.aggregate([
-    { $match: { isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } } },
-    {
-      $group: {
-        _id: "$subcategory",
-        count: { $sum: 1 },
-      },
-    },
-    {
-      $project: {
-        subcategory: "$_id",
-        count: 1,
-        _id: 0,
-      },
-    },
-    { $sort: { count: -1 } },
-  ]);
-
-  cache[cacheKey] = { data: stats, timestamp: now };
-  return stats;
-};
-
-/** Homepage cards use one bounded indexed read; do not aggregate all applications per visit. */
-const getDiscoveryJobs = async () => Job.find({
-  status: { $in: ["published", null] },
-  isActive: true,
-  isDeleted: { $ne: true },
-  applicationDeadline: { $gte: new Date() },
-}).sort({ createdAt: -1 }).limit(6)
-  .select("author title type location locationType salaryMin salaryMax salaryPeriod applicationDeadline createdAt")
-  .populate({ path: "company", select: "companyName companyLogo" })
-  .lean();
 
 const getTopJobs = async () => {
-  // Find jobs with most applications
   const topJobIds = await Application.aggregate([
     { $match: { isWithdrawn: { $ne: true } } },
-    {
-      $group: {
-        _id: "$job_id",
-        count: { $sum: 1 },
-      },
-    },
-    { $sort: { count: -1 } },
-    { $limit: 10 },
+    { $group: { _id: "$job_id", count: { $sum: 1 } } },
+    { $sort: { count: -1 } }, { $limit: 10 },
   ]);
-
-  let jobs;
-
-  if (topJobIds.length > 0) {
-    const ids = topJobIds.map((item) => item._id);
-    jobs = await Job.find({ _id: { $in: ids }, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
-      .populate({
-        path: "company",
-        select: "companyLogo companyName",
-      })
-      .select(
-        "title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline",
-      )
-      .lean();
-  }
-
-  // If no applications or fewer than 6, fallback to latest jobs
-  if (!jobs || jobs.length < 6) {
-    jobs = await Job.find({ isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true }, applicationDeadline: { $gte: new Date() } })
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .populate({
-        path: "company",
-        select: "companyLogo companyName",
-      })
-      .select(
-        "title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline",
-      )
-      .lean();
-  }
-
-  return jobs;
+  const ids = topJobIds.map(item => item._id);
+  const eligible = publicJobFilter();
+  const jobs = ids.length ? await Job.find({ _id: { $in: ids }, ...eligible })
+    .populate("company", "companyLogo companyName")
+    .select("title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline bannerUrl")
+    .lean() : [];
+  if (jobs.length >= 6) return jobs;
+  return Job.find(eligible).sort({ createdAt: -1, _id: -1 }).limit(10)
+    .populate("company", "companyLogo companyName")
+    .select("title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline bannerUrl")
+    .lean();
 };
 
 const getSeekerDashboardStats = async (userId: string) => {
@@ -201,64 +129,39 @@ const submitContactForm = async (contactData: Partial<IContact>) => {
 };
 
 const getRecruiterDashboardStats = async (recruiterId: string) => {
+  const { company } = await companyForActor(recruiterId, "view");
+  const owner = jobOwnerFilter(company);
   const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-
-  const recruiterJobs = await Job.find({ author: recruiterId, isDeleted: { $ne: true } }).select("_id");
-  const jobIds = recruiterJobs.map((j) => j._id);
-
-  const [
-    activeJobsCount,
-    recentJobsCount,
-    previousJobsCount,
-    totalApplicants,
-    recentApplicantsCount,
-    previousApplicantsCount,
-    salaryStats,
-  ] = await Promise.all([
-    Job.countDocuments({ author: recruiterId, isActive: true, "moderation.status": { $ne: "blocked" }, isDeleted: { $ne: true },
-      applicationDeadline: { $gte: now } }),
-    Job.countDocuments({ author: recruiterId, isDeleted: { $ne: true }, createdAt: { $gte: thirtyDaysAgo } }),
-    Job.countDocuments({ author: recruiterId, isDeleted: { $ne: true },
-      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400_000);
+  const sixtyDaysAgo = new Date(now.getTime() - 60 * 86400_000);
+  const jobs = await Job.find({ ...owner, isDeleted: { $ne: true } }).select("_id").lean();
+  const jobIds = jobs.map(job => job._id);
+  const [usage, { entitlement }, recentJobs, previousJobs, totalApplicants, recentApplicants,
+    previousApplicants, interviews, salaryStats] = await Promise.all([
+    getUsage(company), currentEntitlement(String(company._id)),
+    Job.countDocuments({ ...owner, isDeleted: { $ne: true }, createdAt: { $gte: thirtyDaysAgo } }),
+    Job.countDocuments({ ...owner, isDeleted: { $ne: true }, createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
     Application.countDocuments({ job_id: { $in: jobIds }, isWithdrawn: { $ne: true } }),
-    Application.countDocuments({ job_id: { $in: jobIds }, isWithdrawn: { $ne: true },
-      createdAt: { $gte: thirtyDaysAgo } }),
-    Application.countDocuments({ job_id: { $in: jobIds }, isWithdrawn: { $ne: true },
-      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
+    Application.countDocuments({ job_id: { $in: jobIds }, isWithdrawn: { $ne: true }, createdAt: { $gte: thirtyDaysAgo } }),
+    Application.countDocuments({ job_id: { $in: jobIds }, isWithdrawn: { $ne: true }, createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
+    Interview.countDocuments({ job_id: { $in: jobIds }, status: "scheduled", date: { $gte: now } }),
     Job.aggregate([
-      { $match: { author: new mongoose.Types.ObjectId(recruiterId), isDeleted: { $ne: true },
-        isActive: true, applicationDeadline: { $gte: now } } },
-      {
-        $group: {
-          _id: null,
-          avgMin: { $avg: "$salaryMin" },
-          avgMax: { $avg: "$salaryMax" },
-        },
-      },
+      { $match: { ...owner, ...publicJobFilter(now), salaryMin: { $gte: 0 }, salaryMax: { $gte: 0 } } },
+      { $group: { _id: null, avgMin: { $avg: "$salaryMin" }, avgMax: { $avg: "$salaryMax" } } },
     ]),
   ]);
-
-  const calculatePercentage = (current: number, previous: number) => {
-    if (previous === 0) return current > 0 ? 100 : 0;
-    return Math.round(((current - previous) / previous) * 100);
-  };
-
-  const avgSalary = salaryStats[0]
-    ? Math.round((salaryStats[0].avgMin + salaryStats[0].avgMax) / 2)
-    : 0;
-
+  const percentage = (current: number, previous: number) => previous === 0 ?
+    (current > 0 ? 100 : 0) : Math.round((current - previous) / previous * 100);
+  const avgSalary = salaryStats[0] && Number.isFinite(salaryStats[0].avgMin) && Number.isFinite(salaryStats[0].avgMax) ?
+    Math.round((salaryStats[0].avgMin + salaryStats[0].avgMax) / 2) : 0;
   return {
-    activeJobs: {
-      total: activeJobsCount,
-      percentage: calculatePercentage(recentJobsCount, previousJobsCount),
-    },
-    applicants: {
-      total: totalApplicants,
-      percentage: calculatePercentage(recentApplicantsCount, previousApplicantsCount),
-    },
-    avgSalary,
+    activeJobs: { total: usage.activeJobs,
+      percentage: entitlement.limits.activeJobs ? Math.round(100 * usage.activeJobs / entitlement.limits.activeJobs) : 0 },
+    openJobs: usage.openJobs, scheduledJobs: usage.scheduledJobs, publishedJobs: usage.publishedJobs,
+    quota: { used: usage.activeJobs, limit: entitlement.limits.activeJobs, overLimit: Math.max(0, usage.activeJobs - entitlement.limits.activeJobs) },
+    jobsCreated: { recent: recentJobs, previous: previousJobs },
+    applicants: { total: totalApplicants, percentage: percentage(recentApplicants, previousApplicants) },
+    interviews: { total: interviews }, avgSalary,
   };
 };
 

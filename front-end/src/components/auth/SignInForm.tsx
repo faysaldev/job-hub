@@ -7,13 +7,15 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";
 interface SignInFormProps {
   loading: boolean;
   handleSignIn: (e: React.FormEvent<HTMLFormElement>) => void;
+  error?: string;
 }
 
-const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
+const SignInForm = ({ loading, handleSignIn, error }: SignInFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <form onSubmit={handleSignIn} className="space-y-5">
+      {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
       <div className="space-y-2">
         <Label htmlFor="email" className="text-[#163B5C] font-semibold text-sm tracking-wide">
           Email Address

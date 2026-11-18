@@ -17,7 +17,6 @@ import {
   Video,
   MapPin,
   Trash2,
-  MoreVertical,
   MessageSquare,
   X,
   ChevronDown,
@@ -28,8 +27,10 @@ import {
   Check,
   Loader2,
   Search,
+  MoreVertical,
 } from "lucide-react";
 import { useDeleteConversationMutation } from "@/src/redux/features/conversations/conversationsApi";
+import { useGetRecruiterApplicationsQuery } from "@/src/redux/features/applications/applicationsApi";
 import {
   useScheduleInterviewMutation,
   useHireCandidateMutation,
@@ -100,11 +101,13 @@ const InterviewsPage = () => {
   const startTimeRef = useRef<HTMLInputElement>(null);
   const endTimeRef = useRef<HTMLInputElement>(null);
   const meetLinkRef = useRef<HTMLInputElement>(null);
+  const timeZoneRef = useRef<HTMLInputElement>(null);
 
   const [deleteConversation] = useDeleteConversationMutation();
   const [scheduleInterview, { isLoading: isScheduling }] =
     useScheduleInterviewMutation();
   const [hireCandidate, { isLoading: isHiring }] = useHireCandidateMutation();
+  const { data: recruiterApplications = [] } = useGetRecruiterApplicationsQuery({});
 
   const [conversations, setConversations] = useState<ConvItem[]>([]);
   const [searchInput, setSearchInput] = useState("");
@@ -377,20 +380,30 @@ const InterviewsPage = () => {
     const end_time = endTimeRef.current?.value;
     const type = typeRef.current?.value as any;
     const meet_link = meetLinkRef.current?.value;
+    const timeZone = timeZoneRef.current?.value || "UTC";
+    const matchingApplication = recruiterApplications.find((app: any) =>
+      String(app.job_id?._id || app.job_id) === String(selectedCandidate.rawConversation.job_id) &&
+      String(app.applicant?._id || app.applicant) === String(selectedCandidate.id));
 
     if (!date || !start_time || !end_time) {
       toast.error("Please fill in date and time");
       return;
     }
 
+    if (!matchingApplication) {
+      toast.error("This conversation has no accessible job application. Open Applicant Tracking to schedule.");
+      return;
+    }
+    if (end_time <= start_time) return toast.error("End time must be after start time");
     try {
       await scheduleInterview({
-        application_id: selectedCandidate.rawConversation.job_id,
-        job_id: selectedCandidate.rawConversation.job_id,
+        application_id: matchingApplication._id,
+        job_id: String((matchingApplication.job_id as any)._id || matchingApplication.job_id),
         interviewee: selectedCandidate.id as any,
-        date: new Date(date).toISOString(),
+        date: `${date}T00:00:00.000Z`,
         start_time,
         end_time,
+        timeZone,
         type,
         meet_link,
       }).unwrap();
@@ -420,8 +433,8 @@ const InterviewsPage = () => {
       if (socket) {
         socket.emit("conversations:get", { search: searchInput });
       }
-    } catch (error) {
-      toast.error("Failed to schedule interview");
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to schedule interview");
     }
   };
 
@@ -780,14 +793,19 @@ const InterviewsPage = () => {
                       </div>
                     </div>
 
+                    <div className="space-y-2 mb-4">
+                      <label className="flex items-center gap-2 text-xs font-bold text-[#163B5C] ml-1 uppercase tracking-wider opacity-60">Time zone (IANA)</label>
+                      <Input ref={timeZoneRef} required defaultValue="UTC" list="conversation-timezones" placeholder="Asia/Dhaka" className="h-12 rounded-xl border border-[#163B5C]/10 bg-[#F6F8FB]" />
+                      <datalist id="conversation-timezones"><option value="UTC"/><option value="Asia/Dhaka"/><option value="America/New_York"/><option value="Europe/London"/></datalist>
+                    </div>
                     <div className="space-y-2 mb-8">
                       <label className="flex items-center gap-2 text-xs font-bold text-[#163B5C] ml-1 uppercase tracking-wider opacity-60">
                         <MapPin className="h-3 w-3" />
-                        Meeting Link or Location
+                        Meeting link (HTTPS only)
                       </label>
                       <Input
                         ref={meetLinkRef}
-                        placeholder="Paste Google Meet / Zoom link or office address..."
+                        placeholder="https://meet.google.com/..."
                         className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] focus:bg-white"
                       />
                     </div>

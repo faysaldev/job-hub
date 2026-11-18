@@ -7,7 +7,6 @@ import { AlertTriangle, BarChart3, Building2, CheckCircle2, CreditCard, FileCloc
   LayoutDashboard, LifeBuoy, Loader2, RefreshCw, Search, ShieldCheck, Users, X, BriefcaseBusiness, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/src/hooks/useAuth";
-import { useAppSelector } from "@/src/redux/hooks";
 import { useOperationsOverviewQuery, useOperationsRecordsQuery, useOperationsActionMutation,
   type RecordKind, type OpsRecord, type OpsAction } from "@/src/redux/features/operations/operationsApi";
 
@@ -98,9 +97,8 @@ function Trend({ rows }: { rows: { day: string; count: number }[] }) {
 }
 
 export default function AdminOperationsCenter() {
-  const { user, logout } = useAuth();
+  const { user, logout, sessionChecked: rehydrated } = useAuth();
   const router = useRouter();
-  const rehydrated = useAppSelector(s => s.auth._persist?.rehydrated ?? false);
   const permitted = rehydrated && user?.role === "admin";
   const [tab, setTab] = useState<RecordKind | "overview">("overview");
   const [page, setPage] = useState(1);

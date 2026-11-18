@@ -7,7 +7,10 @@ export interface IInterview extends Document {
   interviewee: Types.ObjectId;
   date: Date;
   start_time: string; // e.g., "10:00 AM"
-  end_time: string; // e.g., "11:00 AM"
+  end_time: string; // 24-hour local wall clock HH:mm
+  timeZone?: string;
+  startAt?: Date;
+  endAt?: Date;
   meet_link?: string;
   type: "video" | "audio" | "in-person";
   status: "scheduled" | "completed" | "cancelled";
@@ -52,6 +55,9 @@ const interviewSchema = new Schema<IInterview>(
       type: String,
       required: true,
     },
+    timeZone: { type: String, trim: true, default: "UTC", maxlength: 64 },
+    startAt: { type: Date },
+    endAt: { type: Date },
     meet_link: {
       type: String,
       trim: true,
@@ -80,6 +86,10 @@ const interviewSchema = new Schema<IInterview>(
 
 // Indexes for performance
 interviewSchema.index({ application_id: 1 });
+// Prevent two identical pending slots for an interviewer under concurrent requests.
+interviewSchema.index({ interviewer: 1, startAt: 1 }, { unique: true,
+  partialFilterExpression: { status: "scheduled", startAt: { $type: "date" } } });
+interviewSchema.index({ interviewer: 1, startAt: 1, endAt: 1 });
 interviewSchema.index({ interviewer: 1, date: 1 });
 interviewSchema.index({ interviewee: 1, date: 1 });
 

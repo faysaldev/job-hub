@@ -4,6 +4,8 @@ import Application from "../Applications/application.model";
 import User from "../User/user.model";
 import { AppError } from "../../lib/errors";
 import { assertId } from "../../lib/query";
+import { companyForActor } from "../Company/company.access";
+import Seeker from "../Seeker/seeker.model";
 
 const ensureParticipant = async (conversationId: string, userId: string) => {
   assertId(conversationId, "conversation ID");
@@ -37,10 +39,19 @@ const createConversationService = async (ids: string[], currentUserId: string,
         !users.some((user) => user.role === "seeker")) throw new AppError("Conversation is not permitted", 403);
     const recruiterId = users.find((user) => user.role === "recruiter")!._id;
     const seekerId = users.find((user) => user.role === "seeker")!._id;
-    const jobs = await Job.distinct("_id", { author: recruiterId });
-    if (!(await Application.exists({ applicant: seekerId, job_id: { $in: jobs } }))) {
-      throw new AppError("Conversation requires an existing application", 403);
+    // Team recruiters can contact candidates for applications belonging to their active workspace.
+    // Revoked team members must not open new threads by knowing a candidate's user ID.
+    const { company } = await companyForActor(String(recruiterId), "applications");
+    const jobs = await Job.distinct("_id", { $or: [
+      { companyId: company._id }, { author: company.userId }] });
+    if (!(await Application.exists({ applicant: seekerId, job_id: { $in: jobs }, isWithdrawn: { $ne: true } }))) {
+      throw new AppError("Conversation requires an active application with your company", 403);
     }
+    // Direct recruiter-initiated conversations respect a seeker's contact preference.
+    // Application-specific ATS transitions can still notify through their separate authorized flow.
+    if (String(recruiterId) === currentUserId &&
+        !(await Seeker.exists({ userId: seekerId, "privacy.allowContact": true })))
+      throw new AppError("Candidate does not allow direct contact", 403);
   }
   let conversation = await Conversation.findOne({ participants: { $all: ids, $size: 2 } });
   if (conversation) {

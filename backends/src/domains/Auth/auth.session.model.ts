@@ -4,6 +4,9 @@ export interface IAuthSession {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
   refreshHash: string;
+  previousRefreshHash?: string;
+  previousRefreshValidUntil?: Date;
+  refreshCiphertext?: string;
   expiresAt: Date;
   revokedAt?: Date;
   createdAt: Date;
@@ -12,6 +15,9 @@ export interface IAuthSession {
 const sessionSchema = new Schema<IAuthSession>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
   refreshHash: { type: String, required: true, select: false },
+  previousRefreshHash: { type: String, select: false },
+  previousRefreshValidUntil: { type: Date },
+  refreshCiphertext: { type: String, select: false },
   expiresAt: { type: Date, required: true },
   revokedAt: { type: Date },
 }, { timestamps: true });

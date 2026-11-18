@@ -9,9 +9,12 @@ catch {
     ts = require(path.join(execFileSync('npm', ['root', '-g'], { encoding:'utf8' }).trim(), 'typescript')); }
   catch { console.error('Install TypeScript first (pnpm install); unable to parse source'); process.exit(2); }
 }
-const projectRoot = path.resolve(__dirname, '..', '..');
+const repoRoot = path.resolve(__dirname, '..');
+const projectRoot = path.resolve(repoRoot, '..');
 const frontend = path.join(projectRoot, 'front-end');
-const backend = path.join(projectRoot, 'backends');
+// Monorepo workspace or standalone backend Git repository are both supported.
+const backend = fs.existsSync(path.join(projectRoot, 'backends', 'src'))
+  ? path.join(projectRoot, 'backends') : repoRoot;
 const files = [];
 function walk(dir) {
   for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -21,10 +24,16 @@ function walk(dir) {
     else if (/\.(tsx?|mts|cts)$/.test(item.name) && !item.name.endsWith('.d.ts')) files.push(target);
   }
 }
-walk(path.join(frontend, 'app'));
-walk(path.join(frontend, 'src'));
-walk(path.join(frontend, 'e2e'));
-files.push(path.join(frontend, 'playwright.config.ts'));
+// In separate frontend/backend repositories the sibling may not be checked out.
+for (const dir of ['app', 'src', 'e2e']) {
+  const candidate = path.join(frontend, dir);
+  if (fs.existsSync(candidate)) walk(candidate);
+}
+const playwrightConfig = path.join(frontend, 'playwright.config.ts');
+if (fs.existsSync(playwrightConfig)) files.push(playwrightConfig);
+if (!fs.existsSync(path.join(backend, 'src'))) {
+  console.error('Backend source directory is missing'); process.exit(2);
+}
 walk(path.join(backend, 'src'));
 const suffixes = ['', '.ts','.tsx','.d.ts','.mts','.cts','.js','.jsx','.json','/index.ts','/index.tsx','/index.js'];
 const errors = []; let checked = 0;

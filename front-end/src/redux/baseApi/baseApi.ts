@@ -1,37 +1,43 @@
 import { createApi, fetchBaseQuery, type BaseQueryFn, type FetchArgs,
   type FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import { RootState } from "@/src/redux/store/store";
-import { logout, setUser } from "@/src/redux/features/auth/authSlice";
+import { sessionExpired, setUser } from "@/src/redux/features/auth/authSlice";
+import { requestSessionRefresh, sessionGeneration, SessionRefreshError } from "@/src/lib/authSession";
 
-const baseUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3001"}/api/v1`;
+const baseUrl = `${(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3001").replace(/\/$/, "")}/api/v1`;
 const rawQuery = fetchBaseQuery({
   baseUrl,
-  credentials: "include", // HttpOnly refresh cookie; access token remains short lived.
+  credentials: "include",
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.token?.replace(/['"]+/g, "");
+    const token = (getState() as RootState).auth.token;
     if (token) headers.set("authorization", `Bearer ${token}`);
     return headers;
   },
 });
 
-let inFlightRefresh: Promise<Awaited<ReturnType<typeof rawQuery>>> | null = null;
 const withRefresh: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (args, api, extra) => {
-  let result = await rawQuery(args, api, extra);
   const url = typeof args === "string" ? args : args.url;
-  if (result.error?.status === 401 && !url.startsWith("/auth/")) {
-    if (!inFlightRefresh) {
-      inFlightRefresh = Promise.resolve(rawQuery({ url: "/auth/refresh", method: "POST" }, api, extra))
-        .finally(() => { inFlightRefresh = null; });
-    }
-    const refreshed = await inFlightRefresh;
-    const data = (refreshed.data as { data?: { user?: any; accessToken?: string } })?.data;
-    if (data?.user && data?.accessToken) {
-      api.dispatch(setUser({ user: data.user, token: data.accessToken }));
-      result = await rawQuery(args, api, extra);
-    } else {
-      api.dispatch(logout());
+  const before = (api.getState() as RootState).auth.token;
+  let result = await rawQuery(args, api, extra);
+  if (result.error?.status !== 401 || url.startsWith("/auth/")) return result;
+
+  const updatedToken = (api.getState() as RootState).auth.token;
+  if (updatedToken && updatedToken !== before) {
+    return rawQuery(args, api, extra); // Another request already refreshed the session.
+  }
+  const expectedGeneration = sessionGeneration();
+  try {
+    const restored = await requestSessionRefresh();
+    if (expectedGeneration !== sessionGeneration()) return result; // Logged out in flight.
+    api.dispatch(setUser({ user: restored.user, token: restored.accessToken }));
+    result = await rawQuery(args, api, extra);
+  } catch (error: unknown) {
+    if (expectedGeneration === sessionGeneration() && error instanceof SessionRefreshError &&
+        (error.status === 401 || error.status === 403)) {
+      api.dispatch(sessionExpired("Your session expired. Please sign in again."));
       api.dispatch(baseApi.util.resetApiState());
     }
+    // Temporary network failures do not revoke a still-valid server session.
   }
   return result;
 };

@@ -1,0 +1,264 @@
+{
+  "source": "JobHub QA Report — 18 Nov 2026; 37 bug IDs (S-02b included with S-02)",
+  "scenarios": [
+    {
+      "id": "S-01",
+      "severity": "Critical",
+      "phase": 4,
+      "scenario": "Highlighted application requires paid Stripe webhook",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-02",
+      "severity": "Critical",
+      "phase": 3,
+      "scenario": "Profile photo uploads without losing text changes",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-03",
+      "severity": "High",
+      "phase": 2,
+      "scenario": "Remote filter returns remote jobs",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-04",
+      "severity": "High",
+      "phase": 2,
+      "scenario": "Category counts are database-driven",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-05",
+      "severity": "Medium",
+      "phase": 2,
+      "scenario": "Home and jobs search share public eligibility",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-06",
+      "severity": "Medium",
+      "phase": 6,
+      "scenario": "Similar roles, applied status, duplicate prevention",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-07",
+      "severity": "High",
+      "phase": 5,
+      "scenario": "Follow and unfollow employers, receive job alerts",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-08",
+      "severity": "Low",
+      "phase": 6,
+      "scenario": "Saved job state persists after reload",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-09",
+      "severity": "Medium",
+      "phase": 5,
+      "scenario": "Interview preparation control is functional",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-10",
+      "severity": "High",
+      "phase": 1,
+      "scenario": "Seeker account settings and password change",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-11",
+      "severity": "High",
+      "phase": 1,
+      "scenario": "Seeker session survives reload and direct link",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "S-12",
+      "severity": "Low",
+      "phase": 6,
+      "scenario": "Job titles and salaries contain no demo errors",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-01",
+      "severity": "Critical",
+      "phase": 2,
+      "scenario": "New free recruiter publishes first listing within quota",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-02",
+      "severity": "High",
+      "phase": 2,
+      "scenario": "Publishing validation names failing field",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-03",
+      "severity": "High",
+      "phase": 2,
+      "scenario": "Recruiter counters agree with job list",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-04",
+      "severity": "Medium",
+      "phase": 2,
+      "scenario": "Dashboard stat cards display actual values",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-05",
+      "severity": "High",
+      "phase": 3,
+      "scenario": "Company logo uploads and renders",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-06",
+      "severity": "Medium",
+      "phase": 2,
+      "scenario": "Edited draft persists and can publish",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-07",
+      "severity": "Medium",
+      "phase": 2,
+      "scenario": "Archive changes state and public visibility",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-08",
+      "severity": "High",
+      "phase": 5,
+      "scenario": "ATS shortlist, reject, stage history, permissions",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-09",
+      "severity": "High",
+      "phase": 5,
+      "scenario": "Candidate save, shortlist and message with privacy",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-10",
+      "severity": "High",
+      "phase": 5,
+      "scenario": "Recruiter schedules and reschedules interviews",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-11",
+      "severity": "Medium",
+      "phase": 5,
+      "scenario": "Notification and legacy deep links resolve",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-12",
+      "severity": "High",
+      "phase": 1,
+      "scenario": "Recruiter settings and password change",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-13",
+      "severity": "High",
+      "phase": 1,
+      "scenario": "Recruiter session persists on direct navigation",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-14",
+      "severity": "Medium",
+      "phase": 3,
+      "scenario": "Job banner uploads and renders publicly",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-15",
+      "severity": "Medium",
+      "phase": 2,
+      "scenario": "Subcategory selection works with mouse",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-16",
+      "severity": "Medium",
+      "phase": 2,
+      "scenario": "Deadline editable by keyboard and mouse",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-17",
+      "severity": "Low",
+      "phase": 6,
+      "scenario": "Candidates page contains one header and footer",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-18",
+      "severity": "Medium",
+      "phase": 2,
+      "scenario": "Wizard review shows requirements, benefits, individual skills",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-19",
+      "severity": "Low",
+      "phase": 2,
+      "scenario": "Save and archive operations give confirmation",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "R-20",
+      "severity": "Low",
+      "phase": 2,
+      "scenario": "Billing usage agrees with active jobs and quotas",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "F-01",
+      "severity": "Critical",
+      "phase": 1,
+      "scenario": "Fresh seeker and recruiter register and verify email",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "F-02",
+      "severity": "High",
+      "phase": 1,
+      "scenario": "Invalid login displays safe, actionable error",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "F-03",
+      "severity": "High",
+      "phase": 1,
+      "scenario": "Password reset email is delivered and reset succeeds",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "F-04",
+      "severity": "Critical",
+      "phase": 4,
+      "scenario": "Paid team invite works with assigned permissions",
+      "status": "requires-staging-evidence"
+    },
+    {
+      "id": "F-05",
+      "severity": "High",
+      "phase": 4,
+      "scenario": "Seat-limit upgrade path works through Stripe test mode",
+      "status": "requires-staging-evidence"
+    }
+  ]
+}

@@ -21,6 +21,20 @@ const invoiceSubId = (invoice: Stripe.Invoice): string | null => {
   return stripeId(item.parent?.subscription_details?.subscription) || stripeId(item.subscription);
 };
 
+/** Newer Stripe API versions place payment associations in InvoicePayment records.
+ * Persist their PaymentIntent so a subsequent refund/dispute can reliably reverse access. */
+const invoicePaymentIntent = async (invoice: Stripe.Invoice): Promise<string> => {
+  const item = invoice as any;
+  const embedded = stripeId(item.payment_intent) ||
+    stripeId(item.payments?.data?.find((p: any) => p.payment?.type === "payment_intent")?.payment?.payment_intent);
+  if (embedded) return embedded;
+  const payments = await s().invoicePayments.list({ invoice: invoice.id, limit: 20 });
+  const id = payments.data.map((p: any) =>
+    p.payment?.type === "payment_intent" ? stripeId(p.payment.payment_intent) : null).find(Boolean);
+  if (!id) throw new AppError("Stripe invoice has no verifiable payment intent", 422);
+  return id;
+};
+
 const handlePaidInvoice = async (invoice: Stripe.Invoice) => {
   if (invoice.status !== "paid" || (invoice as any).paid_out_of_band === true || invoice.amount_paid <= 0) return;
   const subscriptionId = invoiceSubId(invoice);
@@ -31,8 +45,7 @@ const handlePaidInvoice = async (invoice: Stripe.Invoice) => {
     !mongoose.isValidObjectId(companyId) || !mongoose.isValidObjectId(planId)) return;
   const plan = await BillingPlan.findById(planId);
   if (!plan || plan.enterprise || plan.priceCents === null || !plan.priceCents) throw new AppError("Unknown subscription plan", 422);
-  const paymentIntentId = stripeId((invoice as any).payment_intent) ||
-    stripeId((invoice as any).payments?.data?.find((p: any) => p.payment?.type === "payment_intent")?.payment?.payment_intent);
+  const paymentIntentId = await invoicePaymentIntent(invoice);
   // Refunds/disputes can reach us before the invoice webhook. Never re-enable
   // a charged-back subscription just because Stripe delivers events out of order.
   if (paymentIntentId && await PaymentReversal.exists({ stripePaymentIntentId: paymentIntentId })) return;
@@ -40,9 +53,13 @@ const handlePaidInvoice = async (invoice: Stripe.Invoice) => {
   if (!price || subscription.items.data.length !== 1 || subscription.items.data[0].quantity !== 1 ||
     price.unit_amount !== plan.priceCents || price.currency !== "usd" ||
     price.recurring?.interval !== "month" || invoice.currency !== "usd" ||
-    invoice.amount_paid < plan.priceCents)
+    (invoice.billing_reason !== "subscription_update" && invoice.amount_paid < plan.priceCents))
     throw new AppError("Stripe subscription does not match the server plan", 422);
   if (!["active", "past_due"].includes(subscription.status)) return;
+  const planInvoiceLines = invoice.lines?.has_more ? (await s().invoices.listLineItems(invoice.id, { limit: 100 })).data : (invoice.lines?.data || []);
+  if (!planInvoiceLines.some((line: any) => line.amount > 0 &&
+    stripeId(line.pricing?.price_details?.price) === price.id ||
+    line.amount > 0 && stripeId(line.price) === price.id)) return;
   const customerId = stripeId(subscription.customer);
   if (!customerId || customerId !== stripeId(invoice.customer)) throw new AppError("Invoice customer mismatch", 422);
   // A refunded or disputed invoice must never re-grant benefits on a duplicate
@@ -61,13 +78,24 @@ const handlePaidInvoice = async (invoice: Stripe.Invoice) => {
   // Out-of-order older renewals must never replace a newer paid period.
   if (account?.paidThrough && account.paidThrough.getTime() > end.getTime()) return;
   const paidAt = new Date(((invoice as any).status_transitions?.paid_at || invoice.created) * 1000);
+  // Stripe timestamps use whole seconds. An immediate higher-price upgrade can
+  // share a timestamp with the initial checkout; never discard that invoice.
+  const sameSecondUpgrade = !!account?.lastPaidInvoicePaidAt &&
+    account.lastPaidInvoicePaidAt.getTime() === paidAt.getTime() &&
+    plan.priceCents > (account.snapshot?.priceCents || 0);
+  if (account?.lastPaidInvoicePaidAt && paidAt <= account.lastPaidInvoicePaidAt &&
+      account.lastPaidInvoiceId !== invoice.id && !sameSecondUpgrade) return;
   // All side effects share an idempotent invoice ID; an event retry cannot award two grants.
   const accountChange = await BillingAccount.updateOne({ companyId: id(companyId),
-    $or: [{ paidThrough: { $lte: end } }, { paidThrough: { $exists: false } }] },
+    $or: [{ paidThrough: { $lt: end } }, { paidThrough: { $exists: false } },
+      { paidThrough: { $lte: end }, lastPaidInvoicePaidAt: { $exists: false } },
+      { paidThrough: { $lte: end }, lastPaidInvoicePaidAt: { $lt: paidAt } },
+      { paidThrough: { $lte: end }, lastPaidInvoicePaidAt: paidAt,
+        "snapshot.priceCents": { $lt: plan.priceCents } }] },
     { $set: { companyId: id(companyId), stripeCustomerId: customerId, stripeSubscriptionId: subscriptionId,
       stripeStatus: subscription.status, cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      snapshot: snapshot(plan), paidThrough: end, lastPaidInvoiceId: invoice.id },
-      $unset: { checkoutPendingUntil: "", pendingCheckoutSessionId: "" } }, { upsert: !account });
+      snapshot: snapshot(plan), paidThrough: end, lastPaidInvoiceId: invoice.id, lastPaidInvoicePaidAt: paidAt },
+      $unset: { checkoutPendingUntil: "", pendingCheckoutSessionId: "", pendingCheckoutPlanId: "" } }, { upsert: !account });
   if (!accountChange.matchedCount && !accountChange.upsertedCount) return;
   await BillingInvoice.updateOne({ stripeInvoiceId: invoice.id }, { $setOnInsert: {
     companyId: id(companyId), stripeInvoiceId: invoice.id, stripeSubscriptionId: subscriptionId,
@@ -86,12 +114,20 @@ const handleCheckout = async (session: Stripe.Checkout.Session) => {
   if (session.mode === "payment" && session.payment_status === "paid") {
     if (session.metadata?.type === "job_promotion") return fulfillPromotionCheckout(session);
     if (session.metadata?.type === "application_boost") {
-      const appId = session.metadata.application_id, userId = session.metadata.user_id;
-      if (!appId || !userId || !mongoose.isValidObjectId(appId) || !mongoose.isValidObjectId(userId) ||
-        session.currency !== "usd" || !Number.isSafeInteger(session.amount_total)) return;
-      await Application.updateOne({ _id: id(appId), applicant: id(userId), stripeCheckoutSessionId: session.id,
-        boostPriceCents: session.amount_total, boostPaymentStatus: "pending" },
-        { $set: { boostPaymentStatus: "paid", paid_amount: (session.amount_total || 0)/100 } });
+      const { application_id: appId, user_id: userId, attempt_id: attemptId, price_cents: snapshot } = session.metadata;
+      const amount = session.amount_total;
+      if (!appId || !userId || !attemptId || !mongoose.isValidObjectId(appId) || !mongoose.isValidObjectId(userId) ||
+        session.client_reference_id !== appId || session.currency !== "usd" ||
+        !Number.isSafeInteger(amount) || !amount || Number(snapshot) !== amount) return;
+      const intent = stripeId(session.payment_intent);
+      if (!intent || await PaymentReversal.exists({ stripePaymentIntentId: intent })) return;
+      // The attempt is reserved before Stripe creates its session: allows recovery
+      // from an API crash before the session ID was written to MongoDB.
+      await Application.updateOne({ _id: id(appId), applicant: id(userId), boostCheckoutAttemptId: attemptId,
+        boostPriceCents: amount, boostPaymentStatus: { $nin: ["paid", "refunded"] } },
+        { $set: { stripeCheckoutSessionId: session.id, boostPaymentStatus: "paid",
+          boostPaymentIntentId: intent, boostPriority: 1, paid_amount: amount / 100 },
+          $unset: { boostCheckoutLockUntil: "" } });
     }
   }
   if (session.mode === "subscription" && session.metadata?.type === "recruiter_subscription") {
@@ -101,10 +137,10 @@ const handleCheckout = async (session: Stripe.Checkout.Session) => {
     if (!customer) return;
     const subscriptionId = stripeId(session.subscription);
     await BillingAccount.updateOne({ companyId: id(companyId), pendingCheckoutSessionId: session.id,
+      pendingCheckoutPlanId: session.metadata.plan_id,
       $or: [{ stripeCustomerId: customer }, { stripeCustomerId: { $exists: false } }] },
-      { $set: { stripeCustomerId: customer, ...(subscriptionId ? { stripeSubscriptionId: subscriptionId,
-          stripeStatus: "incomplete" } : {}) },
-        $unset: { checkoutPendingUntil: "", pendingCheckoutSessionId: "" } });
+      { $set: { stripeCustomerId: customer, ...(subscriptionId ? { stripeSubscriptionId: subscriptionId } : {}) },
+        $unset: { checkoutPendingUntil: "", pendingCheckoutSessionId: "", pendingCheckoutPlanId: "" } });
     // Checkout alone NEVER enables a paid plan; only verified invoice.paid does.
   }
 };
@@ -164,6 +200,15 @@ const reversePayment = async (paymentIntentId: string) => {
   }
   const sessions = await s().checkout.sessions.list({ payment_intent: paymentIntentId, limit: 5 });
   for (const checkout of sessions.data) {
+    if (checkout.metadata?.type === "application_boost") {
+      const appId = checkout.metadata.application_id;
+      if (appId && mongoose.isValidObjectId(appId)) {
+        await Application.updateOne({ _id: id(appId), stripeCheckoutSessionId: checkout.id,
+          boostPaymentStatus: { $in: ["paid", "pending"] } },
+          { $set: { boostPaymentStatus: "refunded", boostPriority: 0, paid_amount: 0 } });
+      }
+      continue;
+    }
     if (checkout.metadata?.type !== "job_promotion") continue;
     const affected = await JobPromotion.findOneAndUpdate({ stripeCheckoutSessionId: checkout.id,
       status: "active" }, { $set: { status: "reversed" } }, { new: true });
@@ -197,6 +242,13 @@ export const processStripeEvent = async (event: Stripe.Event) => {
   try {
     if (["checkout.session.completed", "checkout.session.async_payment_succeeded"].includes(event.type))
       await handleCheckout(event.data.object as Stripe.Checkout.Session);
+    else if (event.type === "checkout.session.expired") {
+      const checkout = event.data.object as Stripe.Checkout.Session;
+      if (checkout.metadata?.type === "application_boost" && checkout.metadata.application_id &&
+        mongoose.isValidObjectId(checkout.metadata.application_id))
+        await Application.updateOne({ _id: id(checkout.metadata.application_id), stripeCheckoutSessionId: checkout.id,
+          boostPaymentStatus: "pending" }, { $set: { boostPaymentStatus: "none" } });
+    }
     else if (["invoice.paid", "invoice.payment_succeeded"].includes(event.type))
       await handlePaidInvoice(event.data.object as Stripe.Invoice);
     else if (event.type === "charge.refunded") {

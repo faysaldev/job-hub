@@ -74,7 +74,7 @@ const RecruiterDashboard = () => {
   const { user } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
-  const { data: recruiterStats } = useGetRecruiterDashboardStatsQuery(
+  const { data: recruiterStats, isLoading: isLoadingStats, isError: statsError, refetch: reloadStats } = useGetRecruiterDashboardStatsQuery(
     undefined,
     { skip: !user },
   );
@@ -83,7 +83,7 @@ const RecruiterDashboard = () => {
 
   // API may return plain numbers OR objects like {total, percentage}
   const val = (v: any): number | string => {
-    if (v == null) return "—";
+    if (v == null) return isLoadingStats || statsError ? "—" : 0;
     if (typeof v === "object" && v.total !== undefined) return v.total;
     return v;
   };
@@ -128,7 +128,7 @@ const RecruiterDashboard = () => {
 
   const stats: StatDef[] = [
     {
-      title: "Active Jobs",
+      title: "Reserved Job Slots",
       value: activeJobs,
       change:
         apiData?.activeJobs?.percentage != null
@@ -169,9 +169,9 @@ const RecruiterDashboard = () => {
 
   const pipelineItems = [
     {
-      label: "Active Jobs",
-      value: activeJobs,
-      detail: "Open roles receiving applicants",
+      label: "Open Jobs",
+      value: val(apiData?.openJobs),
+      detail: "Live jobs accepting applications",
       icon: Briefcase,
     },
     {
@@ -214,6 +214,8 @@ const RecruiterDashboard = () => {
   return (
     <RecruiterLayout>
       <div ref={containerRef} className="mx-auto max-w-7xl space-y-8">
+        {statsError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Dashboard statistics could not be loaded. <button type="button" className="font-semibold underline" onClick={() => void reloadStats()}>Retry</button></p>}
+        {apiData?.quota?.overLimit > 0 && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Your plan reserves {apiData.quota.used} job slots against a limit of {apiData.quota.limit}. Existing listings remain published; close a listing or upgrade to add more.</p>}
         <section className="dashboard-header">
           <div className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
@@ -337,7 +339,7 @@ const RecruiterDashboard = () => {
                   <p className="mt-3 text-sm leading-6 text-white/75">
                     You are managing{" "}
                     <span className="font-black text-white">
-                      {activeJobs ?? 0} active jobs
+                      {val(apiData?.openJobs)} open jobs
                     </span>{" "}
                     with an average salary of{" "}
                     <span className="font-black text-white">{avgSalary}</span>.

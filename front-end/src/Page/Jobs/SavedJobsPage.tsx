@@ -23,6 +23,7 @@ import {
   Shield,
 } from "lucide-react";
 import Link from "next/link";
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 import { toast } from "@/src/hooks/use-toast";
 import gsap from "gsap";
 import {
@@ -30,15 +31,9 @@ import {
   useDeleteSavedJobMutation,
 } from "@/src/redux/features/savedJobs/savedJobsApi";
 
-function formatSalary(min: number, max: number) {
-  const fmt = (n: number) =>
-    n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n}`;
-  return `${fmt(min)} - ${fmt(max)}`;
-}
-
 const SavedJobsPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { data: apiResponse, isLoading } = useGetUserSavedJobsQuery();
+  const { data: apiResponse, isLoading, isError, refetch } = useGetUserSavedJobsQuery();
   const [deleteSavedJob, { isLoading: isDeleting }] =
     useDeleteSavedJobMutation();
   const savedJobs = (apiResponse as any)?.data || [];
@@ -126,7 +121,12 @@ const SavedJobsPage = () => {
           </div>
 
           {/* Content */}
-          {isLoading ? (
+          {isError ? (
+            <Card role="alert" className="rounded-2xl border border-red-200 bg-white p-8 text-center">
+              <p className="font-semibold text-red-800">Saved jobs could not be loaded.</p>
+              <Button variant="outline" className="mt-4" onClick={() => void refetch()}>Try again</Button>
+            </Card>
+          ) : isLoading ? (
             <div className="flex flex-col items-center justify-center rounded-3xl border border-[#163B5C]/10 bg-white/90 py-24 shadow-sm backdrop-blur">
               <Loader2 className="h-10 w-10 animate-spin text-[#163B5C] mb-4" />
               <p className="font-bold text-[#163B5C]">
@@ -223,10 +223,10 @@ const SavedJobsPage = () => {
                               {job.type}
                             </span>
                           )}
-                          {job.salaryMin && job.salaryMax && (
+                          {(job.salaryMin != null || job.salaryMax != null) && (
                             <span className="flex items-center gap-1.5 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1 text-xs font-bold text-[#163B5C]">
                               <DollarSign className="h-3.5 w-3.5 text-[#163B5C]" />
-                              {formatSalary(job.salaryMin, job.salaryMax)}
+                              {formatJobSalary(job.salaryMin, job.salaryMax, job.salaryPeriod, true)}
                             </span>
                           )}
                           <span className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-[#516C83]/70">

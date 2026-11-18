@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useGetSingleCompanyQuery } from "@/src/redux/features/company/companyApi";
+import { useGetFollowedCompaniesQuery, useSetCompanyFollowMutation } from "@/src/redux/features/savedJobs/savedJobsApi";
+import { useAuth } from "@/src/hooks/useAuth";
 import {
   Building2,
   Globe,
@@ -21,8 +23,11 @@ import {
   Loader2,
   ArrowLeft,
   ArrowUpRight,
+  BellPlus,
+  BellOff,
 } from "lucide-react";
 import Link from "next/link";
+import { formatJobSalary } from "@/src/lib/jobPresentation";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
@@ -33,6 +38,17 @@ import gsap from "gsap";
 
 const CompanyDetailsPage = () => {
   const { id } = useParams();
+  const { isJobSeeker, sessionChecked } = useAuth();
+  const { data: followedCompanies = [], isLoading: followingLoading } = useGetFollowedCompaniesQuery(undefined,
+    { skip: !sessionChecked || !isJobSeeker });
+  const [setFollow, { isLoading: updatingFollow }] = useSetCompanyFollowMutation();
+  const isFollowing = followedCompanies.includes(String(id));
+  const toggleFollow = async () => {
+    try {
+      await setFollow({ companyId: String(id), following: !isFollowing }).unwrap();
+      toast.success(isFollowing ? "Employer unfollowed" : "Employer followed. New job alerts are enabled.");
+    } catch (error: any) { toast.error(error?.data?.message || "Could not update employer follow"); }
+  };
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     data: response,
@@ -181,10 +197,10 @@ const CompanyDetailsPage = () => {
               {/* Title */}
               <div className="flex-1 space-y-5 text-center lg:text-left">
                 <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-                  <Badge className="flex items-center gap-2 rounded-full border-emerald-300/30 bg-emerald-400/15 px-3 py-1 text-xs font-black tracking-wider text-emerald-200">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+                  {company.verification?.status === "verified" && <Badge className="flex items-center gap-2 rounded-full border-emerald-300/30 bg-emerald-400/15 px-3 py-1 text-xs font-black tracking-wider text-emerald-200">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
                     Verified Employer
-                  </Badge>
+                  </Badge>}
                   <Badge className="rounded-full border-white/20 bg-white/10 px-3 py-1 text-xs font-black text-white">
                     {company.industries || "Company"}
                   </Badge>
@@ -192,6 +208,12 @@ const CompanyDetailsPage = () => {
                 <h1 className="text-4xl font-black tracking-tight text-white md:text-6xl">
                   {company.companyName}
                 </h1>
+                {isJobSeeker && <button type="button" onClick={() => void toggleFollow()}
+                  disabled={followingLoading || updatingFollow}
+                  aria-pressed={isFollowing} className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white px-4 py-2 text-sm font-semibold text-[#163B5C] disabled:opacity-60">
+                  {isFollowing ? <BellOff className="h-4 w-4"/> : <BellPlus className="h-4 w-4"/>}
+                  {isFollowing ? "Unfollow employer" : "Follow for new jobs"}
+                </button>}
                 <div className="flex flex-wrap items-center justify-center gap-4 text-base font-medium text-white/75 lg:justify-start">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-white/70" />
@@ -321,6 +343,7 @@ const CompanyDetailsPage = () => {
                         key={job._id}
                         className="group rounded-3xl border border-[#163B5C]/10 bg-[#F6F8FB] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-xl hover:shadow-[#163B5C]/10"
                       >
+                        {job.bannerUrl && <img src={job.bannerUrl} alt={`Banner for ${job.title}`} loading="lazy" className="mb-4 h-36 w-full rounded-2xl object-cover" />}
                         <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
                           <div className="space-y-2">
                             <h3 className="text-lg font-black text-[#163B5C] transition-colors group-hover:text-[#516C83]">
@@ -337,11 +360,7 @@ const CompanyDetailsPage = () => {
                               </span>
                               <span className="flex items-center gap-1.5 rounded-2xl bg-white px-3 py-2">
                                 <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
-                                $
-                                {(Number(job.salaryMin || 0) / 1000).toFixed(0)}
-                                k - $
-                                {(Number(job.salaryMax || 0) / 1000).toFixed(0)}
-                                k
+                                {formatJobSalary(job.salaryMin, job.salaryMax, job.salaryPeriod, true)}
                               </span>
                             </div>
                           </div>

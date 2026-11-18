@@ -13,6 +13,7 @@ export interface DiscoveryJob {
   salaryPeriod?: string;
   createdAt?: string;
   company?: { companyName?: string; companyLogo?: string };
+  bannerUrl?: string;
 }
 
 export interface DiscoveryPayload {
@@ -66,6 +67,11 @@ export interface RecruiterDashboardStats {
     percentage: number;
   };
   avgSalary: number;
+  openJobs: number;
+  scheduledJobs: number;
+  publishedJobs: number;
+  quota: { used: number; limit: number; overLimit: number };
+  interviews: { total: number };
 }
 
 const generalsApi = baseApi.injectEndpoints({

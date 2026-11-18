@@ -1,511 +1,105 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Card } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import {
-  Mail,
-  CheckCircle,
-  Clock,
-  ArrowLeft,
-  Sparkles,
-  MailOpen,
-  PartyPopper,
-  ArrowRight,
-  Briefcase,
-  AlertCircle,
-} from "lucide-react";
-import gsap from "gsap";
-
-import {
-  useVerifyEmailMutation,
-  useResendVerificationMutation,
-} from "@/src/redux/features/auth/authApi";
+import { ArrowLeft, BriefcaseBusiness, CheckCircle2, Mail, RefreshCw, ShieldCheck } from "lucide-react";
+import { useVerifyEmailMutation, useResendVerificationMutation } from "@/src/redux/features/auth/authApi";
 import { useAppDispatch } from "@/src/redux/hooks";
 import { setUser } from "@/src/redux/features/auth/authSlice";
-import { toast } from "sonner";
+import { invalidatePendingRefresh } from "@/src/lib/authSession";
+import { apiErrorMessage } from "@/src/lib/apiErrors";
+import { Input } from "@/src/components/ui/input";
+import { Button } from "@/src/components/ui/button";
 
-const EmailVerificationPage = () => {
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [isVerified, setIsVerified] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function EmailVerificationPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const params = useSearchParams();
   const dispatch = useAppDispatch();
-
-  const email = searchParams.get("email") || "";
-  const code = searchParams.get("code") || "";
-
+  const linkEmail = params.get("email") || "";
+  const linkCode = params.get("code") || "";
+  const [email, setEmail] = useState(linkEmail);
+  const [code, setCode] = useState(linkCode);
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState("");
+  const [cooldown, setCooldown] = useState(params.get("recent") === "1" ? 60 : 0);
+  const processedLink = useRef<string | null>(null);
+  useEffect(() => {
+    if (linkCode) window.history.replaceState(null, "", `/verify-email?email=${encodeURIComponent(linkEmail)}`);
+  }, [linkCode, linkEmail]);
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
-  const [resendVerification, { isLoading: isResending }] =
-    useResendVerificationMutation();
+  const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Auto-verify if code and email are present in URL
   useEffect(() => {
-    if (code && email && !isVerified) {
-      handleVerify(code, email);
-    }
-  }, [code, email]);
+    if (cooldown <= 0) return;
+    const timer = window.setTimeout(() => setCooldown(value => Math.max(0, value - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
 
-  // GSAP animations
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        ".verify-card",
-        { opacity: 0, y: 40, scale: 0.98 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out" },
-      );
-
-      gsap.fromTo(
-        ".email-icon",
-        { opacity: 0, scale: 0 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          delay: 0.3,
-          ease: "back.out(1.7)",
-        },
-      );
-
-      gsap.fromTo(
-        ".pulse-ring",
-        { scale: 1, opacity: 0.5 },
-        {
-          scale: 1.5,
-          opacity: 0,
-          duration: 2,
-          repeat: -1,
-          ease: "power1.out",
-        },
-      );
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  // Success animation when verified
-  useEffect(() => {
-    if (isVerified) {
-      const ctx = gsap.context(() => {
-        gsap.fromTo(
-          ".success-icon",
-          { scale: 0, rotation: -180 },
-          { scale: 1, rotation: 0, duration: 0.8, ease: "back.out(1.7)" },
-        );
-
-        gsap.fromTo(
-          ".confetti",
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.3 },
-        );
-      }, containerRef);
-
-      return () => {
-        ctx.revert();
-      };
-    }
-  }, [isVerified]);
-
-  // Handle countdown timer
-  useEffect(() => {
-    if (timeLeft <= 0) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  const handleResendEmail = async () => {
-    try {
-      await resendVerification({ email }).unwrap();
-      toast.success("Verification email resent!");
-      setTimeLeft(60);
-      setError(null);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to resend email");
-    }
-  };
-
-  const handleVerify = async (vCode?: string, vEmail?: string) => {
-    const targetCode = vCode || code;
-    const targetEmail = vEmail || email;
-
-    if (!targetCode || !targetEmail) {
-      toast.error("Missing verification information");
+  const verify = useCallback(async (targetEmail: string, targetCode: string) => {
+    if (!targetEmail.trim() || !/^\d{6}$/.test(targetCode)) {
+      setError("Enter your email and a valid six-digit verification code.");
       return;
     }
-
     try {
-      setError(null);
-      const result = await verifyEmail({
-        email: targetEmail,
-        code: Number(targetCode),
-      }).unwrap();
+      setError("");
+      setFeedback("");
+      const result = await verifyEmail({ email: targetEmail.trim(), code: Number(targetCode) }).unwrap();
+      if (!result?.data?.accessToken || !result?.data?.user) throw new Error("Unexpected verification response");
+      invalidatePendingRefresh();
+      dispatch(setUser({ user: result.data.user, token: result.data.accessToken }));
+      setFeedback("Email verified successfully. Opening your dashboard…");
+      router.replace(result.data.user.role === "recruiter" ? "/recruiter" : "/job-seeker");
+    } catch (failure: unknown) {
+      setError(apiErrorMessage(failure, "Could not verify this link. Request another code if it expired."));
+    }
+  }, [verifyEmail, dispatch, router]);
 
-      if (result?.data?.accessToken && result?.data?.user) {
-        dispatch(
-          setUser({
-            user: result.data.user,
-            token: result.data.accessToken,
-          }),
-        );
+  useEffect(() => {
+    if (!linkEmail || !/^\d{6}$/.test(linkCode)) return;
+    const key = `${linkEmail}:${linkCode}`;
+    if (processedLink.current === key) return;
+    processedLink.current = key;
+    void verify(linkEmail, linkCode);
+  }, [linkEmail, linkCode, verify]);
 
-        setIsVerified(true);
-        toast.success("Email verified successfully!");
-
-        // Auto-redirect based on role after a delay
-        setTimeout(() => {
-          const role = result.data.user.role;
-          router.push(role === "recruiter" ? "/recruiter" : "/job-seeker");
-        }, 3000);
-      }
-    } catch (err: any) {
-      const errorMsg = err?.data?.message || "Verification failed. Code may be expired or invalid.";
-      setError(errorMsg);
-      toast.error(errorMsg);
+  const resend = async () => {
+    if (!email.trim()) { setError("Enter your email address first."); return; }
+    if (cooldown > 0) return;
+    try {
+      setError("");
+      await resendVerification({ email: email.trim() }).unwrap();
+      setFeedback("If verification is pending, another link will be emailed shortly. Check spam too.");
+      setCooldown(60);
+    } catch (failure: unknown) {
+      setError(apiErrorMessage(failure, "Unable to request another link."));
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  return (
-    <div ref={containerRef} className="min-h-screen flex bg-gradient-to-br from-[#E1E8EF] via-white to-[#E1E8EF]">
-      {/* Left Side - Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#163B5C] via-[#2d5a7a] to-[#516C83] relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-white/3 to-transparent rounded-full blur-3xl" />
-        </div>
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
-
-        <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 mb-12">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-2.5 border border-white/20">
-              <Briefcase className="h-7 w-7 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white">JobHub</span>
-          </Link>
-
-          <div className="mb-12">
-            <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
-              Almost There!
-              <span className="block text-white/80">Verify Your Email</span>
-            </h1>
-
-            <p className="text-lg text-white/70 leading-relaxed max-w-md">
-              We have sent a verification link to your email. Click the link to
-              activate your account and start your job search journey.
-            </p>
-          </div>
-
-          {/* Steps */}
-          <div className="space-y-4">
-            {[
-              { step: "1", text: "Check your email inbox", done: false },
-              { step: "2", text: "Click the verification link", done: false },
-              { step: "3", text: "Start using JobHub", done: false },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10"
-              >
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold">
-                  {item.step}
-                </div>
-                <span className="text-white font-medium">{item.text}</span>
-              </div>
-            ))}
-          </div>
+  return <main className="flex min-h-screen items-center justify-center bg-[#f6f8fb] px-5 py-12">
+    <div className="w-full max-w-[490px]">
+      <Link href="/" className="mb-9 inline-flex items-center gap-2 text-xl font-semibold text-[#163b5c]"><BriefcaseBusiness size={24}/> JobHub</Link>
+      <div className="jh-panel p-7 sm:p-10">
+        <div className="mb-7 flex h-13 w-13 items-center justify-center rounded-xl bg-[#e9f0f6] p-3 text-[#163b5c]"><Mail size={27}/></div>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#162839]">Verify your email</h1>
+        <p className="mt-2 text-sm leading-6 text-[#66798a]">We&apos;ll send a link with a six-digit code. Links are valid for 10 minutes. If you already have a code, enter it below.</p>
+        {feedback && <div role="status" className="mt-5 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900"><CheckCircle2 size={17} className="mt-0.5 shrink-0"/>{feedback}</div>}
+        {error && <p role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+        <form onSubmit={event => { event.preventDefault(); void verify(email, code); }} className="mt-7 space-y-5">
+          <div><label htmlFor="verify-email" className="mb-1.5 block text-sm font-medium text-[#163b5c]">Email address</label>
+            <Input id="verify-email" type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} required className="h-11 bg-white" placeholder="you@example.com" /></div>
+          <div><label htmlFor="verify-code" className="mb-1.5 block text-sm font-medium text-[#163b5c]">Verification code</label>
+            <Input id="verify-code" type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={event => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} required className="h-11 bg-white tracking-[.25em]" placeholder="000000" /></div>
+          <Button type="submit" disabled={isVerifying} className="h-11 w-full bg-[#163b5c] text-white hover:bg-[#245174]"><ShieldCheck size={17}/>{isVerifying ? "Verifying…" : "Verify email"}</Button>
+        </form>
+        <div className="mt-6 border-t border-[#e1e8ef] pt-5">
+          <p className="text-sm text-[#66798a]">Didn&apos;t get the email? Check your spam folder or request a new link.</p>
+          <Button type="button" variant="outline" className="mt-3 h-10 w-full" onClick={() => void resend()} disabled={isResending || cooldown > 0}>
+            <RefreshCw size={15}/>{cooldown > 0 ? `Resend available in ${cooldown}s` : isResending ? "Requesting…" : "Resend verification link"}
+          </Button>
         </div>
       </div>
-
-      {/* Right Side - Verification */}
-      <div className="w-full lg:w-1/2 flex flex-col">
-        {/* Mobile Header */}
-        <div className="lg:hidden p-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-[#163B5C] to-[#516C83] rounded-xl p-2">
-              <Briefcase className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-[#163B5C]">JobHub</span>
-          </Link>
-          <Link
-            href="/auth"
-            className="flex items-center gap-2 text-[#516C83] hover:text-[#163B5C] transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Link>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 flex items-center justify-center p-6 md:p-10 lg:p-16 xl:p-20">
-          <div className="w-full max-w-[480px] md:max-w-[520px] lg:max-w-[550px] transition-all duration-300">
-            {/* Desktop Back Link */}
-            <div className="hidden lg:block mb-8">
-              <Link
-                href="/auth"
-                className="inline-flex items-center gap-2 text-[#516C83] hover:text-[#163B5C] transition-colors text-sm font-medium group"
-              >
-                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                Back to Sign In
-              </Link>
-            </div>
-
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="relative inline-block mb-6">
-                {/* Pulse ring animation */}
-                {!isVerified && !error && (
-                  <div className="pulse-ring absolute inset-0 bg-[#163B5C]/20 rounded-2xl" />
-                )}
-                <div
-                  className={`email-icon bg-gradient-to-br ${isVerified ? "from-green-500 to-emerald-500" : error ? "from-red-500 to-rose-500" : "from-[#163B5C] to-[#516C83]"} rounded-2xl p-5 w-24 h-24 flex items-center justify-center shadow-lg relative z-10`}
-                >
-                  {isVerified ? (
-                    <CheckCircle className="success-icon h-12 w-12 text-white" />
-                  ) : error ? (
-                    <AlertCircle className="h-12 w-12 text-white" />
-                  ) : (
-                    <MailOpen className="h-12 w-12 text-white" />
-                  )}
-                </div>
-              </div>
-
-              <h1 className="text-3xl font-bold mb-3 text-[#163B5C]">
-                {isVerified ? "Email Verified!" : error ? "Verification Failed" : "Check Your Email"}
-              </h1>
-              <p className="text-[#516C83]">
-                {isVerified ? (
-                  "Your email has been successfully verified"
-                ) : error ? (
-                  error
-                ) : (
-                  <>
-                    We have sent a verification link to
-                    <br />
-                    <span className="font-semibold text-[#163B5C]">
-                      {email}
-                    </span>
-                  </>
-                )}
-              </p>
-            </div>
-
-            {/* Card */}
-            <Card className="verify-card p-6 sm:p-10 border border-white/50 bg-white/75 backdrop-blur-xl shadow-[0_20px_50px_rgba(35,76,106,0.12)] rounded-[32px] relative overflow-hidden transition-all duration-300">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
-              {isVerified ? (
-                <div className="text-center py-6">
-                  {/* Confetti icons */}
-                  <div className="flex justify-center gap-4 mb-8">
-                    {[PartyPopper, Sparkles, PartyPopper].map((Icon, i) => (
-                      <div key={i} className="confetti text-[#163B5C]">
-                        <Icon
-                          className="h-8 w-8"
-                          style={{
-                            transform:
-                              i === 1
-                                ? "none"
-                                : `rotate(${i === 0 ? "-15deg" : "15deg"})`,
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <h2 className="text-2xl font-bold mb-3 text-[#163B5C]">
-                    Welcome to JobHub!
-                  </h2>
-                  <p className="text-[#516C83] mb-8">
-                    Your account is now active. Redirecting to your dashboard...
-                  </p>
-
-                  <div className="space-y-3">
-                    <Button
-                      onClick={() => {
-                        // This is handled by useEffect auto-redirect, but as fallback:
-                        router.push("/job-seeker");
-                      }}
-                      className="w-full h-12 bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
-                    >
-                      Go to Dashboard
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </div>
-                </div>
-              ) : isVerifying ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 border-4 border-[#163B5C] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-                  <h3 className="text-xl font-semibold text-[#163B5C]">Verifying your email...</h3>
-                  <p className="text-[#516C83] mt-2">Please wait a moment while we process your request.</p>
-                </div>
-              ) : (
-                <>
-                  {/* Instructions */}
-                  <div className="space-y-4 mb-8">
-                    <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
-                      <div className="w-8 h-8 rounded-full bg-[#163B5C] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                        1
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-[#163B5C]">
-                          Open your email
-                        </h4>
-                        <p className="text-sm text-[#516C83]">
-                          Check your inbox for an email from JobHub
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
-                      <div className="w-8 h-8 rounded-full bg-[#163B5C] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                        2
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-[#163B5C]">
-                          Click the verification link
-                        </h4>
-                        <p className="text-sm text-[#516C83]">
-                          The link will verify your email instantly
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Resend Section */}
-                  <div className="text-center mb-6">
-                    <p className="text-[#516C83] mb-4">
-                      Did not receive the email?
-                    </p>
-
-                    {timeLeft > 0 ? (
-                      <div className="flex items-center justify-center gap-2 text-[#516C83]">
-                        <Clock className="h-4 w-4" />
-                        <span>Resend available in {formatTime(timeLeft)}</span>
-                      </div>
-                    ) : (
-                      <Button
-                        onClick={handleResendEmail}
-                        disabled={isResending}
-                        className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl px-8 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-                      >
-                        {isResending ? (
-                          <span className="flex items-center gap-2">
-                            <svg
-                              className="animate-spin h-4 w-4"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                                fill="none"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              />
-                            </svg>
-                            Sending...
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            Resend Verification Email
-                          </span>
-                        )}
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className={`grid ${code ? 'grid-cols-2' : 'grid-cols-1'} gap-3 pt-6 border-t border-[#E1E8EF]/60`}>
-                    <Button
-                      variant="outline"
-                      className="border-[#163B5C]/20 text-[#163B5C] hover:bg-[#163B5C]/10 h-12 rounded-xl cursor-pointer"
-                      onClick={() => router.push("/auth")}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back to Sign In
-                    </Button>
-                    
-                    {code && (
-                      <Button
-                        className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white h-12 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-                        onClick={() => handleVerify()}
-                        disabled={isVerifying}
-                      >
-                        {isVerifying ? (
-                          <svg
-                            className="animate-spin h-4 w-4"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                              fill="none"
-                            />
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            />
-                          </svg>
-                        ) : (
-                          <>
-                            I have Verified
-                            <CheckCircle className="h-4 w-4 ml-2" />
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                </>
-              )}
-            </Card>
-
-            {/* Help text */}
-            {!isVerified && (
-              <div className="mt-6 text-center">
-                <p className="text-sm text-[#516C83]">
-                  Check your spam folder if you do not see the email.{" "}
-                  <Link
-                    href="/contact"
-                    className="text-[#163B5C] font-semibold hover:underline"
-                  >
-                    Contact support
-                  </Link>
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <Link href="/auth" className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#516c83] hover:text-[#163b5c]"><ArrowLeft size={16}/> Back to sign in</Link>
     </div>
-  );
-};
-
-export default EmailVerificationPage;
+  </main>;
+}

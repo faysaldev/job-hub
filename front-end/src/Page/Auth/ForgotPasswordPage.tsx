@@ -1,532 +1,109 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { useAppDispatch } from "@/src/redux/hooks";
+import { logout } from "@/src/redux/features/auth/authSlice";
+import { baseApi } from "@/src/redux/baseApi/baseApi";
+import { invalidatePendingRefresh } from "@/src/lib/authSession";
 import Link from "next/link";
-import Image from "next/image";
-import { Card } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
+import { ArrowLeft, BriefcaseBusiness, LockKeyhole, Mail, RefreshCw } from "lucide-react";
+import { useForgotPasswordMutation, useResetPasswordMutation } from "@/src/redux/features/auth/authApi";
+import { apiErrorMessage } from "@/src/lib/apiErrors";
 import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
-import {
-  Mail,
-  Lock,
-  ArrowLeft,
-  KeyRound,
-  ShieldCheck,
-  CheckCircle,
-  Sparkles,
-  Briefcase,
-} from "lucide-react";
-import { toast } from "@/src/hooks/use-toast";
-import ResetPassword from "@/src/components/auth/ResetPassword";
-import {
-  useForgotPasswordMutation,
-  useResetPasswordMutation,
-} from "@/src/redux/features/auth/authApi";
-import { Clock, RefreshCw } from "lucide-react";
-import gsap from "gsap";
+import { Button } from "@/src/components/ui/button";
 
-const ForgotPasswordPage = () => {
-  const [step, setStep] = useState(1);
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [timeLeft, setTimeLeft] = useState(60);
+export default function ForgotPasswordPage() {
+  const params = useSearchParams();
   const router = useRouter();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const [forgotPassword, { isLoading: isForgotLoading }] =
-    useForgotPasswordMutation();
-  const [resetPassword, { isLoading: isResetLoading }] =
-    useResetPasswordMutation();
-
-  // GSAP animations
+  const dispatch = useAppDispatch();
+  const initialEmail = params.get("email") || "";
+  const initialCode = params.get("code") || "";
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        ".forgot-card",
-        { opacity: 0, y: 40, scale: 0.98 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out" },
-      );
+    if (initialCode) window.history.replaceState(null, "", `/reset-password?email=${encodeURIComponent(initialEmail)}`);
+  }, [initialCode, initialEmail]);
+  const [email, setEmail] = useState(initialEmail);
+  const [code, setCode] = useState(initialCode);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [step, setStep] = useState<"request" | "reset">(initialEmail && initialCode ? "reset" : "request");
+  const [cooldown, setCooldown] = useState(0);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [forgotPassword, { isLoading: requesting }] = useForgotPasswordMutation();
+  const [resetPassword, { isLoading: resetting }] = useResetPasswordMutation();
 
-      gsap.fromTo(
-        ".step-indicator",
-        { opacity: 0, y: -20 },
-        { opacity: 1, y: 0, duration: 0.5, delay: 0.3, ease: "power2.out" },
-      );
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  // Handle countdown timer
   useEffect(() => {
-    if (step !== 2 || timeLeft <= 0) return;
+    if (cooldown <= 0) return;
+    const timer = window.setTimeout(() => setCooldown(value => Math.max(0, value - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [step, timeLeft]);
-
-  const handleSendOtp = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const currentEmail = emailRef.current?.value || "";
-
-    if (!currentEmail) {
-      toast({
-        title: "Error",
-        description: "Please enter your email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const requestReset = async () => {
+    if (!email.trim()) { setError("Enter your email address."); return; }
     try {
-      const res = await forgotPassword({ email: currentEmail }).unwrap();
-      setEmail(currentEmail);
-      setStep(2);
-      setTimeLeft(60);
-      toast({
-        title: "OTP Sent",
-        description: `An OTP has been sent to ${currentEmail}. Please check your inbox.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.error || "Failed to send OTP. Please try again.",
-        variant: "destructive",
-      });
+      setError("");
+      await forgotPassword({ email: email.trim() }).unwrap();
+      setMessage("If this account can be recovered, a reset link will arrive shortly. Check your inbox and spam folder.");
+      setStep("reset");
+      setCooldown(60);
+    } catch (failure: unknown) {
+      setError(apiErrorMessage(failure, "Unable to request password recovery right now."));
     }
   };
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (/^\d$/.test(value) || value === "") {
-      const newOtp = [...otp];
-      newOtp[index] = value;
-      setOtp(newOtp);
-
-      if (value && index < 5) {
-        otpRefs.current[index + 1]?.focus();
-      }
+  const submitReset = async () => {
+    if (!/^\d{6}$/.test(code)) { setError("Enter the six-digit code from your email."); return; }
+    if (password.length < 8 || password.length > 128 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
+      setError("Use 8–128 characters, including at least one letter and one number."); return;
     }
-  };
-
-  const handleOtpKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleResetPassword = async (password: string) => {
-    const code = otp.join("");
-    if (code.length !== 6) {
-      toast({
-        title: "Error",
-        description: "Please enter the complete 6-digit verification code.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    if (password !== confirm) { setError("The new passwords do not match."); return; }
     try {
-      await resetPassword({
-        email,
-        code,
-        newPassword: password,
-      }).unwrap();
-
-      toast({
-        title: "Success",
-        description: "Password has been reset successfully.",
-      });
-
-      router.push("/auth");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description:
-          error?.data?.message || "Failed to reset password. Please try again.",
-        variant: "destructive",
-      });
+      setError("");
+      await resetPassword({ email: email.trim(), code, newPassword: password }).unwrap();
+      invalidatePendingRefresh();
+      dispatch(logout());
+      dispatch(baseApi.util.resetApiState());
+      toast.success("Password reset. Sign in using your new password.");
+      router.replace("/auth");
+    } catch (failure: unknown) {
+      setError(apiErrorMessage(failure, "Unable to reset password. The code may be expired or already used."));
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handleResendOtp = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setTimeLeft(60);
-    toast({
-      title: "OTP Sent",
-      description: `A new OTP has been sent to ${email}.`,
-    });
-  };
-
-  const steps = [
-    { number: 1, title: "Email", icon: <Mail className="h-4 w-4" /> },
-    { number: 2, title: "Reset", icon: <ShieldCheck className="h-4 w-4" /> },
-  ];
-
-  const getStepIcon = () => {
-    switch (step) {
-      case 1:
-        return <Mail className="h-12 w-12 text-white" />;
-      case 2:
-        return <ShieldCheck className="h-12 w-12 text-white" />;
-      default:
-        return <Mail className="h-12 w-12 text-white" />;
-    }
-  };
-
-  const getStepTitle = () => {
-    switch (step) {
-      case 1:
-        return "Forgot Password?";
-      case 2:
-        return "Verify & Reset";
-      default:
-        return "Forgot Password?";
-    }
-  };
-
-  const getStepDescription = () => {
-    switch (step) {
-      case 1:
-        return "No worries! Enter your email and we will send you a reset code.";
-      case 2:
-        return `Enter the code sent to ${email} and create your new password.`;
-      default:
-        return "";
-    }
-  };
-
-  return (
-    <div ref={containerRef} className="min-h-screen flex bg-gradient-to-br from-[#E1E8EF] via-white to-[#E1E8EF]">
-      {/* Left Side - Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#163B5C] via-[#2d5a7a] to-[#516C83] relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-white/3 to-transparent rounded-full blur-3xl" />
-        </div>
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")` }} />
-
-        <div className="relative z-10 flex flex-col justify-center p-12 xl:p-16">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 font-bold text-xl group z-10 mb-12"
-          >
-            <Image
-              width={100}
-              height={100}
-              src={"/job-hub-logo-removebg-preview.png"}
-              alt="Logo"
-              priority
-              className="h-auto max-h-14 w-[150px] object-contain md:w-[175px]"
-            />
-          </Link>
-
-          <div className="mb-12">
-            <h1 className="text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight">
-              Secure Password
-              <span className="block text-white/80">Recovery</span>
-            </h1>
-
-            <p className="text-lg text-white/70 leading-relaxed max-w-md">
-              We take security seriously. Our password recovery process is
-              designed to keep your account safe.
-            </p>
-          </div>
-
-          {/* Security features */}
-          <div className="space-y-4">
-            {[
-              { icon: ShieldCheck, text: "Enterprise-grade encryption" },
-              { icon: KeyRound, text: "Secure verification codes" },
-              { icon: Lock, text: "Strong password requirements" },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10"
-              >
-                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                  <item.icon className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-white font-medium">{item.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+  return <main className="flex min-h-screen items-center justify-center bg-[#f6f8fb] px-5 py-12">
+    <div className="w-full max-w-[490px]">
+      <Link href="/" className="mb-9 inline-flex items-center gap-2 text-xl font-semibold text-[#163b5c]"><BriefcaseBusiness size={24}/> JobHub</Link>
+      <div className="jh-panel p-7 sm:p-10">
+        <div className="mb-7 flex h-13 w-13 items-center justify-center rounded-xl bg-[#e9f0f6] p-3 text-[#163b5c]">{step === "request" ? <Mail size={27}/> : <LockKeyhole size={27}/>}</div>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#162839]">{step === "request" ? "Reset your password" : "Choose a new password"}</h1>
+        <p className="mt-2 text-sm leading-6 text-[#66798a]">{step === "request" ? "Enter your account email. If eligible, we will send a one-time reset link." : "Use the six-digit code sent to your email. It expires after 10 minutes."}</p>
+        {message && <p role="status" className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-[#163b5c]">{message}</p>}
+        {error && <p role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+        <form onSubmit={event => { event.preventDefault(); void (step === "request" ? requestReset() : submitReset()); }} className="mt-7 space-y-5">
+          <div><label htmlFor="reset-email" className="mb-1.5 block text-sm font-medium text-[#163b5c]">Email address</label>
+            <Input id="reset-email" type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} required className="h-11 bg-white" placeholder="you@example.com" /></div>
+          {step === "reset" && <>
+            <div><label htmlFor="reset-code" className="mb-1.5 block text-sm font-medium text-[#163b5c]">Reset code</label>
+              <Input id="reset-code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={event => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} required className="h-11 bg-white tracking-[.25em]" placeholder="000000" /></div>
+            <div><label htmlFor="new-password" className="mb-1.5 block text-sm font-medium text-[#163b5c]">New password</label>
+              <Input id="new-password" type="password" autoComplete="new-password" minLength={8} maxLength={128} value={password} onChange={event => setPassword(event.target.value)} required className="h-11 bg-white" />
+              <p className="mt-1 text-xs text-[#66798a]">8–128 characters with at least one letter and one number.</p></div>
+            <div><label htmlFor="confirm-password" className="mb-1.5 block text-sm font-medium text-[#163b5c]">Confirm password</label>
+              <Input id="confirm-password" type="password" autoComplete="new-password" minLength={8} maxLength={128} value={confirm} onChange={event => setConfirm(event.target.value)} required className="h-11 bg-white" /></div>
+          </>}
+          <Button type="submit" className="h-11 w-full bg-[#163b5c] text-white hover:bg-[#245174]" disabled={requesting || resetting}>
+            {step === "request" ? (requesting ? "Requesting…" : "Send recovery link") : resetting ? "Updating password…" : "Reset password"}
+          </Button>
+        </form>
+        {step === "reset" && <div className="mt-5 border-t border-[#e1e8ef] pt-5">
+          <Button variant="outline" className="h-10 w-full" type="button" disabled={requesting || cooldown > 0} onClick={() => void requestReset()}>
+            <RefreshCw size={15}/>{cooldown > 0 ? `Resend available in ${cooldown}s` : "Send another code"}
+          </Button>
+        </div>}
       </div>
-
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex flex-col">
-        {/* Mobile Header */}
-        <div className="lg:hidden p-6 flex items-center justify-between">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 font-bold text-xl group z-10"
-          >
-            <Image
-              width={100}
-              height={100}
-              src={"/job-hub-logo-removebg-preview.png"}
-              alt="Logo"
-              priority
-              className="h-auto max-h-14 w-[150px] object-contain md:w-[175px]"
-            />
-          </Link>
-          <Link
-            href="/auth"
-            className="flex items-center gap-2 text-[#516C83] hover:text-[#163B5C] transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Sign In
-          </Link>
-        </div>
-
-        {/* Form Content */}
-        <div className="flex-1 flex items-center justify-center p-6 md:p-10 lg:p-16 xl:p-20">
-          <div className="w-full max-w-[480px] md:max-w-[520px] lg:max-w-[550px] transition-all duration-300">
-            {/* Desktop Back Link */}
-            <div className="hidden lg:block mb-8">
-              <Link
-                href="/auth"
-                className="inline-flex items-center gap-2 text-[#516C83] hover:text-[#163B5C] transition-colors text-sm font-medium group"
-              >
-                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                Back to Sign In
-              </Link>
-            </div>
-
-            {/* Step Indicator */}
-            <div className="step-indicator flex items-center justify-center gap-2 mb-8">
-              {steps.map((s, i) => (
-                <div key={s.number} className="flex items-center">
-                  <div
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
-                      step >= s.number
-                        ? "bg-gradient-to-r from-[#163B5C] to-[#516C83] text-white"
-                        : "bg-white text-[#516C83] border border-[#E1E8EF]"
-                    }`}
-                  >
-                    {step > s.number ? (
-                      <CheckCircle className="h-4 w-4" />
-                    ) : (
-                      s.icon
-                    )}
-                    <span className="text-sm font-medium hidden sm:inline">
-                      {s.title}
-                    </span>
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div
-                      className={`w-8 h-0.5 mx-1 transition-colors duration-300 ${
-                        step > s.number ? "bg-[#163B5C]" : "bg-[#E1E8EF]"
-                      }`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="bg-gradient-to-br from-[#163B5C] to-[#516C83] rounded-2xl p-5 w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
-                {getStepIcon()}
-              </div>
-              <h1 className="text-3xl font-bold mb-3 text-[#163B5C]">
-                {getStepTitle()}
-              </h1>
-              <p className="text-[#516C83]">{getStepDescription()}</p>
-            </div>
-
-            {/* Card */}
-            <Card className="forgot-card p-6 sm:p-10 border border-white/50 bg-white/75 backdrop-blur-xl shadow-[0_20px_50px_rgba(35,76,106,0.12)] rounded-[32px] relative overflow-hidden transition-all duration-300">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
-              {step === 1 && (
-                <form onSubmit={handleSendOtp} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="forgot-email"
-                      className="text-[#163B5C] font-semibold text-sm tracking-wide"
-                    >
-                      Email Address
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
-                      <Input
-                        id="forgot-email"
-                        type="email"
-                        placeholder="Enter your email address"
-                        ref={emailRef}
-                        className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
-                    disabled={isForgotLoading}
-                  >
-                    {isForgotLoading ? (
-                      <span className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin h-5 w-5"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        Sending Code...
-                      </span>
-                    ) : (
-                      <span className="flex items-center justify-center gap-2">
-                        Send Verification Code
-                        <Sparkles className="h-4 w-4" />
-                      </span>
-                    )}
-                  </Button>
-
-                  {/* Security notice */}
-                  <div className="flex items-start gap-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/50">
-                    <ShieldCheck className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-[#516C83]">
-                      For your security, we will send a 6-digit verification
-                      code to your email.
-                    </p>
-                  </div>
-                </form>
-              )}
-
-              {step === 2 && (
-                <div className="space-y-8">
-                  {/* OTP Section */}
-                  <div className="space-y-4">
-                    <Label className="text-[#163B5C] font-semibold text-center block text-sm tracking-wide">
-                      Verification Code
-                    </Label>
-                    <div className="flex justify-center gap-2 sm:gap-3">
-                      {otp.map((digit, index) => (
-                        <Input
-                          key={index}
-                          ref={(el) => {
-                            otpRefs.current[index] = el;
-                          }}
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={1}
-                          value={digit}
-                          onChange={(e) =>
-                            handleOtpChange(index, e.target.value)
-                          }
-                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className={`w-10 h-12 sm:w-12 sm:h-14 text-xl sm:text-2xl font-bold text-center rounded-xl transition-all duration-300 cursor-pointer ${
-                            digit
-                              ? "border-2 border-[#163B5C] bg-[#163B5C]/5 text-[#163B5C] shadow-inner"
-                              : "border border-slate-200/80 bg-white/60 text-[#163B5C]"
-                          } focus:outline-none focus:ring-4 focus:ring-[#163B5C]/10 focus:border-[#163B5C]`}
-                        />
-                      ))}
-                    </div>
-
-                    <div className="flex justify-center">
-                      {timeLeft > 0 ? (
-                        <p className="text-sm text-[#516C83]">
-                          Resend in{" "}
-                          <span className="font-bold">
-                            {formatTime(timeLeft)}
-                          </span>
-                        </p>
-                      ) : (
-                        <Button
-                          onClick={() => handleSendOtp()}
-                          disabled={isForgotLoading}
-                          variant="ghost"
-                          size="sm"
-                          className="text-[#163B5C] hover:bg-[#163B5C]/10 h-8 cursor-pointer"
-                        >
-                          <RefreshCw
-                            className={`h-3 w-3 mr-2 ${isForgotLoading ? "animate-spin" : ""}`}
-                          />
-                          Resend Code
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Password Section */}
-                  <div className="pt-6 border-t border-[#E1E8EF]/60">
-                    <ResetPassword
-                      onSubmit={handleResetPassword}
-                      loading={isResetLoading}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Back button */}
-              <div className="mt-6 pt-6 border-t border-[#E1E8EF]/60">
-                <Button
-                  variant="ghost"
-                  className="w-full text-[#163B5C] hover:bg-[#163B5C]/10 font-semibold h-12 rounded-xl cursor-pointer"
-                  onClick={() => {
-                    if (step > 1) {
-                      setStep(step - 1);
-                    } else {
-                      router.push("/auth");
-                    }
-                  }}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  {step > 1 ? "Go Back" : "Back to Sign In"}
-                </Button>
-              </div>
-            </Card>
-
-            {/* Help text */}
-            <p className="text-center text-sm text-[#516C83] mt-6">
-              Remember your password?{" "}
-              <Link
-                href="/auth"
-                className="text-[#163B5C] font-semibold hover:underline"
-              >
-                Sign in here
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
+      <Link href="/auth" className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#516c83] hover:text-[#163b5c]"><ArrowLeft size={16}/> Back to sign in</Link>
     </div>
-  );
-};
-
-export default ForgotPasswordPage;
+  </main>;
+}

@@ -11,6 +11,7 @@ export interface ICompanyMember extends Document {
   invitedBy: Types.ObjectId;
   invitedAt: Date;
   joinedAt?: Date;
+  expiresAt?: Date;
 }
 const memberSchema = new Schema<ICompanyMember>({
   companyId: { type: Schema.Types.ObjectId, ref: "Company", required: true, immutable: true },
@@ -21,10 +22,12 @@ const memberSchema = new Schema<ICompanyMember>({
   invitedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   invitedAt: { type: Date, default: Date.now },
   joinedAt: Date,
+  expiresAt: Date,
 }, { timestamps: true, versionKey: false });
 memberSchema.index({ companyId: 1, email: 1 }, { unique: true });
 memberSchema.index({ userId: 1, status: 1 });
 memberSchema.index({ userId: 1 }, { unique: true,
   partialFilterExpression: { userId: { $exists: true }, status: "active" } });
 memberSchema.index({ email: 1, status: 1 });
+memberSchema.index({ companyId: 1, status: 1, expiresAt: 1 });
 export default model<ICompanyMember>("CompanyMember", memberSchema);

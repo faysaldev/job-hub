@@ -98,6 +98,7 @@ export interface CompanyProfile {
     phoneNumber?: string;
   };
   companyLogo?: string;
+  verification?: { status: "unverified" | "pending" | "verified" | "rejected" };
   companyName: string;
   industries: string;
   companySize: string;
@@ -127,12 +128,14 @@ export type ExperienceLevel =
 export type JobStatus = "draft" | "active" | "closed" | "expired";
 
 export interface Job {
+  _id?: string;
   id: string | number;
   recruiterId?: string;
   companyId?: string;
   title: string;
   company: string;
   companyLogo?: string;
+  bannerUrl?: string;
   isSponsored?: boolean;
   sponsoredUntil?: string;
   location: string;
@@ -224,6 +227,9 @@ export interface Interview {
   date: string;
   start_time: string;
   end_time: string;
+  timeZone?: string;
+  startAt?: string;
+  endAt?: string;
   meet_link?: string;
   type: "video" | "audio" | "in-person";
   status: "scheduled" | "completed" | "cancelled";
@@ -384,6 +390,8 @@ export interface JobFilters {
   subcategory?: string;
   location?: string;
   remote?: boolean;
+  locationType?: "remote" | "onsite" | "hybrid";
+  applicantCounts?: string;
   type?: JobType | JobType[] | string;
   experienceLevel?: ExperienceLevel | ExperienceLevel[] | string;
   salaryMin?: number;

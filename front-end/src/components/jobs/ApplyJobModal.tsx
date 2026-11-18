@@ -19,6 +19,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { useApplyToJobMutation } from "@/src/redux/features/applications/applicationsApi";
+import { useGetBoostOfferQuery } from "@/src/redux/features/stripe/stripeApi";
 import { useUploadFileMutation } from "@/src/redux/features/assets/assetsApi";
 import {
   useGetSeekerProfileQuery,
@@ -28,11 +29,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/src/lib/utils";
 import { useAuth } from "@/src/hooks/useAuth";
-import { useAppSelector } from "@/src/redux/hooks";
-import {
-  selectAppliedJobIds,
-  selectSavedJobIds,
-} from "@/src/redux/features/generals/generalsSlice";
+import { useGetAppliedJobIdsQuery, useGetSavedJobIdsQuery } from "@/src/redux/features/generals/generalsApi";
 
 interface ApplyJobModalProps {
   jobId: string;
@@ -47,13 +44,19 @@ export default function ApplyJobModal({
 }: ApplyJobModalProps) {
   const [open, setOpen] = useState(false);
   const { isAuthenticated } = useAuth();
-  const appliedJobIds = useAppSelector(selectAppliedJobIds);
-  const savedJobIds = useAppSelector(selectSavedJobIds);
-  const isApplied = appliedJobIds?.includes(jobId);
-  const isSaved = savedJobIds?.includes(jobId);
+  // Fetch real persisted state. The old Redux ID arrays were never populated.
+  const { data: appliedJobIds = [], isFetching: checkingApplications } = useGetAppliedJobIdsQuery(undefined, { skip: !isAuthenticated });
+  const { data: savedJobIds = [] } = useGetSavedJobIdsQuery(undefined, { skip: !isAuthenticated });
+  const isApplied = appliedJobIds.includes(jobId);
+  const isSaved = savedJobIds.includes(jobId);
   const [coverLetter, setCoverLetter] = useState("");
   const [resumeUrl, setResumeUrl] = useState("");
   const [boostSelected, setBoostSelected] = useState(false);
+  const { data: boostPrice, isFetching: boostPriceLoading, isError: boostPriceError } = useGetBoostOfferQuery(undefined, { skip: !open });
+  const boostOffer = boostPrice?.data;
+  const canBoost = !!boostOffer?.available && !boostPriceError;
+  const formattedBoostPrice = canBoost && typeof boostOffer?.priceCents === "number" ?
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(boostOffer.priceCents / 100) : null;
 
   // API Queries and Mutations
   const { data: profileResponse } = useGetSeekerProfileQuery(undefined, { skip: !isAuthenticated });
@@ -87,6 +90,7 @@ export default function ApplyJobModal({
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isLoading || isApplied || checkingApplications) return;
     if (!resumeUrl) {
       toast.error("Upload a resume or select one from your profile");
       return;
@@ -102,6 +106,10 @@ export default function ApplyJobModal({
       return;
     }
 
+    if (boostSelected && !canBoost) {
+      toast.error("Highlight pricing is unavailable. Uncheck the highlight option to submit a Standard application.");
+      return;
+    }
     try {
       const res = (await applyToJob({
         job_id: jobId,
@@ -110,10 +118,12 @@ export default function ApplyJobModal({
         boost: boostSelected,
       }).unwrap()) as any;
       if (res?.data?.checkoutData?.checkoutUrl) {
-        window.location.href = res?.data?.checkoutData?.checkoutUrl;
+        window.location.assign(res.data.checkoutData.checkoutUrl);
+      } else if (res?.data?.checkoutData?.status === "verifying" && res?.data?.checkoutData?.sessionId) {
+        router.push(`/applied-successfully?session_id=${encodeURIComponent(res.data.checkoutData.sessionId)}`);
       } else {
         if (res?.data?.paymentUnavailable) {
-          toast.warning("Application submitted, but the optional payment is unavailable.");
+          toast.warning(res?.data?.paymentMessage || "Application submitted as Standard. Optional payment is unavailable.");
         } else toast.success("Application submitted successfully!");
         setOpen(false);
         router.push("/applied-successfully");
@@ -139,7 +149,8 @@ export default function ApplyJobModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <Button
         onClick={handleApplyClick}
-        disabled={isApplied}
+        disabled={isApplied || (isAuthenticated && checkingApplications)}
+        aria-label={isApplied ? "Already applied to this job" : "Apply for this job"}
         className={cn(
           "w-full h-12 rounded-xl font-semibold mb-4 group transition-all",
           isApplied
@@ -148,7 +159,7 @@ export default function ApplyJobModal({
         )}
       >
         <Send className="h-4 w-4 mr-2 group-hover:translate-x-1 transition-transform" />
-        {isApplied ? "Already Applied" : "Apply Now"}
+        {isApplied ? "Applied" : isAuthenticated && checkingApplications ? "Checking application..." : "Apply Now"}
       </Button>
       <DialogContent className="w-[95vw] sm:max-w-[620px] md:max-w-[680px] bg-white rounded-[32px] border-none shadow-2xl p-0 overflow-hidden">
         <form onSubmit={handleApply} className="relative">
@@ -265,12 +276,16 @@ export default function ApplyJobModal({
 
           {/* Optional, server-priced checkout; no bids or ranking guarantees. */}
           <div className="px-8 py-5">
-            <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 cursor-pointer">
-              <input type="checkbox" checked={boostSelected} onChange={(event) => setBoostSelected(event.target.checked)}
+            <label className={`flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 ${canBoost ? "cursor-pointer" : "opacity-75"}`}>
+              <input type="checkbox" checked={boostSelected} disabled={!canBoost || boostPriceLoading}
+                onChange={(event) => setBoostSelected(event.target.checked)}
                 className="mt-1 h-4 w-4 accent-[#163B5C]" />
               <span>
                 <span className="block text-sm font-semibold text-[#163B5C]">Optional application highlight</span>
-                <span className="block text-xs text-slate-600 mt-1">Only charged after confirmed Stripe checkout at the server-set price. It does not guarantee an interview or an offer.</span>
+                <span className="mt-1 block text-sm font-semibold text-[#163B5C]" aria-live="polite">
+                  {boostPriceLoading ? "Checking price…" : formattedBoostPrice ? `${formattedBoostPrice} USD, one-time` : "Highlight unavailable — Standard applications remain free"}
+                </span>
+                <span className="block text-xs text-slate-600 mt-1">You can review payment in secure Stripe Checkout. Highlight activates only after verified payment; it does not guarantee an interview or an offer.</span>
               </span>
             </label>
           </div>
@@ -288,7 +303,7 @@ export default function ApplyJobModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || coverLetter.length < 150 || coverLetter.length > 1300 || !resumeUrl}
+                disabled={isLoading || coverLetter.length < 150 || coverLetter.length > 1300 || !resumeUrl || (boostSelected && !canBoost)}
                 className="rounded-2xl h-14 px-10 bg-[#163B5C] text-white hover:bg-[#0C2C48] font-black text-sm shadow-xl shadow-blue-900/10 min-w-[180px] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
@@ -296,7 +311,7 @@ export default function ApplyJobModal({
                 ) : (
                   <>
                     <Send className="h-5 w-5 mr-2" />
-                    Submit Application
+                    {boostSelected ? "Submit & continue to payment" : "Submit Standard application"}
                   </>
                 )}
               </Button>

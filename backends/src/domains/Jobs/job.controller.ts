@@ -20,6 +20,7 @@ const getAllJobs = asyncHandler(async (req: Request, res: Response) => {
     maxSalary,
     salaryRanges,
     companySizes,
+    applicantCounts,
     postedDate,
     page,
     limit,
@@ -37,6 +38,7 @@ const getAllJobs = asyncHandler(async (req: Request, res: Response) => {
     maxSalary: maxSalary ? parseInt(maxSalary as string) : undefined,
     salaryRanges: salaryRanges as string,
     companySizes: companySizes as string,
+    applicantCounts: applicantCounts as string,
     postedDate: postedDate as string,
     page: Number(page) || 1,
     limit: Number(limit) || 10,
@@ -88,9 +90,7 @@ const getJobsByAuthorId = asyncHandler(async (req: Request, res: Response) => {
 
 // Create a new job (requires authentication)
 const createJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const jobData = { ...req.body, author: req.user!._id };
-
-  const job = await jobService.createJob(jobData, req.user!._id);
+  const job = await jobService.createJob(req.body, req.user!._id);
 
   res.status(httpStatus.CREATED).json(
     response({
@@ -114,7 +114,7 @@ const updateJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
       message: "Job updated successfully",
       status: "OK",
       statusCode: httpStatus.OK,
-      data: {},
+      data: updated,
     }),
   );
 });
@@ -128,7 +128,7 @@ const deleteJob = asyncHandler(async (req: ProtectedRequest, res: Response) => {
 
   res.status(httpStatus.OK).json(
     response({
-      message: "Job deleted successfully",
+      message: "Job archived successfully",
       status: "OK",
       statusCode: httpStatus.OK,
       data: {},

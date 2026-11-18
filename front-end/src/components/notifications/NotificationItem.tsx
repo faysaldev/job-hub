@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { safeNotificationHref } from "@/src/lib/notificationLinks";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import {
@@ -155,7 +156,7 @@ const NotificationItem = ({
                 )}
               </Button>
 
-              <Link href={notification.link}>
+              <Link href={safeNotificationHref(notification.link)}>
                 <Button
                   size="sm"
                   className="bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/90 hover:to-[#516C83]/90 text-white opacity-0 group-hover:opacity-100 transition-opacity"

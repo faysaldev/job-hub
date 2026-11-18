@@ -27,7 +27,7 @@ export const bucketFor = (kind: string) => {
   const publicBucket = mandatory("R2_PUBLIC_BUCKET");
   const privateBucket = mandatory("R2_PRIVATE_BUCKET");
   if (publicBucket === privateBucket) throw new AppError("R2 public and private buckets must be separate", 503);
-  return kind === "avatar" || kind === "company-logo" ? publicBucket : privateBucket;
+  return ["avatar", "company-logo", "job-banner"].includes(kind) ? publicBucket : privateBucket;
 };
 export const publicAssetUrl = (key: string) => {
   const base = mandatory("R2_PUBLIC_BASE_URL");
@@ -56,4 +56,13 @@ export const firstBytes = async (bucket: string, key: string): Promise<Buffer> =
   const obj = await r2Client().send(new GetObjectCommand({ Bucket: bucket, Key: key, Range: "bytes=0-31" }));
   if (!obj.Body) throw new AppError("File is empty", 400);
   return Buffer.from(await obj.Body.transformToByteArray());
+};
+
+/** Only DOCX files require a bounded full read for central-directory verification. */
+export const readObject = async (bucket: string, key: string): Promise<Buffer> => {
+  const result = await r2Client().send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+  if (!result.Body) throw new AppError("File is empty", 400);
+  const bytes = Buffer.from(await result.Body.transformToByteArray());
+  if (bytes.length > 10_000_000) throw new AppError("Document exceeds upload limit", 400);
+  return bytes;
 };
