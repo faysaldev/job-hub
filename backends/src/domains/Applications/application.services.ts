@@ -45,7 +45,7 @@ const getRecruiterApplications = async (actorId: string, filters: any = {}, isAd
   if (filters.jobId) query.job_id = { $eq: assertId(filters.jobId, "job ID"),
     ...(isAdmin ? {} : { $in: (query.job_id as { $in: unknown[] }).$in }) };
   return Application.find(query).populate("applicant", "name email image")
-    .populate("job_id", "title location type author companyId").sort({ createdAt: -1 })
+    .populate("job_id", "title location type author companyId").sort({ boostPriority: -1, createdAt: -1 })
     .skip((bounds.page - 1) * bounds.limit).limit(bounds.limit).lean();
 };
 

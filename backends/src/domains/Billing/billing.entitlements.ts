@@ -31,7 +31,7 @@ export const getUsage = async (company: { _id: any; userId: any }) => {
     Job.countDocuments({ ...owner, status: "scheduled", isDeleted: { $ne: true },
       "moderation.status": { $ne: "blocked" }, applicationDeadline: { $gt: now }, publishAt: { $gt: now } }),
     Job.countDocuments({ ...owner, status: { $in: ["published", null] }, isDeleted: { $ne: true } }),
-    CompanyMember.countDocuments({ companyId: company._id, status: { $in: ["invited", "active"] } }),
+    CompanyMember.countDocuments({ companyId: company._id, $or: [{ status: "active" }, { status: "invited", expiresAt: { $gt: now } }] }),
     CreditGrant.aggregate([{ $match: { companyId: new mongoose.Types.ObjectId(String(company._id)), expiresAt: { $gt: now }, remaining: { $gt: 0 } } },
       { $group: { _id: null, balance: { $sum: "$remaining" } } }]),
   ]);
@@ -59,6 +59,6 @@ export const requireJobSlot = async (company: { _id: any; userId: any }, session
 };
 export const requireTeamSeat = async (companyId: string, session: mongoose.ClientSession) => {
   const { entitlement } = await currentEntitlement(companyId);
-  const occupied = await CompanyMember.countDocuments({ companyId, status: { $in: ["invited", "active"] } }).session(session);
-  if (occupied + 1 >= entitlement.limits.teamSeats) throw new AppError(`Team seat limit reached (${entitlement.limits.teamSeats}). Upgrade or remove an invitation.`, 403);
+  const occupied = await CompanyMember.countDocuments({ companyId, $or: [{ status: "active" }, { status: "invited", expiresAt: { $gt: new Date() } }] }).session(session);
+  if (occupied + 1 >= entitlement.limits.teamSeats) throw new AppError(`Team seat limit reached (${occupied + 1}/${entitlement.limits.teamSeats}). Choose a plan with more seats in Billing or remove an invitation.`, 403);
 };

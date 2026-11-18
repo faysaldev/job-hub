@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
-import { Types } from "mongoose";
+import { Types, ClientSession } from "mongoose";
 import MailOutbox, { EmailPurpose } from "./mail.outbox.model";
 import { sendEmail } from "./mail.service";
 
@@ -37,6 +37,28 @@ export const enqueueAuthEmail = async (data: {
     retainUntil: new Date(Date.now() + 24 * 60 * 60 * 1000) });
   // Scheduler is also running; this nudges delivery on new registrations.
   void deliverQueuedEmails().catch(() => console.error("[JobHub mail] queue delivery cycle failed"));
+};
+
+/** Save a team invite in the SAME Mongo transaction as the reserved seat.
+ * An SMTP outage cannot reserve a seat without a durable delivery attempt. */
+export const enqueueTeamInvitation = async (data: {
+  senderId: Types.ObjectId; companyId: Types.ObjectId; recipient: string; companyName: string; portalUrl: string;
+  session: ClientSession;
+}): Promise<void> => {
+  await MailOutbox.updateMany({ companyId: data.companyId, purpose: "team-invite", to: data.recipient,
+    status: "pending" }, { $set: { status: "failed" }, $unset: { encryptedBody: "" } }, { session: data.session });
+  await MailOutbox.create([{ userId: data.senderId, companyId: data.companyId, purpose: "team-invite",
+    to: data.recipient, subject: `Invitation to join ${data.companyName} on JobHub`,
+    encryptedBody: encrypt(`You are invited to join ${data.companyName} on JobHub.\n\nCreate or sign in to a verified recruiter account using this email address, then accept the invitation at: ${data.portalUrl}\n\nThis invitation expires in 7 days.`),
+    status: "pending", attempts: 0, availableAt: new Date(),
+    expiresAt: new Date(Date.now() + 7 * 86400_000), retainUntil: new Date(Date.now() + 9 * 86400_000),
+  }], { session: data.session });
+};
+
+/** Cancel an undelivered invitation after removal or acceptance. */
+export const cancelPendingTeamInvitation = async (companyId: Types.ObjectId, recipient: string): Promise<void> => {
+  await MailOutbox.updateMany({ companyId, to: recipient, purpose: "team-invite", status: "pending" },
+    { $set: { status: "failed" }, $unset: { encryptedBody: "" } });
 };
 
 const MAX_ATTEMPTS = 5;

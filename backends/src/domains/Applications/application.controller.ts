@@ -6,6 +6,7 @@ import { ProtectedRequest } from "../../types/protected-request";
 import { createNotification } from "../Notifications/notifications.service";
 import { addActivityLogService } from "../Seeker/seeker.services";
 import { createBoostSession } from "../Stripe/stripe.controller";
+import { AppError } from "../../lib/errors";
 
 const success = (res: Response, message: string, data: any, code = 200) => res.status(code).json(
   response({ message, status: "OK", statusCode: code, data }));
@@ -19,11 +20,12 @@ const createApplication = asyncHandler(async (req: ProtectedRequest, res: Respon
   ]);
   let checkoutData = null;
   let paymentUnavailable = false;
+  let paymentMessage: string | undefined;
   if (req.body.boost) {
     try { checkoutData = await createBoostSession(application._id.toString(), req.user!._id); }
-    catch { paymentUnavailable = true; }
+    catch (error) { paymentUnavailable = true; paymentMessage = error instanceof AppError && error.statusCode < 500 ? error.message : "Optional checkout could not start. Your Standard application was saved; retry from My Applications."; }
   }
-  success(res, "Application submitted", { application, checkoutData, paymentUnavailable }, 201);
+  success(res, "Application submitted", { application, checkoutData, paymentUnavailable, paymentMessage }, 201);
 });
 const getUserApplications = asyncHandler(async (req: ProtectedRequest, res: Response) =>
   success(res, "Applications retrieved", await service.getApplicationsByApplicant(req.user!._id)));

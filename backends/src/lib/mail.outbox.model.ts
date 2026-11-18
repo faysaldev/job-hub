@@ -1,8 +1,9 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-export type EmailPurpose = "verification" | "password-reset";
+export type EmailPurpose = "verification" | "password-reset" | "team-invite";
 export interface IMailOutbox {
   userId: Types.ObjectId;
+  companyId?: Types.ObjectId;
   purpose: EmailPurpose;
   to: string;
   subject: string;
@@ -18,7 +19,8 @@ export interface IMailOutbox {
 
 const schema = new Schema<IMailOutbox>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  purpose: { type: String, enum: ["verification", "password-reset"], required: true },
+  companyId: { type: Schema.Types.ObjectId, ref: "Company" },
+  purpose: { type: String, enum: ["verification", "password-reset", "team-invite"], required: true },
   to: { type: String, required: true },
   subject: { type: String, required: true },
   encryptedBody: { type: String, required: true, select: false },
@@ -33,5 +35,6 @@ const schema = new Schema<IMailOutbox>({
 
 schema.index({ status: 1, availableAt: 1, leaseUntil: 1 });
 schema.index({ userId: 1, purpose: 1, createdAt: -1 });
+schema.index({ companyId: 1, purpose: 1, to: 1, status: 1 });
 schema.index({ retainUntil: 1 }, { expireAfterSeconds: 0 });
 export default mongoose.model<IMailOutbox>("MailOutbox", schema);

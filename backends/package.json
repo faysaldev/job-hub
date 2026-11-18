@@ -37,7 +37,9 @@
     "phase6:source-audit": "node scripts/phase6-source-audit.cjs",
     "phase6:unit-check": "node --test tests/phase6-validation.test.cjs",
     "phase2:check": "node --test tests/phase2-job-lifecycle.test.cjs tests/phase6-static.test.cjs",
-    "phase2:reconcile": "node scripts/phase2-reconcile-jobs.cjs"
+    "phase2:reconcile": "node scripts/phase2-reconcile-jobs.cjs",
+    "phase4:payments-check": "node --test tests/phase4-payments.test.cjs tests/phase4-safety.test.cjs",
+    "phase4:plans-preflight": "node scripts/phase4-plans-preflight.cjs"
   },
   "keywords": [],
   "author": "Faysal Mridha",

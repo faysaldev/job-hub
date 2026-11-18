@@ -27,8 +27,12 @@ const applicationSchema = new Schema(
       default: "applied",
     },
     paid_amount: { type: Number, default: 0, min: 0 },
-    boostPaymentStatus: { type: String, enum: ["none", "pending", "paid"], default: "none" },
+    boostPaymentStatus: { type: String, enum: ["none", "pending", "paid", "refunded"], default: "none" },
     stripeCheckoutSessionId: { type: String },
+    boostCheckoutAttemptId: { type: String },
+    boostCheckoutLockUntil: { type: Date },
+    boostPaymentIntentId: { type: String },
+    boostPriority: { type: Number, default: 0, enum: [0, 1] },
     boostPriceCents: { type: Number, min: 0 },
     isWithdrawn: { type: Boolean, default: false },
     withdrawnAt: { type: Date },
@@ -53,6 +57,7 @@ const applicationSchema = new Schema(
 applicationSchema.index({ job_id: 1, applicant: 1 }, { unique: true });
 applicationSchema.index({ applicant: 1, createdAt: -1 });
 applicationSchema.index({ resume_url: 1, isWithdrawn: 1, job_id: 1 });
+applicationSchema.index({ job_id: 1, boostPriority: -1, createdAt: -1 });
 applicationSchema.index({ job_id: 1, status: 1, createdAt: -1 });
 applicationSchema.index({ applicant: 1, status: 1, createdAt: -1 });
 applicationSchema.index({ stripeCheckoutSessionId: 1 }, { sparse: true });
