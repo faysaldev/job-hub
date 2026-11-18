@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Layers, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/src/hooks/useAuth";
-import { useAppSelector } from "@/src/redux/hooks";
 import { useAdminPlansQuery, useCreateBillingPlanMutation, useManageBillingPlanMutation, type BillingPlan } from "@/src/redux/features/billing/billingApi";
 
 const button = "rounded-lg border border-[#cdd9e2] bg-white px-3 py-2 text-sm font-medium text-[#163B5C] hover:bg-slate-50 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700";
@@ -15,8 +14,7 @@ const blank: BillingPlan = { key: "", name: "", description: "", priceCents: 0, 
   enterprise: false, features: [], published: false, isCurrent: false, limits: { activeJobs: 5, teamSeats: 1, monthlyCredits: 0 } };
 const money = (value: number | null) => value === null ? "Custom" : `$${(value/100).toFixed(2)}`;
 export default function AdminPlanManager() {
-  const { user, logout } = useAuth();
-  const rehydrated = useAppSelector(s => s.auth._persist?.rehydrated ?? false);
+  const { user, logout, sessionChecked: rehydrated } = useAuth();
   const router = useRouter();
   const allowed = rehydrated && user?.role === "admin";
   const { data, isLoading, isError, refetch } = useAdminPlansQuery(undefined, { skip: !allowed });

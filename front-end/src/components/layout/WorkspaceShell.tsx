@@ -3,10 +3,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bell, BriefcaseBusiness, Building2, CalendarDays, FileText, LayoutDashboard, Menu, MessageSquare, Plus, UserRound, Users, CreditCard, X } from "lucide-react";
+import { Bell, BriefcaseBusiness, Building2, CalendarDays, FileText, LayoutDashboard, Menu, MessageSquare, Plus, UserRound, Users, CreditCard, Settings, X } from "lucide-react";
 import Header from "@/src/components/common/Header";
 import { useAuth } from "@/src/hooks/useAuth";
-import { useAppSelector } from "@/src/redux/hooks";
 import { WorkspaceLoading } from "@/src/components/feedback/LoadingStates";
 
 type WorkspaceRole = "recruiter" | "seeker";
@@ -22,6 +21,7 @@ const recruiterLinks = [
   { href: "/recruiter/interview-schedule", label: "Interviews", icon: CalendarDays },
   { href: "/recruiter/company", label: "Company profile", icon: Building2 },
   { href: "/recruiter/billing", label: "Plans & billing", icon: CreditCard },
+  { href: "/recruiter/settings", label: "Account settings", icon: Settings },
 ];
 const seekerLinks = [
   { href: "/job-seeker", label: "Overview", icon: LayoutDashboard },
@@ -32,20 +32,20 @@ const seekerLinks = [
   { href: "/job-seeker/messages", label: "Messages", icon: MessageSquare },
   { href: "/job-seeker/interviews", label: "Interviews", icon: CalendarDays },
   { href: "/job-seeker/profile", label: "My profile", icon: UserRound },
+  { href: "/job-seeker/settings", label: "Account settings", icon: Settings },
 ];
 
 export default function WorkspaceShell({ role, children }: { role: WorkspaceRole; children: ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
-  const rehydrated = useAppSelector(state => state.auth._persist?.rehydrated ?? false);
+  const { user, isAuthenticated, sessionChecked } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => { setMobileOpen(false); }, [pathname]);
   useEffect(() => {
-    if (!rehydrated) return;
+    if (!sessionChecked) return;
     if (user && user.role !== role) router.replace(user.role === "recruiter" ? "/recruiter" : user.role === "seeker" ? "/job-seeker" : "/");
     else if (!isAuthenticated) router.replace("/auth");
-  }, [isAuthenticated, rehydrated, role, router, user]);
+  }, [isAuthenticated, sessionChecked, role, router, user]);
   useEffect(() => {
     if (!mobileOpen) return;
     const close = (event: KeyboardEvent) => { if (event.key === "Escape") setMobileOpen(false); };
@@ -53,16 +53,16 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
     return () => document.removeEventListener("keydown", close);
   }, [mobileOpen]);
 
-  if (!rehydrated || !user || user.role !== role) return <WorkspaceLoading />;
+  if (!sessionChecked || !isAuthenticated || !user || user.role !== role) return <WorkspaceLoading />;
   const nav = role === "recruiter" ? recruiterLinks : seekerLinks;
   return (
     <div className="jobhub-workspace">
       <Header />
       <div className="jh-workspace-shell">
-        {mobileOpen && <button type="button" aria-label="Close workspace menu" className="fixed inset-0 z-[60] bg-black/60 lg:hidden" onClick={() => setMobileOpen(false)} />}
+        {mobileOpen && <button type="button" aria-label="Close workspace menu" className="fixed inset-0 z-[60] bg-[#0c243b]/55 lg:hidden" onClick={() => setMobileOpen(false)} />}
         <aside id="jh-workspace-nav" className="jh-workspace-sidebar" data-open={mobileOpen} aria-label={`${role === "recruiter" ? "Recruiter" : "Candidate"} workspace navigation`}>
-          <div className="mb-6 flex items-center justify-between border-b border-[#eaecf0] px-3 pb-5">
-            <div><p className="jh-kicker">Workspace</p><p className="mt-1 text-base font-bold text-neutral-900">{role === "recruiter" ? "Recruiting" : "My career"}</p></div>
+          <div className="mb-6 flex items-center justify-between border-b border-[#e1e8ef] px-3 pb-5">
+            <div><p className="jh-kicker">Workspace</p><p className="mt-1 text-lg font-semibold text-[#162839]">{role === "recruiter" ? "Recruiting" : "My career"}</p></div>
             <button type="button" className="jh-icon-button lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close workspace navigation"><X size={18} /></button>
           </div>
           <p className="jh-sidebar-label">Manage</p>
@@ -72,7 +72,7 @@ export default function WorkspaceShell({ role, children }: { role: WorkspaceRole
               return <Link key={href} href={href} aria-current={active ? "page" : undefined} className="jh-sidebar-link" onClick={() => setMobileOpen(false)}><Icon aria-hidden="true" size={18} /><span>{label}</span></Link>;
             })}
           </nav>
-          <div className="mt-8 border-t border-[#eaecf0] pt-4">
+          <div className="mt-8 border-t border-[#e1e8ef] pt-4">
             <p className="jh-sidebar-label">Account</p>
             <Link href="/notifications" className="jh-sidebar-link"><Bell aria-hidden="true" size={18} />Notifications</Link>
             <Link href="/job" className="jh-sidebar-link"><BriefcaseBusiness aria-hidden="true" size={18} />Browse jobs</Link>

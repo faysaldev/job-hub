@@ -3,19 +3,16 @@
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import {
-  selectCurrentUser,
-  selectToken,
-  logout,
-  AuthUser,
-} from "@/src/redux/features/auth/authSlice";
+import { selectCurrentUser, selectToken, selectSessionChecked, logout, AuthUser } from "@/src/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/src/redux/hooks";
 import { baseApi } from "@/src/redux/baseApi/baseApi";
+import { invalidatePendingRefresh } from "@/src/lib/authSession";
 
 interface UseAuthReturn {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
+  sessionChecked: boolean;
   isJobSeeker: boolean;
   isRecruiter: boolean;
   isAdmin: boolean;
@@ -24,55 +21,40 @@ interface UseAuthReturn {
   redirectIfUnauthorized: (allowedRoles?: AuthUser["role"][]) => boolean;
 }
 
-/**
- * Central auth hook — replaces all usages of mockUser throughout the app.
- * Reads auth state from Redux (persisted via redux-persist).
- */
 export const useAuth = (): UseAuthReturn => {
   const user = useSelector(selectCurrentUser);
   const token = useSelector(selectToken);
+  const sessionChecked = useSelector(selectSessionChecked);
   const dispatch = useAppDispatch();
   const router = useRouter();
 
   const handleLogout = useCallback(() => {
-    // Fire the revocation request before clearing the access token.
-    if (token) {
-      void fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3001"}/api/v1/auth/logout`, {
-        method: "POST", credentials: "include", keepalive: true,
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
-    }
+    invalidatePendingRefresh();
+    // Revoke the refresh session server-side; don't depend on an unexpired access token.
+    void fetch(`${(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3001").replace(/\/$/, "")}/api/v1/auth/logout`, {
+      method: "POST", credentials: "include", keepalive: true,
+    }).catch(() => {});
     dispatch(logout());
     dispatch(baseApi.util.resetApiState());
-    // Clear any localStorage residuals for backwards compatibility
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    router.push("/auth");
-  }, [dispatch, router, token]);
+    router.replace("/auth");
+  }, [dispatch, router]);
 
-  /**
-   * Returns false and redirects if the user does not have one of the allowed roles.
-   * Call this at the top of role-guarded pages.
-   */
   const redirectIfUnauthorized = useCallback(
     (allowedRoles?: AuthUser["role"][]): boolean => {
-      if (!user || !token) {
-        router.push("/auth");
-        return false;
-      }
+      if (!sessionChecked) return false;
+      if (!user || !token) { router.replace("/auth"); return false; }
       if (allowedRoles && !allowedRoles.includes(user.role)) {
-        // Redirect to their correct dashboard
-        router.push(user.role === "recruiter" ? "/recruiter" : "/job-seeker");
+        router.replace(user.role === "recruiter" ? "/recruiter" : user.role === "seeker" ? "/job-seeker" : "/");
         return false;
       }
       return true;
-    },
-    [user, token, router],
+    }, [user, token, router, sessionChecked],
   );
 
   return {
-    user,
-    token,
+    user, token, sessionChecked,
     isAuthenticated: !!user && !!token,
     isJobSeeker: user?.role === "seeker",
     isRecruiter: user?.role === "recruiter",

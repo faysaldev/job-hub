@@ -14,179 +14,189 @@ import {
   Briefcase,
   Search,
 } from "lucide-react";
-import Link from "next/link";
 
 interface SignUpFormProps {
   loading: boolean;
   handleSignUp: (e: React.FormEvent<HTMLFormElement>) => void;
+  error?: string;
+  fieldErrors?: Record<string, string>;
 }
 
-const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
+const SignUpForm = ({ loading, handleSignUp, error, fieldErrors = {} }: SignUpFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState("seeker");
 
   return (
-    <form onSubmit={handleSignUp} className="space-y-3.5">
-      <div className="space-y-1.5">
+    <form onSubmit={handleSignUp} className="space-y-4">
+      {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+      <div className="space-y-2">
         <Label
           htmlFor="name"
-          className="text-[11px] font-bold uppercase tracking-wider text-neutral-700"
+          className="text-[#163B5C] font-semibold text-sm tracking-wide"
         >
           Full Name
         </Label>
         <div className="relative">
-          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="name"
+            aria-invalid={!!fieldErrors.name}
             name="name"
-            placeholder="John Doe"
+            placeholder="Enter your full name"
             required
-            className="pl-10 h-11 border-[#eaecf0] bg-white shadow-2xs focus:border-black focus:ring-1 focus:ring-black transition-all rounded-xl placeholder:text-neutral-400 text-sm text-[#111827]"
+            className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
           />
         </div>
       </div>
-      <div className="space-y-1.5">
+      {fieldErrors.name && <p role="alert" className="text-xs text-red-700">{fieldErrors.name}</p>}
+      <div className="space-y-2">
         <Label
           htmlFor="signup-email"
-          className="text-[11px] font-bold uppercase tracking-wider text-neutral-700"
+          className="text-[#163B5C] font-semibold text-sm tracking-wide"
         >
           Email Address
         </Label>
         <div className="relative">
-          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="signup-email"
+            aria-invalid={!!fieldErrors.email}
             name="signup-email"
             type="email"
-            placeholder="name@company.com"
+            placeholder="Enter your email"
             required
-            className="pl-10 h-11 border-[#eaecf0] bg-white shadow-2xs focus:border-black focus:ring-1 focus:ring-black transition-all rounded-xl placeholder:text-neutral-400 text-sm text-[#111827]"
+            className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
           />
         </div>
       </div>
-      <div className="space-y-1.5">
+      {fieldErrors.email && <p role="alert" className="text-xs text-red-700">{fieldErrors.email}</p>}
+      <div className="space-y-2">
         <Label
           htmlFor="phone"
-          className="text-[11px] font-bold uppercase tracking-wider text-neutral-700"
+          className="text-[#163B5C] font-semibold text-sm tracking-wide"
         >
           Phone Number
         </Label>
         <div className="relative">
-          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="phone"
+            aria-invalid={!!fieldErrors.phoneNumber}
             name="phone"
             type="tel"
-            placeholder="+1 (555) 000-0000"
+            placeholder="Your contact number"
             required
-            className="pl-10 h-11 border-[#eaecf0] bg-white shadow-2xs focus:border-black focus:ring-1 focus:ring-black transition-all rounded-xl placeholder:text-neutral-400 text-sm text-[#111827]"
+            className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
           />
         </div>
       </div>
-      <div className="space-y-1.5">
+      {fieldErrors.phoneNumber && <p role="alert" className="text-xs text-red-700">{fieldErrors.phoneNumber}</p>}
+      <div className="space-y-2">
         <Label
           htmlFor="signup-password"
-          className="text-[11px] font-bold uppercase tracking-wider text-neutral-700"
+          className="text-[#163B5C] font-semibold text-sm tracking-wide"
         >
           Password
         </Label>
         <div className="relative">
-          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="signup-password"
+            aria-invalid={!!fieldErrors.password}
             name="signup-password"
             minLength={8}
             maxLength={128}
             type={showPassword ? "text" : "password"}
-            placeholder="At least 8 characters"
+            placeholder="Create a strong password"
             required
-            className="pl-10 pr-10 h-11 border-[#eaecf0] bg-white shadow-2xs focus:border-black focus:ring-1 focus:ring-black transition-all rounded-xl placeholder:text-neutral-400 text-sm text-[#111827]"
+            className="pl-11 pr-10 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
           />
           <button
             type="button"
             aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black transition-colors cursor-pointer"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#516C83]/80 hover:text-[#163B5C] transition-colors cursor-pointer"
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-5 w-5" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-5 w-5" />
             )}
           </button>
         </div>
       </div>
-      <div className="space-y-1.5">
-        <Label className="text-[11px] font-bold uppercase tracking-wider text-neutral-700">
-          Account Type
+      {fieldErrors.password && <p role="alert" className="text-xs text-red-700">{fieldErrors.password}</p>}
+      <div className="space-y-2">
+        <Label className="text-[#163B5C] font-semibold text-sm tracking-wide">
+          I am a
         </Label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
             onClick={() => setUserType("seeker")}
             aria-pressed={userType === "seeker"}
-            className={`flex items-center justify-center gap-2.5 p-3 rounded-xl border transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-3 p-2 md:p-4 rounded-2xl border-2 transition-all duration-500 group/btn relative overflow-hidden cursor-pointer ${
               userType === "seeker"
-                ? "border-black bg-black/5 text-black shadow-2xs"
-                : "border-[#eaecf0] bg-white text-neutral-600 hover:border-neutral-300 hover:text-black"
+                ? "border-[#163B5C] bg-[#163B5C]/5 text-[#163B5C] shadow-md shadow-[#163B5C]/5"
+                : "border-slate-200/60 bg-white/60 text-[#516C83] hover:border-[#163B5C]/30 hover:bg-white"
             }`}
           >
             <div
-              className={`p-1.5 rounded-lg transition-colors ${userType === "seeker" ? "bg-black text-white" : "bg-neutral-100 text-neutral-600"}`}
+              className={`p-2 rounded-lg transition-colors ${userType === "seeker" ? "bg-[#163B5C] text-white" : "bg-[#516C83]/10"}`}
             >
-              <Search className="h-3.5 w-3.5" />
+              <Search className="h-4 w-4" />
             </div>
-            <span className="font-bold text-xs uppercase tracking-wider">Job Seeker</span>
+            <span className="font-bold text-sm">Job Seeker</span>
           </button>
           <button
             type="button"
             onClick={() => setUserType("recruiter")}
             aria-pressed={userType === "recruiter"}
-            className={`flex items-center justify-center gap-2.5 p-3 rounded-xl border transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-3 p-1 md:p-4 rounded-2xl border-2 transition-all duration-500 group/btn relative overflow-hidden cursor-pointer ${
               userType === "recruiter"
-                ? "border-black bg-black/5 text-black shadow-2xs"
-                : "border-[#eaecf0] bg-white text-neutral-600 hover:border-neutral-300 hover:text-black"
+                ? "border-[#163B5C] bg-[#163B5C]/5 text-[#163B5C] shadow-md shadow-[#163B5C]/5"
+                : "border-slate-200/60 bg-white/60 text-[#516C83] hover:border-[#163B5C]/30 hover:bg-white"
             }`}
           >
             <div
-              className={`p-1.5 rounded-lg transition-colors ${userType === "recruiter" ? "bg-black text-white" : "bg-neutral-100 text-neutral-600"}`}
+              className={`p-2 rounded-lg transition-colors ${userType === "recruiter" ? "bg-[#163B5C] text-white" : "bg-[#516C83]/10"}`}
             >
-              <Briefcase className="h-3.5 w-3.5" />
+              <Briefcase className="h-4 w-4" />
             </div>
-            <span className="font-bold text-xs uppercase tracking-wider">Recruiter</span>
+            <span className="font-bold text-sm">Recruiter</span>
           </button>
         </div>
         <input type="hidden" name="user-type" value={userType} />
       </div>
-      <div className="flex items-start space-x-2.5 p-3 bg-neutral-50 rounded-xl border border-[#eaecf0]">
+      <div className="flex items-start space-x-3 p-4 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200/60">
         <Checkbox
           id="terms"
           name="terms"
           required
-          className="mt-0.5 border-neutral-300 data-[state=checked]:bg-black data-[state=checked]:border-black"
+          className="mt-0.5 border-[#163B5C]/30 data-[state=checked]:bg-[#163B5C] data-[state=checked]:border-[#163B5C]"
         />
         <Label
           htmlFor="terms"
-          className="text-neutral-600 text-xs leading-relaxed cursor-pointer"
+          className="text-[#516C83] text-xs md:text-sm leading-relaxed cursor-pointer"
         >
           I agree to the{" "}
-          <Link href="/terms-of-service" className="text-black font-semibold hover:underline">
+          <span className="text-[#163B5C] font-semibold hover:underline cursor-pointer">
             Terms of Service
-          </Link>{" "}
+          </span>{" "}
           and{" "}
-          <Link href="/privacy-policy" className="text-black font-semibold hover:underline">
+          <span className="text-[#163B5C] font-semibold hover:underline cursor-pointer">
             Privacy Policy
-          </Link>
+          </span>
         </Label>
       </div>
       <Button
         type="submit"
-        className="w-full h-11 bg-black hover:bg-neutral-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-2xs transition-all group cursor-pointer"
+        className="w-full h-12 bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
         disabled={loading}
       >
         {loading ? (
           <span className="flex items-center gap-2">
-            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
               <circle
                 className="opacity-25"
                 cx="12"
@@ -207,7 +217,7 @@ const SignUpForm = ({ loading, handleSignUp }: SignUpFormProps) => {
         ) : (
           <span className="flex items-center justify-center gap-2">
             Create Account
-            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </span>
         )}
       </Button>

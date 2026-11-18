@@ -2,66 +2,68 @@ import { useState } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";
 
 interface SignInFormProps {
   loading: boolean;
   handleSignIn: (e: React.FormEvent<HTMLFormElement>) => void;
+  error?: string;
 }
 
-const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
+const SignInForm = ({ loading, handleSignIn, error }: SignInFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <form onSubmit={handleSignIn} className="space-y-4">
-      <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-[11px] font-bold uppercase tracking-wider text-neutral-700">
+    <form onSubmit={handleSignIn} className="space-y-5">
+      {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-[#163B5C] font-semibold text-sm tracking-wide">
           Email Address
         </Label>
         <div className="relative">
-          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder="name@company.com"
+            placeholder="Enter your email"
             required
-            className="pl-10 h-11 border-[#eaecf0] bg-white shadow-2xs focus:border-black focus:ring-1 focus:ring-black transition-all rounded-xl placeholder:text-neutral-400 text-sm text-[#111827]"
+            className="pl-11 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
           />
         </div>
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="password" className="text-[11px] font-bold uppercase tracking-wider text-neutral-700">
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-[#163B5C] font-semibold text-sm tracking-wide">
           Password
         </Label>
         <div className="relative">
-          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]/80" />
           <Input
             id="password"
             name="password"
             type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
             required
-            className="pl-10 pr-10 h-11 border-[#eaecf0] bg-white shadow-2xs focus:border-black focus:ring-1 focus:ring-black transition-all rounded-xl placeholder:text-neutral-400 text-sm text-[#111827]"
+            className="pl-11 pr-10 h-12 border-slate-200/60 bg-white/60 backdrop-blur-md shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:bg-white focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/10 transition-all duration-300 rounded-xl placeholder:text-[#516C83]/50 text-[#163B5C]"
           />
           <button
             type="button"
             aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-black transition-colors cursor-pointer"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#516C83]/80 hover:text-[#163B5C] transition-colors cursor-pointer"
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
       </div>
       <Button
         type="submit"
-        className="w-full h-11 bg-black hover:bg-neutral-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-2xs transition-all group cursor-pointer"
+        className="w-full h-12 bg-gradient-to-r from-[#163B5C] to-[#516C83] hover:from-[#163B5C]/95 hover:to-[#516C83]/95 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
         disabled={loading}
       >
         {loading ? (
           <span className="flex items-center gap-2">
-            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
@@ -70,7 +72,7 @@ const SignInForm = ({ loading, handleSignIn }: SignInFormProps) => {
         ) : (
           <span className="flex items-center justify-center gap-2">
             Sign In
-            <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </span>
         )}
       </Button>

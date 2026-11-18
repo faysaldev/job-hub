@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import {
   persistReducer,
+  createMigrate,
   FLUSH,
   REHYDRATE,
   PAUSE,
@@ -17,6 +18,11 @@ import { baseApi } from "@/src/redux/baseApi/baseApi";
 const persistConfig = {
   key: "auth",
   storage,
+  version: 2,
+  // Public account details may be cached; access credentials must never be persisted.
+  whitelist: ["user"],
+  migrate: createMigrate({ 2: (state) => state ? { ...state, token: null,
+    sessionChecked: false, sessionNotice: null } : state }, { debug: false }),
 };
 const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 
