@@ -51,7 +51,7 @@ const getDiscoveryJobs = async () => {
     { $addFields: { isSponsored: { $gt: ["$sponsoredUntil", now] } } },
     { $sort: { isSponsored: -1, createdAt: -1, _id: -1 } }, { $limit: 6 },
     { $project: { author: 1, title: 1, type: 1, location: 1, locationType: 1,
-      salaryMin: 1, salaryMax: 1, salaryPeriod: 1, applicationDeadline: 1, createdAt: 1, isSponsored: 1 } },
+      salaryMin: 1, salaryMax: 1, salaryPeriod: 1, applicationDeadline: 1, createdAt: 1, isSponsored: 1, bannerUrl: 1 } },
     { $lookup: { from: "companies", localField: "author", foreignField: "userId", as: "company",
       pipeline: [{ $project: { companyName: 1, companyLogo: 1 } }] } },
     { $unwind: { path: "$company", preserveNullAndEmptyArrays: true } },
@@ -68,12 +68,12 @@ const getTopJobs = async () => {
   const eligible = publicJobFilter();
   const jobs = ids.length ? await Job.find({ _id: { $in: ids }, ...eligible })
     .populate("company", "companyLogo companyName")
-    .select("title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline")
+    .select("title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline bannerUrl")
     .lean() : [];
   if (jobs.length >= 6) return jobs;
   return Job.find(eligible).sort({ createdAt: -1, _id: -1 }).limit(10)
     .populate("company", "companyLogo companyName")
-    .select("title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline")
+    .select("title type author createdAt salaryMin salaryMax salaryPeriod location locationType applicationDeadline bannerUrl")
     .lean();
 };
 

@@ -35,7 +35,7 @@ export const getCompanyService = async (
       path: "jobs",
       match: publicJobFilter(),
       select:
-        "title type location locationType salaryMax salaryMin salaryPeriod",
+        "title type location locationType salaryMax salaryMin salaryPeriod bannerUrl",
     });
   if (!company?.userId) return null;
   // Public company pages expose verification status, not internal reviewer notes.

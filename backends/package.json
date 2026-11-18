@@ -12,6 +12,8 @@
     "phase3:rollback:dry": "node scripts/phase3-rollback-media.cjs --dry-run",
     "phase3:static-check": "node scripts/phase3-static-check.cjs",
     "phase3:live-smoke": "node scripts/phase3-live-smoke.cjs",
+    "phase3:r2-preflight": "node scripts/phase3-r2-preflight.cjs",
+    "phase3:check": "node --test tests/phase3-asset-policy.test.cjs tests/phase2-job-lifecycle.test.cjs tests/phase6-static.test.cjs",
     "phase4:preflight": "node scripts/phase4-preflight.cjs",
     "phase4:indexes": "node scripts/phase4-build-indexes.cjs",
     "phase4:static-check": "node scripts/phase4-static-check.cjs",

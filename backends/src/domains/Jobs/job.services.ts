@@ -5,6 +5,7 @@ import redis from "../../config/redis";
 import { escapeRegex, assertId } from "../../lib/query";
 import { companyForActor, jobForActor } from "../Company/company.access";
 import { assertPublishableJob } from "./job.validation";
+import { assertCompanyBanner } from "../Asset/asset.services";
 import { AppError } from "../../lib/errors";
 import { requireJobSlot, withCompanyQuotaLock, currentEntitlement, getUsage } from "../Billing/billing.entitlements";
 import { jobOwnerFilter, publicJobFilter, quotaJobFilter, reservesJobSlot } from "./job.lifecycle";
@@ -49,7 +50,7 @@ const getJobsByAuthorId = async (authorId: string, requesterId?: string) => {
   const workspace = requesterId ? await companyForActor(requesterId, "view").catch(() => null) : null;
   const permitted = String(workspace?.company.userId || "") === authorId;
   return Job.find({ author: authorId, isDeleted: { $ne: true }, ...(permitted ? {} : publicJobFilter()) })
-    .select("author companyId title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive responsibilities requirements benefits positions status publishAt")
+    .select("author companyId title category subcategory type location locationType salaryMin salaryMax salaryPeriod experienceLevel description skills applicationDeadline createdAt isActive responsibilities requirements benefits positions status publishAt bannerUrl")
     .sort({ createdAt: -1, _id: -1 }).lean();
 };
 
@@ -64,7 +65,7 @@ const getWorkspaceJobs = async (actorId: string, options: { status?: string; pag
   else if (options.status) throw new AppError("Invalid job status", 400);
   const now = new Date();
   const [jobs, total, usage, { entitlement }] = await Promise.all([
-    Job.find(query).select("title status isActive publishAt publishedAt applicationDeadline location type createdAt author companyId positions sponsoredUntil pendingDraft moderation.status")
+    Job.find(query).select("title status isActive publishAt publishedAt applicationDeadline location type createdAt author companyId positions sponsoredUntil pendingDraft moderation.status bannerUrl")
       .sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
     Job.countDocuments(query), getUsage(company), currentEntitlement(String(company._id)),
   ]);
@@ -80,6 +81,7 @@ const getWorkspaceJobs = async (actorId: string, options: { status?: string; pag
 
 const createJob = async (data: Partial<IJob>, actorId: string) => {
   const { company } = await companyForActor(actorId, "jobs");
+  if (data.bannerUrl) await assertCompanyBanner(data.bannerUrl, String(company._id));
   const status = data.status || "published";
   if (status === "closed") throw new AppError("Create a draft before closing a job", 422, true,
     [{ field: "status", message: "A new job must be draft, scheduled or published" }]);
@@ -101,6 +103,7 @@ const createJob = async (data: Partial<IJob>, actorId: string) => {
 /** One PATCH-compatible PUT route handles drafts, publication, closure, and edits. */
 const updateJob = async (id: string, updateData: Partial<IJob>, actorId: string) => {
   const { company, job } = await jobForActor(id, actorId, "jobs");
+  if (updateData.bannerUrl) await assertCompanyBanner(updateData.bannerUrl, String(company._id));
   const updated = await withCompanyQuotaLock(String(company._id), async session => {
     const current = await Job.findOne({ _id: job._id, isDeleted: { $ne: true } }).session(session);
     if (!current) throw new AppError("Job not found", 404);
@@ -258,7 +261,7 @@ const searchJobs = async (options: SearchJobsParams = {}) => {
       { $project: { _id: 1, author: 1, title: 1, category: 1, subcategory: 1,
         type: 1, location: 1, locationType: 1, salaryMin: 1, salaryMax: 1,
         salaryPeriod: 1, experienceLevel: 1, description: 1, skills: 1,
-        applicationDeadline: 1, createdAt: 1, isActive: 1, positions: 1,
+        applicationDeadline: 1, createdAt: 1, isActive: 1, positions: 1, bannerUrl: 1,
         isSponsored: 1, sponsoredUntil: 1 } },
       { $lookup: { from: "companies", localField: "author", foreignField: "userId", as: "company",
         pipeline: [{ $project: { companyName: 1, companyLogo: 1, companySize: 1 } }] } },

@@ -11,6 +11,7 @@ export interface IJob extends Document {
   /** Staged edits never mutate a published/scheduled public snapshot until published. */
   pendingDraft?: Record<string, unknown>;
   publishedAt?: Date;
+  bannerUrl?: string;
   title: string;
   category: string;
   subcategory: string;
@@ -46,6 +47,7 @@ const jobSchema = new Schema<IJob>(
     publishAt: { type: Date },
     pendingDraft: { type: Schema.Types.Mixed, default: undefined },
     publishedAt: { type: Date },
+    bannerUrl: { type: String, trim: true, maxlength: 2048 },
     title: {
       type: String,
       required: false,

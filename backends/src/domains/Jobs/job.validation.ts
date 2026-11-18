@@ -30,6 +30,7 @@ const fields = z.object({
   salaryPeriod: salaryPeriod.optional(),
   experienceLevel: experienceLevel.optional(),
   description: text(10000).optional(),
+  bannerUrl: z.union([z.string().url().startsWith("https://").max(2048), z.literal("")]).optional(),
   requirements: strings().optional(),
   responsibilities: strings().optional(),
   benefits: strings().optional(),

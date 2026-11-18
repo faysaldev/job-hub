@@ -3,6 +3,7 @@ import { asyncHandler } from "../../lib/errorsHandle";
 import { response } from "../../lib/response";
 import { AppError } from "../../lib/errors";
 import { ProtectedRequest } from "../../types/protected-request";
+import { companyForActor } from "../Company/company.access";
 import { confirmUpload, getAssetAccess, initiateUpload, uploadLegacyImage } from "./asset.services";
 
 const send = (res: Response, data: object, message: string, statusCode = 200) =>
@@ -11,8 +12,15 @@ const send = (res: Response, data: object, message: string, statusCode = 200) =>
 const initiate = asyncHandler(async (req: ProtectedRequest, res: Response) => {
   const kind = req.body.kind;
   if ((kind === "resume" && req.user?.role !== "seeker") ||
-      (kind === "company-logo" && req.user?.role !== "recruiter")) {
+      (["company-logo", "job-banner"].includes(kind) && req.user?.role !== "recruiter")) {
     throw new AppError("File purpose is not allowed for this account", 403);
+  }
+  if (kind === "company-logo") {
+    // Logo can be staged before first company creation. Existing teams require company-edit permission.
+    await companyForActor(req.user!._id, "company").catch((error) => {
+      if (error instanceof AppError && error.statusCode === 403 && error.message.includes("Create or join")) return null;
+      throw error;
+    });
   }
   const result = await initiateUpload(req.user!._id, req.body);
   res.setHeader("Cache-Control", "no-store");

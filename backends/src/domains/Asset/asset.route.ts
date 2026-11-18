@@ -10,7 +10,7 @@ const router = Router();
 router.use(authMiddleware);
 // Exactly three operations for all image, resume and messaging-attachment purposes.
 router.post("/uploads", rateLimit(100, 60 * 60, "r2-sign"), validate(z.object({
-  kind: z.enum(["avatar", "company-logo", "resume", "attachment"]),
+  kind: z.enum(["avatar", "company-logo", "job-banner", "resume", "attachment"]),
   fileName: z.string().trim().min(1).max(255),
   mimeType: z.string().min(1).max(150),
   size: z.number().int().positive().max(10_000_000),
