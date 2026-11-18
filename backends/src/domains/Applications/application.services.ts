@@ -6,6 +6,7 @@ import { AppError } from "../../lib/errors";
 import { assertId, paging } from "../../lib/query";
 import { assertOwnedResume } from "../Asset/asset.services";
 import { companyForActor, jobForActor } from "../Company/company.access";
+import { APPLICATION_TRANSITIONS, allowedATSStages } from "./application.pipeline";
 
 const notify = async (to: string, from: string, title: string) => {
   try { await createNotification({ title, link: "/job-seeker/applications", sender: from, receiver: to }); }
@@ -44,19 +45,14 @@ const getRecruiterApplications = async (actorId: string, filters: any = {}, isAd
   if (filters.status) query.status = filters.status;
   if (filters.jobId) query.job_id = { $eq: assertId(filters.jobId, "job ID"),
     ...(isAdmin ? {} : { $in: (query.job_id as { $in: unknown[] }).$in }) };
-  return Application.find(query).populate("applicant", "name email image")
+  const applications = await Application.find(query).populate("applicant", "name email image")
     .populate("job_id", "title location type author companyId").sort({ boostPriority: -1, createdAt: -1 })
     .skip((bounds.page - 1) * bounds.limit).limit(bounds.limit).lean();
+  return applications.map((application) => ({ ...application,
+    allowedTransitions: allowedATSStages(String(application.status), application.offer?.status),
+  }));
 };
 
-const transitions: Record<string, string[]> = {
-  applied: ["under_review", "shortlisted", "rejected"],
-  under_review: ["shortlisted", "interview", "hired", "rejected"],
-  shortlisted: ["interview", "hired", "rejected"],
-  interview: ["shortlisted", "hired", "rejected"],
-  offer: ["hired", "rejected"],
-  rejected: [], hired: [],
-};
 const transition = async (id: string, actorId: string, status: string, note?: string, isAdmin = false) => {
   const application = await Application.findOne({ _id: assertId(id, "application ID"), isWithdrawn: { $ne: true } });
   if (!application) throw new AppError("Application not found", 404);
@@ -64,7 +60,7 @@ const transition = async (id: string, actorId: string, status: string, note?: st
   if (!job) throw new AppError("Application not found", 404);
   const previous = String(application.status);
   if (status === previous) return application;
-  if (!transitions[previous]?.includes(status)) throw new AppError(`Cannot move from ${previous} to ${status}`, 409);
+  if (!APPLICATION_TRANSITIONS[previous]?.includes(status)) throw new AppError(`Cannot move from ${previous} to ${status}`, 409);
   if (status === "hired" && application.offer?.status && application.offer.status !== "accepted")
     throw new AppError("Candidate must accept the offer before hiring", 409);
   const updated = await Application.findOneAndUpdate({ _id: application._id, status: previous, isWithdrawn: { $ne: true } },

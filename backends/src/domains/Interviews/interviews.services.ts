@@ -7,6 +7,7 @@ import CompanyMember from "../Company/company.member.model";
 import { companyForActor, jobForActor } from "../Company/company.access";
 import { AppError } from "../../lib/errors";
 import { assertId } from "../../lib/query";
+import { createInterviewSlot } from "./interviews.slot";
 
 const accessibleInterview = async (id: string, actor: string, requireAssignee = false) => {
   const interview = await Interview.findById(assertId(id, "interview ID"));
@@ -17,31 +18,45 @@ const accessibleInterview = async (id: string, actor: string, requireAssignee = 
     throw new AppError("Only assigned interviewers can update their interviews", 403);
   return interview;
 };
+const assertInterviewer = async (company: any, assignee: string) => {
+  if (assignee === String(company.userId)) return;
+  const member = await CompanyMember.exists({ companyId: company._id, userId: assertId(assignee, "interviewer ID"),
+    status: "active", role: { $in: ["admin", "recruiter", "interviewer"] } });
+  if (!member) throw new AppError("Selected interviewer is not an active company member", 403);
+};
+const slotFrom = (data: { date: Date | string; start_time: string; end_time: string; timeZone?: string }) => {
+  try { return createInterviewSlot(data); }
+  catch (error) { throw new AppError(error instanceof Error ? error.message : "Invalid appointment", 400); }
+};
+const checkConflict = async (assignee: string, startAt: Date, endAt: Date, excludeId?: string) => {
+  const collision = await Interview.exists({ interviewer: assignee, status: "scheduled",
+    startAt: { $lt: endAt }, endAt: { $gt: startAt },
+    ...(excludeId ? { _id: { $ne: excludeId } } : {}) });
+  if (collision) throw new AppError("Interviewer already has an interview in this time slot", 409);
+};
 const scheduleInterview = async (data: Partial<IInterview>, actor: string) => {
-  if (!data.application_id || !data.job_id || !data.interviewee) throw new AppError("Missing interview fields", 400);
+  if (!data.application_id || !data.job_id || !data.interviewee || !data.date || !data.start_time || !data.end_time)
+    throw new AppError("Missing interview fields", 400);
   const { job, company } = await jobForActor(String(data.job_id), actor, "jobs");
   const assignee = data.interviewer ? String(data.interviewer) : actor;
-  if (assignee !== String(company.userId)) {
-    const teammate = await CompanyMember.exists({ companyId: company._id, userId: assignee, status: "active",
-      role: { $in: ["admin", "recruiter", "interviewer"] } });
-    if (!teammate) throw new AppError("Selected interviewer does not belong to this company", 403);
-  }
+  await assertInterviewer(company, assignee);
   const application = await Application.findOne({ _id: data.application_id, job_id: job._id,
     applicant: data.interviewee, isWithdrawn: { $ne: true }, status: { $in: ["under_review", "shortlisted", "interview"] } });
   if (!application) throw new AppError("Screen this candidate before scheduling an interview", 409);
-  const interview = await Interview.create({ ...data, job_id: job._id, interviewer: assignee });
+  const slot = slotFrom({ date: data.date, start_time: data.start_time, end_time: data.end_time, timeZone: data.timeZone });
+  await checkConflict(assignee, slot.startAt, slot.endAt);
+  const interview = await Interview.create({ ...data, ...slot, application_id: application._id,
+    interviewee: application.applicant, job_id: job._id, interviewer: assignee });
   if (application.status !== "interview") {
     try { await appService.updateApplicationStatus(String(application._id), actor, "interview"); }
-    catch (error) {
-      await Interview.deleteOne({ _id: interview._id });
-      throw error;
-    }
+    catch (error) { await Interview.deleteOne({ _id: interview._id }); throw error; }
   }
-  try { await createNotification({ title: `Interview scheduled for ${job.title}`, link: "/job-seeker/interviews",
-    sender: actor, receiver: String(application.applicant) });
+  try {
+    await createNotification({ title: `Interview scheduled for ${job.title}`, link: "/job-seeker/interviews",
+      sender: actor, receiver: String(application.applicant) });
     if (assignee !== actor) await createNotification({ title: `You are assigned an interview for ${job.title}`,
-      link: "/recruiter/interviews", sender: actor, receiver: assignee }); }
-  catch (error) { console.error("Failed to send interview notice", error); }
+      link: "/recruiter/interviews", sender: actor, receiver: assignee });
+  } catch (error) { console.error("Failed to send interview notice", error); }
   return interview;
 };
 const getInterviewsForUser = async (actor: string, role: "interviewer" | "interviewee") => {
@@ -69,9 +84,14 @@ const getInterviewsForUser = async (actor: string, role: "interviewer" | "interv
 };
 const updateInterviewStatus = async (id: string, status: "scheduled" | "completed" | "cancelled", actor: string) => {
   const interview = await accessibleInterview(id, actor);
-  const updated = await Interview.findOneAndUpdate({ _id: interview._id, status: { $ne: "cancelled" } },
+  if (interview.status !== "scheduled" || status === "scheduled")
+    throw new AppError("Only scheduled interviews can be completed or cancelled", 409);
+  const updated = await Interview.findOneAndUpdate({ _id: interview._id, status: "scheduled" },
     { $set: { status } }, { new: true, runValidators: true });
-  if (!updated) throw new AppError("Interview cannot be updated", 409);
+  if (!updated) throw new AppError("Interview was already updated", 409);
+  try { await createNotification({ title: `Interview ${status}`, link: "/job-seeker/interviews",
+    sender: actor, receiver: updated.interviewee }); }
+  catch (error) { console.error("Interview status notification failed", error); }
   return updated;
 };
 const saveScorecard = async (id: string, actor: string, input: { overall: number; recommendation: string;
@@ -90,14 +110,29 @@ const hireCandidate = async (jobId: string, candidateId: string, actor: string) 
   await Interview.updateMany({ job_id: jobId, interviewee: candidateId, status: "scheduled" }, { $set: { status: "completed" } });
   return { success: true };
 };
-const rescheduleInterview = async (id: string, data: { date: string; start_time: string; end_time: string }, actor: string) => {
+const rescheduleInterview = async (id: string, data: { date: string | Date; start_time: string;
+  end_time: string; timeZone?: string; meet_link?: string; interviewer?: string }, actor: string) => {
   const interview = await accessibleInterview(id, actor);
-  const updated = await Interview.findOneAndUpdate({ _id: interview._id, status: "scheduled" },
-    { $set: { date: data.date, start_time: data.start_time, end_time: data.end_time } }, { new: true, runValidators: true });
-  if (!updated) throw new AppError("Cannot reschedule a finished interview", 409);
-  try { await createNotification({ title: "Interview rescheduled", link: "/job-seeker/interviews",
-    sender: actor, receiver: updated.interviewee }); }
-  catch (error) { console.error("Interview notification failed", error); }
+  if (interview.status !== "scheduled") throw new AppError("Only scheduled interviews can be rescheduled", 409);
+  const { company, teamRole } = await jobForActor(String(interview.job_id), actor, "interviews");
+  const assignee = data.interviewer || String(interview.interviewer);
+  if (teamRole === "interviewer" && assignee !== String(interview.interviewer))
+    throw new AppError("Only hiring managers can reassign interviews", 403);
+  await assertInterviewer(company, assignee);
+  const slot = slotFrom({ date: data.date, start_time: data.start_time, end_time: data.end_time,
+    timeZone: data.timeZone || interview.timeZone || "UTC" });
+  await checkConflict(assignee, slot.startAt, slot.endAt, String(interview._id));
+  const updated = await Interview.findOneAndUpdate({ _id: interview._id, status: "scheduled",
+    updatedAt: interview.updatedAt }, { $set: { ...slot, interviewer: assignee,
+      ...(data.meet_link !== undefined ? { meet_link: data.meet_link } : {}) } },
+    { new: true, runValidators: true });
+  if (!updated) throw new AppError("Interview was modified; refresh and retry", 409);
+  try {
+    await createNotification({ title: "Interview rescheduled", link: "/job-seeker/interviews",
+      sender: actor, receiver: updated.interviewee });
+    if (assignee !== String(interview.interviewer)) await createNotification({ title: "You are assigned an interview",
+      link: "/recruiter/interviews", sender: actor, receiver: assignee });
+  } catch (error) { console.error("Interview notification failed", error); }
   return updated;
 };
 export default { scheduleInterview, getInterviewsForUser, updateInterviewStatus, saveScorecard, hireCandidate, rescheduleInterview };

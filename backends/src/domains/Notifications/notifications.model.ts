@@ -8,6 +8,7 @@ export interface INotification extends Document {
   receiver: Types.ObjectId;
   isRead: boolean;
   isDeleted?: boolean;
+  dedupeKey?: string;
 }
 
 const notificationSchema = new Schema<INotification>(
@@ -33,6 +34,7 @@ const notificationSchema = new Schema<INotification>(
       required: true,
     },
 
+    dedupeKey: { type: String, maxlength: 160, select: false },
     isRead: {
       type: Boolean,
       default: false,
@@ -46,6 +48,7 @@ const notificationSchema = new Schema<INotification>(
 );
 
 // Index for efficient queries
+notificationSchema.index({ dedupeKey: 1 }, { unique: true, sparse: true });
 notificationSchema.index({ receiver: 1, createdAt: -1 }); // For fetching notifications by receiver
 notificationSchema.index({ receiver: 1, isRead: 1 }); // For fetching unread notifications
 notificationSchema.index({ receiver: 1, isDeleted: 1 }); // For excluding soft deleted notifications
