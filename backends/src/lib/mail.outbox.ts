@@ -84,14 +84,15 @@ export const deliverQueuedEmails = async (): Promise<number> => {
         await MailOutbox.updateOne({ _id: mail._id, status: "sending" },
           { $set: { status: "sent", sentAt: new Date() }, $unset: { encryptedBody: "", leaseUntil: "" } });
         completed++;
-      } catch {
+      } catch (error: unknown) {
+        const reason = error instanceof Error ? error.message : "Unknown error";
         const retryAt = new Date(Date.now() + BACKOFF_MS[Math.min(mail.attempts - 1, BACKOFF_MS.length - 1)]);
         const final = mail.attempts >= MAX_ATTEMPTS || retryAt >= mail.expiresAt;
         await MailOutbox.updateOne({ _id: mail._id, status: "sending" }, {
           $set: { status: final ? "failed" : "pending", availableAt: retryAt },
           $unset: final ? { encryptedBody: "", leaseUntil: "" } : { leaseUntil: "" },
         });
-        console.error(`[JobHub mail] ${mail.purpose} delivery ${final ? "failed" : "will retry"} (job ${mail._id.toString()}, attempt ${mail.attempts})`);
+        console.error(`[JobHub mail] ${mail.purpose} delivery ${final ? "failed" : "will retry"} (job ${mail._id.toString()}, attempt ${mail.attempts}): ${reason}`);
       }
     }
     // Expired messages must never be delivered, even if SMTP comes back later.
