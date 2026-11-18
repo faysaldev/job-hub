@@ -46,12 +46,14 @@ export default function BillingWorkspace() {
         {owner && profile.subscription.paid && <button disabled={!!busy} onClick={() => execute({ action: "portal" })} className={secondary}><CreditCard className="mr-2 inline h-4 w-4"/>{busy === "portal" ? "Opening…" : "Manage in Stripe"}</button>}
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        {[{ label:"Active jobs", value:profile.usage.activeJobs, max:profile.usage.limits.activeJobs },
+        {[{ label:"Published + scheduled slots", value:profile.usage.activeJobs, max:profile.usage.limits.activeJobs },
           { label:"Reserved team seats", value:profile.usage.teamSeats, max:profile.usage.limits.teamSeats },
           { label:"Available sponsor credits", value:profile.usage.creditBalance, max: null }].map(item =>
           <div key={item.label} className="rounded-lg border border-[#e1e8ef] bg-[#f8fafc] p-4"><p className="text-xs text-slate-600">{item.label}</p>
             <p className="mt-1 text-2xl font-semibold text-[#163B5C]">{item.value}{item.max !== null && <span className="text-sm font-normal text-slate-500"> / {item.max}</span>}</p></div>)}
       </div>
+      {(profile.usage.quotaOverage || 0) > 0 && <p role="status" className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Your existing listings exceed the current plan by {profile.usage.quotaOverage}. They remain intact; new publishing is paused until capacity is available or the plan is upgraded.</p>}
+      <p className="mt-3 text-xs text-slate-500">{profile.usage.openJobs ?? 0} open for applications · {profile.usage.scheduledJobs ?? 0} scheduled · {profile.usage.publishedJobs ?? 0} published in total (including expired)</p>
       {!owner && <p className="mt-4 text-sm text-slate-600">Only the company owner can purchase plans, sponsor jobs or manage billing details.</p>}
     </section>}
     <section className="space-y-4" aria-labelledby="plan-heading"><div><h2 id="plan-heading" className="text-xl font-semibold text-[#163B5C]">Choose your plan</h2>

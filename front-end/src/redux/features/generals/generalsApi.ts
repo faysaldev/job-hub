@@ -66,6 +66,11 @@ export interface RecruiterDashboardStats {
     percentage: number;
   };
   avgSalary: number;
+  openJobs: number;
+  scheduledJobs: number;
+  publishedJobs: number;
+  quota: { used: number; limit: number; overLimit: number };
+  interviews: { total: number };
 }
 
 const generalsApi = baseApi.injectEndpoints({

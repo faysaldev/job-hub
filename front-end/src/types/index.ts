@@ -127,6 +127,7 @@ export type ExperienceLevel =
 export type JobStatus = "draft" | "active" | "closed" | "expired";
 
 export interface Job {
+  _id?: string;
   id: string | number;
   recruiterId?: string;
   companyId?: string;
@@ -384,6 +385,8 @@ export interface JobFilters {
   subcategory?: string;
   location?: string;
   remote?: boolean;
+  locationType?: "remote" | "onsite" | "hybrid";
+  applicantCounts?: string;
   type?: JobType | JobType[] | string;
   experienceLevel?: ExperienceLevel | ExperienceLevel[] | string;
   salaryMin?: number;

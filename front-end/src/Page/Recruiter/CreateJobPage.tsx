@@ -43,6 +43,7 @@ import { jobCategories } from "@/src/lib/jobCategories";
 import { useCreateJobMutation, useUpdateJobMutation, useGetJobByIdQuery } from "@/src/redux/features/jobs/jobsApi";
 import { toast } from "sonner";
 import { Job } from "@/src/types";
+import { apiFieldErrors, apiErrorMessage } from "@/src/lib/apiErrors";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ export type CreateJobFormValues = {
   positions: string;
 };
 
-// ─── Shared Badge ─────────────────────────────────────────────────────────────
+// ─── Shared Badge (stable, defined before use) ───────────────────────────────
 
 const Badge = memo(
   ({
@@ -77,7 +78,7 @@ const Badge = memo(
     className?: string;
   }) => (
     <div
-      className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${className}`}
+      className={`rounded-full border px-4 py-1.5 text-xs font-black uppercase tracking-wider ${className}`}
     >
       {children}
     </div>
@@ -86,6 +87,7 @@ const Badge = memo(
 Badge.displayName = "Badge";
 
 // ─── Shared ListManager ───────────────────────────────────────────────────────
+// Only re-renders when its own list changes (useWatch is scoped to one field)
 
 const ListManager = memo(
   ({
@@ -109,10 +111,14 @@ const ListManager = memo(
       const val = inputRef.current?.value.trim();
       if (!val) return;
       const current = getValues(name) || [];
-      if (!current.includes(val)) {
-        setValue(name, [...current, val], { shouldDirty: true });
-        if (inputRef.current) inputRef.current.value = "";
+      const entries = name === "skills" ? val.split(/[,\n]+/) : [val];
+      const next = [...current];
+      for (const entry of entries) {
+        const item = entry.trim();
+        if (item && !next.some(existing => existing.toLowerCase() === item.toLowerCase())) next.push(item);
       }
+      setValue(name, next, { shouldDirty: true, shouldValidate: true });
+      if (inputRef.current) inputRef.current.value = "";
     }, [getValues, name, setValue]);
 
     const handleRemove = useCallback(
@@ -128,7 +134,7 @@ const ListManager = memo(
     );
 
     const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLInputElement>) => {
+      (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
           e.preventDefault();
           handleAdd();
@@ -138,8 +144,8 @@ const ListManager = memo(
     );
 
     return (
-      <div className="space-y-3">
-        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-900">
+      <div className="space-y-4">
+        <label className="block text-sm font-black text-[#163B5C]">
           {label}
         </label>
         <div className="flex gap-2">
@@ -147,52 +153,52 @@ const ListManager = memo(
             ref={inputRef}
             placeholder={placeholder}
             onKeyDown={handleKeyDown}
-            className="h-9 rounded-xl border border-[#eaecf0] bg-white text-xs font-medium focus:border-black focus:ring-1 focus:ring-black"
+            className="h-12 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] font-medium focus:border-[#163B5C]"
           />
           <Button
             type="button"
             onClick={handleAdd}
-            className="h-9 w-9 rounded-xl bg-black p-0 hover:bg-neutral-800 text-white shrink-0"
+            className="h-12 w-12 rounded-2xl bg-[#163B5C] p-0 hover:bg-[#516C83] text-white"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </Button>
         </div>
 
         {variant === "badge" ? (
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <div className="flex flex-wrap gap-2">
             {items?.map((item, index) => (
               <span
                 key={`${item}-${index}`}
-                className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200/60 bg-[#f3f4f6] px-2.5 py-1 text-xs font-medium text-neutral-700"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 px-3 py-1.5 text-sm font-black text-[#163B5C]"
               >
                 {item}
                 <button
                   type="button"
                   onClick={() => handleRemove(index)}
-                  className="hover:text-red-500 transition-colors"
+                  className="hover:text-red-400 transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </span>
             ))}
           </div>
         ) : (
-          <div className="space-y-1.5 pt-1">
+          <div className="space-y-2">
             {items?.map((item, index) => (
               <div
                 key={`${item}-${index}`}
-                className="group flex items-center gap-2.5 rounded-xl border border-neutral-100 bg-[#f8fafc] p-2.5"
+                className="group flex items-center gap-3 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-3"
               >
-                {Icon && <Icon className="h-3.5 w-3.5 text-neutral-400 shrink-0" />}
-                <span className="flex-1 text-xs font-medium text-neutral-800">
+                {Icon && <Icon className="h-4 w-4 text-[#516C83] shrink-0" />}
+                <span className="flex-1 text-sm font-semibold text-[#163B5C]">
                   {item}
                 </span>
                 <button
                   type="button"
                   onClick={() => handleRemove(index)}
-                  className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                  className="text-[#516C83] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             ))}
@@ -213,29 +219,29 @@ const StepBasicInfo = memo(() => {
     watch,
     formState: { errors },
   } = useFormContext<CreateJobFormValues>();
-  const watchedCategory = watch("category");
+  const watchedCategory = watch("category"); // scoped — only re-renders this step
 
   return (
-    <div className="animate-in fade-in space-y-6 duration-300">
-      <div className="space-y-1.5">
-        <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-900">
-          <Sparkles className="h-3.5 w-3.5 text-neutral-500" /> Job Title *
+    <div className="animate-in fade-in space-y-8 duration-500">
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-sm font-black text-[#163B5C]">
+          <Sparkles className="h-4 w-4 text-[#516C83]" /> Job Title *
         </label>
         <Input
           {...register("title", { required: "Title is required" })}
           placeholder="e.g. Senior Frontend Architect"
-          className="h-10 rounded-xl border border-[#eaecf0] bg-white px-3.5 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
+          className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 text-lg font-medium focus:border-[#163B5C] focus:ring-4 focus:ring-[#163B5C]/5"
         />
         {errors.title && (
-          <p className="ml-1 text-[11px] font-semibold text-red-500">
+          <p className="ml-2 text-xs font-bold text-red-500">
             {errors.title.message}
           </p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-black text-[#163B5C]">
             Category *
           </label>
           <Select
@@ -245,105 +251,94 @@ const StepBasicInfo = memo(() => {
               setValue("subcategory", "", { shouldValidate: true });
             }}
           >
-            <SelectTrigger className="h-10 rounded-xl border border-[#eaecf0] bg-white px-3 text-xs font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue placeholder="Select Industry" />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border border-neutral-200 p-1 shadow-md">
+            <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
               {jobCategories.map((cat) => (
                 <SelectItem
                   key={cat.id}
                   value={cat.id}
-                  className="rounded-lg text-xs"
+                  className="rounded-xl focus:bg-[#163B5C]/5"
                 >
                   {cat.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {errors.category && <p role="alert" className="text-xs text-red-600">{errors.category.message}</p>}
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+        <div className="space-y-2">
+          <label className="text-sm font-black text-[#163B5C]">
             Subcategory *
           </label>
-          <Select
-            value={watch("subcategory") || undefined}
+          <select
+            aria-label="Job subcategory"
+            value={watch("subcategory") || ""}
             disabled={!watchedCategory}
-            onValueChange={(val) =>
-              setValue("subcategory", val, { shouldValidate: true })
-            }
+            onChange={(event) => setValue("subcategory", event.target.value, { shouldValidate: true, shouldDirty: true })}
+            className="h-14 w-full rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] px-6 text-sm font-medium text-[#163B5C] focus-visible:outline-2 focus-visible:outline-blue-700 disabled:opacity-50"
           >
-            <SelectTrigger className="h-10 rounded-xl border border-[#eaecf0] bg-white px-3 text-xs font-medium">
-              <SelectValue placeholder="Specialization" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl border border-neutral-200 p-1 shadow-md">
-              {jobCategories
-                .find((c) => c.id === watchedCategory)
-                ?.subcategories.map((sub) => (
-                  <SelectItem
-                    key={sub.id}
-                    value={sub.id}
-                    className="rounded-lg text-xs"
-                  >
-                    {sub.name}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+            <option value="">Choose a specialization</option>
+            {jobCategories.find(c => c.id === watchedCategory)?.subcategories.map(sub =>
+              <option key={sub.id} value={sub.id}>{sub.name}</option>)}
+          </select>
+          {errors.subcategory && <p role="alert" className="text-xs text-red-600">{errors.subcategory.message}</p>}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-black text-[#163B5C]">
             Work Arrangement *
           </label>
           <Select
             value={watch("locationType") || "onsite"}
             onValueChange={(val) => setValue("locationType", val, { shouldValidate: true })}
           >
-            <SelectTrigger className="h-10 rounded-xl border border-[#eaecf0] bg-white px-3 text-xs font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border border-neutral-200 p-1 shadow-md">
-              <SelectItem value="onsite" className="rounded-lg text-xs">
+            <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
+              <SelectItem value="onsite" className="rounded-xl">
                 On-site
               </SelectItem>
-              <SelectItem value="remote" className="rounded-lg text-xs">
+              <SelectItem value="remote" className="rounded-xl">
                 Remote
               </SelectItem>
-              <SelectItem value="hybrid" className="rounded-lg text-xs">
+              <SelectItem value="hybrid" className="rounded-xl">
                 Hybrid
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+        <div className="space-y-2">
+          <label className="text-sm font-black text-[#163B5C]">
             Job Type *
           </label>
           <Select
             value={watch("type") || "full-time"}
             onValueChange={(val) => setValue("type", val, { shouldValidate: true })}
           >
-            <SelectTrigger className="h-10 rounded-xl border border-[#eaecf0] bg-white px-3 text-xs font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border border-neutral-200 p-1 shadow-md">
-              <SelectItem value="full-time" className="rounded-lg text-xs">
+            <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
+              <SelectItem value="full-time" className="rounded-xl">
                 Full-Time
               </SelectItem>
-              <SelectItem value="part-time" className="rounded-lg text-xs">
+              <SelectItem value="part-time" className="rounded-xl">
                 Part-Time
               </SelectItem>
-              <SelectItem value="contract" className="rounded-lg text-xs">
+              <SelectItem value="contract" className="rounded-xl">
                 Contract
               </SelectItem>
-              <SelectItem value="freelance" className="rounded-lg text-xs">
+              <SelectItem value="freelance" className="rounded-xl">
                 Freelance
               </SelectItem>
-              <SelectItem value="internship" className="rounded-lg text-xs">
+              <SelectItem value="internship" className="rounded-xl">
                 Internship
               </SelectItem>
             </SelectContent>
@@ -351,16 +346,16 @@ const StepBasicInfo = memo(() => {
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+      <div className="space-y-2">
+        <label className="text-sm font-black text-[#163B5C]">
           Primary Location *
         </label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+        <div className="relative group">
+          <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83] group-focus-within:text-[#163B5C] transition-colors" />
           <Input
             {...register("location", { required: "Location is required" })}
             placeholder="e.g. San Francisco, CA or Remote"
-            className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
+            className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
           />
         </div>
       </div>
@@ -372,125 +367,131 @@ StepBasicInfo.displayName = "StepBasicInfo";
 // ─── Step 2: Details ──────────────────────────────────────────────────────────
 
 const StepDetails = memo(() => {
-  const { register, setValue, watch } = useFormContext<CreateJobFormValues>();
+  const { register, setValue, watch, formState: { errors } } = useFormContext<CreateJobFormValues>();
 
   return (
-    <div className="animate-in fade-in space-y-6 duration-300">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+    <div className="animate-in fade-in space-y-8 duration-500">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-black text-[#163B5C]">
             Experience Level *
           </label>
           <Select
             value={watch("experienceLevel") || "entry"}
             onValueChange={(val) => setValue("experienceLevel", val, { shouldValidate: true })}
           >
-            <SelectTrigger className="h-10 rounded-xl border border-[#eaecf0] bg-white px-3 text-xs font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border border-neutral-200 p-1 shadow-md">
-              <SelectItem value="entry" className="rounded-lg text-xs">
+            <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
+              <SelectItem value="entry" className="rounded-xl">
                 Entry Level (0-2y)
               </SelectItem>
-              <SelectItem value="junior" className="rounded-lg text-xs">
+              <SelectItem value="junior" className="rounded-xl">
                 Junior (2-4y)
               </SelectItem>
-              <SelectItem value="mid" className="rounded-lg text-xs">
+              <SelectItem value="mid" className="rounded-xl">
                 Mid Level (4-6y)
               </SelectItem>
-              <SelectItem value="senior" className="rounded-lg text-xs">
+              <SelectItem value="senior" className="rounded-xl">
                 Senior (6-10y)
               </SelectItem>
-              <SelectItem value="lead" className="rounded-lg text-xs">
+              <SelectItem value="lead" className="rounded-xl">
                 Lead/Principal (10y+)
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+        <div className="space-y-2">
+          <label className="text-sm font-black text-[#163B5C]">
             Open Positions *
           </label>
           <div className="relative">
-            <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <Users className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
             <Input
               type="number"
-              {...register("positions", { required: true, min: 1 })}
-              className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
+              {...register("positions", { required: "Enter a position count", min: { value: 1, message: "At least one opening is required" } })}
+              className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
             />
           </div>
+          {errors.positions && <p role="alert" className="text-xs text-red-600">{errors.positions.message}</p>}
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-          Compensation Range (USD)
+      <div className="space-y-2">
+        <label className="text-sm font-black text-[#163B5C]">
+          Compensation Package (USD)
         </label>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
             <Input
               type="number"
               {...register("salaryMin", { required: true })}
               placeholder="Min"
-              className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
+              className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
             />
           </div>
           <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+            <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
             <Input
               type="number"
               {...register("salaryMax", { required: true })}
               placeholder="Max"
-              className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
+              className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
             />
           </div>
           <Select
             value={watch("salaryPeriod") || "yearly"}
             onValueChange={(val) => setValue("salaryPeriod", val, { shouldValidate: true })}
           >
-            <SelectTrigger className="h-10 rounded-xl border border-[#eaecf0] bg-white px-3 text-xs font-medium">
+            <SelectTrigger className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] px-6 font-medium">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="rounded-xl border border-neutral-200 p-1 shadow-md">
-              <SelectItem value="hourly" className="rounded-lg text-xs">
+            <SelectContent className="rounded-2xl border-none p-2 shadow-2xl">
+              <SelectItem value="hourly" className="rounded-xl">
                 per hour
               </SelectItem>
-              <SelectItem value="monthly" className="rounded-lg text-xs">
+              <SelectItem value="monthly" className="rounded-xl">
                 per month
               </SelectItem>
-              <SelectItem value="yearly" className="rounded-lg text-xs">
+              <SelectItem value="yearly" className="rounded-xl">
                 per year
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
+        {errors.salaryMin && <p role="alert" className="text-xs text-red-600">Minimum salary: {errors.salaryMin.message}</p>}
+        {errors.salaryMax && <p role="alert" className="text-xs text-red-600">Maximum salary: {errors.salaryMax.message}</p>}
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+      <div className="space-y-2">
+        <label className="text-sm font-black text-[#163B5C]">
           Application Deadline *
         </label>
         <div className="relative">
-          <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <Clock className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#516C83]" />
           <Input
             type="date"
             {...register("applicationDeadline", { required: true })}
-            className="h-10 rounded-xl border border-[#eaecf0] bg-white pl-9 text-xs sm:text-sm font-medium focus:border-black focus:ring-1 focus:ring-black"
+            className="h-14 rounded-2xl border-[#163B5C]/10 bg-[#F6F8FB] pl-14 font-medium"
           />
         </div>
+        <p className="text-xs text-[#516C83]">Applications close at 11:59 PM in your local time on this date.</p>
+        {errors.applicationDeadline && <p role="alert" className="text-xs text-red-600">{errors.applicationDeadline.message}</p>}
       </div>
 
-      <div className="space-y-1.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+      <div className="space-y-2">
+        <label className="text-sm font-black text-[#163B5C]">
           Role Description *
         </label>
         <Textarea
           {...register("description", { required: true })}
-          placeholder="Describe the candidate profile, mission, team context, and role scope..."
-          className="min-h-[160px] resize-none rounded-xl border border-[#eaecf0] bg-white p-3.5 text-xs sm:text-sm font-medium leading-relaxed focus:border-black focus:ring-1 focus:ring-black"
+          placeholder="Paint a picture of the ideal candidate and the impact they'll make..."
+          className="min-h-[250px] resize-none rounded-3xl border-[#163B5C]/10 bg-[#F6F8FB] p-8 font-medium leading-relaxed"
         />
+        {errors.description && <p role="alert" className="text-xs text-red-600">{errors.description.message}</p>}
       </div>
     </div>
   );
@@ -499,43 +500,48 @@ StepDetails.displayName = "StepDetails";
 
 // ─── Step 3: Requirements ─────────────────────────────────────────────────────
 
-const StepRequirements = memo(() => (
-  <div className="animate-in fade-in space-y-6 duration-300">
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+const StepRequirements = memo(() => {
+  const { formState: { errors } } = useFormContext<CreateJobFormValues>();
+  return <div className="animate-in fade-in space-y-10 duration-500">
+    {errors.requirements && <p role="alert" className="text-xs text-red-600">Requirements: {errors.requirements.message}</p>}
+    {errors.skills && <p role="alert" className="text-xs text-red-600">Skills: {errors.skills.message}</p>}
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
       <ListManager
         name="requirements"
         label="Key Requirements"
-        placeholder="e.g. 4+ years of React / Next.js experience"
+        placeholder="e.g. 5+ years React experience"
         icon={CheckCircle}
       />
       <ListManager
         name="responsibilities"
         label="Main Responsibilities"
-        placeholder="e.g. Own product engineering for candidate features"
+        placeholder="e.g. Lead frontend architecture"
         icon={FileText}
       />
     </div>
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
       <ListManager
         name="skills"
         label="Technical Skills"
-        placeholder="e.g. TypeScript, Tailwind CSS, GraphQL"
+        placeholder="TypeScript, GraphQL (commas create separate skills)"
         variant="badge"
       />
       <ListManager
         name="benefits"
         label="Benefits & Perks"
-        placeholder="e.g. Health coverage, flexible stipend, remote work"
+        placeholder="e.g. Remote-first culture"
         icon={Sparkles}
       />
     </div>
-  </div>
-));
+  </div>;
+});
 StepRequirements.displayName = "StepRequirements";
 
 // ─── Step 4: Review ───────────────────────────────────────────────────────────
+// Uses targeted useWatch per field — NOT watch() which subscribes to everything
 
 const StepReview = memo(() => {
+  // Each useWatch subscribes only to its field — zero cross-field re-renders
   const title = useWatch<CreateJobFormValues, "title">({ name: "title" });
   const type = useWatch<CreateJobFormValues, "type">({ name: "type" });
   const experienceLevel = useWatch<CreateJobFormValues, "experienceLevel">({
@@ -570,107 +576,111 @@ const StepReview = memo(() => {
     name: "requirements",
   });
   const skills = useWatch<CreateJobFormValues, "skills">({ name: "skills" });
+  const responsibilities = useWatch<CreateJobFormValues, "responsibilities">({ name: "responsibilities" });
+  const benefits = useWatch<CreateJobFormValues, "benefits">({ name: "benefits" });
+  const category = useWatch<CreateJobFormValues, "category">({ name: "category" });
+  const subcategory = useWatch<CreateJobFormValues, "subcategory">({ name: "subcategory" });
 
   return (
-    <div className="animate-in fade-in space-y-6 duration-300">
-      {/* Review Hero Card */}
-      <div className="rounded-2xl bg-black border border-neutral-800 p-6 text-white shadow-xs">
-        <div className="space-y-4">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-            <div className="space-y-1.5">
-              <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+    <div className="animate-in fade-in space-y-10 duration-500">
+      {/* Hero card */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#163B5C] to-[#516C83] p-8 text-white shadow-2xl shadow-[#163B5C]/20 md:p-10">
+        <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[3rem] bg-white/10" />
+        <div className="relative space-y-6">
+          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-start">
+            <div className="space-y-2">
+              <h3 className="text-3xl font-black tracking-tight md:text-4xl">
                 {title || "Untitled Position"}
               </h3>
-              <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 text-[11px] font-medium text-neutral-200 capitalize">
+              <p className="text-sm text-white/80">{jobCategories.find(cat => cat.id === category)?.name || category} · {jobCategories.find(cat => cat.id === category)?.subcategories.find(sub => sub.id === subcategory)?.name || subcategory}</p>
+              <div className="flex flex-wrap gap-3">
+                <Badge className="bg-white/20 text-white border-none backdrop-blur-md rounded-lg">
                   {type}
-                </span>
-                <span className="rounded-full bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 text-[11px] font-medium text-neutral-200 capitalize">
+                </Badge>
+                <Badge className="bg-white/20 text-white border-none backdrop-blur-md rounded-lg">
                   {experienceLevel}
-                </span>
+                </Badge>
               </div>
             </div>
-            <div className="sm:text-right">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+            <div className="lg:text-right">
+              <p className="text-sm font-bold opacity-70 uppercase tracking-widest">
                 Compensation
               </p>
-              <p className="text-xl font-bold text-white">
+              <p className="text-3xl font-black">
                 ${parseInt(salaryMin || "0").toLocaleString()} - $
                 {parseInt(salaryMax || "0").toLocaleString()}
               </p>
-              <p className="text-xs text-neutral-400">
+              <p className="text-sm font-bold opacity-70">
                 per {(salaryPeriod || "year").replace("ly", "")}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-4 border-t border-neutral-800 pt-4 text-xs text-neutral-300">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-neutral-400" />
-              <span>
+          <div className="flex flex-wrap gap-5 border-t border-white/10 pt-6">
+            <div className="flex items-center gap-3">
+              <MapPin className="h-5 w-5 opacity-70" />
+              <span className="font-bold">
                 {location} ({locationType})
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5 text-neutral-400" />
-              <span>
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5 opacity-70" />
+              <span className="font-bold">
                 {positions} Opening{Number(positions) !== 1 ? "s" : ""}
               </span>
             </div>
-            {applicationDeadline && (
-              <div className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-neutral-400" />
-                <span>Deadline: {applicationDeadline}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 opacity-70" />
+              <span className="font-bold">Deadline: {applicationDeadline}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-            Description
+      <div className="grid grid-cols-1 gap-8 px-1 md:grid-cols-2 md:px-4">
+        <div className="space-y-4">
+          <h4 className="flex items-center gap-2 text-lg font-black text-[#163B5C]">
+            <div className="h-6 w-1.5 rounded-full bg-[#163B5C]" /> Description
           </h4>
-          <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed whitespace-pre-wrap">
+          <p className="text-[#516C83] font-medium leading-relaxed whitespace-pre-wrap">
             {description}
           </p>
         </div>
 
-        <div className="space-y-4">
-          {requirements && requirements.length > 0 && (
+        <div className="space-y-10">
+          <div className="space-y-4">
+            <h4 className="text-lg font-black text-[#163B5C]">Requirements</h4>
             <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-                Requirements
-              </h4>
-              <div className="space-y-1.5">
-                {requirements.map((req, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-neutral-700">
-                    <CheckCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                    <span>{req}</span>
-                  </div>
-                ))}
-              </div>
+              {requirements?.map((req, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                  <span className="text-[#516C83] font-medium">{req}</span>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
 
-          {skills && skills.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900">
-                Required Skills
-              </h4>
-              <div className="flex flex-wrap gap-1.5">
-                {skills.map((skill, i) => (
-                  <span
-                    key={i}
-                    className="rounded-md bg-[#f3f4f6] text-neutral-700 border border-neutral-200/50 px-2 py-0.5 text-[11px] font-medium"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
+          <div className="space-y-4">
+            <h4 className="text-lg font-black text-[#163B5C]">Responsibilities</h4>
+            {responsibilities?.length ? <ul className="list-disc space-y-1 pl-5 text-sm text-[#516C83]">{responsibilities.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="text-sm text-slate-500">Not specified</p>}
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-lg font-black text-[#163B5C]">Benefits & Perks</h4>
+            {benefits?.length ? <ul className="list-disc space-y-1 pl-5 text-sm text-[#516C83]">{benefits.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="text-sm text-slate-500">Not specified</p>}
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-lg font-black text-[#163B5C]">Core Skills</h4>
+            <div className="flex flex-wrap gap-2">
+              {skills?.map((skill, i) => (
+                <Badge
+                  key={i}
+                  className="bg-[#163B5C]/5 text-[#163B5C] border-none font-bold rounded-lg px-4 py-1.5"
+                >
+                  {skill}
+                </Badge>
+              ))}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
@@ -691,10 +701,10 @@ const ProgressBar = memo(({ currentStep }: { currentStep: number }) => {
   const progressRatio = (currentStep - 1) / (STEPS.length - 1);
 
   return (
-    <div className="relative mb-6 rounded-2xl border border-[#eaecf0] bg-white p-4 sm:p-5 shadow-xs">
-      <div className="absolute left-6 right-6 top-[2.25rem] h-0.5 bg-neutral-100" />
+    <div className="relative mb-10 rounded-3xl border border-[#163B5C]/10 bg-white/95 p-5 shadow-sm backdrop-blur md:mb-12 md:p-6">
+      <div className="absolute left-6 right-6 top-[2.75rem] h-1 rounded-full bg-[#E1E8EF]" />
       <div
-        className="absolute left-6 top-[2.25rem] h-0.5 bg-black transition-all duration-300"
+        className="absolute left-6 top-[2.75rem] h-1 rounded-full bg-gradient-to-r from-[#163B5C] to-[#516C83] transition-all duration-500"
         style={{ width: `calc((100% - 3rem) * ${progressRatio})` }}
       />
       <div className="relative flex justify-between">
@@ -703,17 +713,17 @@ const ProgressBar = memo(({ currentStep }: { currentStep: number }) => {
           return (
             <div key={step.number} className="flex flex-col items-center">
               <div
-                className={`z-10 flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 text-xs font-bold ${
+                className={`z-10 flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-500 ${
                   active
-                    ? "bg-black text-white shadow-xs"
-                    : "border border-neutral-200 bg-white text-neutral-400"
+                    ? "border-2 border-[#163B5C] bg-white text-[#163B5C] shadow-xl shadow-[#163B5C]/10"
+                    : "border-2 border-[#E1E8EF] bg-white text-[#516C83]/30"
                 }`}
               >
-                <step.icon className="h-4 w-4" />
+                <step.icon className="h-5 w-5" />
               </div>
               <span
-                className={`mt-2 hidden text-[10px] font-bold uppercase tracking-wider sm:block ${
-                  active ? "text-neutral-900" : "text-neutral-400"
+                className={`mt-3 hidden text-xs font-black uppercase tracking-widest sm:block ${
+                  active ? "text-[#163B5C]" : "text-[#516C83]/35"
                 }`}
               >
                 {step.title}
@@ -727,6 +737,21 @@ const ProgressBar = memo(({ currentStep }: { currentStep: number }) => {
 });
 ProgressBar.displayName = "ProgressBar";
 
+// Date-only inputs represent the recruiter's local calendar day, not midnight UTC.
+const localDeadlineToISO = (date: string) => date ? new Date(`${date}T23:59:59.999`).toISOString() : undefined;
+const localDateValue = (iso?: string) => {
+  if (!iso) return "";
+  const date = new Date(iso);
+  return Number.isFinite(date.getTime()) ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}` : "";
+};
+const FIELD_STEPS: Record<string, number> = {
+  title: 1, category: 1, subcategory: 1, type: 1, location: 1, locationType: 1,
+  salaryMin: 2, salaryMax: 2, salaryPeriod: 2, experienceLevel: 2,
+  description: 2, positions: 2, applicationDeadline: 2,
+  requirements: 3, responsibilities: 3, skills: 3, benefits: 3,
+  publishAt: 4, status: 4,
+};
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const CreateJobPage = ({ jobId }: { jobId?: string }) => {
@@ -738,6 +763,8 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
   const { data: editResponse, isFetching: isLoadingJob, isError: jobLoadError } = useGetJobByIdQuery(jobId || "", { skip: !jobId });
   const [publication, setPublication] = useState<"published" | "scheduled">("published");
   const [publishAt, setPublishAt] = useState("");
+  const [publishError, setPublishError] = useState("");
+  const [hasStagedDraft, setHasStagedDraft] = useState(false);
 
   const methods = useForm<CreateJobFormValues>({
     defaultValues: {
@@ -764,7 +791,9 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
   const { handleSubmit } = methods;
   useEffect(() => {
     if (!jobId || !editResponse?.data) return;
-    const original = editResponse.data as unknown as Record<string, any>;
+    const saved = editResponse.data as unknown as Record<string, any>;
+    const original = { ...saved, ...(saved.pendingDraft || {}) };
+    setHasStagedDraft(!!saved.pendingDraft);
     methods.reset({
       title: original.title || "", category: original.category || "", subcategory: original.subcategory || "",
       type: original.type || "full-time", location: original.location || "", locationType: original.locationType || "onsite",
@@ -773,15 +802,29 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
       salaryPeriod: original.salaryPeriod || "yearly", experienceLevel: original.experienceLevel || "entry",
       description: original.description || "", requirements: original.requirements || [],
       responsibilities: original.responsibilities || [], benefits: original.benefits || [], skills: original.skills || [],
-      applicationDeadline: original.applicationDeadline ? new Date(original.applicationDeadline).toISOString().slice(0,10) : "",
+      applicationDeadline: localDateValue(original.applicationDeadline),
       positions: original.positions != null ? String(original.positions) : "1",
     });
-    if (original.status === "scheduled") setPublication("scheduled");
-    if (original.publishAt) {
-      const date = new Date(original.publishAt);
+    if (saved.status === "scheduled") setPublication("scheduled");
+    if (saved.publishAt) {
+      const date = new Date(saved.publishAt);
       setPublishAt(new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0,16));
     }
   }, [editResponse, jobId, methods]);
+
+  const showApiErrors = (error: unknown) => {
+    const fields = apiFieldErrors(error);
+    const entries = Object.entries(fields);
+    if (entries.length) {
+      for (const [field, message] of entries) {
+        if (field in FIELD_STEPS) methods.setError(field as keyof CreateJobFormValues,
+          { type: "server", message: String(message) });
+      }
+      setCurrentStep(FIELD_STEPS[entries[0][0]] || 4);
+      setPublishError(entries.map(([field, message]) => `${field}: ${message}`).join(". "));
+    } else setPublishError(apiErrorMessage(error, "Unable to save job"));
+    toast.error(apiErrorMessage(error, "Please correct the highlighted fields"));
+  };
 
   const saveDraft = async () => {
     const current = methods.getValues();
@@ -791,18 +834,34 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
         salaryMin: current.salaryMin.trim() ? Number(current.salaryMin) : undefined,
         salaryMax: current.salaryMax.trim() ? Number(current.salaryMax) : undefined,
         positions: current.positions.trim() ? Number(current.positions) : undefined,
-        applicationDeadline: current.applicationDeadline || undefined,
+        applicationDeadline: localDeadlineToISO(current.applicationDeadline),
       } as unknown as Partial<Job>;
       if (jobId) await updateJob({ jobId, body }).unwrap();
       else await createJob(body).unwrap();
-      toast.success("Draft saved"); router.push("/recruiter/jobs");
-    } catch (error: any) { toast.error(error?.data?.message || "Unable to save job draft"); }
+      toast.success(jobId ? "Draft changes saved — publish when ready" : "Draft saved"); router.push("/recruiter/jobs");
+    } catch (error: unknown) { showApiErrors(error); }
   };
 
-  const nextStep = useCallback(
-    () => setCurrentStep((p) => Math.min(p + 1, 4)),
-    [],
-  );
+  const nextStep = async () => {
+    const fieldGroups: Record<number, Array<keyof CreateJobFormValues>> = {
+      1: ["title", "location"],
+      2: ["salaryMin", "salaryMax", "applicationDeadline", "description", "positions"],
+      3: ["requirements", "skills"],
+    };
+    let valid = await methods.trigger(fieldGroups[currentStep] || []);
+    if (currentStep === 1 && (!methods.getValues("category") || !methods.getValues("subcategory"))) {
+      if (!methods.getValues("category")) methods.setError("category", { message: "Select a category" });
+      if (!methods.getValues("subcategory")) methods.setError("subcategory", { message: "Select a subcategory" });
+      valid = false;
+    }
+    if (currentStep === 3 && (!methods.getValues("requirements")?.length || !methods.getValues("skills")?.length)) {
+      if (!methods.getValues("requirements")?.length) methods.setError("requirements", { message: "Add a requirement" });
+      if (!methods.getValues("skills")?.length) methods.setError("skills", { message: "Add a skill" });
+      valid = false;
+    }
+    if (valid) setCurrentStep(step => Math.min(step + 1, 4));
+    else toast.error("Complete the required fields before continuing");
+  };
   const prevStep = useCallback(
     () => setCurrentStep((p) => Math.max(p - 1, 1)),
     [],
@@ -813,69 +872,119 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
       if (publication === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
         toast.error("Choose a future publication date"); return;
       }
-      const body = { ...data, salaryMin: Number(data.salaryMin), salaryMax: Number(data.salaryMax),
+      setPublishError("");
+      if (Number(data.salaryMin) > Number(data.salaryMax)) {
+        methods.setError("salaryMax", { type: "validate", message: "Maximum salary must be at least the minimum" });
+        setCurrentStep(2); return;
+      }
+      if (!data.category || !data.subcategory || !data.requirements?.length || !data.skills?.length) {
+        setPublishError("Category, subcategory, requirements and skills are required.");
+        setCurrentStep(!data.category || !data.subcategory ? 1 : 3); return;
+      }
+      if (!data.applicationDeadline) { methods.setError("applicationDeadline", { message: "Choose a deadline" }); setCurrentStep(2); return; }
+      const body = { ...data, applicationDeadline: localDeadlineToISO(data.applicationDeadline),
+        salaryMin: Number(data.salaryMin), salaryMax: Number(data.salaryMax),
         positions: Number(data.positions), status: publication,
         ...(publication === "scheduled" ? { publishAt: new Date(publishAt).toISOString() } : {}) } as unknown as Partial<Job>;
       if (jobId) await updateJob({jobId,body}).unwrap(); else await createJob(body).unwrap();
       toast.success(publication === "scheduled" ? "Job scheduled successfully" : "Job published successfully");
       router.push("/recruiter/jobs");
-    } catch (error: any) { toast.error(error?.data?.message || "Unable to save job"); }
+    } catch (error: unknown) { showApiErrors(error); }
   };
 
   if (!user) return null;
 
   return (
     <RecruiterLayout>
-      <div className="mx-auto max-w-5xl space-y-6 pb-16">
-        {/* Pitch-Black Hero Header */}
-        <section className="relative overflow-hidden rounded-2xl bg-black p-6 sm:p-8 text-white border border-neutral-800 shadow-xs">
-          <div className="relative z-10 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="mx-auto max-w-6xl space-y-8 pb-20">
+        <section className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1 text-xs font-semibold text-neutral-300">
-                <Shield className="h-3.5 w-3.5 text-neutral-400" />
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
+                <Shield className="h-4 w-4" />
                 <span>Opportunity Builder</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+              <h1 className="text-3xl font-black tracking-tight md:text-5xl">
                 {jobId ? "Edit Opportunity" : "Create Opportunity"}
               </h1>
-              <p className="mt-1 max-w-2xl text-xs sm:text-sm text-neutral-400">
-                Craft a comprehensive role specification, compensation, and required skill set.
+              <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-white/75">
+                Build a complete job post with clear role details, compensation,
+                requirements, and review-ready publishing.
               </p>
             </div>
-            <div className="flex flex-col gap-2.5 sm:flex-row lg:flex-row">
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               <Button
-                className="h-9 rounded-xl bg-white px-4 text-xs font-bold uppercase tracking-wider text-black hover:bg-neutral-100"
+                className="h-12 rounded-2xl bg-white px-6 font-black text-[#163B5C] hover:bg-[#E1E8EF]"
                 onClick={() => router.push("/recruiter/jobs")}
               >
-                <Briefcase className="mr-1.5 h-3.5 w-3.5" />
+                <Briefcase className="mr-2 h-4 w-4" />
                 View Jobs
               </Button>
               <Button
                 variant="outline"
                 onClick={() => router.back()}
-                className="h-9 rounded-xl border-neutral-700 bg-neutral-900 px-4 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800"
+                className="h-12 rounded-2xl border-white/30 bg-transparent px-6 font-black text-white hover:bg-white/10"
               >
-                <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
               </Button>
             </div>
           </div>
         </section>
 
-        {jobLoadError && (
-          <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3.5 text-xs text-red-700 font-medium">
-            Unable to load this job for editing. Check your company permissions.
-          </p>
-        )}
-        {isLoadingJob && (
-          <div className="h-16 animate-pulse rounded-xl bg-neutral-100" aria-label="Loading job" />
-        )}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          {[
+            {
+              label: "Structured Steps",
+              value: "4",
+              detail: "Basic info to final review",
+              icon: BarChart3,
+            },
+            {
+              label: "Reusable Lists",
+              value: "Live",
+              detail: "Skills, benefits, and requirements",
+              icon: Sparkles,
+            },
+            {
+              label: "Publish Flow",
+              value: "API",
+              detail: "Uses your existing create-job mutation",
+              icon: CheckCircle,
+            },
+          ].map((item) => (
+            <Card
+              key={item.label}
+              className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-5 shadow-sm backdrop-blur"
+            >
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#163B5C]/10 text-[#163B5C]">
+                <item.icon className="h-5 w-5" />
+              </div>
+              <p className="text-2xl font-black text-[#163B5C]">{item.value}</p>
+              <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#516C83]">
+                {item.label}
+              </p>
+              <p className="mt-2 text-sm font-medium text-[#516C83]/80">
+                {item.detail}
+              </p>
+            </Card>
+          ))}
+        </div>
 
+        {hasStagedDraft && <p role="status" className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">You have private draft changes. The existing public listing remains unchanged until you publish these edits.</p>}
+        {publishError && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">{publishError}</div>}
+        {jobLoadError && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">Unable to load this job for editing. Check your company permissions.</p>}
+        {isLoadingJob && <div className="h-20 animate-pulse rounded-lg bg-slate-100" aria-label="Loading job"/>}
         <ProgressBar currentStep={currentStep} />
 
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 sm:p-7 shadow-xs">
+            <Card className="relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-2xl shadow-[#163B5C]/10 backdrop-blur md:p-10 lg:p-12">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
+
+              {/* Mount all steps but hide inactive — avoids RHF field unmount/remount */}
               <div className={currentStep === 1 ? "block" : "hidden"}>
                 <StepBasicInfo />
               </div>
@@ -889,91 +998,49 @@ const CreateJobPage = ({ jobId }: { jobId?: string }) => {
                 <StepReview />
               </div>
 
-              {currentStep === 4 && (
-                <fieldset className="mt-6 space-y-2.5 rounded-xl border border-neutral-200 bg-[#f8fafc] p-4">
-                  <legend className="px-1 text-xs font-bold uppercase tracking-wider text-neutral-900">Publication</legend>
-                  <label className="mr-4 inline-flex items-center gap-2 text-xs text-neutral-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="publication"
-                      value="published"
-                      checked={publication === "published"}
-                      onChange={() => setPublication("published")}
-                      className="accent-black"
-                    />
-                    Publish immediately
-                  </label>
-                  <label className="inline-flex items-center gap-2 text-xs text-neutral-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="publication"
-                      value="scheduled"
-                      checked={publication === "scheduled"}
-                      onChange={() => setPublication("scheduled")}
-                      className="accent-black"
-                    />
-                    Schedule publication
-                  </label>
-                  {publication === "scheduled" && (
-                    <label className="block text-xs text-neutral-700 pt-2">
-                      Publish on
-                      <input
-                        type="datetime-local"
-                        required
-                        className="mt-1 block w-full max-w-xs rounded-xl border border-neutral-300 bg-white p-2 text-xs"
-                        value={publishAt}
-                        onChange={(e) => setPublishAt(e.target.value)}
-                      />
-                    </label>
-                  )}
-                </fieldset>
-              )}
-
-              {/* Navigation Footer */}
-              <div className="mt-8 flex flex-col-reverse gap-2.5 border-t border-neutral-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+              {currentStep === 4 && <fieldset className="mt-8 space-y-3 rounded-xl border border-[#d9e3ea] bg-[#f7f9fb] p-5">
+                <legend className="px-2 text-sm font-semibold text-[#163B5C]">Publication</legend>
+                <label className="mr-5 inline-flex items-center gap-2 text-sm text-slate-700"><input type="radio" name="publication" value="published" checked={publication==="published"} onChange={()=>setPublication("published")}/> Publish immediately</label>
+                <label className="inline-flex items-center gap-2 text-sm text-slate-700"><input type="radio" name="publication" value="scheduled" checked={publication==="scheduled"} onChange={()=>setPublication("scheduled")}/> Schedule publication</label>
+                {publication === "scheduled" && <label className="block text-sm text-slate-700">Publish on
+                  <input type="datetime-local" required className="mt-1 block w-full max-w-xs rounded-lg border border-slate-300 bg-white p-2" value={publishAt} onChange={e=>setPublishAt(e.target.value)}/>
+                  <span className="mt-1 block text-xs text-slate-500">Times use your local timezone. The existing backend scheduler must run to publish scheduled jobs.</span></label>}
+              </fieldset>}
+              {/* Navigation */}
+              <div className="mt-16 flex flex-col-reverse gap-3 border-t border-[#163B5C]/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="h-9 px-4 text-xs font-bold uppercase tracking-wider text-neutral-600 hover:text-black disabled:opacity-0"
+                  className="h-12 rounded-2xl px-6 font-black text-[#516C83] disabled:opacity-0"
                 >
-                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Previous Step
+                  <ArrowLeft className="mr-3 h-5 w-5" /> Previous Step
                 </Button>
 
-                <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" disabled={isLoading || isUpdating || isLoadingJob || jobLoadError} onClick={() => void saveDraft()} className="h-12 rounded-xl border-[#163B5C]/20 px-5 text-[#163B5C]">Save draft</Button>
+                {currentStep < 4 ? (
                   <Button
                     type="button"
-                    variant="outline"
-                    disabled={isLoading || isUpdating || isLoadingJob || jobLoadError}
-                    onClick={() => void saveDraft()}
-                    className="h-9 rounded-xl border-neutral-300 px-4 text-xs font-bold uppercase tracking-wider text-neutral-700 hover:bg-neutral-50"
+                    onClick={nextStep}
+                    className="h-12 rounded-2xl bg-[#163B5C] px-8 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:bg-[#516C83]"
                   >
-                    Save Draft
+                    Next Step <ArrowRight className="ml-3 h-5 w-5" />
                   </Button>
-                  {currentStep < 4 ? (
-                    <Button
-                      type="button"
-                      onClick={nextStep}
-                      className="h-9 rounded-xl bg-black px-5 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800"
-                    >
-                      Next Step <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      disabled={isLoading || isUpdating || isLoadingJob || jobLoadError}
-                      className="h-9 rounded-xl bg-black px-6 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
-                      )}
-                      {publication === "scheduled" ? "Schedule Opportunity" : "Publish Opportunity"}
-                    </Button>
-                  )}
-                </div>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={isLoading || isUpdating || isLoadingJob || jobLoadError}
+                    className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-10 font-black text-white shadow-xl shadow-[#163B5C]/20 transition-all hover:-translate-y-0.5 hover:from-[#0C2C48] hover:to-[#3b5a71]"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                    ) : (
+                      <CheckCircle className="mr-3 h-5 w-5" />
+                    )}
+                    {publication === "scheduled" ? "Schedule Opportunity" : "Publish Opportunity"}
+                  </Button>
+                )}
               </div>
             </Card>
           </form>

@@ -15,11 +15,13 @@ import {
   MessageSquare,
   Clock,
   DollarSign,
+  BarChart3,
   ArrowRight,
   Building2,
   Shield,
   Activity,
   Sparkles,
+  CheckCircle,
 } from "lucide-react";
 import { Card } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
@@ -41,25 +43,26 @@ interface StatDef {
 function StatCard({ stat }: { stat: StatDef }) {
   return (
     <Link href={stat.href}>
-      <Card className="stat-card group relative h-full overflow-hidden rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs transition-all hover:shadow-md">
-        <div className="mb-4 flex items-start justify-between">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100 text-neutral-800 shrink-0">
-            <stat.icon className="h-5 w-5" />
+      <Card className="stat-card group relative h-full overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-[#163B5C]/25 hover:shadow-2xl hover:shadow-[#163B5C]/10">
+        <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-[#163B5C] to-[#516C83] transition-transform duration-300 group-hover:scale-x-100" />
+        <div className="mb-5 flex items-start justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#163B5C] text-white shadow-lg shadow-[#163B5C]/15 transition-transform duration-300 group-hover:scale-105">
+            <stat.icon className="h-6 w-6" />
           </div>
           {stat.trend === "up" && (
-            <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+            <Badge className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700">
               <TrendingUp className="mr-1 h-3 w-3" />
               Up
             </Badge>
           )}
         </div>
-        <p className="text-2xl font-black tracking-tight text-neutral-950">
+        <p className="text-3xl font-black tracking-tight text-[#163B5C]">
           {stat.value ?? "-"}
         </p>
-        <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+        <p className="mt-1 text-xs font-black uppercase tracking-widest text-[#516C83]">
           {stat.title}
         </p>
-        <p className="mt-1.5 text-xs font-medium text-neutral-500">
+        <p className="mt-2 text-sm font-medium text-[#516C83]/75">
           {stat.change}
         </p>
       </Card>
@@ -71,15 +74,16 @@ const RecruiterDashboard = () => {
   const { user } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
-  const { data: recruiterStats } = useGetRecruiterDashboardStatsQuery(
+  const { data: recruiterStats, isLoading: isLoadingStats, isError: statsError, refetch: reloadStats } = useGetRecruiterDashboardStatsQuery(
     undefined,
     { skip: !user },
   );
 
   const apiData = recruiterStats as any;
 
+  // API may return plain numbers OR objects like {total, percentage}
   const val = (v: any): number | string => {
-    if (v == null) return "—";
+    if (v == null) return isLoadingStats || statsError ? "—" : 0;
     if (typeof v === "object" && v.total !== undefined) return v.total;
     return v;
   };
@@ -88,25 +92,25 @@ const RecruiterDashboard = () => {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         ".dashboard-header",
-        { opacity: 0, y: -16 },
-        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+        { opacity: 0, y: -20 },
+        { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" },
       );
       gsap.fromTo(
         ".stat-card",
-        { opacity: 0, y: 16 },
+        { opacity: 0, y: 24 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.4,
-          stagger: 0.05,
-          delay: 0.1,
+          duration: 0.5,
+          stagger: 0.1,
+          delay: 0.2,
           ease: "power2.out",
         },
       );
       gsap.fromTo(
         ".main-section",
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.5, delay: 0.3, ease: "power2.out" },
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.6, delay: 0.45, ease: "power2.out" },
       );
     }, containerRef);
     return () => ctx.revert();
@@ -124,11 +128,11 @@ const RecruiterDashboard = () => {
 
   const stats: StatDef[] = [
     {
-      title: "Active Jobs",
+      title: "Reserved Job Slots",
       value: activeJobs,
       change:
         apiData?.activeJobs?.percentage != null
-          ? `${apiData.activeJobs.percentage}% capacity`
+          ? `${apiData.activeJobs.percentage}% of capacity`
           : "Total posted",
       trend: Number(activeJobs) > 0 ? "up" : "neutral",
       icon: Briefcase,
@@ -148,7 +152,7 @@ const RecruiterDashboard = () => {
     {
       title: "Avg. Salary",
       value: avgSalary,
-      change: "Market benchmark",
+      change: "Market competitive",
       trend: "neutral",
       icon: DollarSign,
       href: "/recruiter/jobs",
@@ -165,21 +169,21 @@ const RecruiterDashboard = () => {
 
   const pipelineItems = [
     {
-      label: "Active Jobs",
-      value: activeJobs,
-      detail: "Open roles receiving applicants",
+      label: "Open Jobs",
+      value: val(apiData?.openJobs),
+      detail: "Live jobs accepting applications",
       icon: Briefcase,
     },
     {
       label: "Applicants",
       value: applicants,
-      detail: "Candidates in hiring funnel",
+      detail: "Candidates in your hiring funnel",
       icon: Users,
     },
     {
       label: "Interviews",
       value: interviews,
-      detail: "Active candidate sessions",
+      detail: "Conversation-ready candidates",
       icon: MessageSquare,
     },
   ];
@@ -209,37 +213,41 @@ const RecruiterDashboard = () => {
 
   return (
     <RecruiterLayout>
-      <div ref={containerRef} className="mx-auto max-w-7xl space-y-6">
-        {/* Pitch-Black Header */}
+      <div ref={containerRef} className="mx-auto max-w-7xl space-y-8">
+        {statsError && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Dashboard statistics could not be loaded. <button type="button" className="font-semibold underline" onClick={() => void reloadStats()}>Retry</button></p>}
+        {apiData?.quota?.overLimit > 0 && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Your plan reserves {apiData.quota.used} job slots against a limit of {apiData.quota.limit}. Existing listings remain published; close a listing or upgrade to add more.</p>}
         <section className="dashboard-header">
-          <div className="relative overflow-hidden rounded-2xl bg-black p-6 sm:p-8 text-white border border-neutral-800 shadow-xs">
-            <div className="relative z-10 grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="relative overflow-hidden rounded-3xl bg-[#163B5C] p-7 text-white shadow-2xl shadow-[#163B5C]/20 md:p-9">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:56px_56px]" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/20 to-transparent" />
+            <div className="relative z-10 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
-                <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-neutral-800 bg-neutral-900 px-3 py-1 text-xs font-semibold text-neutral-300">
-                  <Shield className="h-3.5 w-3.5 text-neutral-400" />
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-white/90 backdrop-blur-sm">
+                  <Shield className="h-4 w-4" />
                   <span>Recruiter Command Center</span>
                 </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
+                <h1 className="text-3xl font-black tracking-tight md:text-5xl">
                   Welcome back, {user.name?.split(" ")[0] || "Recruiter"}!
                 </h1>
-                <p className="mt-1 max-w-2xl text-xs sm:text-sm text-neutral-400">
-                  Manage open listings, review candidate applications, and coordinate team interviews.
+                <p className="mt-3 max-w-2xl text-base font-medium leading-7 text-white/75">
+                  Manage open roles, review candidate momentum, and move your
+                  strongest applicants toward interviews.
                 </p>
               </div>
-              <div className="flex flex-col gap-2.5 sm:flex-row lg:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                 <Button
-                  className="h-9 w-full sm:w-auto rounded-xl bg-white px-5 text-xs font-bold uppercase tracking-wider text-black hover:bg-neutral-100"
+                  className="h-12 w-full rounded-2xl bg-white px-6 font-black text-[#163B5C] hover:bg-[#E1E8EF]"
                   onClick={() => router.push("/recruiter/create-job")}
                 >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Post New Job
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-9 w-full sm:w-auto rounded-xl border-neutral-700 bg-neutral-900 px-5 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800"
+                  className="h-12 rounded-2xl border-white/30 bg-transparent px-6 font-black text-white hover:bg-white/10"
                   onClick={() => router.push("/recruiter/messages")}
                 >
-                  <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
+                  <MessageSquare className="mr-2 h-4 w-4" />
                   Messages
                 </Button>
               </div>
@@ -247,72 +255,73 @@ const RecruiterDashboard = () => {
           </div>
         </section>
 
-        {/* Stats Grid */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map((stat) => (
             <StatCard key={stat.title} stat={stat} />
           ))}
         </section>
 
-        {/* Main Content Layout */}
-        <section className="main-section grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <section className="main-section grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
-            <Card className="rounded-2xl border border-[#eaecf0] bg-white p-6 shadow-xs">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <Card className="relative overflow-hidden rounded-3xl border border-[#163B5C]/10 bg-white/95 p-7 shadow-xl shadow-[#163B5C]/8 backdrop-blur">
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#163B5C] to-[#516C83]" />
+              <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="mb-2 flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
-                      <Target className="h-4 w-4" />
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#163B5C] text-white">
+                      <Target className="h-5 w-5" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    <span className="text-xs font-black uppercase tracking-widest text-[#516C83]">
                       Hiring Pipeline
                     </span>
                   </div>
-                  <h2 className="text-lg font-bold text-neutral-950">
-                    Keep every role moving forward
+                  <h2 className="text-2xl font-black tracking-tight text-[#163B5C]">
+                    Keep every role moving
                   </h2>
-                  <p className="mt-0.5 max-w-md text-xs text-neutral-500 leading-relaxed">
-                    Review incoming candidate applications, update statuses, and send interview invitations.
+                  <p className="mt-2 max-w-md text-sm font-medium leading-6 text-[#516C83]">
+                    Review active jobs, shortlist applicants, and schedule
+                    interviews from one focused recruiter workspace.
                   </p>
                 </div>
                 <Link href="/recruiter/applicants" className="shrink-0">
-                  <Button className="h-9 rounded-xl bg-black px-5 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800">
+                  <Button className="h-12 rounded-2xl bg-gradient-to-r from-[#163B5C] to-[#516C83] px-7 font-black text-white shadow-lg shadow-[#163B5C]/20 hover:from-[#0C2C48] hover:to-[#3b5a71]">
                     View Pipeline
-                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
+              <Sparkles className="absolute -bottom-8 -right-8 h-44 w-44 rotate-12 text-[#163B5C]/5" />
             </Card>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs">
-                <div className="mb-4 flex items-center justify-between pb-3 border-b border-neutral-100">
-                  <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-900">
-                    <Activity className="h-4 w-4 text-neutral-700" />
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+                <div className="mb-5 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 font-black text-[#163B5C]">
+                    <Activity className="h-5 w-5" />
                     Pipeline Snapshot
                   </h3>
-                  <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold text-neutral-700 uppercase tracking-wider">
+                  <Badge className="rounded-full border border-[#163B5C]/10 bg-[#163B5C]/5 text-[10px] font-black uppercase tracking-wide text-[#163B5C]">
                     Live
-                  </span>
+                  </Badge>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-4">
                   {pipelineItems.map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-center gap-3 rounded-xl bg-[#f8fafc] p-3"
+                      className="flex items-center gap-4 rounded-2xl bg-[#F6F8FB] p-4"
                     >
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white border border-neutral-200/60 text-neutral-700">
-                        <item.icon className="h-4 w-4" />
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#163B5C]/10 text-[#163B5C]">
+                        <item.icon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-neutral-900 truncate">
+                        <p className="text-sm font-black text-[#163B5C]">
                           {item.label}
                         </p>
-                        <p className="text-[10px] text-neutral-400">
+                        <p className="mt-0.5 text-xs font-semibold text-[#516C83]">
                           {item.detail}
                         </p>
                       </div>
-                      <p className="text-lg font-bold text-neutral-950">
+                      <p className="text-2xl font-black text-[#163B5C]">
                         {item.value}
                       </p>
                     </div>
@@ -320,47 +329,51 @@ const RecruiterDashboard = () => {
                 </div>
               </Card>
 
-              <Card className="rounded-2xl border border-neutral-800 bg-black p-5 text-white shadow-xs">
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-900 border border-neutral-800 text-white">
-                  <Award className="h-4 w-4" />
+              <Card className="relative overflow-hidden rounded-3xl border-none bg-gradient-to-br from-[#163B5C] to-[#516C83] p-6 text-white shadow-xl shadow-[#163B5C]/20">
+                <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[3rem] bg-white/10" />
+                <div className="relative z-10">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+                    <Award className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-xl font-black">Hiring Performance</h3>
+                  <p className="mt-3 text-sm leading-6 text-white/75">
+                    You are managing{" "}
+                    <span className="font-black text-white">
+                      {val(apiData?.openJobs)} open jobs
+                    </span>{" "}
+                    with an average salary of{" "}
+                    <span className="font-black text-white">{avgSalary}</span>.
+                  </p>
+                  <Link href="/recruiter/jobs">
+                    <Button className="mt-6 h-11 w-full rounded-2xl bg-white font-black text-[#163B5C] hover:bg-[#E1E8EF]">
+                      Manage Jobs
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
-                <h3 className="text-sm font-bold text-white">Hiring Performance</h3>
-                <p className="mt-1 text-xs text-neutral-400 leading-relaxed">
-                  You are managing{" "}
-                  <span className="font-bold text-white">
-                    {activeJobs ?? 0} active jobs
-                  </span>{" "}
-                  with an average salary of{" "}
-                  <span className="font-bold text-white">{avgSalary}</span>.
-                </p>
-                <Link href="/recruiter/jobs">
-                  <Button className="mt-4 h-8 w-full rounded-lg bg-white text-black hover:bg-neutral-100 text-[10px] font-bold uppercase tracking-wider">
-                    Manage Jobs
-                    <ArrowRight className="ml-1 h-3 w-3" />
-                  </Button>
-                </Link>
+                <Target className="absolute -bottom-10 -right-10 h-36 w-36 text-white/10" />
               </Card>
             </div>
           </div>
 
-          <aside className="space-y-4">
-            <Card className="rounded-2xl border border-[#eaecf0] bg-white p-5 shadow-xs">
-              <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800">
-                <Clock className="h-4 w-4" />
+          <aside className="space-y-6">
+            <Card className="rounded-3xl border border-[#163B5C]/10 bg-white/95 p-6 shadow-sm backdrop-blur">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#163B5C]/10 text-[#163B5C]">
+                <Clock className="h-6 w-6" />
               </div>
-              <h3 className="text-sm font-bold text-neutral-900">
+              <h3 className="text-lg font-black text-[#163B5C]">
                 Quick Actions
               </h3>
-              <p className="mt-0.5 text-xs text-neutral-500">
-                Jump straight into routine hiring workflows.
+              <p className="mt-2 text-sm leading-6 text-[#516C83]">
+                Jump into the recruiter tasks you use most.
               </p>
-              <div className="mt-4 space-y-1.5">
+              <div className="mt-5 space-y-3">
                 {quickActions.map((action) => (
-                  <Link key={action.label} href={action.href} className="block">
-                    <button className="flex w-full items-center gap-2.5 rounded-xl border border-neutral-100 bg-[#f8fafc] p-2.5 text-left text-xs font-semibold text-neutral-800 hover:bg-neutral-100 transition-colors">
-                      <action.icon className="h-3.5 w-3.5 text-neutral-600 shrink-0" />
-                      <span className="flex-1 truncate">{action.label}</span>
-                      <ArrowUpRight className="h-3.5 w-3.5 text-neutral-400" />
+                  <Link key={action.label} href={action.href}>
+                    <button className="flex w-full items-center gap-3 rounded-2xl border border-[#163B5C]/10 bg-[#F6F8FB] p-3 text-left text-sm font-black text-[#163B5C] transition-colors hover:bg-[#163B5C]/5">
+                      <action.icon className="h-4 w-4 shrink-0" />
+                      <span className="flex-1">{action.label}</span>
+                      <ArrowUpRight className="h-4 w-4 text-[#516C83]" />
                     </button>
                   </Link>
                 ))}
